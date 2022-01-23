@@ -17,8 +17,8 @@ import { ComponentType, FunctionComponent } from 'react';
 import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
 import NorthStarThemeProvider from 'aws-northstar/components/NorthStarThemeProvider';
 import AppLayout from './components/AppLayout';
-import DemoPage from './components/Utils/Forms/Demo';
-import TrackPage from './components/Cases/Track';
+import Dashboard from './components/Dashboard/index'
+import Case from './components/Cases'
 
 const withLayout =
     (Component: ComponentType): FunctionComponent =>
@@ -34,7 +34,8 @@ const App = () => {
         <NorthStarThemeProvider>
             <Router>
                 <Switch>
-                    <Route exact path="/case/:case" component={withLayout(TrackPage)}></Route>
+                    <Route exact path="/case/:name" component={withLayout(Case)}></Route>
+                    <Route exact path="/" component={withLayout(Dashboard)}></Route>
                 </Switch>
             </Router>
         </NorthStarThemeProvider>

@@ -2,13 +2,13 @@ import { FunctionComponent, ChangeEvent, useState } from 'react';
 import RadioButton from 'aws-northstar/components/RadioButton';
 import RadioGroup from 'aws-northstar/components/RadioGroup';
 import { Stack, Heading } from 'aws-northstar';
-import InferencePage from '../Inference';
+import InferenceForm from '../Inference';
 
 interface DemoProps {
     name: string;
 }
 
-const DemoPage: FunctionComponent<DemoProps> = (props) => {
+const DemoForm: FunctionComponent<DemoProps> = (props) => {
     const [option, setOption] = useState('1')
 
     const onChange = (event?: ChangeEvent<HTMLInputElement>, value?: string)=>{
@@ -25,7 +25,7 @@ const DemoPage: FunctionComponent<DemoProps> = (props) => {
                         <RadioButton value='1' checked={true}>Realtime inference</RadioButton>                
                     ]}
                 />
-                <InferencePage/>
+                <InferenceForm/>
                 </Stack>
         )
     else
@@ -42,4 +42,4 @@ const DemoPage: FunctionComponent<DemoProps> = (props) => {
     )
 }
 
-export default DemoPage;
+export default DemoForm;

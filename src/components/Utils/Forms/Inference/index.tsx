@@ -11,7 +11,7 @@ interface FileMetadata {
     lastModified?: number;
 }
 
-const InferencePage: FunctionComponent = () => {
+const InferenceForm: FunctionComponent = () => {
     const [filename, setFilename] = useState('')
 
     const onChange = (files: (File | FileMetadata)[]) => {
@@ -43,4 +43,4 @@ const InferencePage: FunctionComponent = () => {
             </Container>)
 }
 
-export default InferencePage;
+export default InferenceForm;

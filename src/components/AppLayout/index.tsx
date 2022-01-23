@@ -28,7 +28,7 @@ const AppLayout: FunctionComponent = ({ children }) => {
     const SideNavigation = useMemo(() => {
         return (
             <SideNavigationBase
-                header={{ text: 'NorthStar Demo', href: '/' }}
+                header={{ text: 'Control panel', href: '/' }}
                 items={[
                     {
                         "type": SideNavigationItemType.SECTION,
