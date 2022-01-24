@@ -3,6 +3,7 @@ import RadioButton from 'aws-northstar/components/RadioButton';
 import RadioGroup from 'aws-northstar/components/RadioGroup';
 import { Stack, Heading } from 'aws-northstar';
 import InferenceForm from '../Inference';
+import TransformForm from '../Transform';
 
 interface DemoProps {
     name: string;
@@ -38,6 +39,7 @@ const DemoForm: FunctionComponent<DemoProps> = (props) => {
                     <RadioButton value='1' checked={false}>Realtime inference</RadioButton>                
                 ]}
             />
+            <TransformForm/>
             </Stack>
     )
 }
