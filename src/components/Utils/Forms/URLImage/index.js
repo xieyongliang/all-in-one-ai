@@ -1,6 +1,8 @@
 import React from 'react';
 import { Stage, Layer, Image, Rect, Text } from 'react-konva';
 
+const uuid = require('uuid');
+
 class URLImage extends React.Component {
     state = {
         image: null,
@@ -36,8 +38,8 @@ class URLImage extends React.Component {
         });
   };
   
-    render() {
-        if(this.props.name === '')
+    render() {    
+      if(this.props.label.length === 0)
             return (
                 <Stage width={this.state.width} height={this.state.height}>
                   <Layer>
@@ -57,26 +59,26 @@ class URLImage extends React.Component {
               <Stage width={this.state.width} height={this.state.height}>
                 <Layer>
                   <Image
-                      x={this.props.x}
-                      y={this.props.y}
-                      image={this.state.image}
+                      x = {this.props.x}
+                      y = {this.props.y}
+                      image = {this.state.image}
                       ref={node => {
                           this.imageNode = node;
                       }}
                   />
-                  <Rect
-                      x={this.props.x}
-                      y={this.props.y}
-                      width={this.state.width}
-                      height={this.state.height}
-                      stroke="blue"
-                      shadowBlur={10}
-                    />
-                  <Text
-                      text = "abc"
-                      x = {20}
-                      y = {20}
-                  />
+                  {
+                    this.props.bbox.map((bbox) => (
+                        <Rect 
+                            key = {uuid.v4()}
+                            x = {Math.floor((parseFloat(bbox[0]) - parseFloat(bbox[2]) / 2) * this.state.width)}
+                            y = {Math.floor((parseFloat(bbox[1]) - parseFloat(bbox[3]) / 2) * this.state.height)}
+                            width = {Math.floor( parseFloat(bbox[2]) * this.state.width)}
+                            height = {Math.floor( parseFloat(bbox[3]) * this.state.height)}
+                            stroke = '#00A3AA'
+                        />
+                      )
+                    )
+                  }
                 </Layer>
               </Stage>
           );
