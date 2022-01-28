@@ -33,7 +33,7 @@ const SimpleSelect: FunctionComponent<SimpleSelectProps> = (props: SimpleSelectP
     const [selectedOption, setSeletedOption] = React.useState<SelectOption>();
 
     const onChange = (event: any) => {
-        setSeletedOption(props.options.find(o => o.value === event.target.value));
+        setSeletedOption({ value: event.target.value });
         props.onChange(props.name, event.target.value)
     };
 

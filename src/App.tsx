@@ -19,23 +19,37 @@ import NorthStarThemeProvider from 'aws-northstar/components/NorthStarThemeProvi
 import AppLayout from './components/AppLayout';
 import Dashboard from './components/Dashboard/index'
 import Case from './components/Cases'
+import Yolov5 from './components/Models/Yolov5'
+import PPE from './components/Scenarios/PPE';
+import TrainingJobForm from './components/Utils/Forms/TrainingJob';
+import ModelForm from './components/Utils/Forms/Model';
 
-const withLayout =
-    (Component: ComponentType): FunctionComponent =>
-    (props) =>
-        (
-            <AppLayout>
-                <Component {...props} />
-            </AppLayout>
-        );
+const withLayout = (Component : any, props? : any) => {
+    return (
+        <AppLayout>
+            <Component {...props} />
+        </AppLayout>
+    )
+}
 
 const App = () => {
     return (
         <NorthStarThemeProvider>
             <Router>
                 <Switch>
-                    <Route exact path="/case/:name" component={withLayout(Case)}></Route>
-                    <Route exact path="/" component={withLayout(Dashboard)}></Route>
+                    <Route exact path="/trainingjob/:name/form">{withLayout(TrainingJobForm)}</Route>
+                    <Route exact path="/model/:name/form">{withLayout(ModelForm)}</Route>
+                    <Route exact path="/scenarios/ppe">{withLayout(PPE)}</Route>
+                    <Route exact path="/model/yolov5">{withLayout(Yolov5)}</Route>
+                    <Route exact path="/case/:name/demo">{withLayout(Case, {'activeId':'demo'})}</Route>
+                    <Route exact path="/case/:name/pipeline">{withLayout(Case,{'activeId':'pipeline'})}</Route>
+                    <Route exact path="/case/:name/trainingjob">{withLayout(Case,{'activeId':'trainingjob'})}</Route>
+                    <Route exact path="/case/:name/model">{withLayout(Case,{'activeId':'model'})}</Route>
+                    <Route exact path="/case/:name/endpoint">{withLayout(Case,{'activeId':'endpoint'})}</Route>
+                    <Route exact path="/case/:name/restapi">{withLayout(Case,{'activeId':'restapi'})}</Route>
+                    <Route exact path="/case/:name/component">{withLayout(Case,{'activeId':'component'})}</Route>
+                    <Route exact path="/case/:name/deployment">{withLayout(Case,{'activeId':'deployment'})}</Route>
+                    <Route exact path="/">{withLayout(Dashboard)}</Route>
                 </Switch>
             </Router>
         </NorthStarThemeProvider>

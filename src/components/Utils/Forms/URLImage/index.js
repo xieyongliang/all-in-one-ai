@@ -1,5 +1,6 @@
 import React from 'react';
 import { Stage, Layer, Image, Rect, Text } from 'react-konva';
+import Popover from 'aws-northstar/components/Popover';
 
 const uuid = require('uuid');
 
@@ -7,7 +8,10 @@ class URLImage extends React.Component {
     state = {
         image: null,
         width: 0,
-        height: 0
+        height: 0,
+        label: '',
+        popx: 0,
+        popy: 0
     };
   
     componentDidMount() {
@@ -36,7 +40,7 @@ class URLImage extends React.Component {
           width: this.image.width, 
           height: this.image.height
         });
-  };
+    };
   
     render() {    
       if(this.props.label.length === 0)

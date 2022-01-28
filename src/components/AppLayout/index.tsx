@@ -34,8 +34,8 @@ const AppLayout: FunctionComponent = ({ children }) => {
                         "type": SideNavigationItemType.SECTION,
                         "text": "Scenarios",
                         "items": [
+                            { text: 'PPE Detector', type: SideNavigationItemType.LINK, href: '/scenarios/ppe' },
                             { text: 'Track maintenance', type: SideNavigationItemType.LINK, href: '/' },
-                            { text: 'PPE Detector', type: SideNavigationItemType.LINK, href: '/' },
                             { text: 'Intelligent steaming videos', type: SideNavigationItemType.LINK, href: '/' },                                                        
                             { text: 'Shelf recognition', type: SideNavigationItemType.LINK, href: '/' }
                         ]
@@ -44,18 +44,18 @@ const AppLayout: FunctionComponent = ({ children }) => {
                         "type": SideNavigationItemType.SECTION,
                         "text": "Use cases",
                         "items": [
-                            { text: 'Track detection', type: SideNavigationItemType.LINK, href: '/case/track' },
-                            { text: 'Mask detection', type: SideNavigationItemType.LINK, href: '/case/mask' },
-                            { text: 'Helmet detection', type: SideNavigationItemType.LINK, href: '/case/helmet' },                                                        
-                            { text: 'Receipt recognition', type: SideNavigationItemType.LINK, href: '/case/receipt' },
-                            { text: 'Insurance report recogniton', type: SideNavigationItemType.LINK, href: '/case/insurance' },
+                            { text: 'Track detection', type: SideNavigationItemType.LINK, href: '/case/demo/track' },
+                            { text: 'Mask detection', type: SideNavigationItemType.LINK, href: '/case/demo/mask' },
+                            { text: 'Helmet detection', type: SideNavigationItemType.LINK, href: '/case/demo/helmet' },                                                        
+                            { text: 'Receipt recognition', type: SideNavigationItemType.LINK, href: '/case/demo/receipt' },
+                            { text: 'Insurance report recogniton', type: SideNavigationItemType.LINK, href: '/case/demo/insurance' },
                         ]
                     },
                     {
                         "type": SideNavigationItemType.SECTION,
                         "text": "Models",
                         "items": [
-                            { text: 'Yolov5', type: SideNavigationItemType.LINK, href: '/' },
+                            { text: 'Yolov5', type: SideNavigationItemType.LINK, href: '/model/yolov5' },
                             { text: 'Paddle', type: SideNavigationItemType.LINK, href: '/' }
                         ]
                     }

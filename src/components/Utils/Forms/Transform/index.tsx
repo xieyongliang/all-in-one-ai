@@ -3,7 +3,7 @@ import Stack from 'aws-northstar/layouts/Stack';
 import FormSection from 'aws-northstar/components/FormSection';
 import FormField from 'aws-northstar/components/FormField';
 import Input from 'aws-northstar/components/Input';
-import SimpleSelct from '../SimpleSelect'
+import SimpleSelect from '../SimpleSelect'
 import Button from 'aws-northstar/components/Button';
 import Inline from 'aws-northstar/layouts/Inline';
 import Container from 'aws-northstar/layouts/Container';
@@ -74,7 +74,7 @@ const TransformForm: FunctionComponent = () => {
         <Stack spacing='s'>
             <FormSection header="Job configuration">
                 <FormField label="Model" controlId="formFieldId1">
-                    <SimpleSelct
+                    <SimpleSelect
                         placeholder="Choose an option"
                         name = 'model'
                         options={optionsModel}
@@ -82,7 +82,7 @@ const TransformForm: FunctionComponent = () => {
                     />
                 </FormField>
                 <FormField label="Instance Type" controlId="formFieldId3">
-                    <SimpleSelct
+                    <SimpleSelect
                         placeholder="Choose an option"
                         name = 'content'
                         options={optionsInstance}
@@ -98,7 +98,7 @@ const TransformForm: FunctionComponent = () => {
             </FormSection>
             <FormSection header="Input configuration">
                 <FormField label="Data type" controlId="formFieldId1">
-                    <SimpleSelct
+                    <SimpleSelect
                         placeholder="Choose an option"
                         name = 'data'
                         options={optionsData}
@@ -110,7 +110,7 @@ const TransformForm: FunctionComponent = () => {
                 </FormField>
 
                 <FormField label="Content type" controlId="formFieldId3">
-                    <SimpleSelct
+                    <SimpleSelect
                         placeholder="Choose an option"
                         name = 'content'
                         options={optionsContent}

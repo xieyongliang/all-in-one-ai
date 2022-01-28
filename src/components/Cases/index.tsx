@@ -1,16 +1,32 @@
 import { FunctionComponent } from 'react';
 import Tabs from 'aws-northstar/components/Tabs';
-import Text from 'aws-northstar/components/Text';
+import {useHistory, useParams} from "react-router-dom";
 import DemoForm from '../Utils/Forms/Demo';
-import {useParams} from "react-router-dom";
+import TrainingJobList from '../Utils/Lists/TrainingJob';
+import ModelList from '../Utils/Lists/Model';
+import EndpointList from '../Utils/Lists/Endpoint';
+import RestapiList from '../Utils/Lists/Restapi';
+import ComponentList from '../Utils/Lists/Component';
+import DeploymentList from '../Utils/Lists/Deployment';
+import PipelineList from '../Utils/Lists/Pipeline';
 
 interface PathParams {
     name: string;
 }
 
-const Case: FunctionComponent = () => {
-    let params : PathParams = useParams();
+interface CaseProps {
+    activeId: string;
+}
+
+const Case: FunctionComponent<CaseProps> = (props) => {
+    var params : PathParams = useParams();
     var name = params.name
+
+    const history = useHistory();
+
+    const onChange = (activeTabId: string) => {
+        history.push('/case/'+name + '/' + activeTabId)
+    }
 
     const tabs = [
         {
@@ -21,41 +37,41 @@ const Case: FunctionComponent = () => {
         {
             label: 'ML pipelines',
             id: 'pipeline',
-            content: <Text>ML pipelines</Text>
+            content: <PipelineList name = {name} />
         },
         {
             label: 'Training jobs',
-            id: 'training',
-            content: <Text>Training jobs</Text>
+            id: 'trainingjob',
+            content: <TrainingJobList name = {name} />
         },
         {
             label: 'Models',
             id: 'model',
-            content: <Text>Model</Text>
+            content: <ModelList name = {name}/>
         },
         {
             label: 'Endpoints',
             id: 'endpoint',
-            content: <Text>Endpoints</Text>
+            content: <EndpointList name = {name}/>
         },
         {
             label: 'Rest apis',
-            id: 'restapis',
-            content: <Text>Rest apis</Text>
+            id: 'restapi',
+            content: <RestapiList name = {name}/>
         },
         {
             label: 'Greengrass components',
-            id: 'components',
-            content: <Text>Greengrass components</Text>
+            id: 'component',
+            content: <ComponentList name = {name}/>
         },
         {
             label: 'Greengrass deployments',
-            id: 'deployments',
-            content: <Text>Greengrass deployments</Text>
+            id: 'deployment',
+            content: <DeploymentList name = {name}/>
         }
     ];
     return (
-        <Tabs tabs={tabs} variant="container" />
+        <Tabs tabs={tabs} variant="container" activeId={props.activeId} onChange={onChange}/>
     )
 }
 export default Case;
