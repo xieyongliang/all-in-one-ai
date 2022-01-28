@@ -27,7 +27,7 @@ const ModelForm: FunctionComponent = () => {
     return (
         <Form
             header="Create model"
-            description="You can view source to see how components are put together"
+            description="To deploy a model to Amazon SageMaker, first create the model by providing the location of the model artifacts and inference code."
             actions={
                 <div>
                     <Button variant="link">Cancel</Button>

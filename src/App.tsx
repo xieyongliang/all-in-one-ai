@@ -37,8 +37,9 @@ const App = () => {
         <NorthStarThemeProvider>
             <Router>
                 <Switch>
-                    <Route exact path="/trainingjob/:name/form">{withLayout(TrainingJobForm)}</Route>
-                    <Route exact path="/model/:name/form">{withLayout(ModelForm)}</Route>
+                    <Route exact path="/form/:name/trainingjob">{withLayout(TrainingJobForm)}</Route>
+                    <Route exact path="/form/:name/model">{withLayout(ModelForm)}</Route>
+                    <Route exact path="/form/:name/endpoint">{withLayout(ModelForm)}</Route>
                     <Route exact path="/scenarios/ppe">{withLayout(PPE)}</Route>
                     <Route exact path="/model/yolov5">{withLayout(Yolov5)}</Route>
                     <Route exact path="/case/:name/demo">{withLayout(Case, {'activeId':'demo'})}</Route>

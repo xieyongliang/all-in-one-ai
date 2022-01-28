@@ -105,7 +105,7 @@ const TrainingJobForm: FunctionComponent = () => {
     return (
         <Form
             header="Create training job"
-            description="You can view source to see how components are put together"
+            description="When you create a training job, Amazon SageMaker sets up the distributed compute cluster, performs the training, and deletes the cluster when training has completed. The resulting model artifacts are stored in the location you specified when you created the training job."
             actions={
                 <div>
                     <Button variant="link">Cancel</Button>

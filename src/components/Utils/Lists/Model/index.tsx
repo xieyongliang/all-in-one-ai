@@ -51,7 +51,7 @@ const ModelList: FunctionComponent<ModelProps> = (props) => {
     const history = useHistory();
 
     const onCreate = () => {
-        history.push('/model/' + props.name + '/form/')
+        history.push('/form/' + props.name + '/model/')
     }
 
     const tableActions = (

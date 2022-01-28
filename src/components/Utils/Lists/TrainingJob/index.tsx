@@ -75,7 +75,7 @@ const TrainingJobList: FunctionComponent<TrainingJobListProps> = (props) => {
     const history = useHistory();
 
     const onCreate = () => {
-        history.push('/trainingjob/' + props.name + '/form/')
+        history.push('/form/' + props.name + '/trainingjob/')
     }
     
     const tableActions = (
