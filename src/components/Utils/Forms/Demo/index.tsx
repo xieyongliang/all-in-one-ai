@@ -19,27 +19,27 @@ const DemoForm: FunctionComponent<DemoProps> = (props) => {
     if(option === '1')
         return (
                 <Stack>
-                <Heading variant='h4'>{props.name}</Heading>
-                <RadioGroup onChange={onChange}
-                    items={[
-                        <RadioButton value='0' checked={false}>Batch transform</RadioButton>, 
-                        <RadioButton value='1' checked={true}>Realtime inference</RadioButton>                
-                    ]}
-                />
-                <InferenceForm/>
+                    <Heading variant='h4'>{props.name}</Heading>
+                    <RadioGroup onChange={onChange}
+                        items={[
+                            <RadioButton value='0' checked={false}>Batch transform</RadioButton>, 
+                            <RadioButton value='1' checked={true}>Realtime inference</RadioButton>                
+                        ]}
+                    />
+                    <InferenceForm/>
                 </Stack>
         )
     else
         return (
             <Stack>
-            <Heading variant='h4'>{props.name}</Heading>
-            <RadioGroup onChange={onChange}
-                items={[
-                    <RadioButton value='0' checked={true}>Batch transform</RadioButton>, 
-                    <RadioButton value='1' checked={false}>Realtime inference</RadioButton>                
-                ]}
-            />
-            <TransformForm/>
+                <Heading variant='h4'>{props.name}</Heading>
+                <RadioGroup onChange={onChange}
+                    items={[
+                        <RadioButton value='0' checked={true}>Batch transform</RadioButton>, 
+                        <RadioButton value='1' checked={false}>Realtime inference</RadioButton>                
+                    ]}
+                />
+                <TransformForm/>
             </Stack>
     )
 }

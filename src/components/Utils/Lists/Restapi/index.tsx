@@ -4,6 +4,7 @@ import Button from 'aws-northstar/components/Button';
 import Inline from 'aws-northstar/layouts/Inline';
 import ButtonDropdown from 'aws-northstar/components/ButtonDropdown';
 import {Column} from 'react-table'
+import { useHistory } from 'react-router-dom';
 
 interface DataType {
     name: string;
@@ -35,21 +36,21 @@ const columnDefinitions : Column<DataType>[]= [
     },
     {
         id: 'api',
-        width: 100,
-        Header: 'Rest api gateway',
+        width: 150,
+        Header: 'Api gateway',
         accessor: 'api'
     },
     {
-        id: 'Rest api path',
+        id: 'path',
         width: 100,
-        Header: 'Rest api path',
+        Header: 'Api path',
         accessor: 'path'
     }
     ,
     {
-        id: 'Rest api uri',
+        id: 'uri',
         width: 400,
-        Header: 'Rest api uri',
+        Header: 'Api uri',
         accessor: 'uri'
     }
 ];
@@ -65,28 +66,34 @@ const data = [
     }
 ];
 
-const tableActions = (
-    <Inline>
-        <Button onClick={() => alert('Add button clicked')}>
-            Sample code
-        </Button>
-        <ButtonDropdown
-            content="Action"
-                items={[{ text: 'Clone' }, { text: 'Delete' }, { text: 'Add/Edit tags' }]}
-        />        
-        <Button variant='primary' onClick={() => alert('Add button clicked')}>
-            Create
-        </Button>
-    </Inline>
-);
-
 interface RestapiProps {
     name: string;
 }
 
-const RestapiList: FunctionComponent<RestapiProps> = () => {
+const RestapiList: FunctionComponent<RestapiProps> = (props) => {
     const getRowId = React.useCallback(data => data.name, []);
 
+    const history = useHistory();
+
+    const onCreate = () => {
+        history.push('/form/' + props.name + '/restapi')
+    }
+
+    const tableActions = (
+        <Inline>
+            <Button onClick={() => alert('Add button clicked')}>
+                Sample code
+            </Button>
+            <ButtonDropdown
+                content="Action"
+                    items={[{ text: 'Clone' }, { text: 'Delete' }, { text: 'Add/Edit tags' }]}
+            />        
+            <Button variant='primary' onClick={onCreate}>
+                Create
+            </Button>
+        </Inline>
+    );
+    
     return (
         <Table
             actionGroup={tableActions}

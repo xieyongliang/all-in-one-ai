@@ -4,6 +4,7 @@ import Button from 'aws-northstar/components/Button';
 import Inline from 'aws-northstar/layouts/Inline';
 import ButtonDropdown from 'aws-northstar/components/ButtonDropdown';
 import {Column} from 'react-table'
+import { useHistory } from 'react-router-dom';
 
 interface DataType {
     name: string;
@@ -48,32 +49,38 @@ const data = [
     }
 ];
 
-const tableActions = (
-    <Inline>
-        <Button onClick={() => alert('Add button clicked')}>
-            Sample code
-        </Button>
-        <ButtonDropdown
-            content="Action"
-                items={[{ text: 'Clone' }, { text: 'Create endpoint' }, { text: 'Add/Edit tags' }]}
-        />        
-        <Button variant='primary' onClick={() => alert('Add button clicked')}>
-            Create
-        </Button>
-    </Inline>
-);
-
 interface ComponentProps {
     name: string;
 }
 
-const ComponentList: FunctionComponent<ComponentProps> = () => {
+const ComponentList: FunctionComponent<ComponentProps> = (props) => {
     const getRowId = React.useCallback(data => data.name, []);
+
+    const history = useHistory();
+
+    const onCreate = () => {
+        history.push('/form/' + props.name + '/component')
+    }
+
+    const tableActions = (
+        <Inline>
+            <Button onClick={() => alert('Add button clicked')}>
+                Sample code
+            </Button>
+            <ButtonDropdown
+                content="Action"
+                    items={[{ text: 'Clone' }, { text: 'Create endpoint' }, { text: 'Add/Edit tags' }]}
+            />        
+            <Button variant='primary' onClick={onCreate}>
+                Create
+            </Button>
+        </Inline>
+    );    
 
     return (
         <Table
             actionGroup={tableActions}
-            tableTitle='Models'
+            tableTitle='Greengrass components'
             multiSelect={false}
             columnDefinitions={columnDefinitions}
             items={data}

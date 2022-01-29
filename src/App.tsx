@@ -23,6 +23,11 @@ import Yolov5 from './components/Models/Yolov5'
 import PPE from './components/Scenarios/PPE';
 import TrainingJobForm from './components/Utils/Forms/TrainingJob';
 import ModelForm from './components/Utils/Forms/Model';
+import EndpointForm from './components/Utils/Forms/Endpoint';
+import RestapiForm from './components/Utils/Forms/Restapi';
+import ComponentForm from './components/Utils/Forms/Component';
+import DeploymentForm from './components/Utils/Forms/Deployment';
+import PipelineForm from './components/Utils/Forms/Pipeline';
 
 const withLayout = (Component : any, props? : any) => {
     return (
@@ -39,7 +44,11 @@ const App = () => {
                 <Switch>
                     <Route exact path="/form/:name/trainingjob">{withLayout(TrainingJobForm)}</Route>
                     <Route exact path="/form/:name/model">{withLayout(ModelForm)}</Route>
-                    <Route exact path="/form/:name/endpoint">{withLayout(ModelForm)}</Route>
+                    <Route exact path="/form/:name/endpoint">{withLayout(EndpointForm)}</Route>
+                    <Route exact path="/form/:name/restapi">{withLayout(RestapiForm)}</Route>
+                    <Route exact path="/form/:name/component">{withLayout(ComponentForm)}</Route>
+                    <Route exact path="/form/:name/deployment">{withLayout(DeploymentForm)}</Route>
+                    <Route exact path="/form/:name/pipeline">{withLayout(PipelineForm)}</Route>
                     <Route exact path="/scenarios/ppe">{withLayout(PPE)}</Route>
                     <Route exact path="/model/yolov5">{withLayout(Yolov5)}</Route>
                     <Route exact path="/case/:name/demo">{withLayout(Case, {'activeId':'demo'})}</Route>

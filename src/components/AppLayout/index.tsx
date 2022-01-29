@@ -44,11 +44,11 @@ const AppLayout: FunctionComponent = ({ children }) => {
                         "type": SideNavigationItemType.SECTION,
                         "text": "Use cases",
                         "items": [
-                            { text: 'Track detection', type: SideNavigationItemType.LINK, href: '/case/demo/track' },
-                            { text: 'Mask detection', type: SideNavigationItemType.LINK, href: '/case/demo/mask' },
-                            { text: 'Helmet detection', type: SideNavigationItemType.LINK, href: '/case/demo/helmet' },                                                        
-                            { text: 'Receipt recognition', type: SideNavigationItemType.LINK, href: '/case/demo/receipt' },
-                            { text: 'Insurance report recogniton', type: SideNavigationItemType.LINK, href: '/case/demo/insurance' },
+                            { text: 'Track detection', type: SideNavigationItemType.LINK, href: '/case/track/demo' },
+                            { text: 'Mask detection', type: SideNavigationItemType.LINK, href: '/case/mask/demo' },
+                            { text: 'Helmet detection', type: SideNavigationItemType.LINK, href: '/case/helmet/demo' },                                                        
+                            { text: 'Receipt recognition', type: SideNavigationItemType.LINK, href: '/case/receipt/demo' },
+                            { text: 'Insurance report recogniton', type: SideNavigationItemType.LINK, href: '/case/insurance/demo' },
                         ]
                     },
                     {

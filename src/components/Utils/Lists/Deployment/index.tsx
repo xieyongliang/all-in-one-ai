@@ -6,6 +6,7 @@ import Button from 'aws-northstar/components/Button';
 import Inline from 'aws-northstar/layouts/Inline';
 import ButtonDropdown from 'aws-northstar/components/ButtonDropdown';
 import {Column} from 'react-table'
+import { useHistory } from 'react-router-dom';
 
 interface DataType {
     name: string;
@@ -76,32 +77,38 @@ const data = [
     }
 ];
 
-const tableActions = (
-    <Inline>
-        <Button onClick={() => alert('Add button clicked')}>
-            Sample code
-        </Button>
-        <ButtonDropdown
-            content="Action"
-                items={[{ text: 'Clone' }, { text: 'Create rest api' }, { text: 'Stop', disabled: true }, { text: 'Add/Edit tags' }]}
-        />        
-        <Button variant='primary' onClick={() => alert('Add button clicked')}>
-            Create
-        </Button>
-    </Inline>
-);
-
 interface DeploymentProps {
     name: string;
 }
 
-const DeploymentList: FunctionComponent<DeploymentProps> = () => {
+const DeploymentList: FunctionComponent<DeploymentProps> = (props) => {
     const getRowId = React.useCallback(data => data.name, []);
 
+    const history = useHistory();
+
+    const onCreate = () => {
+        history.push('/form/' + props.name + '/deployment')
+    }
+
+    const tableActions = (
+        <Inline>
+            <Button onClick={() => alert('Add button clicked')}>
+                Sample code
+            </Button>
+            <ButtonDropdown
+                content="Action"
+                    items={[{ text: 'Clone' }, { text: 'Create rest api' }, { text: 'Stop', disabled: true }, { text: 'Add/Edit tags' }]}
+            />        
+            <Button variant='primary' onClick={onCreate}>
+                Create
+            </Button>
+        </Inline>
+    );
+    
     return (
         <Table
             actionGroup={tableActions}
-            tableTitle='Models'
+            tableTitle='Greengrass deployments'
             multiSelect={false}
             columnDefinitions={columnDefinitions}
             items={data}

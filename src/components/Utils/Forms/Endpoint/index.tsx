@@ -2,7 +2,7 @@ import React, { FunctionComponent } from 'react';
 import FormSection from 'aws-northstar/components/FormSection';
 import FormField from 'aws-northstar/components/FormField';
 import Input from 'aws-northstar/components/Input';
-import { Form, Button, RadioGroup, RadioButton, Inline } from 'aws-northstar';
+import { Form, Button, RadioGroup, RadioButton, Inline, Text } from 'aws-northstar';
 import { useHistory } from 'react-router-dom'; 
 import SimpleSelect from '../SimpleSelect';
 import {useParams} from "react-router-dom";
@@ -105,19 +105,19 @@ const EndpointForm: FunctionComponent = () => {
     var params : PathParams = useParams();
     var name = params.name
 
-    const [optioonsModel, setOptionsModel] = React.useState('');
+    const [stateModel, setStateModel] = React.useState('');
 
-    const [optioonsInstance, setOptionsInstance] = React.useState('');
+    const [stateInstance, setStateInstance] = React.useState('');
 
-    const [optioonsElastic, setOptionsElastic] = React.useState('');
+    const [stateElastic, setStateElastic] = React.useState('');
 
     const onChange : OnChange = (name: string, value: string) => {
         if(name === 'model')
-            setOptionsModel(value);
+            setStateModel(value);
         if(name === 'instance')
-            setOptionsInstance(value);
+            setStateInstance(value);
         if(name === 'elastic')
-            setOptionsElastic(value);
+            setStateElastic(value);
     }
 
     const onSubmit = () => {
@@ -144,8 +144,8 @@ const EndpointForm: FunctionComponent = () => {
                 <FormField label="Type of endpoint" controlId="formFieldId1">
                 <RadioGroup
                     items={[
-                        <RadioButton value="Provisioned" description='Use this to host a single model in this container.' >Use multiple models</RadioButton>, 
-                        <RadioButton value="Serverless (In Preview)" description='Use this to host multiple models in this container.' >Use multiple models</RadioButton>
+                        <RadioButton value="provisioned" description='Use this to host a single model in this container.' >Provisioned</RadioButton>, 
+                        <RadioButton value="serverless" description='Use this to host multiple models in this container.' >Serverless (In Preview)</RadioButton>
                     ]}
                 />                
                 </FormField>
@@ -185,13 +185,17 @@ const EndpointForm: FunctionComponent = () => {
             <FormSection header="Tags - optional">
                 <Inline>
                     <FormField label="Key" controlId="formFieldId1">
-                        <Input type="text" controlId="formFieldId1" value='1'/>
+                        <Input type="text" controlId="formFieldId1"/>
                     </FormField>
                     <FormField label="Value" controlId="formFieldId1">
-                        <Input type="text" controlId="formFieldId1" value='1'/>
+                        <Inline>
+                            <Input type="text" controlId="formFieldId1"/>
+                        </Inline>
                     </FormField>
-                    <FormField controlId="formFieldId1">
-                        <Button onClick={onRemove}>Remove</Button>
+                    <FormField label="Operation" controlId="formFieldId1">
+                        <Inline>
+                            <Button onClick={onRemove}>Remove</Button>
+                        </Inline>
                     </FormField>
                 </Inline>
                 <Button variant="link">Add tag</Button>

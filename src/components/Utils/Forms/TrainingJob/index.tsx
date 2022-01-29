@@ -2,7 +2,7 @@ import React, { FunctionComponent } from 'react';
 import FormSection from 'aws-northstar/components/FormSection';
 import FormField from 'aws-northstar/components/FormField';
 import Input from 'aws-northstar/components/Input';
-import { Form, Button } from 'aws-northstar';
+import { Form, Button, Inline, Wizard, Stack } from 'aws-northstar';
 import { useHistory } from 'react-router-dom'; 
 import SimpleSelect from '../SimpleSelect';
 import {useParams} from "react-router-dom";
@@ -85,23 +85,133 @@ interface PathParams {
     name: string;
 }
 
-const TrainingJobForm: FunctionComponent = () => {
+interface TrainingJobFormProps {
+    wizard?: boolean;
+}
+
+const TrainingJobForm: FunctionComponent<TrainingJobFormProps> = (props) => {
     const history = useHistory();
 
     var params : PathParams = useParams();
     var name = params.name
 
-    const [optioonsInstance, setOptionsInstance] = React.useState('');
+    const [stateInstance, setStateInstance] = React.useState('');
 
     const onChange : OnChange = (name: string, value: string) => {
         if(name === 'instance')
-            setOptionsInstance(value);
+            setStateInstance(value);
     }
 
     const onSubmit = () => {
         history.push('/case/' + name + '/trainingjob')
     }
 
+    const onRemove = () => {
+    }
+
+    var wizard : boolean
+    if(props.wizard === undefined)
+        wizard = false
+    else
+        wizard = props.wizard
+
+    const showJobSetting = () => {
+        if(!wizard) {
+            return (
+                <FormSection header="Job settings">
+                    <FormField label="job name" controlId="formFieldId1">
+                        <Input type="text" controlId="formFieldId1" />
+                    </FormField>
+                </FormSection>
+            )
+        }
+    }
+
+    const showJobTag = () => {
+        if(!wizard) {
+            return (
+                <FormSection header="Tags - optional">
+                    <Inline>
+                        <FormField label="Key" controlId="formFieldId1">
+                            <Input type="text" controlId="formFieldId1"/>
+                        </FormField>
+                        <FormField label="Value" controlId="formFieldId1">
+                            <Inline>
+                                <Input type="text" controlId="formFieldId1"/>
+                            </Inline>
+                        </FormField>
+                        <FormField label="Operation" controlId="formFieldId1">
+                            <Inline>
+                                <Button onClick={onRemove}>Remove</Button>
+                            </Inline>
+                        </FormField>
+                    </Inline>
+                    <Button variant="link">Add tag</Button>
+                </FormSection>
+            )
+        }
+    }
+
+    const showFormContent = () => {
+        return (
+            <Stack>
+            <FormSection header="Provide container ECR path">
+            <FormField label="Container" controlId="formFieldId1">
+                <Input type="text" controlId="formFieldId1" />
+            </FormField>
+        </FormSection>
+        <FormSection header="Resource configuration">
+            <FormField label="Instance type" controlId="formFieldId1">
+            <SimpleSelect
+                    placeholder="Choose an option"
+                    name = 'instance'
+                    options={optionsInstance}
+                    onChange={onChange}
+                />
+            </FormField>
+            <FormField label="Instance count" controlId="formFieldId1">
+                <Input type="text" controlId="formFieldId1" value='1'/>
+            </FormField>
+            <FormField label="Additional storage volume per instance (GB)" controlId="formFieldId1">
+                <Input type="text" controlId="formFieldId1" value='30'/>
+            </FormField>
+        </FormSection>
+        <FormSection header="Input data configuration">
+            <FormField label="Input data s3uri" controlId="formFieldId1">
+                <Input type="text" controlId="formFieldId1" />
+            </FormField>
+            <FormField label="Images prefix" controlId="formFieldId1">
+                <Input type="text" controlId="formFieldId1" value='images'/>
+            </FormField>
+            <FormField label="Lables prefix" controlId="formFieldId1">
+                <Input type="text" controlId="formFieldId1" value='labels'/>
+            </FormField>
+            <FormField label="Weights prefix" controlId="formFieldId1">
+                <Input type="text" controlId="formFieldId1" value='weights' />
+            </FormField>
+            <FormField label="Cfg prefix" controlId="formFieldId1">
+                <Input type="text" controlId="formFieldId1" value='cfg'/>
+            </FormField>
+        </FormSection>
+        <FormSection header="Output data configuration">
+            <FormField label="Output data s3uri" controlId="formFieldId1">
+                <Input type="text" controlId="formFieldId1" />
+            </FormField>
+        </FormSection>
+            </Stack>
+        )
+    }
+
+    if(wizard) {
+        return (
+            <Stack>
+            {showJobSetting()}
+            {showFormContent()}
+            {showJobTag()}
+            </Stack>
+        )
+    }
+    else
     return (
         <Form
             header="Create training job"
@@ -112,54 +222,9 @@ const TrainingJobForm: FunctionComponent = () => {
                     <Button variant="primary" onClick={onSubmit}>Submit</Button>
                 </div>
             }>            
-            <FormSection header="Job settings">
-                <FormField label="job name" controlId="formFieldId1">
-                    <Input type="text" controlId="formFieldId1" />
-                </FormField>
-            </FormSection>
-            <FormSection header="Provide container ECR path">
-                <FormField label="Container" controlId="formFieldId1">
-                    <Input type="text" controlId="formFieldId1" />
-                </FormField>
-            </FormSection>
-            <FormSection header="Resource configuration">
-                <FormField label="Instance type" controlId="formFieldId1">
-                <SimpleSelect
-                        placeholder="Choose an option"
-                        name = 'instance'
-                        options={optionsInstance}
-                        onChange={onChange}
-                    />
-                </FormField>
-                <FormField label="Instance count" controlId="formFieldId1">
-                    <Input type="text" controlId="formFieldId1" value='1'/>
-                </FormField>
-                <FormField label="Additional storage volume per instance (GB)" controlId="formFieldId1">
-                    <Input type="text" controlId="formFieldId1" value='30'/>
-                </FormField>
-            </FormSection>
-            <FormSection header="Input data configuration">
-                <FormField label="Input data s3uri" controlId="formFieldId1">
-                    <Input type="text" controlId="formFieldId1" />
-                </FormField>
-                <FormField label="Images prefix" controlId="formFieldId1">
-                    <Input type="text" controlId="formFieldId1" value='images'/>
-                </FormField>
-                <FormField label="Lables prefix" controlId="formFieldId1">
-                    <Input type="text" controlId="formFieldId1" value='labels'/>
-                </FormField>
-                <FormField label="Weights prefix" controlId="formFieldId1">
-                    <Input type="text" controlId="formFieldId1" value='weights' />
-                </FormField>
-                <FormField label="Cfg prefix" controlId="formFieldId1">
-                    <Input type="text" controlId="formFieldId1" value='cfg'/>
-                </FormField>
-            </FormSection>
-            <FormSection header="Output data configuration">
-                <FormField label="Output data s3uri" controlId="formFieldId1">
-                    <Input type="text" controlId="formFieldId1" />
-                </FormField>
-            </FormSection>
+            {showJobSetting()}
+            {showFormContent()}
+            {showJobTag()}
         </Form>
     )
 }

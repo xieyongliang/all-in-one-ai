@@ -72,10 +72,11 @@ interface TrainingJobListProps {
 
 const TrainingJobList: FunctionComponent<TrainingJobListProps> = (props) => {
     const getRowId = React.useCallback(data => data.name, []);
+
     const history = useHistory();
 
     const onCreate = () => {
-        history.push('/form/' + props.name + '/trainingjob/')
+        history.push('/form/' + props.name + '/trainingjob')
     }
     
     const tableActions = (
