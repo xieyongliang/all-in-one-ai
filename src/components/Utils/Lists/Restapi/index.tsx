@@ -70,7 +70,7 @@ interface RestapiProps {
     name: string;
 }
 
-const RestapiList: FunctionComponent<RestapiProps> = (props) => {
+const RestApiList: FunctionComponent<RestapiProps> = (props) => {
     const getRowId = React.useCallback(data => data.name, []);
 
     const history = useHistory();
@@ -107,4 +107,4 @@ const RestapiList: FunctionComponent<RestapiProps> = (props) => {
     )
 }
 
-export default RestapiList;
+export default RestApiList;

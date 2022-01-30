@@ -106,6 +106,10 @@ const TrainingJobForm: FunctionComponent<TrainingJobFormProps> = (props) => {
         history.push('/case/' + name + '/trainingjob')
     }
 
+    const onCancel = () => {
+        history.push('/case/' + name + '/trainingjob')
+    }
+
     const onRemove = () => {
     }
 
@@ -115,7 +119,7 @@ const TrainingJobForm: FunctionComponent<TrainingJobFormProps> = (props) => {
     else
         wizard = props.wizard
 
-    const showJobSetting = () => {
+    const renderTrainingJobSetting = () => {
         if(!wizard) {
             return (
                 <FormSection header="Job settings">
@@ -127,7 +131,7 @@ const TrainingJobForm: FunctionComponent<TrainingJobFormProps> = (props) => {
         }
     }
 
-    const showJobTag = () => {
+    const renderTrainingJobTag = () => {
         if(!wizard) {
             return (
                 <FormSection header="Tags - optional">
@@ -152,52 +156,52 @@ const TrainingJobForm: FunctionComponent<TrainingJobFormProps> = (props) => {
         }
     }
 
-    const showFormContent = () => {
+    const renderTrainingJobContent = () => {
         return (
             <Stack>
-            <FormSection header="Provide container ECR path">
-            <FormField label="Container" controlId="formFieldId1">
-                <Input type="text" controlId="formFieldId1" />
-            </FormField>
-        </FormSection>
-        <FormSection header="Resource configuration">
-            <FormField label="Instance type" controlId="formFieldId1">
-            <SimpleSelect
-                    placeholder="Choose an option"
-                    name = 'instance'
-                    options={optionsInstance}
-                    onChange={onChange}
-                />
-            </FormField>
-            <FormField label="Instance count" controlId="formFieldId1">
-                <Input type="text" controlId="formFieldId1" value='1'/>
-            </FormField>
-            <FormField label="Additional storage volume per instance (GB)" controlId="formFieldId1">
-                <Input type="text" controlId="formFieldId1" value='30'/>
-            </FormField>
-        </FormSection>
-        <FormSection header="Input data configuration">
-            <FormField label="Input data s3uri" controlId="formFieldId1">
-                <Input type="text" controlId="formFieldId1" />
-            </FormField>
-            <FormField label="Images prefix" controlId="formFieldId1">
-                <Input type="text" controlId="formFieldId1" value='images'/>
-            </FormField>
-            <FormField label="Lables prefix" controlId="formFieldId1">
-                <Input type="text" controlId="formFieldId1" value='labels'/>
-            </FormField>
-            <FormField label="Weights prefix" controlId="formFieldId1">
-                <Input type="text" controlId="formFieldId1" value='weights' />
-            </FormField>
-            <FormField label="Cfg prefix" controlId="formFieldId1">
-                <Input type="text" controlId="formFieldId1" value='cfg'/>
-            </FormField>
-        </FormSection>
-        <FormSection header="Output data configuration">
-            <FormField label="Output data s3uri" controlId="formFieldId1">
-                <Input type="text" controlId="formFieldId1" />
-            </FormField>
-        </FormSection>
+                <FormSection header="Provide container ECR path">
+                    <FormField label="Container" controlId="formFieldId1">
+                        <Input type="text" controlId="formFieldId1" />
+                    </FormField>
+                </FormSection>
+                <FormSection header="Resource configuration">
+                    <FormField label="Instance type" controlId="formFieldId1">
+                    <SimpleSelect
+                            placeholder="Choose an option"
+                            name = 'instance'
+                            options={optionsInstance}
+                            onChange={onChange}
+                        />
+                    </FormField>
+                    <FormField label="Instance count" controlId="formFieldId1">
+                        <Input type="text" controlId="formFieldId1" value='1'/>
+                    </FormField>
+                    <FormField label="Additional storage volume per instance (GB)" controlId="formFieldId1">
+                        <Input type="text" controlId="formFieldId1" value='30'/>
+                    </FormField>
+                </FormSection>
+                <FormSection header="Input data configuration">
+                    <FormField label="Input data s3uri" controlId="formFieldId1">
+                        <Input type="text" controlId="formFieldId1" />
+                    </FormField>
+                    <FormField label="Images prefix" controlId="formFieldId1">
+                        <Input type="text" controlId="formFieldId1" value='images'/>
+                    </FormField>
+                    <FormField label="Lables prefix" controlId="formFieldId1">
+                        <Input type="text" controlId="formFieldId1" value='labels'/>
+                    </FormField>
+                    <FormField label="Weights prefix" controlId="formFieldId1">
+                        <Input type="text" controlId="formFieldId1" value='weights' />
+                    </FormField>
+                    <FormField label="Cfg prefix" controlId="formFieldId1">
+                        <Input type="text" controlId="formFieldId1" value='cfg'/>
+                    </FormField>
+                </FormSection>
+                <FormSection header="Output data configuration">
+                    <FormField label="Output data s3uri" controlId="formFieldId1">
+                        <Input type="text" controlId="formFieldId1" />
+                    </FormField>
+                </FormSection>
             </Stack>
         )
     }
@@ -205,28 +209,29 @@ const TrainingJobForm: FunctionComponent<TrainingJobFormProps> = (props) => {
     if(wizard) {
         return (
             <Stack>
-            {showJobSetting()}
-            {showFormContent()}
-            {showJobTag()}
+                {renderTrainingJobSetting()}
+                {renderTrainingJobContent()}
+                {renderTrainingJobTag()}
             </Stack>
         )
     }
-    else
-    return (
-        <Form
-            header="Create training job"
-            description="When you create a training job, Amazon SageMaker sets up the distributed compute cluster, performs the training, and deletes the cluster when training has completed. The resulting model artifacts are stored in the location you specified when you created the training job."
-            actions={
-                <div>
-                    <Button variant="link">Cancel</Button>
-                    <Button variant="primary" onClick={onSubmit}>Submit</Button>
-                </div>
-            }>            
-            {showJobSetting()}
-            {showFormContent()}
-            {showJobTag()}
-        </Form>
-    )
+    else {
+        return (
+            <Form
+                header="Create training job"
+                description="When you create a training job, Amazon SageMaker sets up the distributed compute cluster, performs the training, and deletes the cluster when training has completed. The resulting model artifacts are stored in the location you specified when you created the training job."
+                actions={
+                    <div>
+                        <Button variant="link" onClick={onCancel}>Cancel</Button>
+                        <Button variant="primary" onClick={onSubmit}>Submit</Button>
+                    </div>
+                }>            
+                {renderTrainingJobSetting()}
+                {renderTrainingJobContent()}
+                {renderTrainingJobTag()}
+            </Form>
+        )
+    }
 }
 
 export default TrainingJobForm;

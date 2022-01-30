@@ -2,7 +2,7 @@ import React, { FunctionComponent } from 'react';
 import FormSection from 'aws-northstar/components/FormSection';
 import FormField from 'aws-northstar/components/FormField';
 import Input from 'aws-northstar/components/Input';
-import { Form, Button, RadioGroup, RadioButton, Inline, Text } from 'aws-northstar';
+import { Form, Button, RadioGroup, RadioButton, Inline, Text, Stack } from 'aws-northstar';
 import { useHistory } from 'react-router-dom'; 
 import SimpleSelect from '../SimpleSelect';
 import {useParams} from "react-router-dom";
@@ -99,7 +99,11 @@ interface PathParams {
     name: string;
 }
 
-const EndpointForm: FunctionComponent = () => {
+interface EndpointFormProps {
+    wizard?: boolean;
+}
+
+const EndpointForm: FunctionComponent<EndpointFormProps> = (props) => {
     const history = useHistory();
 
     var params : PathParams = useParams();
@@ -124,32 +128,80 @@ const EndpointForm: FunctionComponent = () => {
         history.push('/case/' + name + '/endpoint')
     }
 
+    const onCancel = () => {
+        history.push('/case/' + name + '/endpoint')
+    }
+
     const onRemove = () => {
     }
 
-    return (
-        <Form
-            header="Create endpoint"
-            description="To deploy models to Amazon SageMaker, first create an endpoint. Specify which models to deploy, and the relative traffic weighting and hardware requirements for each. "
-            actions={
-                <div>
-                    <Button variant="link">Cancel</Button>
-                    <Button variant="primary" onClick={onSubmit}>Submit</Button>
-                </div>
-            }>            
-            <FormSection header="Endpoint">
-                <FormField label="Endpooint name" description='Your application uses this name to access this endpoint.' controlId="formFieldId1" hintText='Maximum of 63 alphanumeric characters. Can include hyphens (-), but not spaces. Must be unique within your account in an AWS Region.'>
-                    <Input type="text" controlId="formFieldId1" />
-                </FormField>
-                <FormField label="Type of endpoint" controlId="formFieldId1">
-                <RadioGroup
-                    items={[
-                        <RadioButton value="provisioned" description='Use this to host a single model in this container.' >Provisioned</RadioButton>, 
-                        <RadioButton value="serverless" description='Use this to host multiple models in this container.' >Serverless (In Preview)</RadioButton>
-                    ]}
-                />                
-                </FormField>
-            </FormSection>
+    var wizard : boolean
+    if(props.wizard === undefined)
+        wizard = false
+    else
+        wizard = props.wizard
+
+    const renderEndpointSetting = () => {
+        if(!wizard) {
+            return (
+                <FormSection header="Endpoint setting">
+                    <FormField label="Endpooint name" description='Your application uses this name to access this endpoint.' controlId="formFieldId1" hintText='Maximum of 63 alphanumeric characters. Can include hyphens (-), but not spaces. Must be unique within your account in an AWS Region.'>
+                        <Input type="text" controlId="formFieldId1" />
+                    </FormField>
+                    <FormField label="Type of endpoint" controlId="formFieldId1">
+                        <RadioGroup
+                            items={[
+                                <RadioButton value="provisioned" description='Use this to host a single model in this container.' >Provisioned</RadioButton>, 
+                                <RadioButton value="serverless" description='Use this to host multiple models in this container.' >Serverless (In Preview)</RadioButton>
+                            ]}
+                        />                
+                    </FormField>
+                </FormSection>
+            )
+        }
+        else {
+            return (
+                <FormSection header="Endpoint setting">
+                    <FormField label="Type of endpoint" controlId="formFieldId1">
+                        <RadioGroup
+                            items={[
+                                <RadioButton value="provisioned" description='Use this to host a single model in this container.' >Provisioned</RadioButton>, 
+                                <RadioButton value="serverless" description='Use this to host multiple models in this container.' >Serverless (In Preview)</RadioButton>
+                            ]}
+                        />                
+                    </FormField>
+                </FormSection>
+            )
+        }
+    }
+
+    const renderEndpointTag = () => {
+        if(!wizard) {
+            return (
+                <FormSection header="Tags - optional">
+                    <Inline>
+                        <FormField label="Key" controlId="formFieldId1">
+                            <Input type="text" controlId="formFieldId1"/>
+                        </FormField>
+                        <FormField label="Value" controlId="formFieldId1">
+                            <Inline>
+                                <Input type="text" controlId="formFieldId1"/>
+                            </Inline>
+                        </FormField>
+                        <FormField label="Operation" controlId="formFieldId1">
+                            <Inline>
+                                <Button onClick={onRemove}>Remove</Button>
+                            </Inline>
+                        </FormField>
+                    </Inline>
+                    <Button variant="link">Add tag</Button>
+                </FormSection>
+            )
+        }
+    }
+
+    const renderEndpointFormContent = () => {
+        return (
             <FormSection header="Production variants">
                 <FormField label="Model name" controlId="formFieldId1">
                     <SimpleSelect
@@ -182,26 +234,35 @@ const EndpointForm: FunctionComponent = () => {
                     <Input type="text" controlId="formFieldId1" value='1'/>
                 </FormField>
             </FormSection>
-            <FormSection header="Tags - optional">
-                <Inline>
-                    <FormField label="Key" controlId="formFieldId1">
-                        <Input type="text" controlId="formFieldId1"/>
-                    </FormField>
-                    <FormField label="Value" controlId="formFieldId1">
-                        <Inline>
-                            <Input type="text" controlId="formFieldId1"/>
-                        </Inline>
-                    </FormField>
-                    <FormField label="Operation" controlId="formFieldId1">
-                        <Inline>
-                            <Button onClick={onRemove}>Remove</Button>
-                        </Inline>
-                    </FormField>
-                </Inline>
-                <Button variant="link">Add tag</Button>
-            </FormSection>
-        </Form>
-    )
+        )
+    }
+
+    if(wizard) {
+        return (
+            <Stack>
+                {renderEndpointSetting()}
+                {renderEndpointFormContent()}
+                {renderEndpointTag()}
+            </Stack>
+        )
+    }
+    else {
+        return (
+            <Form
+                header="Create endpoint"
+                description="To deploy models to Amazon SageMaker, first create an endpoint. Specify which models to deploy, and the relative traffic weighting and hardware requirements for each. "
+                actions={
+                    <div>
+                        <Button variant="link" onClick={onCancel}>Cancel</Button>
+                        <Button variant="primary" onClick={onSubmit}>Submit</Button>
+                    </div>
+                }>
+                {renderEndpointSetting()}
+                {renderEndpointFormContent()}
+                {renderEndpointTag()}
+            </Form>
+        )
+    }
 }
 
 export default EndpointForm;

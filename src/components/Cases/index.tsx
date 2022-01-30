@@ -5,9 +5,9 @@ import DemoForm from '../Utils/Forms/Demo';
 import TrainingJobList from '../Utils/Lists/TrainingJob';
 import ModelList from '../Utils/Lists/Model';
 import EndpointList from '../Utils/Lists/Endpoint';
-import RestapiList from '../Utils/Lists/Restapi';
-import ComponentList from '../Utils/Lists/Component';
-import DeploymentList from '../Utils/Lists/Deployment';
+import RestApiList from '../Utils/Lists/RestApi';
+import GreengrassComponentList from '../Utils/Lists/GreengrassComponent';
+import GreengrassDeploymentList from '../Utils/Lists/GreengrassDeployment';
 import PipelineList from '../Utils/Lists/Pipeline';
 
 interface PathParams {
@@ -57,17 +57,17 @@ const Case: FunctionComponent<CaseProps> = (props) => {
         {
             label: 'Rest apis',
             id: 'restapi',
-            content: <RestapiList name = {name}/>
+            content: <RestApiList name = {name}/>
         },
         {
             label: 'Greengrass components',
             id: 'component',
-            content: <ComponentList name = {name}/>
+            content: <GreengrassComponentList name = {name}/>
         },
         {
             label: 'Greengrass deployments',
             id: 'deployment',
-            content: <DeploymentList name = {name}/>
+            content: <GreengrassDeploymentList name = {name}/>
         }
     ];
     return (

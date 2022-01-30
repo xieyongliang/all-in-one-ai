@@ -24,9 +24,9 @@ import PPE from './components/Scenarios/PPE';
 import TrainingJobForm from './components/Utils/Forms/TrainingJob';
 import ModelForm from './components/Utils/Forms/Model';
 import EndpointForm from './components/Utils/Forms/Endpoint';
-import RestapiForm from './components/Utils/Forms/Restapi';
-import ComponentForm from './components/Utils/Forms/Component';
-import DeploymentForm from './components/Utils/Forms/Deployment';
+import RestApiForm from './components/Utils/Forms/RestApi';
+import GreengrassComponentForm from './components/Utils/Forms/GreengrassComponent';
+import GreengrassDeploymentForm from './components/Utils/Forms/GreengrassDeployment';
 import PipelineForm from './components/Utils/Forms/Pipeline';
 
 const withLayout = (Component : any, props? : any) => {
@@ -45,9 +45,9 @@ const App = () => {
                     <Route exact path="/form/:name/trainingjob">{withLayout(TrainingJobForm)}</Route>
                     <Route exact path="/form/:name/model">{withLayout(ModelForm)}</Route>
                     <Route exact path="/form/:name/endpoint">{withLayout(EndpointForm)}</Route>
-                    <Route exact path="/form/:name/restapi">{withLayout(RestapiForm)}</Route>
-                    <Route exact path="/form/:name/component">{withLayout(ComponentForm)}</Route>
-                    <Route exact path="/form/:name/deployment">{withLayout(DeploymentForm)}</Route>
+                    <Route exact path="/form/:name/restapi">{withLayout(RestApiForm)}</Route>
+                    <Route exact path="/form/:name/component">{withLayout(GreengrassComponentForm)}</Route>
+                    <Route exact path="/form/:name/deployment">{withLayout(GreengrassDeploymentForm)}</Route>
                     <Route exact path="/form/:name/pipeline">{withLayout(PipelineForm)}</Route>
                     <Route exact path="/scenarios/ppe">{withLayout(PPE)}</Route>
                     <Route exact path="/model/yolov5">{withLayout(Yolov5)}</Route>
@@ -59,6 +59,7 @@ const App = () => {
                     <Route exact path="/case/:name/restapi">{withLayout(Case,{'activeId':'restapi'})}</Route>
                     <Route exact path="/case/:name/component">{withLayout(Case,{'activeId':'component'})}</Route>
                     <Route exact path="/case/:name/deployment">{withLayout(Case,{'activeId':'deployment'})}</Route>
+                    <Route exact path="/case/:name/pipeline">{withLayout(Case,{'activeId':'pipeline'})}</Route>
                     <Route exact path="/">{withLayout(Dashboard)}</Route>
                 </Switch>
             </Router>

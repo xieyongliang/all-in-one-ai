@@ -81,7 +81,7 @@ interface DeploymentProps {
     name: string;
 }
 
-const DeploymentList: FunctionComponent<DeploymentProps> = (props) => {
+const GreengrassDeploymentList: FunctionComponent<DeploymentProps> = (props) => {
     const getRowId = React.useCallback(data => data.name, []);
 
     const history = useHistory();
@@ -118,4 +118,4 @@ const DeploymentList: FunctionComponent<DeploymentProps> = (props) => {
     )
 }
 
-export default DeploymentList;
+export default GreengrassDeploymentList;

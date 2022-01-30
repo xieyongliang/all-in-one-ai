@@ -2,7 +2,7 @@ import React, { ChangeEvent, FunctionComponent, useState } from 'react';
 import FormSection from 'aws-northstar/components/FormSection';
 import FormField from 'aws-northstar/components/FormField';
 import Input from 'aws-northstar/components/Input';
-import { Form, Button, RadioGroup, RadioButton, Inline, Text } from 'aws-northstar';
+import { Form, Button, RadioGroup, RadioButton, Inline, Stack } from 'aws-northstar';
 import { useHistory } from 'react-router-dom'; 
 import SimpleSelect from '../SimpleSelect';
 import {useParams} from "react-router-dom";
@@ -27,7 +27,11 @@ interface PathParams {
     name: string;
 }
 
-const RestapiForm: FunctionComponent = () => {
+interface RestApiFormProps {
+    wizard?: boolean;
+}
+
+const RestApiForm: FunctionComponent<RestApiFormProps> = (props) => {
     const [optioonsEndpoint, setOptionsEndpoint] = React.useState('');
 
     const [optioonsApi, setOptionsApi] = React.useState('');
@@ -39,11 +43,11 @@ const RestapiForm: FunctionComponent = () => {
             setOptionsApi(value);
     }
 
-    const [option, setOption] = useState('1')
+    const [stateType, setStateType] = useState('1')
 
     const onChangeOption = (event?: ChangeEvent<HTMLInputElement>, value?: string)=>{
         var option : string = value || ''
-        setOption(option)
+        setStateType(option)
     }
 
     const history = useHistory();
@@ -55,20 +59,23 @@ const RestapiForm: FunctionComponent = () => {
         history.push('/case/' + name + '/restapi')
     }
 
+    const onCancel = () => {
+        history.push('/case/' + name + '/restapi')
+    }
+
     const onRemove = () => {
     }
 
-    if(option === '1')
-        return (
-            <Form
-                header="Create restapi"
-                actions={
-                    <div>
-                        <Button variant="link">Cancel</Button>
-                        <Button variant="primary" onClick={onSubmit}>Submit</Button>
-                    </div>
-                }> 
-                <FormSection header="Rest API">
+    var wizard : boolean
+    if(props.wizard === undefined)
+        wizard = false
+    else
+        wizard = props.wizard
+
+    const renderRestApiSetting = () => {
+        if(stateType === '1') {
+            return (
+                <FormSection header="Rest API setting">
                     <FormField label="API Gateway" controlId="formFieldId1">
                         <RadioGroup onChange={onChangeOption}
                             items={[
@@ -89,47 +96,11 @@ const RestapiForm: FunctionComponent = () => {
                         <Input type="text" controlId="formFieldId1" value='/yolov5'/>
                     </FormField>
                 </FormSection>
-                <FormSection header="Production variants">
-                    <FormField label="Endpoint name" controlId="formFieldId1">
-                        <SimpleSelect
-                            placeholder="Choose an option"
-                            name = 'endpoint'
-                            options={optionsEndpoint}
-                            onChange={onChange}
-                        />
-                    </FormField>
-                </FormSection>
-                <FormSection header="Tags - optional">
-                    <Inline>
-                        <FormField label="Key" controlId="formFieldId1">
-                            <Input type="text" controlId="formFieldId1"/>
-                        </FormField>
-                        <FormField label="Value" controlId="formFieldId1">
-                            <Inline>
-                                <Input type="text" controlId="formFieldId1"/>
-                            </Inline>
-                        </FormField>
-                        <FormField label="Operation" controlId="formFieldId1">
-                            <Inline>
-                                <Button onClick={onRemove}>Remove</Button>
-                            </Inline>
-                        </FormField>
-                    </Inline>
-                    <Button variant="link">Add tag</Button>
-                </FormSection>
-            </Form>
-        )
-    else
-        return (
-            <Form
-                header="Create restapi"
-                actions={
-                    <div>
-                        <Button variant="link">Cancel</Button>
-                        <Button variant="primary" onClick={onSubmit}>Submit</Button>
-                    </div>
-                }>            
-                <FormSection header="Rest API">
+            )
+        }
+        else {
+            return (
+                <FormSection header="Rest API setting">
                     <FormField label="API Gateway" controlId="formFieldId1">
                         <RadioGroup onChange={onChangeOption}
                             items={[
@@ -145,16 +116,13 @@ const RestapiForm: FunctionComponent = () => {
                         <Input type="text" controlId="formFieldId1" value='/yolov5'/>
                     </FormField>
                 </FormSection>
-                <FormSection header="Production variants">
-                    <FormField label="Endpoint name" controlId="formFieldId1">
-                        <SimpleSelect
-                            placeholder="Choose an option"
-                            name = 'endpoint'
-                            options={optionsEndpoint}
-                            onChange={onChange}
-                        />
-                    </FormField>
-                </FormSection>
+            )
+        }
+    }
+
+    const renderRestApiTag = () => {
+        if(!wizard) {
+            return (
                 <FormSection header="Tags - optional">
                     <Inline>
                         <FormField label="Key" controlId="formFieldId1">
@@ -173,8 +141,50 @@ const RestapiForm: FunctionComponent = () => {
                     </Inline>
                     <Button variant="link">Add tag</Button>
                 </FormSection>
+            )
+        }
+    }
+
+    const renderRestApiFormContent = () => {
+        return (
+            <FormSection header="Production variants">
+                <FormField label="Endpoint name" controlId="formFieldId1">
+                    <SimpleSelect
+                        placeholder="Choose an option"
+                        name = 'endpoint'
+                        options={optionsEndpoint}
+                        onChange={onChange}
+                    />
+                </FormField>
+            </FormSection>
+        )
+    }
+
+    if(wizard) {
+        return (
+            <Stack>
+                {renderRestApiSetting()}
+                {renderRestApiFormContent()}
+                {renderRestApiTag()}
+            </Stack>
+        )
+    }
+    else {
+        return (
+            <Form
+                header="Create restapi"
+                actions={
+                    <div>
+                        <Button variant="link" onClick={onCancel}>Cancel</Button>
+                        <Button variant="primary" onClick={onSubmit}>Submit</Button>
+                    </div>
+                }> 
+                {renderRestApiSetting()}
+                {renderRestApiFormContent()}
+                {renderRestApiTag()}
             </Form>
         )
+    }
 }
 
-export default RestapiForm;
+export default RestApiForm;

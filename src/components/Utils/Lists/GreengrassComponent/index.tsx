@@ -53,7 +53,7 @@ interface ComponentProps {
     name: string;
 }
 
-const ComponentList: FunctionComponent<ComponentProps> = (props) => {
+const GreengrassComponentList: FunctionComponent<ComponentProps> = (props) => {
     const getRowId = React.useCallback(data => data.name, []);
 
     const history = useHistory();
@@ -90,4 +90,4 @@ const ComponentList: FunctionComponent<ComponentProps> = (props) => {
     )
 }
 
-export default ComponentList;
+export default GreengrassComponentList;
