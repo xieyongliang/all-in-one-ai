@@ -25,8 +25,7 @@
     "web-vitals": "^1.0.1",
     "axios": "latest",
     "uuid": "latest",
-    "react-konva": "latest",
-    "react-iframe": "latest"
+    "react-konva": "latest"
   },
   "scripts": {
     "start": "react-scripts start",

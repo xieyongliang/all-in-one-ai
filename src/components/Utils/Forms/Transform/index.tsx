@@ -56,18 +56,17 @@ const optionsInstance : SelectOption[]= [
 type OnChange = (name: string, value: string) => void
 
 const TransformForm: FunctionComponent = () => {
-    const [optiosnData, setOptionsData] = React.useState('');
-    const [optioonsContent, setOptionsContent] = React.useState('');
-    const [optioonsModel, setOptionsModel] = React.useState('');
-    const [optioonsInstance, setOptionsInstance] = React.useState('');
+    const [stateData, setStateData] = React.useState('');
+    const [stateContent, setStateContent] = React.useState('');
+    const [stateInstance, setStateInstance] = React.useState('');
 
     const onChange : OnChange = (name: string, value: string) => {
         if(name === 'data')
-            setOptionsData(value);
+            setStateData(value);
         if(name === 'content')
-            setOptionsContent(value);
+            setStateContent(value);
         if(name === 'instance')
-            setOptionsInstance(value);
+            setStateInstance(value);
     }
     
     return (

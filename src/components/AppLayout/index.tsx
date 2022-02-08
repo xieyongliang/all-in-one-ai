@@ -28,16 +28,16 @@ const AppLayout: FunctionComponent = ({ children }) => {
     const SideNavigation = useMemo(() => {
         return (
             <SideNavigationBase
-                header={{ text: 'Control panel', href: '/' }}
+                header={{ text: 'About All-In-One AI', href: '/' }}
                 items={[
                     {
                         "type": SideNavigationItemType.SECTION,
                         "text": "Scenarios",
                         "items": [
                             { text: 'PPE Detector', type: SideNavigationItemType.LINK, href: '/scenarios/ppe' },
-                            { text: 'Track maintenance', type: SideNavigationItemType.LINK, href: '/' },
-                            { text: 'Intelligent steaming videos', type: SideNavigationItemType.LINK, href: '/' },                                                        
-                            { text: 'Shelf recognition', type: SideNavigationItemType.LINK, href: '/' }
+                            { text: 'Track maintenance', type: SideNavigationItemType.LINK, href: '/scenarios/ppe' },
+                            { text: 'Intelligent steaming videos', type: SideNavigationItemType.LINK, href: '/scenarios/ppe' },                                                        
+                            { text: 'Shelf recognition', type: SideNavigationItemType.LINK, href: '/scenarios/ppe' }
                         ]
                     },
                     {
@@ -56,7 +56,7 @@ const AppLayout: FunctionComponent = ({ children }) => {
                         "text": "Models",
                         "items": [
                             { text: 'Yolov5', type: SideNavigationItemType.LINK, href: '/model/yolov5' },
-                            { text: 'Paddle', type: SideNavigationItemType.LINK, href: '/' }
+                            { text: 'Paddle', type: SideNavigationItemType.LINK, href: '/model/yolov5' }
                         ]
                     }
                 ]}

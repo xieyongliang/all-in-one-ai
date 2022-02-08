@@ -10,13 +10,13 @@ interface DemoProps {
 }
 
 const DemoForm: FunctionComponent<DemoProps> = (props) => {
-    const [option, setOption] = useState('1')
+    const [stateType, setStateType] = useState('1')
 
     const onChange = (event?: ChangeEvent<HTMLInputElement>, value?: string)=>{
         var option : string = value || ''
-        setOption(option)
+        setStateType(option)
     }
-    if(option === '1')
+    if(stateType === '1')
         return (
                 <Stack>
                     <Heading variant='h4'>{props.name}</Heading>
