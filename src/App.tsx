@@ -13,7 +13,6 @@
   See the License for the specific language governing permissions and
   limitations under the License.                                                                              *
  ******************************************************************************************************************** */
-import { ComponentType, FunctionComponent } from 'react';
 import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
 import NorthStarThemeProvider from 'aws-northstar/components/NorthStarThemeProvider';
 import AppLayout from './components/AppLayout';
@@ -28,6 +27,7 @@ import RestApiForm from './components/Utils/Forms/RestApi';
 import GreengrassComponentForm from './components/Utils/Forms/GreengrassComponent';
 import GreengrassDeploymentForm from './components/Utils/Forms/GreengrassDeployment';
 import PipelineForm from './components/Utils/Forms/Pipeline';
+import SampleForm from './components/Utils/Forms/Sample';
 
 const withLayout = (Component : any, props? : any) => {
     return (

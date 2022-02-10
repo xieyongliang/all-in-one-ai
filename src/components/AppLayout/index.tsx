@@ -28,7 +28,7 @@ const AppLayout: FunctionComponent = ({ children }) => {
     const SideNavigation = useMemo(() => {
         return (
             <SideNavigationBase
-                header={{ text: 'About All-In-One AI', href: '/' }}
+                header={{ text: 'Home', href: '/' }}
                 items={[
                     {
                         "type": SideNavigationItemType.SECTION,

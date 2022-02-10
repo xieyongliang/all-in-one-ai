@@ -4,13 +4,14 @@ import RadioGroup from 'aws-northstar/components/RadioGroup';
 import { Stack, Heading } from 'aws-northstar';
 import InferenceForm from '../Inference';
 import TransformForm from '../Transform';
+import SampleForm from '../Sample';
 
 interface DemoProps {
     name: string;
 }
 
 const DemoForm: FunctionComponent<DemoProps> = (props) => {
-    const [stateType, setStateType] = useState('1')
+    const [stateType, setStateType] = useState('2')
 
     const onChange = (event?: ChangeEvent<HTMLInputElement>, value?: string)=>{
         var option : string = value || ''
@@ -23,11 +24,26 @@ const DemoForm: FunctionComponent<DemoProps> = (props) => {
                     <RadioGroup onChange={onChange}
                         items={[
                             <RadioButton value='0' checked={false}>Batch transform</RadioButton>, 
-                            <RadioButton value='1' checked={true}>Realtime inference</RadioButton>                
+                            <RadioButton value='1' checked={true}>Realtime inference with uploaded image</RadioButton>,                
+                            <RadioButton value='2' checked={false}>Realtime inference with sample image</RadioButton>,                
                         ]}
                     />
                     <InferenceForm/>
                 </Stack>
+        )
+    else if(stateType === '0')
+        return (
+            <Stack>
+                <Heading variant='h4'>{props.name}</Heading>
+                <RadioGroup onChange={onChange}
+                    items={[
+                        <RadioButton value='0' checked={true}>Batch transform</RadioButton>, 
+                        <RadioButton value='1' checked={false}>Realtime inference with uploaded image</RadioButton>,                
+                        <RadioButton value='2' checked={false}>Realtime inference with sample image</RadioButton>,                
+                ]}
+                />
+                <TransformForm/>
+            </Stack>
         )
     else
         return (
@@ -35,11 +51,12 @@ const DemoForm: FunctionComponent<DemoProps> = (props) => {
                 <Heading variant='h4'>{props.name}</Heading>
                 <RadioGroup onChange={onChange}
                     items={[
-                        <RadioButton value='0' checked={true}>Batch transform</RadioButton>, 
-                        <RadioButton value='1' checked={false}>Realtime inference</RadioButton>                
-                    ]}
+                        <RadioButton value='0' checked={false}>Batch transform</RadioButton>, 
+                        <RadioButton value='1' checked={false}>Realtime inference with uploaded image</RadioButton>,                
+                        <RadioButton value='2' checked={true}>Realtime inference with sample image</RadioButton>,                
+                ]}
                 />
-                <TransformForm/>
+                <SampleForm/>
             </Stack>
     )
 }

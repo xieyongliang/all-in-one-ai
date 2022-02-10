@@ -23,10 +23,38 @@ module.exports = function(app) {
         var buffer = fs.readFileSync('images/' + filename + '.jpg')
         res.send(buffer)
     })
+    app.get('/sample/:filename', (req, res) => {
+        var filename = req.params.filename;
+        var buffer = fs.readFileSync('samples/' + filename)
+        res.send(buffer)
+    })
+    app.get('/samples', (req, res) => {
+        var items = [];
+
+        fs.readdir('samples', function (err, files) {
+            files.forEach(function (file, index) {
+                items.push('/sample/'+file)
+            });
+            res.send(JSON.stringify(items))
+        });
+    })
     app.get('/inference/image/:filename', (req, res) => {
         var filename = req.params.filename;
         var buffer = fs.readFileSync('images/' + filename + '.jpg')
         options = {headers: {'content-type': 'image/jpg'}}
+        var resuult = axios.post(endpoint, buffer, options)
+          .then((response) => {
+              res.send(response.data)
+          }, (error) => {
+            res.status(400);
+            res.send('client error');
+            console.log(error);
+          });
+    })
+    app.get('/inference/sample/:filename', (req, res) => {
+        var filename = req.params.filename;
+        var buffer = fs.readFileSync('samples/' + filename)
+        options = {headers: {'content-type': 'image/png'}}
         var resuult = axios.post(endpoint, buffer, options)
           .then((response) => {
               res.send(response.data)
