@@ -18,7 +18,7 @@ interface FileMetadata {
 const InferenceForm: FunctionComponent = () => {
     const [filename, setFilename] = useState('')
     const [label, setLabel] = useState<string[]>([])
-    const [bbox, setBbox] = useState<string[][]>([[]])
+    const [bbox, setBbox] = useState<string[][]>([])
 
     const onChange = (files: (File | FileMetadata)[]) => {
         axios.post('/image', files[0])
@@ -35,7 +35,7 @@ const InferenceForm: FunctionComponent = () => {
         axios.get('/inference' + filename)
         .then((response) => {
             var tlabel = [];
-            var tbbox = [[]];
+            var tbbox = [];
             for(let item of response.data) {
                 tlabel.push(item.label)
                 var numbers = item.bbox.toString().split(',');
@@ -57,9 +57,11 @@ const InferenceForm: FunctionComponent = () => {
                         onChange={onChange}
                     ></FileUpload>
                 </Container>
+                <Container title="Start inference">
                     <FormField controlId='button'>
                         <Button variant="primary" onClick={onClick}>Inference</Button>
                     </FormField>
+                </Container>
             </Stack>
         )
     else
@@ -70,11 +72,15 @@ const InferenceForm: FunctionComponent = () => {
                         controlId="file1"
                         onChange={onChange}
                     ></FileUpload>
-                    <URLImage src={filename} label={label} bbox={bbox}/>
                 </Container>
+                <Container title="Start inference">
+                    <FormField controlId='button'>
+                        <URLImage src={filename} label={label} bbox={bbox}/>
+                    </FormField>                
                     <FormField controlId='button'>
                         <Button variant="primary" onClick={onClick}>Inference</Button>
                     </FormField>
+                </Container>
             </Stack>
         )
 }

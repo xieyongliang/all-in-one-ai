@@ -1,17 +1,15 @@
 import React from 'react';
 import { Stage, Layer, Image, Rect, Text } from 'react-konva';
-import Popover from 'aws-northstar/components/Popover';
 
 const uuid = require('uuid');
+
+const colormap = ['CornflowerBlue', 'DarkCyan', 'DarkOrange', 'Fuchsia', 'BlueViolet', 'Brown', 'Crimson', 'BurlyWood', 'Chocolate', 'Coral']
 
 class URLImage extends React.Component {
     state = {
         image: null,
         width: 0,
-        height: 0,
-        label: '',
-        popx: 0,
-        popy: 0
+        height: 0
     };
   
     componentDidMount() {
@@ -42,7 +40,7 @@ class URLImage extends React.Component {
         });
     };
   
-    render() {    
+    render() {
       if(this.props.label.length === 0)
             return (
                 <Stage width={this.state.width} height={this.state.height}>
@@ -58,9 +56,9 @@ class URLImage extends React.Component {
                   </Layer>
                 </Stage>
             );
-        else
+        else {
             return (
-              <Stage width={this.state.width} height={this.state.height}>
+              <Stage width={this.state.width + 500} height={this.state.height}>
                 <Layer>
                   <Image
                       x = {this.props.x}
@@ -70,22 +68,47 @@ class URLImage extends React.Component {
                           this.imageNode = node;
                       }}
                   />
-                  {
-                    this.props.bbox.map((bbox) => (
+                  {                    
+                    this.props.bbox.map((bbox, index) => (
                         <Rect 
                             key = {uuid.v4()}
-                            x = {Math.floor((parseFloat(bbox[0]) - parseFloat(bbox[2]) / 2) * this.state.width)}
-                            y = {Math.floor((parseFloat(bbox[1]) - parseFloat(bbox[3]) / 2) * this.state.height)}
+                            x = {Math.floor(((parseFloat(bbox[0]) - parseFloat(bbox[2]) / 2) * this.state.width))}
+                            y = {Math.floor(((parseFloat(bbox[1]) - parseFloat(bbox[3]) / 2) * this.state.height))}
                             width = {Math.floor( parseFloat(bbox[2]) * this.state.width)}
                             height = {Math.floor( parseFloat(bbox[3]) * this.state.height)}
-                            stroke = '#00A3AA'
+                            stroke = {colormap[index]}
+                        />
+                      )
+                    )
+                  }
+                  {
+                    this.props.bbox.map((bbox, index) => (
+                        <Rect
+                            x = {this.state.width + 60}
+                            y = {index * 20 + 5}
+                            width = {30}
+                            height = {10}
+                            fill = {colormap[index % colormap.length]}
+                        />
+                      )
+                    )
+                  }
+                  {
+                    this.props.bbox.map((bbox, index) => (
+                        <Text
+                            text = {this.props.label[index]}
+                            x = {this.state.width + 100}
+                            y = {index * 20}
+                            fontFamily='Times New Roman'
+                            fontSize={18}
                         />
                       )
                     )
                   }
                 </Layer>
               </Stage>
-          );
+            );
+        }
     }
 }
 

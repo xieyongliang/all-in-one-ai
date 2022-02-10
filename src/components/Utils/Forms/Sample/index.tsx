@@ -1,6 +1,7 @@
 import { FunctionComponent, MouseEventHandler, useEffect, useState } from 'react';
 import ImageList from '@mui/material/ImageList';
 import ImageListItem from '@mui/material/ImageListItem';
+import Tooltip from '@mui/material/Tooltip';
 import axios from 'axios';
 import { Button, Container, FormField, Stack } from 'aws-northstar';
 import URLImage from '../URLImage';
@@ -73,7 +74,7 @@ const SampleForm: FunctionComponent = () => {
         axios.get('/inference/sample/' + filename)
         .then((response) => {
             var tlabel = [];
-            var tbbox = [[]];
+            var tbbox = [];
             for(let item of response.data) {
                 tlabel.push(item.label)
                 var numbers = item.bbox.toString().split(',');
@@ -88,8 +89,8 @@ const SampleForm: FunctionComponent = () => {
 
     if(filename === '')
         return (
-            <Container title = "Select image file from sample list">
-                <Stack>
+            <Stack>
+                <Container title = "Select image file from sample list">
                     <ImageList cols={12} rowHeight={128} gap={10} variant={'quilted'} style={{"height":"550px"}}>
                         {items.map((item, index) => (
                             <ImageListItem key={item} rows={2}>
@@ -103,16 +104,18 @@ const SampleForm: FunctionComponent = () => {
                             </ImageListItem>
                         ))}
                     </ImageList>
+                </Container>
+                <Container title = "Start inference">
                     <FormField controlId='button'>
                         <Button variant="primary" onClick={onInference}>Inference</Button>
                     </FormField>
-                </Stack>
-            </Container>
+                </Container>
+            </Stack>
         )
     else
         return (
-            <Container title = "Select image file from sample list">
-                <Stack>
+            <Stack>
+                <Container title = "Select image file from sample list">
                     <ImageList cols={12} rowHeight={128} gap={10} variant={'quilted'} style={{"height":"550px"}}>
                         {items.map((item, index) => (
                             <ImageListItem key={item} rows={2}>
@@ -126,12 +129,16 @@ const SampleForm: FunctionComponent = () => {
                             </ImageListItem>
                         ))}
                     </ImageList>
-                    <URLImage src={current} label={label} bbox={bbox}/>
+                </Container>
+                <Container title = "Start inference">
+                    <FormField controlId='button'>
+                        <URLImage src={current} label={label} bbox={bbox}/>
+                    </FormField>
                     <FormField controlId='button'>
                         <Button variant="primary" onClick={onInference}>Inference</Button>
                     </FormField>
-                </Stack>
-            </Container>
+                </Container>
+            </Stack>
     )
 }
 
