@@ -30,9 +30,7 @@ const DemoForm: FunctionComponent<DemoProps> = (props) => {
                             ]}
                         />
                     </Container>
-                    <Container title = "Realtime inference with uploaded image">
-                        <InferenceForm/>
-                    </Container>
+                    <InferenceForm/>
                 </Stack>
         )
     else if(stateType === '0')
@@ -48,9 +46,7 @@ const DemoForm: FunctionComponent<DemoProps> = (props) => {
                     ]}
                     />
                 </Container>
-                <Container title = "Batch transform">
-                    <TransformForm/>
-                </Container>
+                <TransformForm/>
             </Stack>
         )
     else
@@ -66,9 +62,7 @@ const DemoForm: FunctionComponent<DemoProps> = (props) => {
                 ]}
                 />
                 </Container>
-                <Container title = "Realtime inference with sample image">
-                    <SampleForm/>
-                </Container>
+                <SampleForm/>
             </Stack>
     )
 }

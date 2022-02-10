@@ -2,7 +2,7 @@ import { FunctionComponent, MouseEventHandler, useEffect, useState } from 'react
 import ImageList from '@mui/material/ImageList';
 import ImageListItem from '@mui/material/ImageListItem';
 import axios from 'axios';
-import { Button, FormField, Stack } from 'aws-northstar';
+import { Button, Container, FormField, Stack } from 'aws-northstar';
 import URLImage from '../URLImage';
 var fs = require('fs');
 
@@ -88,46 +88,50 @@ const SampleForm: FunctionComponent = () => {
 
     if(filename === '')
         return (
-            <Stack>
-                <ImageList cols={12} rowHeight={128} gap={10} variant={'quilted'} style={{"height":"550px"}}>
-                    {items.map((item, index) => (
-                        <ImageListItem key={item} rows={2}>
-                        <Image
-                            src={item}
-                            width={128}
-                            height={256}
-                            current={current}
-                            onClick={onImageClick}
-                        />
-                        </ImageListItem>
-                    ))}
-                </ImageList>
-                <FormField controlId='button'>
-                    <Button variant="primary" onClick={onInference}>Inference</Button>
-                </FormField>
-            </Stack>
+            <Container title = "Select image file from sample list">
+                <Stack>
+                    <ImageList cols={12} rowHeight={128} gap={10} variant={'quilted'} style={{"height":"550px"}}>
+                        {items.map((item, index) => (
+                            <ImageListItem key={item} rows={2}>
+                            <Image
+                                src={item}
+                                width={128}
+                                height={256}
+                                current={current}
+                                onClick={onImageClick}
+                            />
+                            </ImageListItem>
+                        ))}
+                    </ImageList>
+                    <FormField controlId='button'>
+                        <Button variant="primary" onClick={onInference}>Inference</Button>
+                    </FormField>
+                </Stack>
+            </Container>
         )
     else
         return (
-            <Stack>
-                <ImageList cols={12} rowHeight={128} gap={10} variant={'quilted'} style={{"height":"550px"}}>
-                    {items.map((item, index) => (
-                        <ImageListItem key={item} rows={2}>
-                        <Image
-                            src={item}
-                            width={128}
-                            height={256}
-                            current={current}
-                            onClick={onImageClick}
-                        />
-                        </ImageListItem>
-                    ))}
-                </ImageList>
-                <URLImage src={current} label={label} bbox={bbox}/>
-                <FormField controlId='button'>
-                    <Button variant="primary" onClick={onInference}>Inference</Button>
-                </FormField>
-            </Stack>
+            <Container title = "Select image file from sample list">
+                <Stack>
+                    <ImageList cols={12} rowHeight={128} gap={10} variant={'quilted'} style={{"height":"550px"}}>
+                        {items.map((item, index) => (
+                            <ImageListItem key={item} rows={2}>
+                            <Image
+                                src={item}
+                                width={128}
+                                height={256}
+                                current={current}
+                                onClick={onImageClick}
+                            />
+                            </ImageListItem>
+                        ))}
+                    </ImageList>
+                    <URLImage src={current} label={label} bbox={bbox}/>
+                    <FormField controlId='button'>
+                        <Button variant="primary" onClick={onInference}>Inference</Button>
+                    </FormField>
+                </Stack>
+            </Container>
     )
 }
 
