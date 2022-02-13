@@ -4,7 +4,7 @@ import FormField from 'aws-northstar/components/FormField';
 import Input from 'aws-northstar/components/Input';
 import { Form, Button, RadioGroup, RadioButton, Inline, Text, Stack } from 'aws-northstar';
 import { useHistory } from 'react-router-dom'; 
-import SimpleSelect from '../SimpleSelect';
+import SimpleSelect from '../../Utils/SimpleSelect';
 import {useParams} from "react-router-dom";
 
 interface SelectOption {

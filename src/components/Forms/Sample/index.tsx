@@ -4,7 +4,7 @@ import ImageListItem from '@mui/material/ImageListItem';
 import Tooltip from '@mui/material/Tooltip';
 import axios from 'axios';
 import { Button, Container, FormField, Stack } from 'aws-northstar';
-import URLImage from '../URLImage';
+import URLImage from '../../Utils/URLImage';
 var fs = require('fs');
 
 type OnClick = (event: React.MouseEvent<HTMLImageElement>) => void

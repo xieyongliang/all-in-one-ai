@@ -2,9 +2,9 @@ import React, { FunctionComponent } from 'react';
 import FormSection from 'aws-northstar/components/FormSection';
 import FormField from 'aws-northstar/components/FormField';
 import Input from 'aws-northstar/components/Input';
-import { Form, Button, Inline, Wizard, Stack } from 'aws-northstar';
+import { Form, Button, RadioGroup, RadioButton, Inline, Text, Stack } from 'aws-northstar';
 import { useHistory } from 'react-router-dom'; 
-import SimpleSelect from '../SimpleSelect';
+import SimpleSelect from '../../Utils/SimpleSelect';
 import {useParams} from "react-router-dom";
 
 interface SelectOption {
@@ -14,6 +14,10 @@ interface SelectOption {
 }
 
 type OnChange = (name: string, value: string) => void
+
+const optionsModel : SelectOption[] = [
+    { label: 'model-1', value: 'model-1' }
+]
 
 const optionsInstance : SelectOption[]= [
     {
@@ -81,33 +85,51 @@ const optionsInstance : SelectOption[]= [
 
 ];
 
+const optionsElastic : SelectOption[] = [
+    { label: 'none', value: 'none' },
+    { label: 'ml.eia1.medium', value: 'ml.eia1.medium' },
+    { label: 'ml.eia1.large', value: 'ml.eia1.large' },
+    { label: 'ml.eia1.xlarge', value: 'ml.eia1.xlarge' },
+    { label: 'ml.eia2.medium', value: 'ml.eia2.medium' },
+    { label: 'ml.eia2.large', value: 'ml.eia2.large' },
+    { label: 'ml.eia2.xlarge', value: 'ml.eia2.xlarge' },
+]
+
 interface PathParams {
     name: string;
 }
 
-interface TrainingJobFormProps {
+interface EndpointFormProps {
     wizard?: boolean;
 }
 
-const TrainingJobForm: FunctionComponent<TrainingJobFormProps> = (props) => {
+const EndpointForm: FunctionComponent<EndpointFormProps> = (props) => {
     const history = useHistory();
 
     var params : PathParams = useParams();
     var name = params.name
 
+    const [stateModel, setStateModel] = React.useState('');
+
     const [stateInstance, setStateInstance] = React.useState('');
 
+    const [stateElastic, setStateElastic] = React.useState('');
+
     const onChange : OnChange = (name: string, value: string) => {
+        if(name === 'model')
+            setStateModel(value);
         if(name === 'instance')
             setStateInstance(value);
+        if(name === 'elastic')
+            setStateElastic(value);
     }
 
     const onSubmit = () => {
-        history.push('/case/' + name + '/trainingjob')
+        history.push('/case/' + name + '/endpoint')
     }
 
     const onCancel = () => {
-        history.push('/case/' + name + '/trainingjob')
+        history.push('/case/' + name + '/endpoint')
     }
 
     const onRemove = () => {
@@ -119,19 +141,41 @@ const TrainingJobForm: FunctionComponent<TrainingJobFormProps> = (props) => {
     else
         wizard = props.wizard
 
-    const renderTrainingJobSetting = () => {
+    const renderEndpointSetting = () => {
         if(!wizard) {
             return (
-                <FormSection header="Job settings">
-                    <FormField label="job name" controlId="formFieldId1">
+                <FormSection header="Endpoint setting">
+                    <FormField label="Endpooint name" description='Your application uses this name to access this endpoint.' controlId="formFieldId1" hintText='Maximum of 63 alphanumeric characters. Can include hyphens (-), but not spaces. Must be unique within your account in an AWS Region.'>
                         <Input type="text" controlId="formFieldId1" />
+                    </FormField>
+                    <FormField label="Type of endpoint" controlId="formFieldId1">
+                        <RadioGroup
+                            items={[
+                                <RadioButton value="provisioned" description='Use this to host a single model in this container.' >Provisioned</RadioButton>, 
+                                <RadioButton value="serverless" description='Use this to host multiple models in this container.' >Serverless (In Preview)</RadioButton>
+                            ]}
+                        />                
+                    </FormField>
+                </FormSection>
+            )
+        }
+        else {
+            return (
+                <FormSection header="Endpoint setting">
+                    <FormField label="Type of endpoint" controlId="formFieldId1">
+                        <RadioGroup
+                            items={[
+                                <RadioButton value="provisioned" description='Use this to host a single model in this container.' >Provisioned</RadioButton>, 
+                                <RadioButton value="serverless" description='Use this to host multiple models in this container.' >Serverless (In Preview)</RadioButton>
+                            ]}
+                        />                
                     </FormField>
                 </FormSection>
             )
         }
     }
 
-    const renderTrainingJobTag = () => {
+    const renderEndpointTag = () => {
         if(!wizard) {
             return (
                 <FormSection header="Tags - optional">
@@ -156,82 +200,69 @@ const TrainingJobForm: FunctionComponent<TrainingJobFormProps> = (props) => {
         }
     }
 
-    const renderTrainingJobContent = () => {
+    const renderEndpointFormContent = () => {
         return (
-            <Stack>
-                <FormSection header="Provide container ECR path">
-                    <FormField label="Container" controlId="formFieldId1">
-                        <Input type="text" controlId="formFieldId1" />
-                    </FormField>
-                </FormSection>
-                <FormSection header="Resource configuration">
-                    <FormField label="Instance type" controlId="formFieldId1">
+            <FormSection header="Production variants">
+                <FormField label="Model name" controlId="formFieldId1">
                     <SimpleSelect
                             placeholder="Choose an option"
-                            name = 'instance'
+                            name = 'model'
+                            options={optionsModel}
+                            onChange={onChange}
+                        />
+                </FormField>
+                <FormField label="Instance type" controlId="formFieldId1">
+                    <SimpleSelect
+                            placeholder="Choose an option"
+                            name = 'model'
                             options={optionsInstance}
                             onChange={onChange}
                         />
-                    </FormField>
-                    <FormField label="Instance count" controlId="formFieldId1">
-                        <Input type="text" controlId="formFieldId1" value='1'/>
-                    </FormField>
-                    <FormField label="Additional storage volume per instance (GB)" controlId="formFieldId1">
-                        <Input type="text" controlId="formFieldId1" value='30'/>
-                    </FormField>
-                </FormSection>
-                <FormSection header="Input data configuration">
-                    <FormField label="Input data s3uri" controlId="formFieldId1">
-                        <Input type="text" controlId="formFieldId1" />
-                    </FormField>
-                    <FormField label="Images prefix" controlId="formFieldId1">
-                        <Input type="text" controlId="formFieldId1" value='images'/>
-                    </FormField>
-                    <FormField label="Lables prefix" controlId="formFieldId1">
-                        <Input type="text" controlId="formFieldId1" value='labels'/>
-                    </FormField>
-                    <FormField label="Weights prefix" controlId="formFieldId1">
-                        <Input type="text" controlId="formFieldId1" value='weights' />
-                    </FormField>
-                    <FormField label="Cfg prefix" controlId="formFieldId1">
-                        <Input type="text" controlId="formFieldId1" value='cfg'/>
-                    </FormField>
-                </FormSection>
-                <FormSection header="Output data configuration">
-                    <FormField label="Output data s3uri" controlId="formFieldId1">
-                        <Input type="text" controlId="formFieldId1" />
-                    </FormField>
-                </FormSection>
-            </Stack>
+                </FormField>
+                <FormField label="Elastic Inference" controlId="formFieldId1">
+                    <SimpleSelect
+                            placeholder="Choose an option"
+                            name = 'elastic'
+                            options={optionsElastic}
+                            onChange={onChange}
+                        />
+                </FormField>
+                <FormField label="Initial instance count" controlId="formFieldId1">
+                    <Input type="text" controlId="formFieldId1" value='1'/>
+                </FormField>
+                <FormField label="Initial instance weight" controlId="formFieldId1">
+                    <Input type="text" controlId="formFieldId1" value='1'/>
+                </FormField>
+            </FormSection>
         )
     }
 
     if(wizard) {
         return (
             <Stack>
-                {renderTrainingJobSetting()}
-                {renderTrainingJobContent()}
-                {renderTrainingJobTag()}
+                {renderEndpointSetting()}
+                {renderEndpointFormContent()}
+                {renderEndpointTag()}
             </Stack>
         )
     }
     else {
         return (
             <Form
-                header="Create training job"
-                description="When you create a training job, Amazon SageMaker sets up the distributed compute cluster, performs the training, and deletes the cluster when training has completed. The resulting model artifacts are stored in the location you specified when you created the training job."
+                header="Create endpoint"
+                description="To deploy models to Amazon SageMaker, first create an endpoint. Specify which models to deploy, and the relative traffic weighting and hardware requirements for each. "
                 actions={
                     <div>
                         <Button variant="link" onClick={onCancel}>Cancel</Button>
                         <Button variant="primary" onClick={onSubmit}>Submit</Button>
                     </div>
-                }>            
-                {renderTrainingJobSetting()}
-                {renderTrainingJobContent()}
-                {renderTrainingJobTag()}
+                }>
+                {renderEndpointSetting()}
+                {renderEndpointFormContent()}
+                {renderEndpointTag()}
             </Form>
         )
     }
 }
 
-export default TrainingJobForm;
+export default EndpointForm;

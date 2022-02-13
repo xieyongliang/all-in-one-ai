@@ -20,14 +20,13 @@ import Dashboard from './components/Dashboard/index'
 import Case from './components/Cases'
 import Yolov5 from './components/Models/Yolov5'
 import PPE from './components/Scenarios/PPE';
-import TrainingJobForm from './components/Utils/Forms/TrainingJob';
-import ModelForm from './components/Utils/Forms/Model';
-import EndpointForm from './components/Utils/Forms/Endpoint';
-import RestApiForm from './components/Utils/Forms/RestApi';
-import GreengrassComponentForm from './components/Utils/Forms/GreengrassComponent';
-import GreengrassDeploymentForm from './components/Utils/Forms/GreengrassDeployment';
-import PipelineForm from './components/Utils/Forms/Pipeline';
-import SampleForm from './components/Utils/Forms/Sample';
+import TrainingJobForm from './components/Forms/TrainingJob';
+import ModelForm from './components/Forms/Model';
+import EndpointForm from './components/Forms/Endpoint';
+import RestApiForm from './components/Forms/RestApi';
+import GreengrassComponentForm from './components/Forms/GreengrassComponent';
+import GreengrassDeploymentForm from './components/Forms/GreengrassDeployment';
+import PipelineForm from './components/Forms/Pipeline';
 
 const withLayout = (Component : any, props? : any) => {
     return (

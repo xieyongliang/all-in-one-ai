@@ -1,14 +1,14 @@
 import { FunctionComponent } from 'react';
 import Tabs from 'aws-northstar/components/Tabs';
 import {useHistory, useParams} from "react-router-dom";
-import DemoForm from '../Utils/Forms/Demo';
-import TrainingJobList from '../Utils/Lists/TrainingJob';
-import ModelList from '../Utils/Lists/Model';
-import EndpointList from '../Utils/Lists/Endpoint';
-import RestApiList from '../Utils/Lists/RestApi';
-import GreengrassComponentList from '../Utils/Lists/GreengrassComponent';
-import GreengrassDeploymentList from '../Utils/Lists/GreengrassDeployment';
-import PipelineList from '../Utils/Lists/Pipeline';
+import DemoForm from '../Forms/Demo';
+import TrainingJobList from '../Lists/TrainingJob';
+import ModelList from '../Lists/Model';
+import EndpointList from '../Lists/Endpoint';
+import RestApiList from '../Lists/RestApi';
+import GreengrassComponentList from '../Lists/GreengrassComponent';
+import GreengrassDeploymentList from '../Lists/GreengrassDeployment';
+import PipelineList from '../Lists/Pipeline';
 
 interface PathParams {
     name: string;

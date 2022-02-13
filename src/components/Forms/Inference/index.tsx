@@ -2,9 +2,8 @@ import { FunctionComponent, useState } from 'react';
 import FileUpload from 'aws-northstar/components/FileUpload';
 import Container from 'aws-northstar/layouts/Container';
 import axios from 'axios';
-import URLImage from '../URLImage';
+import URLImage from '../../Utils/URLImage';
 import FormField from 'aws-northstar/components/FormField'
-import Inline from 'aws-northstar/layouts/Inline'
 import Button from 'aws-northstar/components/Button'
 import { Stack } from 'aws-northstar';
 

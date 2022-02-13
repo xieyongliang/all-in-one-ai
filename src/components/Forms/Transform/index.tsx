@@ -3,10 +3,9 @@ import Stack from 'aws-northstar/layouts/Stack';
 import FormSection from 'aws-northstar/components/FormSection';
 import FormField from 'aws-northstar/components/FormField';
 import Input from 'aws-northstar/components/Input';
-import SimpleSelect from '../SimpleSelect'
+import SimpleSelect from '../../Utils/SimpleSelect'
 import Button from 'aws-northstar/components/Button';
 import Inline from 'aws-northstar/layouts/Inline';
-import Container from 'aws-northstar/layouts/Container';
 
 interface SelectOption {
     label?: string;
