@@ -1,6 +1,7 @@
 import React, { FunctionComponent, ComponentType, useState } from 'react';
 import Select from 'aws-northstar/components/Select';
 import { SvgIconProps } from '@material-ui/core/SvgIcon';
+import { SelectOption } from 'aws-northstar/components/Select/types';
 
 type ButtonIconType =
     | 'add_plus'
@@ -10,15 +11,6 @@ type ButtonIconType =
     | 'refresh'
     | 'settings'
     | ComponentType<SvgIconProps>;
-
-interface SelectOption {
-    label?: string;
-    value?: string;
-    disabled?: boolean;
-    iconName?: ButtonIconType;
-    options?: SelectOption[];
-    group?: string;
-}
 
 type OnChange = (name: string, value: string) => void
 

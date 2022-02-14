@@ -143,6 +143,8 @@ const RestApiForm: FunctionComponent<RestApiFormProps> = (props) => {
                 </FormSection>
             )
         }
+        else
+            return ''
     }
 
     const renderRestApiFormContent = () => {

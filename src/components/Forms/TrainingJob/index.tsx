@@ -129,6 +129,8 @@ const TrainingJobForm: FunctionComponent<TrainingJobFormProps> = (props) => {
                 </FormSection>
             )
         }
+        else
+            return ''
     }
 
     const renderTrainingJobTag = () => {
@@ -154,6 +156,8 @@ const TrainingJobForm: FunctionComponent<TrainingJobFormProps> = (props) => {
                 </FormSection>
             )
         }
+        else
+            return ''
     }
 
     const renderTrainingJobContent = () => {

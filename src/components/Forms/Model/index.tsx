@@ -48,6 +48,8 @@ const ModelForm: FunctionComponent<ModelFormProps> = (props) => {
                 </FormSection>
             )
         }
+        else
+            return ''
     }
 
     const renderModelTag = () => {
@@ -73,6 +75,8 @@ const ModelForm: FunctionComponent<ModelFormProps> = (props) => {
                 </FormSection>
             )
         }
+        else
+            return ''
     }
 
     const renderModelFormContent = () => {

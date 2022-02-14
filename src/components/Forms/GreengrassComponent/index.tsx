@@ -67,6 +67,8 @@ const GreengrassComponentForm: FunctionComponent<GreengrassComponentFormProps> =
                 </FormSection>
             )
         }
+        else
+            return ''
     }
 
     const renderGreengrassTag = () => {

@@ -62,7 +62,7 @@ class URLImage extends React.Component {
     };
   
     render() {
-      if(this.props.label.length === 0)
+      if(this.props.bbox.length === 0)
             return (
                 <Stage width={this.state.width} height={this.state.height}>
                   <Layer>
@@ -93,10 +93,10 @@ class URLImage extends React.Component {
                     this.props.bbox.map((bbox, index) => (
                         <Rect 
                             key = {uuid.v4()}
-                            x = {Math.floor(((parseFloat(bbox[0]) - parseFloat(bbox[2]) / 2) * this.state.width))}
-                            y = {Math.floor(((parseFloat(bbox[1]) - parseFloat(bbox[3]) / 2) * this.state.height))}
-                            width = {Math.floor( parseFloat(bbox[2]) * this.state.width)}
-                            height = {Math.floor( parseFloat(bbox[3]) * this.state.height)}
+                            x = {Math.floor((bbox[0] - bbox[2] / 2) * this.state.width)}
+                            y = {Math.floor((bbox[1] - bbox[3] / 2) * this.state.height)}
+                            width = {Math.floor(bbox[2] * this.state.width)}
+                            height = {Math.floor(bbox[3] * this.state.height)}
                             stroke = {colormap[index]}
                         />
                       )
@@ -117,7 +117,7 @@ class URLImage extends React.Component {
                   {
                     this.props.bbox.map((bbox, index) => (
                         <Text
-                            text = {this.props.label[index]}
+                            text = {this.props.labels[this.props.id[index]]}
                             x = {this.state.width + 100}
                             y = {index * 20}
                             fontFamily='Times New Roman'

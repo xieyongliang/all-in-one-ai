@@ -82,6 +82,8 @@ const GreengrassDeploymentForm: FunctionComponent<GreengrassDeploymentFormProps>
                 </FormSection>
             )
         }
+        else
+            return ''
     }
 
     const renderGreengrassDeploymentTarget = () => {
@@ -149,6 +151,8 @@ const GreengrassDeploymentForm: FunctionComponent<GreengrassDeploymentFormProps>
                 </FormSection>
             )
         }
+        else
+            return ''
     }
 
     const renderGreengrassDeploymentContent = () => {

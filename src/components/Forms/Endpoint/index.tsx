@@ -198,6 +198,8 @@ const EndpointForm: FunctionComponent<EndpointFormProps> = (props) => {
                 </FormSection>
             )
         }
+        else 
+            return ''
     }
 
     const renderEndpointFormContent = () => {

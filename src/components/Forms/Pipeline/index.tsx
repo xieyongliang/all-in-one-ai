@@ -4,13 +4,15 @@ import FormField from 'aws-northstar/components/FormField'
 import Input from 'aws-northstar/components/Input';
 import Container from 'aws-northstar/layouts/Container';
 import { ChangeEvent, FunctionComponent, useState } from 'react';
-import { RadioButton, RadioGroup, Stack } from 'aws-northstar';
+import { Stack } from 'aws-northstar';
 import TrainingJobForm from '../TrainingJob';
 import ModelForm from '../Model';
 import EndpointForm from '../Endpoint';
 import RestApiForm from '../RestApi';
 import GreengrassComponentForm from '../GreengrassComponent';
 import GreengrassDeploymentForm from '../GreengrassDeployment';
+import Radio from '../../Utils/Radio';
+import RadioGroup from '../../Utils/RadioGroup';
 
 interface PathParams {
     name: string;
@@ -23,9 +25,8 @@ interface PipelineFormProps {
 const PipelineForm: FunctionComponent<PipelineFormProps> = (props) => {
     const [stateType, setStateType] = useState('0')
 
-    const onChange = (event?: ChangeEvent<HTMLInputElement>, value?: string)=>{
-        var option : string = value || ''
-        setStateType(option)
+    function onChange (value: string) {
+        setStateType(value)
     }
     
     const history = useHistory();
@@ -50,14 +51,12 @@ const PipelineForm: FunctionComponent<PipelineFormProps> = (props) => {
                     <Input type="text" controlId="formFieldId1" />
                 </FormField>
                 <FormField label="Pipeline type" controlId="formFieldId2">
-                    <RadioGroup onChange={onChange}
-                            items={[
-                                <RadioButton value='0' checked={stateType === '0'}>Both trining and inference and deploy in both cloud and edge</RadioButton>, 
-                                <RadioButton value='1' checked={stateType === '1'}>Both training and inference and deploy only in cloud</RadioButton>,                
-                                <RadioButton value='2' checked={stateType === '2'}>Only inference and deploy in both cloud and edge</RadioButton>,                
-                                <RadioButton value='3' checked={stateType === '3'}>Only inference and deploy only in cloud</RadioButton>                
-                            ]}
-                        />
+                    <RadioGroup onChange={onChange} active={stateType}>
+                        <Radio value={'0'}>Both trining and inference and deploy in both cloud and edge</Radio>
+                        <Radio value={'1'}>Both training and inference and deploy only in cloud</Radio>
+                        <Radio value={'2'}>Only inference and deploy in both cloud and edge</Radio>
+                        <Radio value={'3'}>Only inference and deploy only in cloud</Radio>
+                    </RadioGroup>
                 </FormField>
                 </Stack>
         },
@@ -114,14 +113,12 @@ const PipelineForm: FunctionComponent<PipelineFormProps> = (props) => {
                     <Input type="text" controlId="formFieldId1" />
                 </FormField>
                 <FormField label="Pipeline type" controlId="formFieldId2">
-                    <RadioGroup onChange={onChange}
-                            items={[
-                                <RadioButton value='0' checked={stateType === '0'}>Both trining and inference and deploy in both cloud and edge</RadioButton>, 
-                                <RadioButton value='1' checked={stateType === '1'}>Both training and inference and deploy only in cloud</RadioButton>,                
-                                <RadioButton value='2' checked={stateType === '2'}>Only inference and deploy in both cloud and edge</RadioButton>,                
-                                <RadioButton value='3' checked={stateType === '3'}>Only inference and deploy only in cloud</RadioButton>                
-                            ]}
-                        />
+                    <RadioGroup onChange={onChange} active={stateType}>
+                        <Radio value={'0'}>Both trining and inference and deploy in both cloud and edge</Radio>
+                        <Radio value={'1'}>Both training and inference and deploy only in cloud</Radio>
+                        <Radio value={'2'}>Only inference and deploy in both cloud and edge</Radio>
+                        <Radio value={'3'}>Only inference and deploy only in cloud</Radio>
+                    </RadioGroup>
                 </FormField>
                 </Stack>
         },
@@ -133,14 +130,12 @@ const PipelineForm: FunctionComponent<PipelineFormProps> = (props) => {
                     <Input type="text" controlId="formFieldId1" />
                 </FormField>
                 <FormField label="Pipeline type" controlId="formFieldId2">
-                    <RadioGroup onChange={onChange}
-                            items={[
-                                <RadioButton value='0' checked={stateType === '0'}>Both trining and inference and deploy in both cloud and edge</RadioButton>, 
-                                <RadioButton value='1' checked={stateType === '1'}>Both training and inference and deploy only in cloud</RadioButton>,                
-                                <RadioButton value='2' checked={stateType === '2'}>Only inference and deploy in both cloud and edge</RadioButton>,                
-                                <RadioButton value='3' checked={stateType === '3'}>Only inference and deploy only in cloud</RadioButton>                
-                            ]}
-                        />
+                    <RadioGroup onChange={onChange} active={stateType}>
+                        <Radio value={'0'}>Both trining and inference and deploy in both cloud and edge</Radio>
+                        <Radio value={'1'}>Both training and inference and deploy only in cloud</Radio>
+                        <Radio value={'2'}>Only inference and deploy in both cloud and edge</Radio>
+                        <Radio value={'3'}>Only inference and deploy only in cloud</Radio>
+                    </RadioGroup>
                 </FormField>
                 </Stack>
         },
@@ -183,14 +178,12 @@ const PipelineForm: FunctionComponent<PipelineFormProps> = (props) => {
                     <Input type="text" controlId="formFieldId1" />
                 </FormField>
                 <FormField label="Pipeline type" controlId="formFieldId2">
-                    <RadioGroup onChange={onChange}
-                            items={[
-                                <RadioButton value='0' checked={stateType === '0'}>Both trining and inference and deploy in both cloud and edge</RadioButton>, 
-                                <RadioButton value='1' checked={stateType === '1'}>Both training and inference and deploy only in cloud</RadioButton>,                
-                                <RadioButton value='2' checked={stateType === '2'}>Only inference and deploy in both cloud and edge</RadioButton>,                
-                                <RadioButton value='3' checked={stateType === '3'}>Only inference and deploy only in cloud</RadioButton>                
-                            ]}
-                        />
+                    <RadioGroup onChange={onChange} active={stateType}>
+                        <Radio value={'0'}>Both trining and inference and deploy in both cloud and edge</Radio>
+                        <Radio value={'1'}>Both training and inference and deploy only in cloud</Radio>
+                        <Radio value={'2'}>Only inference and deploy in both cloud and edge</Radio>
+                        <Radio value={'3'}>Only inference and deploy only in cloud</Radio>
+                    </RadioGroup>
                 </FormField>
                 </Stack>
         },
@@ -240,14 +233,12 @@ const PipelineForm: FunctionComponent<PipelineFormProps> = (props) => {
                     <Input type="text" controlId="formFieldId1" />
                 </FormField>
                 <FormField label="Pipeline type" controlId="formFieldId2">
-                    <RadioGroup onChange={onChange}
-                            items={[
-                                <RadioButton value='0' checked={stateType === '0'}>Both trining and inference and deploy in both cloud and edge</RadioButton>, 
-                                <RadioButton value='1' checked={stateType === '1'}>Both training and inference and deploy only in cloud</RadioButton>,                
-                                <RadioButton value='2' checked={stateType === '2'}>Only inference and deploy in both cloud and edge</RadioButton>,                
-                                <RadioButton value='3' checked={stateType === '3'}>Only inference and deploy only in cloud</RadioButton>                
-                            ]}
-                        />
+                    <RadioGroup onChange={onChange} active={stateType}>
+                        <Radio value={'0'}>Both trining and inference and deploy in both cloud and edge</Radio>
+                        <Radio value={'1'}>Both training and inference and deploy only in cloud</Radio>
+                        <Radio value={'2'}>Only inference and deploy in both cloud and edge</Radio>
+                        <Radio value={'3'}>Only inference and deploy only in cloud</Radio>
+                    </RadioGroup>
                 </FormField>
                 </Stack>
         },

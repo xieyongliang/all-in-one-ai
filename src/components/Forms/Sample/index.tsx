@@ -1,10 +1,11 @@
 import { FunctionComponent, MouseEventHandler, useEffect, useState } from 'react';
 import ImageList from '@mui/material/ImageList';
 import ImageListItem from '@mui/material/ImageListItem';
-import Tooltip from '@mui/material/Tooltip';
 import axios from 'axios';
-import { Button, Container, FormField, Stack } from 'aws-northstar';
+import { Button, Container, FormField, Inline, Modal, Stack } from 'aws-northstar';
 import URLImage from '../../Utils/URLImage';
+import ImageAnnotate from '../../Utils/Annotate';
+
 var fs = require('fs');
 
 type OnClick = (event: React.MouseEvent<HTMLImageElement>) => void
@@ -45,15 +46,18 @@ const SampleForm: FunctionComponent = () => {
     const [items, setItems] = useState<string[]>([])
     const [current, setCurrent] = useState('')
     const [filename, setFilename] = useState('')
-    const [label, setLabel] = useState<string[]>([])
-    const [bbox, setBbox] = useState<string[][]>([[]])
+    const [id, setId] = useState<number[]>([])
+    const [bbox, setBbox] = useState<number[][]>([[]])
+    const [visible, setVisible] = useState(false);
+    var labels = ['squat', 'aluminothermic weld (atw)', 'tri metal weld (tmw)', 'fishplate joint (fj)', 'grinding marks', 'head check error', 'insulated rail joint (irj)', 'flash butt weld (fbw)', 'corrugation', 'rail head anomaly']
     
     const onImageClick = (event: React.MouseEvent<HTMLImageElement>) => {
         const src = event.currentTarget.src
         const filename = src.substring(src.lastIndexOf('/') + 1)
         setCurrent(src)
         setFilename(filename)
-        setLabel([]);
+        setId([]);
+        setBbox([]);
     }
 
     useEffect(() => {
@@ -73,20 +77,52 @@ const SampleForm: FunctionComponent = () => {
     const onInference = () => {
         axios.get('/inference/sample/' + filename)
         .then((response) => {
-            var tlabel = [];
-            var tbbox = [];
+            var tbbox : number[][] = [];
+            var tid = [];
             for(let item of response.data) {
-                tlabel.push(item.label)
-                var numbers = item.bbox.toString().split(',');
-                tbbox.push(numbers);
+                var numbers = item.split(' ');
+                tid.push(parseInt(item[0]));
+                var box : number[] = [];
+                box.push(parseFloat(numbers[1]));
+                box.push(parseFloat(numbers[2]));
+                box.push(parseFloat(numbers[3]));
+                box.push(parseFloat(numbers[4]));
+                tbbox.push(box);
             }
-            setLabel(tlabel);
+            setId(tid);
             setBbox(tbbox);
         }, (error) => {
             console.log(error);
         });
     }
+    
+    const onAnnotate = () => {
+        setVisible(true);
+    }
 
+    if(visible) {
+        var annotationData : string[] = [];
+        var index = 0;
+        bbox.forEach(item => {
+            var annotation : string = id[index] + ' ' + item[0] + ' ' + item[1] + ' ' + item[2] + ' ' + item[3] + '\r';
+            annotationData.push(annotation);
+            index++;
+        });
+        var labelsData : string[] = [];
+        labels.forEach(label => {
+            labelsData.push(label + '\r');
+        })
+        
+        return (
+            <Container title = "Image annotation">
+                <ImageAnnotate imageUri={current} labelsData={labelsData} annotationData={annotationData}/>
+                <FormField controlId='button'>
+                    <Button variant="primary" onClick={()=>setVisible(false)}>Close</Button>
+                </FormField>
+            </Container>
+        )
+    }
+    
     if(filename === '')
         return (
             <Stack>
@@ -132,11 +168,16 @@ const SampleForm: FunctionComponent = () => {
                 </Container>
                 <Container title = "Start inference">
                     <FormField controlId='button'>
-                        <URLImage src={current} label={label} bbox={bbox}/>
+                        <URLImage src={current} labels={labels} id={id} bbox={bbox}/>
                     </FormField>
-                    <FormField controlId='button'>
-                        <Button variant="primary" onClick={onInference}>Inference</Button>
-                    </FormField>
+                    <Inline>
+                        <FormField controlId='button'>
+                            <Button variant="primary" onClick={onInference}>Inference</Button>
+                        </FormField>
+                        <FormField controlId='button'>
+                            <Button onClick={onAnnotate}>Annotate</Button>
+                        </FormField>
+                    </Inline>
                 </Container>
             </Stack>
     )
