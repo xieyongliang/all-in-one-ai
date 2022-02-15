@@ -7,7 +7,7 @@ import FormField from 'aws-northstar/components/FormField'
 import Button from 'aws-northstar/components/Button'
 import { Inline, Stack } from 'aws-northstar';
 import ImageAnnotate from '../../Utils/Annotate';
-import { threadId } from 'worker_threads';
+import {LABELS, COLORS} from '../../Data/data';
 
 interface FileMetadata {
     name: string;
@@ -18,9 +18,9 @@ interface FileMetadata {
 
 const InferenceForm: FunctionComponent = () => {
     const [filename, setFilename] = useState('')
-    const [visible, setVisible] = useState(false);
     const [id, setId] = useState<number[]>([])
     const [bbox, setBbox] = useState<number[][]>([])
+    const [visibleAnnotate, setVisibleAnnotate] = useState(false);
     var labels = ['squat', 'aluminothermic weld (atw)', 'tri metal weld (tmw)', 'fishplate joint (fj)', 'grinding marks', 'head check error', 'insulated rail joint (irj)', 'flash butt weld (fbw)', 'corrugation', 'rail head anomaly']
 
     const onChange = (files: (File | FileMetadata)[]) => {
@@ -58,10 +58,10 @@ const InferenceForm: FunctionComponent = () => {
     }
 
     const onAnnotate = () => {
-        setVisible(true);
+        setVisibleAnnotate(true);
     }
 
-    if(visible) {
+    if(visibleAnnotate) {
         var annotationData : string[] = [];
         var index = 0;
         bbox.forEach(item => {
@@ -76,9 +76,9 @@ const InferenceForm: FunctionComponent = () => {
         
         return (
             <Container title = "Image annotation">
-                <ImageAnnotate imageUri={filename} labelsData={labelsData} annotationData={annotationData}/>
+                <ImageAnnotate imageUri={filename} labelsData={labelsData} annotationData={annotationData} colorData={COLORS}/>
                 <FormField controlId='button'>
-                    <Button variant="primary" onClick={()=>setVisible(false)}>Close</Button>
+                    <Button variant="primary" onClick={()=>setVisibleAnnotate(false)}>Close</Button>
                 </FormField>
             </Container>
         )
@@ -95,7 +95,7 @@ const InferenceForm: FunctionComponent = () => {
                 </Container>
                 <Container title="Start inference">
                     <FormField controlId='button'>
-                        <Button variant="primary" onClick={onInference}>Inference</Button>
+                        <Button variant="primary" onClick={onInference} disabled={filename === ''}>Inference</Button>
                     </FormField>
                 </Container>
             </Stack>
@@ -111,14 +111,14 @@ const InferenceForm: FunctionComponent = () => {
                 </Container>
                 <Container title="Start inference">
                     <FormField controlId='button'>
-                        <URLImage src={filename} labels={labels} id={id} bbox={bbox}/>
+                        <URLImage src={filename} colors={COLORS} labels={labels} id={id} bbox={bbox}/>
                     </FormField>          
                     <Inline>      
                         <FormField controlId='button'>
-                            <Button variant="primary" onClick={onInference}>Inference</Button>
+                            <Button variant="primary" onClick={onInference} disabled={filename === ''}>Inference</Button>
                         </FormField>
                         <FormField controlId='button'>
-                                <Button onClick={onAnnotate}>Annotate</Button>
+                                <Button onClick={onAnnotate} disabled={bbox.length === 0}>Annotate</Button>
                         </FormField>
                     </Inline>
                 </Container>

@@ -5,6 +5,7 @@ import axios from 'axios';
 import { Button, Container, FormField, Inline, Modal, Stack } from 'aws-northstar';
 import URLImage from '../../Utils/URLImage';
 import ImageAnnotate from '../../Utils/Annotate';
+import {LABELS, COLORS} from '../../Data/data';
 
 var fs = require('fs');
 
@@ -47,9 +48,8 @@ const SampleForm: FunctionComponent = () => {
     const [current, setCurrent] = useState('')
     const [filename, setFilename] = useState('')
     const [id, setId] = useState<number[]>([])
-    const [bbox, setBbox] = useState<number[][]>([[]])
-    const [visible, setVisible] = useState(false);
-    var labels = ['squat', 'aluminothermic weld (atw)', 'tri metal weld (tmw)', 'fishplate joint (fj)', 'grinding marks', 'head check error', 'insulated rail joint (irj)', 'flash butt weld (fbw)', 'corrugation', 'rail head anomaly']
+    const [bbox, setBbox] = useState<number[][]>([])
+    const [visibleAnnotate, setVisibleAnnotate] = useState(false);
     
     const onImageClick = (event: React.MouseEvent<HTMLImageElement>) => {
         const src = event.currentTarget.src
@@ -81,6 +81,7 @@ const SampleForm: FunctionComponent = () => {
             var tid = [];
             for(let item of response.data) {
                 var numbers = item.split(' ');
+                console.log(item[0]);
                 tid.push(parseInt(item[0]));
                 var box : number[] = [];
                 box.push(parseFloat(numbers[1]));
@@ -97,10 +98,10 @@ const SampleForm: FunctionComponent = () => {
     }
     
     const onAnnotate = () => {
-        setVisible(true);
+        setVisibleAnnotate(true);
     }
 
-    if(visible) {
+    if(visibleAnnotate) {
         var annotationData : string[] = [];
         var index = 0;
         bbox.forEach(item => {
@@ -109,15 +110,15 @@ const SampleForm: FunctionComponent = () => {
             index++;
         });
         var labelsData : string[] = [];
-        labels.forEach(label => {
+        LABELS.forEach(label => {
             labelsData.push(label + '\r');
         })
         
         return (
             <Container title = "Image annotation">
-                <ImageAnnotate imageUri={current} labelsData={labelsData} annotationData={annotationData}/>
+                <ImageAnnotate imageUri={current} labelsData={labelsData} annotationData={annotationData} colorData={COLORS}/>
                 <FormField controlId='button'>
-                    <Button variant="primary" onClick={()=>setVisible(false)}>Close</Button>
+                    <Button variant="primary" onClick={()=>setVisibleAnnotate(false)}>Close</Button>
                 </FormField>
             </Container>
         )
@@ -143,7 +144,7 @@ const SampleForm: FunctionComponent = () => {
                 </Container>
                 <Container title = "Start inference">
                     <FormField controlId='button'>
-                        <Button variant="primary" onClick={onInference}>Inference</Button>
+                        <Button variant="primary" onClick={onInference} disabled={filename === ''}>Inference</Button>
                     </FormField>
                 </Container>
             </Stack>
@@ -168,14 +169,14 @@ const SampleForm: FunctionComponent = () => {
                 </Container>
                 <Container title = "Start inference">
                     <FormField controlId='button'>
-                        <URLImage src={current} labels={labels} id={id} bbox={bbox}/>
+                        <URLImage src={current} colors={COLORS} labels={LABELS} id={id} bbox={bbox}/>
                     </FormField>
                     <Inline>
                         <FormField controlId='button'>
-                            <Button variant="primary" onClick={onInference}>Inference</Button>
+                            <Button variant="primary" onClick={onInference} disabled={filename === ''}>Inference</Button>
                         </FormField>
                         <FormField controlId='button'>
-                            <Button onClick={onAnnotate}>Annotate</Button>
+                            <Button onClick={onAnnotate} disabled={bbox.length === 0}>Annotate</Button>
                         </FormField>
                     </Inline>
                 </Container>

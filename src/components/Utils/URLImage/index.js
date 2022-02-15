@@ -3,29 +3,6 @@ import { Stage, Layer, Image, Rect, Text } from 'react-konva';
 
 const uuid = require('uuid');
 
-const colormap = [
-    '#ff3838',
-    '#ff9d97',
-    '#ff701f',
-    '#ffb21d',
-    '#cff231',
-    '#48f90a',
-    '#92cc17',
-    '#3ddb86',
-    '#1a9334',
-    '#00d4bb',
-    '#2c99a8',
-    '#00c2ff',
-    '#344593',
-    '#6473ff',
-    '#0018ec',
-    '#8438ff',
-    '#520085',
-    '#cb38ff',
-    '#ff95c8',
-    '#ff37c7'
-]
-
 class URLImage extends React.Component {
     state = {
         image: null,
@@ -97,7 +74,7 @@ class URLImage extends React.Component {
                             y = {Math.floor((bbox[1] - bbox[3] / 2) * this.state.height)}
                             width = {Math.floor(bbox[2] * this.state.width)}
                             height = {Math.floor(bbox[3] * this.state.height)}
-                            stroke = {colormap[index]}
+                            stroke = {this.props.colors[this.props.id[index]]}
                         />
                       )
                     )
@@ -109,7 +86,7 @@ class URLImage extends React.Component {
                             y = {index * 20 + 5}
                             width = {30}
                             height = {10}
-                            fill = {colormap[index % colormap.length]}
+                            fill = {this.props.colors[this.props.id[index] % this.props.colors.length]}
                         />
                       )
                     )

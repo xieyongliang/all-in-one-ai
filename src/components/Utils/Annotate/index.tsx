@@ -17,6 +17,7 @@ import axios from 'axios';
 import { LabelType } from '../../../data/enums/LabelType';
 import { AnnotationFormatType } from '../../../data/enums/AnnotationFormatType';
 import { ImporterSpecData } from '../../../data/ImporterSpecData';
+import { LabelsSelector } from '../../../store/selectors/LabelsSelector';
 
 interface IProps {
     updateActiveImageIndexAction: (activeImageIndex: number) => any;
@@ -33,6 +34,7 @@ interface IProps {
     updateImageData: (imageData: ImageData[]) => any;
     updateFirstLabelCreatedFlag: (firstLabelCreatedFlag: boolean) => any;
     updateProjectData: (projectData: ProjectData) => any;
+    updateLabels: (labels: LabelName[]) => any;
     projectType: ProjectType;
     windowSize: ISize;
     ObjectDetectorLoaded: boolean;
@@ -42,6 +44,7 @@ interface IProps {
     imageUri: string;
     labelsData: string[];
     annotationData: string[];
+    colorData: string[];
 }
 
 const ImageAnnotate: React.FC<IProps> = (props: PropsWithChildren<IProps>) => {
@@ -49,11 +52,10 @@ const ImageAnnotate: React.FC<IProps> = (props: PropsWithChildren<IProps>) => {
     const [imageReady, setImageReady] = useState(false)
     const formatType = AnnotationFormatType.YOLO
     const labelType = LabelType.RECT
+    var labelNames = LabelsSelector.getLabelNames()
 
     useEffect(() => {
         var imageFile : File;
-        var labelsFile: File;
-        var annotationFile: File;
         var isMounted = true;
 
         console.log('******************* MOUNTED');
@@ -64,6 +66,27 @@ const ImageAnnotate: React.FC<IProps> = (props: PropsWithChildren<IProps>) => {
         
             console.log('import success');
 
+            labelNames.forEach(label => {
+                console.log('//////' + label.name + ' ' + label.color);
+            })
+
+            var index = 0;
+            props.annotationData.forEach(annotation => {
+                var number = annotation.split(' ');
+                var id = parseInt(number[0]);
+                console.log(id);
+                labelNames[id % props.colorData.length].color = props.colorData[id % props.colorData.length];
+                index++;
+            });
+
+            props.updateLabels(labelNames);
+
+            labelNames = LabelsSelector.getLabelNames()
+
+            labelNames.forEach(label => {
+                console.log('****' + label.name + ' ' + label.color);
+            })
+            
             setImportReady(true);
         }
     
@@ -131,7 +154,8 @@ const mapDispatchToProps = {
     updateProjectData,
     updateActiveImageIndex,
     updateImageData,
-    updateFirstLabelCreatedFlag
+    updateFirstLabelCreatedFlag,
+    updateLabels: updateLabelNames
 };
 
 const mapStateToProps = (state: AppState) => ({
@@ -140,7 +164,7 @@ const mapStateToProps = (state: AppState) => ({
     ObjectDetectorLoaded: state.ai.isObjectDetectorLoaded,
     PoseDetectionLoaded: state.ai.isPoseDetectorLoaded,
     projectData: state.general.projectData,
-    activeLabelType: state.labels.activeLabelType
+    activeLabelType: state.labels.activeLabelType,
 });
 
 export default connect(
