@@ -66,26 +66,17 @@ const ImageAnnotate: React.FC<IProps> = (props: PropsWithChildren<IProps>) => {
         
             console.log('import success');
 
-            labelNames.forEach(label => {
-                console.log('//////' + label.name + ' ' + label.color);
-            })
-
             var index = 0;
             props.annotationData.forEach(annotation => {
                 var number = annotation.split(' ');
                 var id = parseInt(number[0]);
                 console.log(id);
                 labelNames[id % props.colorData.length].color = props.colorData[id % props.colorData.length];
+                labelNames[id].name = props.labelsData[id];
                 index++;
             });
 
             props.updateLabels(labelNames);
-
-            labelNames = LabelsSelector.getLabelNames()
-
-            labelNames.forEach(label => {
-                console.log('****' + label.name + ' ' + label.color);
-            })
             
             setImportReady(true);
         }

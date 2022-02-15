@@ -81,7 +81,6 @@ const SampleForm: FunctionComponent = () => {
             var tid = [];
             for(let item of response.data) {
                 var numbers = item.split(' ');
-                console.log(item[0]);
                 tid.push(parseInt(item[0]));
                 var box : number[] = [];
                 box.push(parseFloat(numbers[1]));
