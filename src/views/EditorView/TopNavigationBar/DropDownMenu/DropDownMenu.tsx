@@ -102,7 +102,7 @@ const DropDownMenu: React.FC<IProps> = ({updatePreventCustomCursorStatusAction})
         if (activeTabIdx !== null) {
             const style: React.CSSProperties = {
                 top: 35,
-                left: activeDropDownAnchor.x,
+                left: 0,
                 height: 40 * data.children.length + 10
             }
             return <div

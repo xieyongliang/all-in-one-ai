@@ -9,6 +9,7 @@ import classNames from 'classnames';
 import { ProjectData } from '../../../store/general/types';
 import { PopupWindowType } from '../../../data/enums/PopupWindowType';
 import { addImageData, updateActiveImageIndex, updateActiveLabelType, updateImageData, updateLabelNames, updateActiveLabelNameId, updateFirstLabelCreatedFlag } from '../../../store/labels/actionCreators';
+import { updatePerClassColorationStatus } from '../../../store/general/actionCreators';
 import { updateActivePopupType, updateProjectData } from '../../../store/general/actionCreators';
 import {ImageData, LabelName} from '../../../store/labels/types';
 import { ImageDataUtil } from '../../../utils/ImageDataUtil';
@@ -25,6 +26,13 @@ interface IProps {
     updateImageDataAction: (imageData: ImageData[]) => any;
     updateLabelNamesAction: (labels: LabelName[]) => any;
     updateActiveLabelTypeAction: (activeLabelType: LabelType) => any;
+    updatePerClassColorationStatusAction: (updatePerClassColoration: boolean) => any;
+    updateActiveImageIndex: (activeImageIndex: number) => any;
+    updateActiveLabelNameId: (activeLabelId: string) => any;
+    updateLabelNames: (labelNames: LabelName[]) => any;
+    updateImageData: (imageData: ImageData[]) => any;
+    updateFirstLabelCreatedFlag: (firstLabelCreatedFlag: boolean) => any;
+    updateProjectData: (projectData: ProjectData) => any;
     projectType: ProjectType;
     windowSize: ISize;
     ObjectDetectorLoaded: boolean;
@@ -64,12 +72,14 @@ const ImageAnnotate: React.FC<IProps> = (props: PropsWithChildren<IProps>) => {
         };
     
         async function init() {
-            updateActiveLabelNameId(null);
-            updateLabelNames([]);
-            updateProjectData({type: null, name: "my-project-name"});
-            updateActiveImageIndex(null);
-            updateImageData([]);
-            updateFirstLabelCreatedFlag(false);    
+            props.updateActiveLabelNameId(null);
+            props.updateLabelNames([]);
+            props.updateProjectData({type: null, name: "my-project-name"});
+            props.updateActiveImageIndex(null);
+            props.updateImageData([]);
+            props.updateFirstLabelCreatedFlag(false);
+
+            props.updatePerClassColorationStatusAction(true)
 
             var response = await axios.get(props.imageUri, {responseType: 'blob'})
             var data = response.data;
@@ -114,7 +124,14 @@ const mapDispatchToProps = {
     updateActivePopupTypeAction: updateActivePopupType,
     updateImageDataAction: updateImageData,
     updateLabelNamesAction: updateLabelNames,
-    updateActiveLabelTypeAction: updateActiveLabelType
+    updateActiveLabelTypeAction: updateActiveLabelType,
+    updatePerClassColorationStatusAction: updatePerClassColorationStatus,
+    updateActiveLabelNameId,
+    updateLabelNames,
+    updateProjectData,
+    updateActiveImageIndex,
+    updateImageData,
+    updateFirstLabelCreatedFlag
 };
 
 const mapStateToProps = (state: AppState) => ({
