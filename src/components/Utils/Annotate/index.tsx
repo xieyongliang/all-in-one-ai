@@ -64,6 +64,13 @@ const ImageAnnotate: React.FC<IProps> = (props: PropsWithChildren<IProps>) => {
         };
     
         async function init() {
+            updateActiveLabelNameId(null);
+            updateLabelNames([]);
+            updateProjectData({type: null, name: "my-project-name"});
+            updateActiveImageIndex(null);
+            updateImageData([]);
+            updateFirstLabelCreatedFlag(false);    
+
             var response = await axios.get(props.imageUri, {responseType: 'blob'})
             var data = response.data;
             imageFile = new File([data], 'image.png');
