@@ -68,10 +68,32 @@ app.get('/inference/sample/:filename', (req, res) => {
         }
     );
 })
+app.get('/file/download', (req, res) => {
+    var uri = decodeURIComponent(req.query['uri']);
+    console.log(uri);
+    axios({
+        url: uri,
+        method: 'GET',
+        responseType: 'arraybuffer', 
+    }).then((response) => {
+        console.log(response.headers)
+        res.setHeader('content-type', response.headers['content-type']);
+        res.send(response.data);
+    });
+})
 app.use(createProxyMiddleware('/model', {
     target: baseUrl + '/model',
     pathRewrite: {
         '^/model': ''
+    },
+    changeOrigin: true,
+    secure: false,
+    ws: false,
+}));
+app.use(createProxyMiddleware('/transformjob', {
+    target: baseUrl + '/transformjob',
+    pathRewrite: {
+        '^/transformjob': ''
     },
     changeOrigin: true,
     secure: false,
