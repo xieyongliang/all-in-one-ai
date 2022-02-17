@@ -5,43 +5,10 @@ import axios from 'axios';
 import { Button, Container, FormField, Inline, Stack } from 'aws-northstar';
 import URLImage from '../../Utils/URLImage';
 import ImageAnnotate from '../../Utils/Annotate';
+import Image from '../../Utils/Image';
 import {LABELS, COLORS} from '../../Data/data';
 
 var fs = require('fs');
-
-type OnClick = (event: React.MouseEvent<HTMLImageElement>) => void
-
-interface ImageProps {
-    src: string;
-    width: number;
-    height: number;
-    current: string;
-    onClick?: OnClick;
-}
-
-const Image: FunctionComponent<ImageProps> = (props) => {
-    if(props.current.endsWith(props.src))
-        return (
-            <img
-                    src={props.src}
-                    width={props.width}
-                    height={props.height}
-                    loading="lazy"
-                    onClick={props.onClick}
-                    style={{"border": "5px solid red"}}
-                />
-        )
-    else
-        return (
-            <img
-                    src={props.src}
-                    width={props.width}
-                    height={props.height}
-                    loading="lazy"
-                    onClick={props.onClick}
-                />
-        )
-}
 
 const SampleForm: FunctionComponent = () => {
     const [items, setItems] = useState<string[]>([])

@@ -51,11 +51,11 @@ const GreengrassDeploymentForm: FunctionComponent<GreengrassDeploymentFormProps>
     }
 
     const onSubmit = () => {
-        history.push('/case/' + name + '/deployment')
+        history.push('/case/' + name + '?tab=deployment')
     }
 
     const onCancel = () => {
-        history.push('/case/' + name + '/deployment')
+        history.push('/case/' + name + '?tab=deployment')
     }
 
     const onRemove = () => {

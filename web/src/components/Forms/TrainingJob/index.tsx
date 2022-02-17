@@ -102,11 +102,11 @@ const TrainingJobForm: FunctionComponent<TrainingJobFormProps> = (props) => {
     }
 
     const onSubmit = () => {
-        history.push('/case/' + name + '/trainingjob')
+        history.push('/case/' + name + '?tab=trainingjob')
     }
 
     const onCancel = () => {
-        history.push('/case/' + name + '/trainingjob')
+        history.push('/case/' + name + '?tab=trainingjob')
     }
 
     const onRemove = () => {

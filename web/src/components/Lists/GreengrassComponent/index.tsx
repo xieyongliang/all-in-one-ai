@@ -59,7 +59,7 @@ const GreengrassComponentList: FunctionComponent<ComponentProps> = (props) => {
     const history = useHistory();
 
     const onCreate = () => {
-        history.push('/form/' + props.name + '/component')
+        history.push('/case/' + props.name + '?tab=component#form')
     }
 
     const tableActions = (

@@ -125,11 +125,11 @@ const EndpointForm: FunctionComponent<EndpointFormProps> = (props) => {
     }
 
     const onSubmit = () => {
-        history.push('/case/' + name + '/endpoint')
+        history.push('/case/' + name + '?tab=endpoint')
     }
 
     const onCancel = () => {
-        history.push('/case/' + name + '/endpoint')
+        history.push('/case/' + name + '?tab=endpoint')
     }
 
     const onRemove = () => {

@@ -22,11 +22,11 @@ const ModelForm: FunctionComponent<ModelFormProps> = (props) => {
     var name = params.name
 
     const onSubmit = () => {
-        history.push('/case/' + name + '/model')
+        history.push('/case/' + name + '?tab=model')
     }
  
     const onCancel = () => {
-        history.push('/case/' + name + '/model')
+        history.push('/case/' + name + '?tab=model')
     }
 
     const onRemove = () => {

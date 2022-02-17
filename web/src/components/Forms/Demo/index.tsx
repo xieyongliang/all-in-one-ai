@@ -6,43 +6,35 @@ import SampleForm from '../Sample';
 import Radio from '../../Utils/Radio';
 import RadioGroup from '../../Utils/RadioGroup';
 import { useParams, useLocation, useHistory } from 'react-router-dom';
+import { PathParams } from '../../Utils/PathParams';
 
-interface PathParams {
-    name: string;
-}
-
-interface DemoProps {
-    name: string;
-}
-
-const DemoForm: FunctionComponent<DemoProps> = (props) => {
+const DemoForm: FunctionComponent = () => {
     const history = useHistory();
 
     var params : PathParams = useParams();
-    var name = params.name;
 
-    const search = new URLSearchParams(useLocation().search);
+    var localtion = useLocation();
+    var hash = localtion.hash.substring(1);
 
-    const [ tab, setTab ] = useState(search.get('tab') !== undefined ? search.get('tab') : 'sample')
+    var type = hash === 'sample' || hash === 'uploaded' || hash === 'transform' ? hash : 'sample'
 
     function onChange (value: string) {
-        history.push('/case/' + name + '/demo?' + 'tab=' + value);
-        setTab(value);
+        history.push('/case/' + params.name + '?tab=demo' + '#' + value);
     }
     
     return (
         <Stack>
-            <Heading variant='h1'>{props.name}</Heading>
+            <Heading variant='h1'>{params.name}</Heading>
             <Container title = "Demo type">
-                <RadioGroup onChange={onChange} active={tab}>
+                <RadioGroup onChange={onChange} active={type}>
 		            <Radio value={'transform'}>Batch transform jobs</Radio>
 		            <Radio value={'uploaded'}>Realtime inference with uploaded image</Radio>
 		            <Radio value={'sample'}>Realtime inference with sample image</Radio>
 		        </RadioGroup>
             </Container>
-            {tab === 'transform' && <TransformJobList name={props.name}/>}
-            {tab === 'uploaded' && <InferenceForm/>}
-            {tab === 'sample' && <SampleForm/>}
+            {type === 'transform' && <TransformJobList/>}
+            {type === 'uploaded' && <InferenceForm/>}
+            {type === 'sample' && <SampleForm/>}
         </Stack>
     )
 }

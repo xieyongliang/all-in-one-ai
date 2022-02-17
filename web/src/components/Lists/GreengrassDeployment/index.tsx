@@ -87,7 +87,7 @@ const GreengrassDeploymentList: FunctionComponent<DeploymentProps> = (props) => 
     const history = useHistory();
 
     const onCreate = () => {
-        history.push('/form/' + props.name + '/deployment')
+        history.push('/case/' + props.name + '?tab=deployment#form')
     }
 
     const tableActions = (

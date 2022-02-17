@@ -6,7 +6,7 @@ import Inline from 'aws-northstar/layouts/Inline';
 import ButtonDropdown from 'aws-northstar/components/ButtonDropdown';
 import Flashbar from 'aws-northstar/components/Flashbar';
 import {Column} from 'react-table'
-import { useHistory } from 'react-router-dom'; 
+import { useHistory, useParams } from 'react-router-dom'; 
 import axios from 'axios';
 import { Container, FormField, Stack } from 'aws-northstar';
 import ImageList from '@mui/material/ImageList';
@@ -14,6 +14,8 @@ import ImageListItem from '@mui/material/ImageListItem';
 import URLImage from '../../Utils/URLImage';
 import {LABELS, COLORS} from '../../Data/data';
 import ImageAnnotate from '../../Utils/Annotate';
+import Image from '../../Utils/Image';
+import { PathParams } from '../../Utils/PathParams';
 
 interface TransformJobItem {
     name: string;
@@ -22,90 +24,7 @@ interface TransformJobItem {
     status?: string;
 }
 
-const columnDefinitions : Column<TransformJobItem>[]= [
-    {
-        id: 'name',
-        width: 200,
-        Header: 'Name',
-        accessor: 'name'
-    },
-    {
-        id: 'creation_time',
-        width: 200,
-        Header: 'Creation time',
-        accessor: 'creation_time'
-    },
-    {
-        id: 'duration',
-        width: 200,
-        Header: 'Duration',
-        accessor: 'duration'
-    },
-    {
-        id: 'status',
-        width: 200,
-        Header: 'Status',
-        accessor: 'status',
-        Cell: ({ row  }) => {
-            if (row && row.original) {
-                const status = row.original.status;
-                switch(status) {
-                    case 'Completed':
-                        return <StatusIndicator  statusType='positive'>Completed</StatusIndicator>;
-                    case 'Failed':
-                        return <StatusIndicator  statusType='negative'>Error</StatusIndicator>;
-                    case 'InProgress':
-                        return <StatusIndicator  statusType='info'>In progress</StatusIndicator>;
-                    case 'Stopped':
-                            return <StatusIndicator  statusType='warning'>Error</StatusIndicator>;
-                    default:
-                        return null;
-                }
-            }
-            return null;
-        }
-    }
-];
-
-interface TransformJobListProps {
-    name: string;
-}
-
-type OnClick = (event: React.MouseEvent<HTMLImageElement>) => void
-
-interface ImageProps {
-    src: string;
-    width: number;
-    height: number;
-    current: string;
-    onClick?: OnClick;
-}
-
-const Image: FunctionComponent<ImageProps> = (props) => {
-    if(props.current.endsWith(props.src))
-        return (
-            <img
-                    src={props.src}
-                    width={props.width}
-                    height={props.height}
-                    loading="lazy"
-                    onClick={props.onClick}
-                    style={{"border": "5px solid red"}}
-                />
-        )
-    else
-        return (
-            <img
-                    src={props.src}
-                    width={props.width}
-                    height={props.height}
-                    loading="lazy"
-                    onClick={props.onClick}
-                />
-        )
-}
-
-const TransformJobList: FunctionComponent<TransformJobListProps> = (props) => {
+const TransformJobList: FunctionComponent = () => {
     const [items, setItems] = useState([])
     const [selectedTransformJob, setSelectedTransformJob] = useState('')
     const [enabledReview, setEnabledReview] = useState(false)
@@ -113,15 +32,14 @@ const TransformJobList: FunctionComponent<TransformJobListProps> = (props) => {
     const [visibleReview, setVisibleReview] = useState(false)
     const [loadingReview, setLoadingReview] = useState(true)
     const [currentImage, setCurrentImage] = useState('')
-    const [currentAnnotation, setCurrentAnnotation] = useState([])
     const [transformJobResult, setTransformJobResult] = useState<any>({})
     const [visibleAnnotate, setVisibleAnnotate] = useState(false);
     const [id, setId] = useState<number[]>([])
     const [bbox, setBbox] = useState<number[][]>([])
 
-    const getRowId = React.useCallback(data => data.name, []);
-
     const history = useHistory();
+
+    var params : PathParams = useParams();
 
     useEffect(() => {
         axios.get('/transformjob')
@@ -137,7 +55,7 @@ const TransformJobList: FunctionComponent<TransformJobListProps> = (props) => {
             console.log(error);
         });
     }, [])
-
+    
     const onImageClick = (event: React.MouseEvent<HTMLImageElement>) => {
         const src = event.currentTarget.src
         setCurrentImage(src)
@@ -166,9 +84,22 @@ const TransformJobList: FunctionComponent<TransformJobListProps> = (props) => {
 
     }
 
+    const onChange = ((id: string, event: any) => {
+        console.log(event)
+        if(event.length > 0) {
+            setSelectedTransformJob(event[0].name)
+            setEnabledReview(true)
+        }
+    }
+)
+
+    const onCreate = () => {
+        history.push('/case/' + params.name + '?tab=demo#review')
+    }
+
     const onReview = () => {
         setVisibleReview(true)
-        axios.get('/transformjob/' + selectedTransformJob + '/review?case=' + props.name)
+        axios.get('/transformjob/' + selectedTransformJob + '/review?case=' + params.name)
             .then((response) => {
             setTransformJobResult(response.data)
             setLoadingReview(false)
@@ -177,23 +108,65 @@ const TransformJobList: FunctionComponent<TransformJobListProps> = (props) => {
         });
     }
 
-    const onCreate = () => {
-        history.push('/form/' + props.name + '/transformjob')
-    }
-
     const onAnnotate = () => {
         setVisibleAnnotate(true);
     }
 
-    const onChange = ((id: string, event: any) => {
-            console.log(event)
-            if(event.length > 0) {
-                setSelectedTransformJob(event[0].name)
-                setEnabledReview(true)
+    
+    const getRowId = React.useCallback(data => data.name, []);
+
+    const columnDefinitions : Column<TransformJobItem>[]= [
+        {
+            id: 'name',
+            width: 200,
+            Header: 'Name',
+            accessor: 'name',
+            Cell: ({ row  }) => {
+                if (row && row.original) {
+                    const name = row.original.name;
+                    return <a href={'/case/' + params.name +'?tab=demo#prop:id=' + name}> {name} </a>;
+                }
+                return null;
+            }
+        },
+        {
+            id: 'creation_time',
+            width: 200,
+            Header: 'Creation time',
+            accessor: 'creation_time'
+        },
+        {
+            id: 'duration',
+            width: 200,
+            Header: 'Duration',
+            accessor: 'duration'
+        },
+        {
+            id: 'status',
+            width: 200,
+            Header: 'Status',
+            accessor: 'status',
+            Cell: ({ row  }) => {
+                if (row && row.original) {
+                    const status = row.original.status;
+                    switch(status) {
+                        case 'Completed':
+                            return <StatusIndicator  statusType='positive'>Completed</StatusIndicator>;
+                        case 'Failed':
+                            return <StatusIndicator  statusType='negative'>Error</StatusIndicator>;
+                        case 'InProgress':
+                            return <StatusIndicator  statusType='info'>In progress</StatusIndicator>;
+                        case 'Stopped':
+                                return <StatusIndicator  statusType='warning'>Error</StatusIndicator>;
+                        default:
+                            return null;
+                    }
+                }
+                return null;
             }
         }
-    )
-    
+    ];
+
     const tableActions = (
         <Inline>
             <Button onClick={onReview} disabled={!enabledReview}>

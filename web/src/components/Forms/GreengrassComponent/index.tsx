@@ -41,11 +41,11 @@ const GreengrassComponentForm: FunctionComponent<GreengrassComponentFormProps> =
     }
 
     const onSubmit = () => {
-        history.push('/case/' + name + '/component')
+        history.push('/case/' + name + '?tab=component')
     }
 
     const onCancel = () => {
-        history.push('/case/' + name + '/component')
+        history.push('/case/' + name + '?tab=component')
     }
 
     const onRemove = () => {

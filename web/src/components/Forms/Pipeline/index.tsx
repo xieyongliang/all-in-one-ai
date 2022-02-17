@@ -35,11 +35,11 @@ const PipelineForm: FunctionComponent<PipelineFormProps> = (props) => {
     var name = params.name
 
     const onSubmit = () => {
-        history.push('/case/' + name + '/pipeline')
+        history.push('/case/' + name + '?tab=pipeline')
     }
 
     const onCancel = () => {
-        history.push('/case/' + name + '/pipeline')
+        history.push('/case/' + name + '?tab=pipeline')
     }
 
     const steps = [

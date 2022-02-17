@@ -56,11 +56,11 @@ const RestApiForm: FunctionComponent<RestApiFormProps> = (props) => {
     var name = params.name
 
     const onSubmit = () => {
-        history.push('/case/' + name + '/restapi')
+        history.push('/case/' + name + '?tab=restapi')
     }
 
     const onCancel = () => {
-        history.push('/case/' + name + '/restapi')
+        history.push('/case/' + name + '?tab=restapi')
     }
 
     const onRemove = () => {

@@ -7,6 +7,7 @@ import { useHistory, useParams } from 'react-router-dom';
 import { Form } from 'aws-northstar';
 import axios from 'axios';
 import Select, { SelectOption } from 'aws-northstar/components/Select';
+import { PathParams } from '../../Utils/PathParams';
 
 const optionsDataType : SelectOption[]= [
     { label: 'S3Prefix', value: 'S3Prefix' },
@@ -43,15 +44,10 @@ const optionsInstanceType : SelectOption[]= [
     }
 ];
 
-interface PathParams {
-    name: string;
-}
-
 const TransformJobForm: FunctionComponent = () => {
     const history = useHistory();
 
     var params : PathParams = useParams();
-    var name = params.name
 
     const [selectedDataType, setSelectedDataType] = useState<SelectOption>({ label: 'S3Prefix', value: 'S3Prefix' });
     const [selectedContentType, setSelectedContentType] = useState<SelectOption>({ label: 'image/png', value: 'image/png' });
@@ -60,14 +56,28 @@ const TransformJobForm: FunctionComponent = () => {
     const [selectedModelName, setSelectedModelName] = useState<SelectOption>({});
     const [instanceCount, setInstanceCount] = useState(1);
     const [maxConcurrentTransforms, setMaxConcurrentTransforms] = useState(1);
-    const [jobName, setJobName] = useState('');
+    const [transformJobName, setTransformJobName] = useState('');
     const [s3InputUri, setS3InputUri] = useState('');
     const [s3OutputUri, setS3OutputUri] = useState('');
 
+    useEffect(() => {
+        axios.get('/model')
+            .then((response) => {
+            var items = []
+            for(let item of response.data) {
+                items.push({label: item.model_name, value: item.model_name})
+            }
+            setOptionsModel(items);
+            console.log(items);
+        }, (error) => {
+            console.log(error);
+        });
+    }, [])
+
     const onChange = ((id: string, event: any) => {
         if(id === 'formFieldIdJobName') {
-            if(event !== jobName)
-                setJobName(event);
+            if(event !== transformJobName)
+            setTransformJobName(event);
         }
         if(id === 'formFieldIdModelName') {
             if(event.target.value !== selectedModelName.value)
@@ -104,26 +114,12 @@ const TransformJobForm: FunctionComponent = () => {
     })
 
     const onSubmit = () => {
-        history.push('/case/' + name + '/demo?tab=transform')
+        history.push('/case/' + params.name + '?tab=demo#transform')
     }
 
     const onCancel = () => {
-        history.push('/case/' + name + '/demo?tab=transform')
+        history.push('/case/' + params.name + '?tab=demo#transform')
     }
-
-    useEffect(() => {
-        axios.get('/model')
-            .then((response) => {
-            var items = []
-            for(let item of response.data) {
-                items.push({label: item.model_name, value: item.model_name})
-            }
-            setOptionsModel(items);
-            console.log(items);
-        }, (error) => {
-            console.log(error);
-        });
-    }, [])
     
     return (
         <Form

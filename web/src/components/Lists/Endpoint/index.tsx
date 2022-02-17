@@ -85,7 +85,7 @@ const EndpointList: FunctionComponent<ModelProps> = (props) => {
     const history = useHistory();
 
     const onCreate = () => {
-        history.push('/form/' + props.name + '/endpoint')
+        history.push('/case/' + props.name + '?tab=endpoint#form')
     }
     
     const tableActions = (

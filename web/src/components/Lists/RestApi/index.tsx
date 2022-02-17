@@ -76,7 +76,7 @@ const RestApiList: FunctionComponent<RestapiProps> = (props) => {
     const history = useHistory();
 
     const onCreate = () => {
-        history.push('/form/' + props.name + '/restapi')
+        history.push('/case/' + props.name + '?tab=restapi#form')
     }
 
     const tableActions = (

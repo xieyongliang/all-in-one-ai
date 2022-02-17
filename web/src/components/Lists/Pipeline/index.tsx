@@ -190,7 +190,7 @@ const PipelineList: FunctionComponent<PipelineListProps> = (props) => {
     const history = useHistory();
 
     const onCreate = () => {
-        history.push('/form/' + props.name + '/pipeline')
+        history.push('/case/' + props.name + '?tab=pipeline#form')
     }
 
     const tableActions = (
