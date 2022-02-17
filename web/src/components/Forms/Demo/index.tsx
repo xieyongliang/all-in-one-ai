@@ -5,11 +5,10 @@ import TransformJobList from '../../Lists/TransformJob';
 import SampleForm from '../Sample';
 import Radio from '../../Utils/Radio';
 import RadioGroup from '../../Utils/RadioGroup';
-import { useParams } from 'react-router-dom';
+import { useParams, useLocation, useHistory } from 'react-router-dom';
 
 interface PathParams {
     name: string;
-    type: string;
 }
 
 interface DemoProps {
@@ -17,29 +16,33 @@ interface DemoProps {
 }
 
 const DemoForm: FunctionComponent<DemoProps> = (props) => {
-    var params : PathParams = useParams();
-    var name = params.name
-    var type = params.type
+    const history = useHistory();
 
-    const [stateType, setStateType] = useState((type === 'sample') ? '2' : (type === 'uploaded' ? '1' : (type === 'batch' ? '0' : '2')))
+    var params : PathParams = useParams();
+    var name = params.name;
+
+    const search = new URLSearchParams(useLocation().search);
+
+    const [ tab, setTab ] = useState(search.get('tab') !== undefined ? search.get('tab') : 'sample')
 
     function onChange (value: string) {
-        setStateType(value)
+        history.push('/case/' + name + '/demo?' + 'tab=' + value);
+        setTab(value);
     }
     
     return (
         <Stack>
             <Heading variant='h1'>{props.name}</Heading>
             <Container title = "Demo type">
-                <RadioGroup onChange={onChange} active={stateType}>
-		            <Radio value={'0'}>Batch transform jobs</Radio>
-		            <Radio value={'1'}>Realtime inference with uploaded image</Radio>
-		            <Radio value={'2'}>Realtime inference with sample image</Radio>
+                <RadioGroup onChange={onChange} active={tab}>
+		            <Radio value={'transform'}>Batch transform jobs</Radio>
+		            <Radio value={'uploaded'}>Realtime inference with uploaded image</Radio>
+		            <Radio value={'sample'}>Realtime inference with sample image</Radio>
 		        </RadioGroup>
             </Container>
-            {stateType === '0' && <TransformJobList name={props.name}/>}
-            {stateType === '1' && <InferenceForm/>}
-            {stateType === '2' && <SampleForm/>}
+            {tab === 'transform' && <TransformJobList name={props.name}/>}
+            {tab === 'uploaded' && <InferenceForm/>}
+            {tab === 'sample' && <SampleForm/>}
         </Stack>
     )
 }

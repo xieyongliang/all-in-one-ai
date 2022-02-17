@@ -1,8 +1,8 @@
-import { FunctionComponent, MouseEventHandler, useEffect, useState } from 'react';
+import { FunctionComponent, useEffect, useState } from 'react';
 import ImageList from '@mui/material/ImageList';
 import ImageListItem from '@mui/material/ImageListItem';
 import axios from 'axios';
-import { Button, Container, FormField, Inline, Modal, Stack } from 'aws-northstar';
+import { Button, Container, FormField, Inline, Stack } from 'aws-northstar';
 import URLImage from '../../Utils/URLImage';
 import ImageAnnotate from '../../Utils/Annotate';
 import {LABELS, COLORS} from '../../Data/data';

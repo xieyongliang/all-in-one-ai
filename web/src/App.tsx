@@ -52,7 +52,6 @@ const App = () => {
                     <Route exact path="/form/:name/transformjob">{withLayout(TransformJobForm)}</Route>
                     <Route exact path="/scenarios/ppe">{withLayout(PPE)}</Route>
                     <Route exact path="/model/yolov5">{withLayout(Yolov5)}</Route>
-                    <Route exact path="/case/:name/demo/:type">{withLayout(Case, {'activeId':'demo'})}</Route>
                     <Route exact path="/case/:name/demo">{withLayout(Case, {'activeId':'demo'})}</Route>
                     <Route exact path="/case/:name/pipeline">{withLayout(Case,{'activeId':'pipeline'})}</Route>
                     <Route exact path="/case/:name/trainingjob">{withLayout(Case,{'activeId':'trainingjob'})}</Route>

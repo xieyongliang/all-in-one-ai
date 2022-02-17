@@ -1,35 +1,25 @@
-import React, { FunctionComponent, useState } from 'react';
-import Stack from 'aws-northstar/layouts/Stack';
+import { FunctionComponent, useEffect, useState } from 'react';
 import FormSection from 'aws-northstar/components/FormSection';
 import FormField from 'aws-northstar/components/FormField';
 import Input from 'aws-northstar/components/Input';
-import SimpleSelect from '../../Utils/SimpleSelect'
 import Button from 'aws-northstar/components/Button';
 import { useHistory, useParams } from 'react-router-dom'; 
 import { Form } from 'aws-northstar';
+import axios from 'axios';
+import Select, { SelectOption } from 'aws-northstar/components/Select';
 
-interface SelectOption {
-    label?: string;
-    value?: string;
-    options?: SelectOption[];
-}
-
-const optionsData : SelectOption[]= [
+const optionsDataType : SelectOption[]= [
     { label: 'S3Prefix', value: 'S3Prefix' },
     { label: 'ManifestFile', value: 'ManifestFile' }
 ];
 
-const optionsContent : SelectOption[]= [
+const optionsContentType : SelectOption[]= [
     { label: 'image/png', value: 'image/png' },
     { label: 'image/jpg', value: 'image/jpg' },
     { label: 'image/jpeg', value: 'image/jpeg' }
 ];
 
-const optionsModel : SelectOption[]= [
-    { label: 'model-1', value: 'model-1' }
-];
-
-const optionsInstance : SelectOption[]= [
+const optionsInstanceType : SelectOption[]= [
     {
         label: 'Standard', 
         options: [ 
@@ -53,8 +43,6 @@ const optionsInstance : SelectOption[]= [
     }
 ];
 
-type OnChange = (name: string, value: string) => void
-
 interface PathParams {
     name: string;
 }
@@ -65,29 +53,77 @@ const TransformJobForm: FunctionComponent = () => {
     var params : PathParams = useParams();
     var name = params.name
 
-    const [stateData, setStateData] = React.useState('');
-    const [stateContent, setStateContent] = React.useState('');
-    const [stateInstance, setStateInstance] = React.useState('');
+    const [selectedDataType, setSelectedDataType] = useState<SelectOption>({ label: 'S3Prefix', value: 'S3Prefix' });
+    const [selectedContentType, setSelectedContentType] = useState<SelectOption>({ label: 'image/png', value: 'image/png' });
+    const [selectedInstanceType, setSelectedInstanceType] = useState<SelectOption>({});
+    const [optionsModel, setOptionsModel] = useState([]);
+    const [selectedModelName, setSelectedModelName] = useState<SelectOption>({});
+    const [instanceCount, setInstanceCount] = useState(1);
+    const [maxConcurrentTransforms, setMaxConcurrentTransforms] = useState(1);
+    const [jobName, setJobName] = useState('');
+    const [s3InputUri, setS3InputUri] = useState('');
+    const [s3OutputUri, setS3OutputUri] = useState('');
 
-    const onChange : OnChange = (name: string, value: string) => {
-        if(name === 'data')
-            setStateData(value);
-        if(name === 'content')
-            setStateContent(value);
-        if(name === 'instance')
-            setStateInstance(value);
-    }
+    const onChange = ((id: string, event: any) => {
+        if(id === 'formFieldIdJobName') {
+            if(event !== jobName)
+                setJobName(event);
+        }
+        if(id === 'formFieldIdModelName') {
+            if(event.target.value !== selectedModelName.value)
+                setSelectedModelName({ label: event.target.value, value: event.target.value });
+        }
+        if(id === 'formFieldIdDataType') {
+            if(event.target.value !== selectedDataType.value)
+                setSelectedDataType({ label: event.target.value, value: event.target.value });
+        }
+        if(id === 'formFieldIdContentType') {
+            if(selectedContentType == undefined || event.target.value !== selectedContentType.value)
+                setSelectedContentType({ label: event.target.value, value: event.target.value });
+        }
+        if(id === 'formFieldIdInstanceType') {
+            if(event.target.value !== selectedInstanceType.value)
+                setSelectedInstanceType({ label: event.target.value, value: event.target.value });
+        }
+        if(id === 'formFieldIdInstanceCount') {
+            if(event != instanceCount)
+            setInstanceCount(event);
+        }
+        if(id === 'formFieldIdMaxConcurrentTransform') {
+            if(event != maxConcurrentTransforms)
+            setMaxConcurrentTransforms(event);
+        }        
+        if(id === 'formFieldIdS3InputUri') {
+            if(event != s3InputUri)
+            setS3InputUri(event);
+        }        
+        if(id === 'formFieldIdS3Output') {
+            if(event != s3OutputUri)
+            setS3OutputUri(event);
+        }        
+    })
 
     const onSubmit = () => {
-        history.push('/case/' + name + '/demo/batch')
+        history.push('/case/' + name + '/demo?tab=transform')
     }
 
     const onCancel = () => {
-        history.push('/case/' + name + '/demo/batch')
+        history.push('/case/' + name + '/demo?tab=transform')
     }
 
-    const onRemove = () => {
-    }
+    useEffect(() => {
+        axios.get('/model')
+            .then((response) => {
+            var items = []
+            for(let item of response.data) {
+                items.push({label: item.model_name, value: item.model_name})
+            }
+            setOptionsModel(items);
+            console.log(items);
+        }, (error) => {
+            console.log(error);
+        });
+    }, [])
     
     return (
         <Form
@@ -100,54 +136,57 @@ const TransformJobForm: FunctionComponent = () => {
                 </div>
             }>            
             <FormSection header="Job configuration">
-                <FormField label="Model" controlId="formFieldId1">
-                    <SimpleSelect
+                <FormField label="Job name" controlId="formFieldIdJobName">
+                    <Input value = {instanceCount} onChange={(event) => onChange('formFieldIdJobName', event)}> </Input>
+                </FormField>
+                <FormField label="Model name" controlId="formFieldIdModelName">
+                    <Select
                         placeholder="Choose an option"
-                        name = 'model'
                         options={optionsModel}
-                        onChange={onChange}
+                        selectedOption={selectedModelName}
+                        onChange={(event) => onChange('formFieldIdModel', event)}
                     />
                 </FormField>
-                <FormField label="Instance Type" controlId="formFieldId3">
-                    <SimpleSelect
+                <FormField label="Instance Type" controlId="formFieldIdInstanceType">
+                    <Select
                         placeholder="Choose an option"
-                        name = 'content'
-                        options={optionsInstance}
-                        onChange={onChange}
+                        options={optionsInstanceType}
+                        selectedOption={selectedInstanceType}
+                        onChange={(event) => onChange('formFieldIdInstanceType', event)}
                     />
                 </FormField>
-                <FormField label="Instance count" controlId="formFieldId3">
-                    <Input value = '1'> </Input>
+                <FormField label="Instance count" controlId="formFieldIdInstanceCount">
+                    <Input value = {instanceCount} onChange={(event) => onChange('formFieldIdInstanceCount', event)}> </Input>
                 </FormField>
                 <FormField label="Max concurrent transforms" controlId="formFieldId3">
-                    <Input value = '1'> </Input>
+                    <Input value = {maxConcurrentTransforms} onChange={(event) => onChange('formFieldIdS3Input', event)}/>
                 </FormField>
             </FormSection>
             <FormSection header="Input configuration">
-                <FormField label="Data type" controlId="formFieldId1">
-                    <SimpleSelect
+                <FormField label="Data type" controlId="formFieldIdDataType">
+                    <Select
                         placeholder="Choose an option"
-                        name = 'data'
-                        options={optionsData}
-                        onChange={onChange}
+                        options={optionsDataType}
+                        selectedOption={selectedDataType}
+                        onChange={(event) => onChange('formFieldIdDataType', event)}
                     />
                 </FormField>
-                <FormField label="S3 input path" controlId="formFieldId1">
-                    <Input type="text" controlId="formFieldId2" placeholder='S3Uri'/>
+                <FormField label="S3 input path" controlId="formFieldIdS3InputUri">
+                    <Input type="text" placeholder='S3Uri' onChange={(event) => onChange('formFieldIdS3InputUri', event)}/>
                 </FormField>
 
-                <FormField label="Content type" controlId="formFieldId3">
-                    <SimpleSelect
+                <FormField label="Content type" controlId="formFieldIdContentType">
+                    <Select
                         placeholder="Choose an option"
-                        name = 'content'
-                        options={optionsContent}
-                        onChange={onChange}
+                        options={optionsContentType}
+                        selectedOption={selectedContentType}
+                        onChange={(event) => onChange('formFieldIdContentType', event)}
                     />
                 </FormField>
             </FormSection>
             <FormSection header="Output configuration">
-                <FormField label="S3 output path" controlId="formFieldId1">
-                    <Input type="text" controlId="formFieldId2" placeholder='S3Uri'/>
+                <FormField label="S3 output path" controlId="formFieldIdS3OutputUri">
+                    <Input type="text" controlId="formFieldId2" placeholder='S3Uri' onChange={(event) => onChange('formFieldIdS3OutputUri', event)}/>
                 </FormField>
             </FormSection>
         </Form>

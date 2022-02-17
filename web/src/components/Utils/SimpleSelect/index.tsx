@@ -1,41 +1,34 @@
-import React, { FunctionComponent, ComponentType, useState } from 'react';
+import { FunctionComponent, useState } from 'react';
 import Select from 'aws-northstar/components/Select';
-import { SvgIconProps } from '@material-ui/core/SvgIcon';
 import { SelectOption } from 'aws-northstar/components/Select/types';
-
-type ButtonIconType =
-    | 'add_plus'
-    | 'copy'
-    | 'external'
-    | 'folder'
-    | 'refresh'
-    | 'settings'
-    | ComponentType<SvgIconProps>;
 
 type OnChange = (name: string, value: string) => void
 
 interface SimpleSelectProps {
-    options: SelectOption[];
-    onChange: OnChange;
     name: string;
     placeholder: string;
+    options: SelectOption[];
+    selectedOption?: SelectOption;
+    onChange: OnChange;
 }
 
 const SimpleSelect: FunctionComponent<SimpleSelectProps> = (props: SimpleSelectProps) => {
-    const [selectedOption, setSeletedOption] = React.useState<SelectOption>();
+    const [selectedOption, setSeletedOption] = useState<SelectOption>(props.selectedOption);
 
     const onChange = (event: any) => {
         setSeletedOption({ value: event.target.value });
-        props.onChange(props.name, event.target.value)
+        props.onChange(props.name, event.target.value);
     };
 
+    console.log(selectedOption)
+
     return (
-                <Select
-                    placeholder={props.placeholder}
-                    options={props.options}
-                    selectedOption={selectedOption}
-                    onChange={onChange}
-                />
+        <Select
+            placeholder={props.placeholder}
+            options={props.options}
+            selectedOption={selectedOption}
+            onChange={onChange}
+        />
     );
 }
 

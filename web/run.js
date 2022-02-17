@@ -4,6 +4,7 @@ const app = express();
 const uuid = require('uuid');
 const fs = require('fs');
 const { default: axios } = require('axios');
+const { createProxyMiddleware }  = require('http-proxy-middleware');
 
 const baseUrl = 'https://rs0vxek8w9.execute-api.ap-east-1.amazonaws.com/prod'
 
@@ -44,27 +45,38 @@ app.get('/inference/image/:filename', (req, res) => {
     var buffer = fs.readFileSync('images/' + filename + '.jpg')
     options = {headers: {'content-type': 'image/jpg'}}
     var resuult = axios.post(baseUrl + '/inference', buffer, options)
-      .then((response) => {
-          res.send(response.data)
-      }, (error) => {
-        res.status(400);
-        res.send('client error');
-        console.log(error);
-      });
+        .then((response) => {
+            res.send(response.data)
+        }, (error) => {
+            res.status(400);
+            res.send('client error');
+            console.log(error);
+        }
+    );
 })
 app.get('/inference/sample/:filename', (req, res) => {
     var filename = req.params.filename;
     var buffer = fs.readFileSync('samples/' + filename)
     options = {headers: {'content-type': 'image/png'}}
     var resuult = axios.post(baseUrl + '/inference', buffer, options)
-      .then((response) => {
-          res.send(response.data)
-      }, (error) => {
-        res.status(400);
-        res.send('client error');
-        console.log(error);
-      });
+        .then((response) => {
+            res.send(response.data)
+        }, (error) => {
+            res.status(400);
+            res.send('client error');
+            console.log(error);
+        }
+    );
 })
+app.use(createProxyMiddleware('/model', {
+    target: baseUrl + '/model',
+    pathRewrite: {
+        '^/model': ''
+    },
+    changeOrigin: true,
+    secure: false,
+    ws: false,
+}));
 
 app.use(express.static(path.join(__dirname, 'build')));
 
