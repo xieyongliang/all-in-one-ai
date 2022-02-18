@@ -21,7 +21,9 @@ export const COLORS : string[] = [
     '#ff37c7'
 ]
 
-export const LABELS : string[] = [
+export type LabelMap = Record<CaseType, string[]>;
+
+const TrackLabels : string[] = [
     'squat', 
     'aluminothermic weld (atw)', 
     'tri metal weld (tmw)', 
@@ -33,3 +35,24 @@ export const LABELS : string[] = [
     'corrugation', 
     'rail head anomaly' 
 ]
+
+const FaceLabels : string[] = [
+    'face mask',
+    'No face mask'
+]
+
+export enum CaseType {
+    TRACK = 'tarck',
+    FACE  = 'face',
+    HELMET = 'helmet',
+    RECEIPT = 'receipt',
+    INSURANCE = 'insurance'
+}
+
+export const LABELS : LabelMap = {
+    [CaseType.TRACK] :      TrackLabels,
+    [CaseType.FACE]  :      FaceLabels,
+    [CaseType.HELMET]:      [],
+    [CaseType.RECEIPT]:     [],
+    [CaseType.INSURANCE]:   []
+}

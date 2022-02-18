@@ -8,7 +8,7 @@ const Yolov5: FunctionComponent = () => {
                 <Text> 
                 YOLOv5 🚀 is a family of object detection architectures and models pretrained on the COCO dataset, and represents Ultralytics open-source research into future vision AI methods, incorporating lessons learned and best practices evolved over thousands of hours of research and development.
                 </Text>
-                <img src='/yolov5.jpg' width = '1000'></img>
+                <img src='/yolov5.jpg' width='1000' alt=''></img>
             </Container>
             <Container title = 'Yolov5 project'>
                 <Text>

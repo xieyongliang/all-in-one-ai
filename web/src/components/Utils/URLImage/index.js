@@ -9,7 +9,7 @@ class URLImage extends React.Component {
         width: 0,
         height: 0
     };
-  
+
     componentDidMount() {
         this.loadImage();
     }
@@ -39,6 +39,7 @@ class URLImage extends React.Component {
     };
   
     render() {
+      console.log(this.props.labels)
       if(this.props.bbox.length === 0)
             return (
                 <Stage width={this.state.width} height={this.state.height}>

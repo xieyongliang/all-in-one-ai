@@ -1,19 +1,12 @@
 import React, { ChangeEvent, FunctionComponent, useState } from 'react';
-import FormSection from 'aws-northstar/components/FormSection';
-import FormField from 'aws-northstar/components/FormField';
-import Input from 'aws-northstar/components/Input';
-import { Form, Button, RadioGroup, RadioButton, Inline, Stack } from 'aws-northstar';
-import { useHistory } from 'react-router-dom'; 
-import SimpleSelect from '../../Utils/SimpleSelect';
-import {useParams} from "react-router-dom";
+import { Form, FormSection, FormField, Input, Button, RadioGroup, RadioButton, Inline, Stack, Select } from 'aws-northstar';
+import { useHistory, useParams } from 'react-router-dom'; 
 
 interface SelectOption {
     label?: string;
     value?: string;
     options?: SelectOption[];
 }
-
-type OnChange = (name: string, value: string) => void
 
 const optionsEndpoint : SelectOption[] = [
     { label: 'endpoint-1', value: 'endpoint-1' }
@@ -36,11 +29,11 @@ const RestApiForm: FunctionComponent<RestApiFormProps> = (props) => {
 
     const [optioonsApi, setOptionsApi] = React.useState('');
 
-    const onChange : OnChange = (name: string, value: string) => {
-        if(name === 'endpoint')
-            setOptionsEndpoint(value);
-        if(name === 'api')
-            setOptionsApi(value);
+    const onChange = (id: string, event: any) => {
+        if(id === 'endpoint')
+            setOptionsEndpoint(event);
+        if(id === 'api')
+            setOptionsApi(event);
     }
 
     const [stateType, setStateType] = useState('1')
@@ -85,11 +78,10 @@ const RestApiForm: FunctionComponent<RestApiFormProps> = (props) => {
                         />
                     </FormField>
                     <FormField controlId='formField1'>
-                        <SimpleSelect
+                        <Select
                             placeholder="Choose an option"
-                            name = 'api'
                             options={optionsApi}
-                            onChange={onChange}
+                            onChange={(event) => onChange('formFieldIdInstanceCount', event)}
                         />
                     </FormField>
                     <FormField label="API path" controlId="formFieldId1">
@@ -151,11 +143,10 @@ const RestApiForm: FunctionComponent<RestApiFormProps> = (props) => {
         return (
             <FormSection header="Production variants">
                 <FormField label="Endpoint name" controlId="formFieldId1">
-                    <SimpleSelect
+                    <Select
                         placeholder="Choose an option"
-                        name = 'endpoint'
                         options={optionsEndpoint}
-                        onChange={onChange}
+                        onChange={(event) => onChange('formFieldIdInstanceCount', event)}
                     />
                 </FormField>
             </FormSection>

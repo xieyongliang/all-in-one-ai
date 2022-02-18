@@ -1,18 +1,7 @@
 import React, { FunctionComponent } from 'react';
-import FormSection from 'aws-northstar/components/FormSection';
-import FormField from 'aws-northstar/components/FormField';
-import Input from 'aws-northstar/components/Input';
-import { Form, Button, Inline, Wizard, Stack } from 'aws-northstar';
+import { Form, FormSection, FormField, Input, Button, Inline, Stack } from 'aws-northstar';
 import { useHistory, useParams } from 'react-router-dom'; 
-import SimpleSelect from '../../Utils/SimpleSelect';
-
-interface SelectOption {
-    label?: string;
-    value?: string;
-    options?: SelectOption[];
-}
-
-type OnChange = (name: string, value: string) => void
+import Select, { SelectOption } from 'aws-northstar/components/Select';
 
 const optionsInstance : SelectOption[]= [
     {
@@ -96,9 +85,9 @@ const TrainingJobForm: FunctionComponent<TrainingJobFormProps> = (props) => {
 
     const [stateInstance, setStateInstance] = React.useState('');
 
-    const onChange : OnChange = (name: string, value: string) => {
-        if(name === 'instance')
-            setStateInstance(value);
+    const onChange = (id: string, event: any) => {
+        if(id === 'instance')
+            setStateInstance(event);
     }
 
     const onSubmit = () => {
@@ -169,11 +158,10 @@ const TrainingJobForm: FunctionComponent<TrainingJobFormProps> = (props) => {
                 </FormSection>
                 <FormSection header="Resource configuration">
                     <FormField label="Instance type" controlId="formFieldId1">
-                    <SimpleSelect
+                    <Select
                             placeholder="Choose an option"
-                            name = 'instance'
                             options={optionsInstance}
-                            onChange={onChange}
+                            onChange={(event) => onChange('formFieldIdInstanceCount', event)}
                         />
                     </FormField>
                     <FormField label="Instance count" controlId="formFieldId1">

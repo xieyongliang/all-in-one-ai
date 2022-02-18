@@ -1,14 +1,9 @@
 import { FunctionComponent, useEffect, useState } from 'react';
-import FormSection from 'aws-northstar/components/FormSection';
-import FormField from 'aws-northstar/components/FormField';
-import Input from 'aws-northstar/components/Input';
-import Button from 'aws-northstar/components/Button';
 import { useHistory, useParams } from 'react-router-dom'; 
-import { Form, Stack } from 'aws-northstar';
+import { Form, FormSection, FormField, Input, Button, Stack, Select } from 'aws-northstar';
 import axios from 'axios';
-import Select, { SelectOption } from 'aws-northstar/components/Select';
-import { PathParams } from '../../Utils/PathParams';
-import Flashbar from 'aws-northstar/components/Flashbar';
+import { PathParams } from '../../Interfaces/PathParams';
+import { SelectOption } from 'aws-northstar/components/Select';
 
 const optionsDataType : SelectOption[]= [
     { label: 'S3Prefix', value: 'S3Prefix' },
@@ -56,8 +51,6 @@ const TransformJobForm: FunctionComponent = () => {
     const [transformJobName, setTransformJobName] = useState('');
     const [s3InputUri, setS3InputUri] = useState('');
     const [s3OutputUri, setS3OutputUri] = useState('');
-    const [visibleFlashFailed, setVisibleFlashFailed] = useState(false);
-    const [textFlashFailed, setTextFlashFailed ] = useState('');
     const [invalidTransformJobName, setInvalidTransformJobName] = useState(false);
     const [invalidInstanceType, setInvalidInstanceType] = useState(false);
     const [invalidModelName, setInvalidInvalidModelName] = useState(false);
@@ -144,8 +137,6 @@ const TransformJobForm: FunctionComponent = () => {
             .then((response) => {
                 history.push('/case/' + params.name + '?tab=demo#transform')
             }, (error) => {
-                setVisibleFlashFailed(true);
-                setTextFlashFailed(error);
                 console.log(error);
             });    
         }

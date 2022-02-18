@@ -1,19 +1,13 @@
-import React, { FunctionComponent } from 'react';
-import FormSection from 'aws-northstar/components/FormSection';
-import FormField from 'aws-northstar/components/FormField';
-import Input from 'aws-northstar/components/Input';
-import { Form, Button, RadioGroup, RadioButton, Inline, Text, Stack } from 'aws-northstar';
-import { useHistory } from 'react-router-dom'; 
-import SimpleSelect from '../../Utils/SimpleSelect';
-import {useParams} from "react-router-dom";
+import { FunctionComponent, useState } from 'react';
+import { useHistory, useParams } from 'react-router-dom'; 
+import { Form, FormSection, FormField, Button, RadioGroup, RadioButton, Inline, Input, Stack, Select } from 'aws-northstar';
+
 
 interface SelectOption {
     label?: string;
     value?: string;
     options?: SelectOption[];
 }
-
-type OnChange = (name: string, value: string) => void
 
 const optionsModel : SelectOption[] = [
     { label: 'model-1', value: 'model-1' }
@@ -104,32 +98,29 @@ interface EndpointFormProps {
 }
 
 const EndpointForm: FunctionComponent<EndpointFormProps> = (props) => {
+    const [selectedModel, setSelectedModel] = useState<SelectOption>({});
+    const [selectedInstance, setSelectedInstance] = useState<SelectOption>({});
+    const [selectedElastic, setSelectedElastic] = useState<SelectOption>({});
+
     const history = useHistory();
 
     var params : PathParams = useParams();
-    var name = params.name
 
-    const [stateModel, setStateModel] = React.useState('');
-
-    const [stateInstance, setStateInstance] = React.useState('');
-
-    const [stateElastic, setStateElastic] = React.useState('');
-
-    const onChange : OnChange = (name: string, value: string) => {
-        if(name === 'model')
-            setStateModel(value);
-        if(name === 'instance')
-            setStateInstance(value);
-        if(name === 'elastic')
-            setStateElastic(value);
+    const onChange = (id: string, event: any) => {
+        if(id === 'model')
+            setSelectedModel({label: event.target.value, value: event.target.value});
+        if(id === 'instance')
+            setSelectedInstance({label: event.target.value, value: event.target.value});
+        if(id === 'elastic')
+            setSelectedElastic({label: event.target.value, value: event.target.value});
     }
 
     const onSubmit = () => {
-        history.push('/case/' + name + '?tab=endpoint')
+        history.push('/case/' + params.name + '?tab=endpoint')
     }
 
     const onCancel = () => {
-        history.push('/case/' + name + '?tab=endpoint')
+        history.push('/case/' + params.name + '?tab=endpoint')
     }
 
     const onRemove = () => {
@@ -205,28 +196,25 @@ const EndpointForm: FunctionComponent<EndpointFormProps> = (props) => {
     const renderEndpointFormContent = () => {
         return (
             <FormSection header="Production variants">
-                <FormField label="Model name" controlId="formFieldId1">
-                    <SimpleSelect
+                <FormField label="Model name" controlId="formFieldIdModel">
+                    <Select
                             placeholder="Choose an option"
-                            name = 'model'
                             options={optionsModel}
-                            onChange={onChange}
+                            onChange={(event) => onChange('formFieldIdModelName', event)}
                         />
                 </FormField>
-                <FormField label="Instance type" controlId="formFieldId1">
-                    <SimpleSelect
+                <FormField label="Instance type" controlId="formFieldIdInstanceType">
+                    <Select
                             placeholder="Choose an option"
-                            name = 'model'
                             options={optionsInstance}
-                            onChange={onChange}
+                            onChange={(event) => onChange('formFieldIdInstanceType', event)}
                         />
                 </FormField>
-                <FormField label="Elastic Inference" controlId="formFieldId1">
-                    <SimpleSelect
+                <FormField label="Elastic Inference" controlId="formFieldIdAcceleratorType">
+                    <Select
                             placeholder="Choose an option"
-                            name = 'elastic'
                             options={optionsElastic}
-                            onChange={onChange}
+                            onChange={(event) => onChange('formFieldIdAcceleratorType', event)}
                         />
                 </FormField>
                 <FormField label="Initial instance count" controlId="formFieldId1">

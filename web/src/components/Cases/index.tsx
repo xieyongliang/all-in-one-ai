@@ -1,4 +1,4 @@
-import { FunctionComponent, useState } from 'react';
+import { FunctionComponent } from 'react';
 import Tabs from 'aws-northstar/components/Tabs';
 import {useHistory, useLocation, useParams} from "react-router-dom";
 import DemoForm from '../Forms/Demo';
@@ -18,7 +18,7 @@ import GreengrassComponentForm from '../Forms/GreengrassComponent';
 import GreengrassDeploymentForm from '../Forms/GreengrassDeployment';
 import TransformJobForm from '../Forms/TransformJob';
 import TransformJobProp from '../Props/TransformJob';
-import { PathParams } from '../Utils/PathParams';
+import { PathParams } from '../Interfaces/PathParams';
 
 const Case: FunctionComponent = () => {
     var params : PathParams = useParams();

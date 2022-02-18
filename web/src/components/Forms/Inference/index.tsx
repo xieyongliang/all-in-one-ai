@@ -1,14 +1,12 @@
 import { FunctionComponent, useState } from 'react';
 import FileUpload from 'aws-northstar/components/FileUpload';
-import Container from 'aws-northstar/layouts/Container';
 import axios from 'axios';
 import URLImage from '../../Utils/URLImage';
-import FormField from 'aws-northstar/components/FormField'
-import Button from 'aws-northstar/components/Button'
-import { Inline, Stack } from 'aws-northstar';
+import { Container, FormField, Button, Inline, Stack } from 'aws-northstar';
 import ImageAnnotate from '../../Utils/Annotate';
-import {LABELS, COLORS} from '../../Data/data';
-import { useLocation } from 'react-router-dom';
+import {LABELS, COLORS, CaseType} from '../../Data/data';
+import { useParams } from 'react-router-dom';
+import { PathParams } from '../../Interfaces/PathParams';
 
 interface FileMetadata {
     name: string;
@@ -17,12 +15,28 @@ interface FileMetadata {
     lastModified?: number;
 }
 
+interface InferenceFormProp {
+    name: string;
+}
+
 const InferenceForm: FunctionComponent = () => {
     const [filename, setFilename] = useState('')
     const [id, setId] = useState<number[]>([])
     const [bbox, setBbox] = useState<number[][]>([])
     const [visibleAnnotate, setVisibleAnnotate] = useState(false);
-    var labels = ['squat', 'aluminothermic weld (atw)', 'tri metal weld (tmw)', 'fishplate joint (fj)', 'grinding marks', 'head check error', 'insulated rail joint (irj)', 'flash butt weld (fbw)', 'corrugation', 'rail head anomaly']
+    const [casename, setCaseName] = useState('');
+    const [labels, setLabels] = useState([]);
+
+    var params : PathParams = useParams();
+
+    if(casename !== params.name) {
+        setCaseName(params.name);
+        setFilename('');
+        if(params.name === 'track')
+            setLabels(LABELS[CaseType.TRACK])
+        else if(params.name === 'mask')
+            setLabels(LABELS[CaseType.FACE])
+    }
 
     const onChange = (files: (File | FileMetadata)[]) => {
         axios.post('/image', files[0])
@@ -37,7 +51,7 @@ const InferenceForm: FunctionComponent = () => {
     }
 
     const onInference = () => {
-        axios.get('/inference/image/' + filename)
+        axios.get('/inference/image/' + params.name + '/' + filename)
         .then((response) => {
             var tbbox : number[][] = [];
             var tid = [];

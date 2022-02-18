@@ -2,6 +2,7 @@ import { FunctionComponent } from "react"
 
 export interface ImageProps {
     src: string;
+    alt?: string;
     width: number;
     height: number;
     current: string;
@@ -15,6 +16,7 @@ const Image: FunctionComponent<ImageProps> = (props) => {
                     src={props.src}
                     width={props.width}
                     height={props.height}
+                    alt={props.alt}
                     loading="lazy"
                     onClick={props.onClick}
                     style={{"border": "5px solid red"}}
@@ -26,6 +28,7 @@ const Image: FunctionComponent<ImageProps> = (props) => {
                     src={props.src}
                     width={props.width}
                     height={props.height}
+                    alt={props.alt}
                     loading="lazy"
                     onClick={props.onClick}
                 />

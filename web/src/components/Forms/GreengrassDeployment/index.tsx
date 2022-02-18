@@ -2,9 +2,8 @@ import React, { ChangeEvent, FunctionComponent, useState } from 'react';
 import FormSection from 'aws-northstar/components/FormSection';
 import FormField from 'aws-northstar/components/FormField';
 import Input from 'aws-northstar/components/Input';
-import { Form, Button, RadioGroup, RadioButton, Inline, Text, Stack } from 'aws-northstar';
+import { Form, Button, RadioGroup, RadioButton, Inline, Text, Stack, Select } from 'aws-northstar';
 import { useHistory } from 'react-router-dom'; 
-import SimpleSelect from '../../Utils/SimpleSelect';
 import {useParams} from "react-router-dom";
 
 interface SelectOption {
@@ -12,8 +11,6 @@ interface SelectOption {
     value?: string;
     options?: SelectOption[];
 }
-
-type OnChange = (name: string, value: string) => void
 
 const optionsTarget : SelectOption[] = [
     { label: 'GreengrassQuickStartGroup', value: 'GreengrassQuickStartGroup' }
@@ -36,18 +33,19 @@ interface GreengrassDeploymentFormProps {
 }
 
 const GreengrassDeploymentForm: FunctionComponent<GreengrassDeploymentFormProps> = (props) => {
+    const [stateType, setStateType] = React.useState('1');
+    const [selectedTargetName, setSelectedTargetName] = React.useState({});
+    const [selectedComponentName, setSelectedComponentName] = React.useState({});
+    const [selectedComponentVersion, setSelectedComponentVersion] = React.useState({});
+
     const history = useHistory();
 
     var params : PathParams = useParams();
     var name = params.name
 
-    const [stateType, setStateType] = React.useState('1');
-
-    const [stateTarget, setStateTarget] = React.useState('');
-
-    const onChange : OnChange = (name: string, value: string) => {
-        if(name === 'target')
-            setStateTarget(value);
+    const onChange = (id: string, event: any) => {
+        if(id === 'target')
+            setStateType(event);
     }
 
     const onSubmit = () => {
@@ -98,12 +96,11 @@ const GreengrassDeploymentForm: FunctionComponent<GreengrassDeploymentFormProps>
                                 ]}
                             />
                     </FormField>
-                    <FormField label="Target name" controlId="formFieldId1">
-                        <SimpleSelect
+                    <FormField label="Target name" controlId="formFieldIdTargetName">
+                        <Select
                                 placeholder="Choose an option"
-                                name = 'target'
                                 options={optionsTarget}
-                                onChange={onChange}
+                                onChange={(event) => onChange('formFieldIdTargetName', event)}
                             />
                     </FormField>
                 </FormSection>
@@ -158,20 +155,18 @@ const GreengrassDeploymentForm: FunctionComponent<GreengrassDeploymentFormProps>
     const renderGreengrassDeploymentContent = () => {
         return (
             <FormSection header="Production variants">
-                <FormField label="Component name" controlId="formFieldId1">
-                        <SimpleSelect
+                <FormField label="Component name" controlId="formFieldIdComponentName">
+                        <Select
                                 placeholder="Choose an option"
-                                name = 'component'
                                 options={optionsComponent}
-                                onChange={onChange}
+                                onChange={(event) => onChange('formFieldIdComponentName', event)}
                             />
                 </FormField>
-                <FormField label="Component version" controlId="formFieldId1">
-                        <SimpleSelect
+                <FormField label="Component version" controlId="formFieldIdComponentVersion">
+                        <Select
                                 placeholder="Choose an option"
-                                name = 'version'
                                 options={optionsVersion}
-                                onChange={onChange}
+                                onChange={(event) => onChange('formFieldIdComponentVersion', event)}
                             />
                 </FormField>
             </FormSection>

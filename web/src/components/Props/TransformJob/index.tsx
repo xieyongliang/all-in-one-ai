@@ -5,11 +5,9 @@ import Stack from 'aws-northstar/layouts/Stack';
 import { FunctionComponent, useEffect, useState } from 'react';
 import { Link } from 'aws-northstar';
 import Grid from '@mui/material/Grid';
-import { useHistory, useLocation, useParams } from 'react-router-dom';
-import { PathParams } from '../../Utils/PathParams';
+import { useLocation, useParams } from 'react-router-dom';
+import { PathParams } from '../../Interfaces/PathParams';
 import axios from 'axios';
-
-const Status = <StatusIndicator statusType="positive">Available</StatusIndicator>;
 
 const TransformJobProp: FunctionComponent = () => {
     const [transformJobName, setTransformJobName] = useState('')
@@ -27,13 +25,10 @@ const TransformJobProp: FunctionComponent = () => {
     const [s3InputUri, setS3InputUri] = useState('')
     const [s3OutputUri, setS3OutputUri] = useState('');
 
-    const history = useHistory();
-
     var params : PathParams = useParams();
 
     var localtion = useLocation();
     var id = localtion.hash.substring(9);
-    console.log(id)
 
     useEffect(() => {
         axios.get('/transformjob/' + id, {params: {'case': params.name}})
@@ -55,7 +50,7 @@ const TransformJobProp: FunctionComponent = () => {
         }, (error) => {
             console.log(error);
         });
-    }, [])
+    }, [id, params.name])
 
     function getStatus(status: string) {
         switch(status) {

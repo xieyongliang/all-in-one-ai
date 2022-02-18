@@ -1,4 +1,4 @@
-import React, { PropsWithChildren, useEffect, useState } from 'react';
+import React, { PropsWithChildren, useEffect, useRef, useState } from 'react';
 import EditorView from '../../../views/EditorView/EditorView';
 import {ProjectType} from '../../../data/enums/ProjectType';
 import {AppState} from '../../../store';
@@ -17,7 +17,6 @@ import axios from 'axios';
 import { LabelType } from '../../../data/enums/LabelType';
 import { AnnotationFormatType } from '../../../data/enums/AnnotationFormatType';
 import { ImporterSpecData } from '../../../data/ImporterSpecData';
-import { LabelsSelector } from '../../../store/selectors/LabelsSelector';
 
 interface IProps {
     updateActiveImageIndexAction: (activeImageIndex: number) => any;
@@ -52,28 +51,25 @@ const ImageAnnotate: React.FC<IProps> = (props: PropsWithChildren<IProps>) => {
     const [imageReady, setImageReady] = useState(false)
     const formatType = AnnotationFormatType.YOLO
     const labelType = LabelType.RECT
-    var labelNames = LabelsSelector.getLabelNames()
+    const hasFetchedData = useRef(false);
 
     useEffect(() => {
-        var imageFile : File;
-        var isMounted = true;
+        if(hasFetchedData.current) return;
+        hasFetchedData.current = true;
 
-        console.log('******************* MOUNTED');
+        var imageFile : File;
+
         const onAnnotationLoadSuccess = (imagesData: ImageData[], labelNames: LabelName[]) => {
             props.updateImageDataAction(imagesData);
             props.updateLabelNamesAction(labelNames);
             props.updateActiveLabelTypeAction(labelType);
         
-            console.log('import success');
-
-            var index = 0;
             props.annotationData.forEach(annotation => {
                 var number = annotation.split(' ');
                 var id = parseInt(number[0]);
                 console.log(id);
                 labelNames[id % props.colorData.length].color = props.colorData[id % props.colorData.length];
                 labelNames[id].name = props.labelsData[id];
-                index++;
             });
 
             props.updateLabels(labelNames);
@@ -97,11 +93,8 @@ const ImageAnnotate: React.FC<IProps> = (props: PropsWithChildren<IProps>) => {
 
             var response = await axios.get('/file/download', {params : {'uri' : encodeURIComponent(props.imageUri)} , responseType: 'blob'})
 
-            //var response = await axios.get(props.imageUri, {responseType: 'blob'})
             var data = response.data;
             imageFile = new File([data], 'image.png');
-            console.log('--------------')
-            console.log(imageFile.size)
 
             var labelsFile = new File(props.labelsData, 'labels.txt');
             var annotationFile = new File(props.annotationData, 'image.txt');
@@ -120,15 +113,13 @@ const ImageAnnotate: React.FC<IProps> = (props: PropsWithChildren<IProps>) => {
         };
 
         init();
-
-        return () => { console.log('******************* UNMOUNTED');isMounted = false }
-    }, []);
+    });
 
     return (
         <div className={classNames('App', {'AI': props.ObjectDetectorLoaded || props.PoseDetectionLoaded})}
             draggable={false}
         >
-        {imageReady && <EditorView/>}
+        {(imageReady || importReady) && <EditorView/>}
         <PopupView/>
         </div>
     );

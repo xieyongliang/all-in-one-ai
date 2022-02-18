@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useEffect, useState } from 'react';
+import React, { FunctionComponent, useState } from 'react';
 import Table from 'aws-northstar/components/Table';
 import StatusIndicator from 'aws-northstar/components/StatusIndicator';
 import Button from 'aws-northstar/components/Button';
@@ -12,10 +12,10 @@ import { Container, FormField, Stack } from 'aws-northstar';
 import ImageList from '@mui/material/ImageList';
 import ImageListItem from '@mui/material/ImageListItem';
 import URLImage from '../../Utils/URLImage';
-import {LABELS, COLORS} from '../../Data/data';
+import {LABELS, COLORS, CaseType} from '../../Data/data';
 import ImageAnnotate from '../../Utils/Annotate';
 import Image from '../../Utils/Image';
-import { PathParams } from '../../Utils/PathParams';
+import { PathParams } from '../../Interfaces/PathParams';
 
 interface TransformJobItem {
     name: string;
@@ -36,13 +36,16 @@ const TransformJobList: FunctionComponent = () => {
     const [visibleAnnotate, setVisibleAnnotate] = useState(false);
     const [id, setId] = useState<number[]>([])
     const [bbox, setBbox] = useState<number[][]>([])
+    const [casename, setCaseName] = useState('')
+    const [labels,  setLabels] = useState([])
 
     const history = useHistory();
 
     var params : PathParams = useParams();
 
-    useEffect(() => {
-        axios.get('/transformjob')
+    if(casename !== params.name) {
+        setCaseName(params.name);
+        axios.get('/transformjob', {params : {'case': params.name}})
             .then((response) => {
             var items = []
             for(let item of response.data) {
@@ -50,11 +53,16 @@ const TransformJobList: FunctionComponent = () => {
             }
             setItems(items);
             setLoadingTable(false);
-            console.log(items);
+            setCurrentImage('');
+            console.log(params.name)
+            if(params.name === 'track')
+                setLabels(LABELS[CaseType.TRACK])
+            else if(params.name === 'mask')
+                setLabels(LABELS[CaseType.FACE])
         }, (error) => {
             console.log(error);
         });
-    }, [])
+    }
     
     const onImageClick = (event: React.MouseEvent<HTMLImageElement>) => {
         const src = event.currentTarget.src
@@ -85,10 +93,11 @@ const TransformJobList: FunctionComponent = () => {
     }
 
     const onChange = ((id: string, event: any) => {
-        console.log(event)
         if(event.length > 0) {
-            setSelectedTransformJob(event[0].name)
-            setEnabledReview(true)
+            if(selectedTransformJob !== event[0].name) {
+                setSelectedTransformJob(event[0].name)
+                setEnabledReview(true)
+            }
         }
     }
 )
@@ -191,7 +200,7 @@ const TransformJobList: FunctionComponent = () => {
             index++;
         });
         var labelsData : string[] = [];
-        LABELS.forEach(label => {
+        labels.forEach(label => {
             labelsData.push(label + '\r');
         })
             
@@ -217,13 +226,13 @@ const TransformJobList: FunctionComponent = () => {
                 }
                 {
                     !loadingReview && <Container title = "Select image file from batch transform result">
-                    <ImageList cols={12} rowHeight={128} gap={10} variant={'quilted'} style={{"height":"550px"}}>
+                    <ImageList cols={12} rowHeight={64} gap={10} variant={'quilted'} style={{"height":"550px"}}>
                         {transformJobResult.input.map((item, index) => (
                             <ImageListItem key={item} rows={2}>
                                 <Image
                                     src={item}
                                     width={128}
-                                    height={256}
+                                    height={12}
                                     current={currentImage}
                                     onClick={onImageClick}
                                 />
@@ -236,7 +245,7 @@ const TransformJobList: FunctionComponent = () => {
                     !loadingReview && 
                     <Container title = "Start inference">
                         <FormField controlId='button'>
-                            <URLImage src={currentImage} colors={COLORS} labels={LABELS} id={id} bbox={bbox}/>
+                            <URLImage src={currentImage} colors={COLORS} labels={labels} id={id} bbox={bbox}/>
                         </FormField>
                         <FormField controlId='button'>
                             <Button onClick={onAnnotate} disabled={bbox.length === 0}>Annotate</Button>

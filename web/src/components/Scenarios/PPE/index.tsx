@@ -17,7 +17,7 @@ Using the out-of-the-box AI kit, you can connect these IP cameras to the kit, an
 If you violate the rules (without wearing a helmet), an alarm message will be automatically sent to the manager's corporate WeChat, and picture evidence will be provided.                </Text>
             </Container>
             <Container title = 'Architecture diagram'>
-                <img src='/ppe.png' width = '1000'></img>
+                <img src='/ppe.png' width ='1000' alt=''></img>
             </Container>
             <Container title = 'Reference Website'>
             <Text>

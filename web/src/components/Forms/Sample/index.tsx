@@ -1,4 +1,4 @@
-import { FunctionComponent, useEffect, useState } from 'react';
+import { FunctionComponent, useState } from 'react';
 import ImageList from '@mui/material/ImageList';
 import ImageListItem from '@mui/material/ImageListItem';
 import axios from 'axios';
@@ -6,9 +6,9 @@ import { Button, Container, FormField, Inline, Stack } from 'aws-northstar';
 import URLImage from '../../Utils/URLImage';
 import ImageAnnotate from '../../Utils/Annotate';
 import Image from '../../Utils/Image';
-import {LABELS, COLORS} from '../../Data/data';
-
-var fs = require('fs');
+import {LABELS, COLORS, CaseType} from '../../Data/data';
+import { PathParams } from '../../Interfaces/PathParams';
+import { useParams } from 'react-router-dom';
 
 const SampleForm: FunctionComponent = () => {
     const [items, setItems] = useState<string[]>([])
@@ -17,7 +17,31 @@ const SampleForm: FunctionComponent = () => {
     const [id, setId] = useState<number[]>([])
     const [bbox, setBbox] = useState<number[][]>([])
     const [visibleAnnotate, setVisibleAnnotate] = useState(false);
-    
+    const [casename, setCaseName] = useState('');
+    const [labels, setLabels] = useState([])
+
+    var params : PathParams = useParams();
+
+    if(casename !== params.name) {
+        setCaseName(params.name);
+        axios.get('/samples/' + params.name)
+            .then((response) => {
+            var items : string[] = []
+            for(let item of response.data) {
+                items.push(item)
+            }
+            setItems(items);
+            console.log(items);
+            setFilename('');
+            if(params.name === 'track')
+                setLabels(LABELS[CaseType.TRACK])
+            else if(params.name === 'mask')
+                setLabels(LABELS[CaseType.FACE])    
+        }, (error) => {
+            console.log(error);
+        });
+    }
+
     const onImageClick = (event: React.MouseEvent<HTMLImageElement>) => {
         const src = event.currentTarget.src
         const filename = src.substring(src.lastIndexOf('/') + 1)
@@ -27,22 +51,8 @@ const SampleForm: FunctionComponent = () => {
         setBbox([]);
     }
 
-    useEffect(() => {
-        axios.get('/samples')
-            .then((response) => {
-            var items : string[] = []
-            for(let item of response.data) {
-                items.push(item)
-            }
-            setItems(items);
-            console.log(items);
-        }, (error) => {
-            console.log(error);
-        });
-    }, [])
-
     const onInference = () => {
-        axios.get('/inference/sample/' + filename)
+        axios.get('/inference/sample/' + params.name + '/' + filename)
         .then((response) => {
             var tbbox : number[][] = [];
             var tid = [];
@@ -76,7 +86,7 @@ const SampleForm: FunctionComponent = () => {
             index++;
         });
         var labelsData : string[] = [];
-        LABELS.forEach(label => {
+        labels.forEach(label => {
             labelsData.push(label + '\r');
         })
         
@@ -94,13 +104,13 @@ const SampleForm: FunctionComponent = () => {
         return (
             <Stack>
                 <Container title = "Select image file from sample list">
-                    <ImageList cols={12} rowHeight={128} gap={10} variant={'quilted'} style={{"height":"550px"}}>
+                    <ImageList cols={12} rowHeight={64} gap={10} variant={'quilted'} style={{"height":"550px"}}>
                         {items.map((item, index) => (
                             <ImageListItem key={item} rows={2}>
                             <Image
                                 src={item}
                                 width={128}
-                                height={256}
+                                height={128}
                                 current={current}
                                 onClick={onImageClick}
                             />
@@ -119,13 +129,13 @@ const SampleForm: FunctionComponent = () => {
         return (
             <Stack>
                 <Container title = "Select image file from sample list">
-                    <ImageList cols={12} rowHeight={128} gap={10} variant={'quilted'} style={{"height":"550px"}}>
+                    <ImageList cols={12} rowHeight={64} gap={10} variant={'quilted'} style={{"height":"550px"}}>
                         {items.map((item, index) => (
                             <ImageListItem key={item} rows={2}>
                             <Image
                                 src={item}
                                 width={128}
-                                height={256}
+                                height={128}
                                 current={current}
                                 onClick={onImageClick}
                             />
@@ -135,7 +145,7 @@ const SampleForm: FunctionComponent = () => {
                 </Container>
                 <Container title = "Start inference">
                     <FormField controlId='button'>
-                        <URLImage src={current} colors={COLORS} labels={LABELS} id={id} bbox={bbox}/>
+                        <URLImage src={current} colors={COLORS} labels={labels} id={id} bbox={bbox}/>
                     </FormField>
                     <Inline>
                         <FormField controlId='button'>

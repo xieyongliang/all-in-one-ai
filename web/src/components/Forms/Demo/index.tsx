@@ -1,12 +1,12 @@
-import { FunctionComponent, ChangeEvent, useState } from 'react';
-import { Stack, Heading, Container, FormGroup, Checkbox } from 'aws-northstar';
+import { FunctionComponent } from 'react';
+import { Stack, Heading, Container } from 'aws-northstar';
 import InferenceForm from '../Inference';
 import TransformJobList from '../../Lists/TransformJob';
 import SampleForm from '../Sample';
 import Radio from '../../Utils/Radio';
 import RadioGroup from '../../Utils/RadioGroup';
 import { useParams, useLocation, useHistory } from 'react-router-dom';
-import { PathParams } from '../../Utils/PathParams';
+import { PathParams } from '../../Interfaces/PathParams';
 
 const DemoForm: FunctionComponent = () => {
     const history = useHistory();
@@ -19,7 +19,7 @@ const DemoForm: FunctionComponent = () => {
     var type = hash === 'sample' || hash === 'uploaded' || hash === 'transform' ? hash : 'sample'
 
     function onChange (value: string) {
-        history.push('/case/' + params.name + '?tab=demo' + '#' + value);
+        history.push(`/case/${params.name}?tab=demo#${value}`);
     }
     
     return (
