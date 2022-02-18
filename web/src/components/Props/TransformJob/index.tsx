@@ -21,7 +21,7 @@ const TransformJobProp: FunctionComponent = () => {
     const [instanceType, setInstanceType] = useState('')
     const [instanceCount, setInstanceCount] = useState('')
     const [contentType, setContentType] = useState('')
-    const [maxConcurrentTransform, setMaxConncurrentTransform] = useState('')
+    const [maxConcurrentTransforms, setMaxConncurrentTransforms] = useState('')
     const [modelName, setModelName] = useState('')
     const [duration, setDuration] = useState('')
     const [s3InputUri, setS3InputUri] = useState('')
@@ -47,7 +47,7 @@ const TransformJobProp: FunctionComponent = () => {
             setInstanceType(response.data[0].instance_type)
             setInstanceCount(response.data[0].instance_count)
             setContentType(response.data[0].content_type)
-            setMaxConncurrentTransform(response.data[0].max_concurrent_transform)
+            setMaxConncurrentTransforms(response.data[0].max_concurrent_transforms)
             setModelName(response.data[0].model_name)
             setDuration(response.data[0].duration)
             setS3InputUri(response.data[0].s3_input_uri)
@@ -112,7 +112,7 @@ const TransformJobProp: FunctionComponent = () => {
                             <KeyValuePair label="Instance count" value={instanceCount}></KeyValuePair>
                         </Grid>
                         <Grid item xs={2} sm={4} md={4}>
-                            <KeyValuePair label="Max concurrent transform" value={maxConcurrentTransform}></KeyValuePair>
+                            <KeyValuePair label="Max concurrent transforms" value={maxConcurrentTransforms}></KeyValuePair>
                         </Grid>
                     </Grid>
                 </Container>

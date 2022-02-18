@@ -69,13 +69,11 @@ module.exports = function(app) {
     })
     app.get('/file/download', (req, res) => {
         var uri = decodeURIComponent(req.query['uri']);
-        console.log(uri);
         axios({
             url: uri,
             method: 'GET',
             responseType: 'arraybuffer', 
         }).then((response) => {
-            console.log(response.headers)
             res.setHeader('content-type', response.headers['content-type']);
             res.send(response.data);
         });

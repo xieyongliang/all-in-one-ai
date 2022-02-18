@@ -8,6 +8,7 @@ import Button from 'aws-northstar/components/Button'
 import { Inline, Stack } from 'aws-northstar';
 import ImageAnnotate from '../../Utils/Annotate';
 import {LABELS, COLORS} from '../../Data/data';
+import { useLocation } from 'react-router-dom';
 
 interface FileMetadata {
     name: string;
@@ -27,7 +28,7 @@ const InferenceForm: FunctionComponent = () => {
         axios.post('/image', files[0])
         .then((response) => {
             var filename : string = response.data;
-            setFilename('/image/' + filename);
+            setFilename(filename);
             setId([]);
             setBbox([]);
         }, (error) => {
@@ -36,7 +37,7 @@ const InferenceForm: FunctionComponent = () => {
     }
 
     const onInference = () => {
-        axios.get('/inference' + filename)
+        axios.get('/inference/image/' + filename)
         .then((response) => {
             var tbbox : number[][] = [];
             var tid = [];
@@ -76,7 +77,7 @@ const InferenceForm: FunctionComponent = () => {
         
         return (
             <Container title = "Image annotation">
-                <ImageAnnotate imageUri={filename} labelsData={labelsData} annotationData={annotationData} colorData={COLORS}/>
+                <ImageAnnotate imageUri={window.location.protocol + '//' + window.location.host + '/image/' + filename} labelsData={labelsData} annotationData={annotationData} colorData={COLORS}/>
                 <FormField controlId='button'>
                     <Button variant="primary" onClick={()=>setVisibleAnnotate(false)}>Close</Button>
                 </FormField>
@@ -111,7 +112,7 @@ const InferenceForm: FunctionComponent = () => {
                 </Container>
                 <Container title="Start inference">
                     <FormField controlId='button'>
-                        <URLImage src={filename} colors={COLORS} labels={labels} id={id} bbox={bbox}/>
+                        <URLImage src={'/image/' + filename} colors={COLORS} labels={labels} id={id} bbox={bbox}/>
                     </FormField>          
                     <Inline>      
                         <FormField controlId='button'>
