@@ -3,9 +3,9 @@ import Container from 'aws-northstar/layouts/Container';
 import StatusIndicator from 'aws-northstar/components/StatusIndicator';
 import Stack from 'aws-northstar/layouts/Stack';
 import { FunctionComponent, useEffect, useState } from 'react';
-import { Link } from 'aws-northstar';
+import { Button, Form, FormSection, Link } from 'aws-northstar';
 import Grid from '@mui/material/Grid';
-import { useLocation, useParams } from 'react-router-dom';
+import { useHistory, useLocation, useParams } from 'react-router-dom';
 import { PathParams } from '../../Interfaces/PathParams';
 import axios from 'axios';
 
@@ -24,6 +24,8 @@ const TransformJobProp: FunctionComponent = () => {
     const [duration, setDuration] = useState('')
     const [s3InputUri, setS3InputUri] = useState('')
     const [s3OutputUri, setS3OutputUri] = useState('');
+
+    const history = useHistory();
 
     var params : PathParams = useParams();
 
@@ -71,67 +73,78 @@ const TransformJobProp: FunctionComponent = () => {
         return <Link href={link}> {link} </Link>
     }
 
+    const onClose = () => {
+        history.push(`/case/${params.name}?tab=demo#transform`)
+    }
+
     return (
-            <Stack>
-                <Container headingVariant='h4' title="Job summary">
-                    <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }}>
-                        <Grid item xs={2} sm={4} md={4}>
-                            <KeyValuePair label="Job name" value={transformJobName}></KeyValuePair>
-                        </Grid>
-                        <Grid item xs={2} sm={4} md={4}>
-                            <KeyValuePair label="Status" value={getStatus(status)}></KeyValuePair>
-                        </Grid>
-                        <Grid item xs={2} sm={4} md={4}>
-                            <KeyValuePair label="Approx. batch transform duration" value={duration}></KeyValuePair>
-                        </Grid>
-                        <Grid item xs={2} sm={4} md={4}>
-                            <KeyValuePair label="Creation time" value={creationTime}></KeyValuePair>
-                        </Grid>
-                        <Grid item xs={2} sm={4} md={4}>
-                            <KeyValuePair label="Transform start time" value={transformStartTime}></KeyValuePair>
-                        </Grid>
-                        <Grid item xs={2} sm={4} md={4}>
-                            <KeyValuePair label="Transform end time" value={transformEndTime}></KeyValuePair>
-                        </Grid>
+        <Form
+            header="Review batch transform job"
+            description="A transform job uses a model to transform data and stores the results at a specified location."
+            actions={
+                <div>
+                    <Button variant="primary" onClick={onClose}>Close</Button>
+                </div>
+            }>   
+            <FormSection header='Job summary'>
+                <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }}>
+                    <Grid item xs={2} sm={4} md={4}>
+                        <KeyValuePair label="Job name" value={transformJobName}></KeyValuePair>
                     </Grid>
-                </Container>
-                <Container headingVariant='h4' title="Job configuration">
-                    <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }}>
-                        <Grid item xs={2} sm={4} md={4}>
-                            <KeyValuePair label="Model name" value={modelName}></KeyValuePair>
-                        </Grid>
-                        <Grid item xs={2} sm={4} md={4}>
-                            <KeyValuePair label="Instance type" value={instanceType}></KeyValuePair>
-                        </Grid>
-                        <Grid item xs={2} sm={4} md={4}>
-                            <KeyValuePair label="Instance count" value={instanceCount}></KeyValuePair>
-                        </Grid>
-                        <Grid item xs={2} sm={4} md={4}>
-                            <KeyValuePair label="Max concurrent transforms" value={maxConcurrentTransforms}></KeyValuePair>
-                        </Grid>
+                    <Grid item xs={2} sm={4} md={4}>
+                        <KeyValuePair label="Status" value={getStatus(status)}></KeyValuePair>
                     </Grid>
-                </Container>
-                <Container headingVariant='h4' title="Input data configuration">
-                    <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }}>
-                        <Grid item xs={2} sm={4} md={4}>
-                            <KeyValuePair label="S3 data type" value={dataType}></KeyValuePair>
-                        </Grid>
-                        <Grid item xs={2} sm={4} md={4}>
-                            <KeyValuePair label="S3 URI" value={getLink(s3InputUri)}></KeyValuePair>
-                        </Grid>
-                        <Grid item xs={2} sm={4} md={4}>
-                            <KeyValuePair label="Content type" value={contentType}></KeyValuePair>
-                        </Grid>
+                    <Grid item xs={2} sm={4} md={4}>
+                        <KeyValuePair label="Approx. batch transform duration" value={duration}></KeyValuePair>
                     </Grid>
-                </Container>
-                <Container headingVariant='h4' title="Output data configuration">
-                    <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }}>
-                        <Grid item xs={2} sm={4} md={4}>
-                            <KeyValuePair label="S3 output path" value={getLink(s3OutputUri)}></KeyValuePair>
-                        </Grid>
+                    <Grid item xs={2} sm={4} md={4}>
+                        <KeyValuePair label="Creation time" value={creationTime}></KeyValuePair>
                     </Grid>
-                </Container>
-            </Stack>
+                    <Grid item xs={2} sm={4} md={4}>
+                        <KeyValuePair label="Transform start time" value={transformStartTime}></KeyValuePair>
+                    </Grid>
+                    <Grid item xs={2} sm={4} md={4}>
+                        <KeyValuePair label="Transform end time" value={transformEndTime}></KeyValuePair>
+                    </Grid>
+                </Grid>
+            </FormSection>
+            <FormSection header="Job configuration">
+                <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }}>
+                    <Grid item xs={2} sm={4} md={4}>
+                        <KeyValuePair label="Model name" value={modelName}></KeyValuePair>
+                    </Grid>
+                    <Grid item xs={2} sm={4} md={4}>
+                        <KeyValuePair label="Instance type" value={instanceType}></KeyValuePair>
+                    </Grid>
+                    <Grid item xs={2} sm={4} md={4}>
+                        <KeyValuePair label="Instance count" value={instanceCount}></KeyValuePair>
+                    </Grid>
+                    <Grid item xs={2} sm={4} md={4}>
+                        <KeyValuePair label="Max concurrent transforms" value={maxConcurrentTransforms}></KeyValuePair>
+                    </Grid>
+                </Grid>
+            </FormSection>
+            <FormSection header="Input data configuration">
+                <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }}>
+                    <Grid item xs={2} sm={4} md={4}>
+                        <KeyValuePair label="S3 data type" value={dataType}></KeyValuePair>
+                    </Grid>
+                    <Grid item xs={2} sm={4} md={4}>
+                        <KeyValuePair label="S3 URI" value={getLink(s3InputUri)}></KeyValuePair>
+                    </Grid>
+                    <Grid item xs={2} sm={4} md={4}>
+                        <KeyValuePair label="Content type" value={contentType}></KeyValuePair>
+                    </Grid>
+                </Grid>
+            </FormSection>
+            <FormSection header="Output data configuration">
+                <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }}>
+                    <Grid item xs={2} sm={4} md={4}>
+                        <KeyValuePair label="S3 output path" value={getLink(s3OutputUri)}></KeyValuePair>
+                    </Grid>
+                </Grid>
+            </FormSection>
+        </Form>
     )
 }
 

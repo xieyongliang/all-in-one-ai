@@ -32,7 +32,7 @@ const Case: FunctionComponent = () => {
     const history = useHistory();
 
     const onChange = (tab: string) => {
-        history.push('/case/' + params.name + '?tab=' + tab);
+        history.push(`/case/${params.name}?tab=${tab}`);
     }
 
     if(hash === 'form' || hash === 'review') {

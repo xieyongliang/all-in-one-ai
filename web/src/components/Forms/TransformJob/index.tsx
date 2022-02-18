@@ -135,7 +135,7 @@ const TransformJobForm: FunctionComponent = () => {
             }
             axios.post('/transformjob', body) 
             .then((response) => {
-                history.push('/case/' + params.name + '?tab=demo#transform')
+                history.push(`/case/${params.name}?tab=demo#transform`)
             }, (error) => {
                 console.log(error);
             });    
@@ -143,78 +143,76 @@ const TransformJobForm: FunctionComponent = () => {
     }
 
     const onCancel = () => {
-        history.push('/case/' + params.name + '?tab=demo#transform')
+        history.push(`/case/${params.name}?tab=demo#transform`)
     }
     
     return (
-        <Stack>
-            <Form
-                header="Create batch transform job"
-                description="A transform job uses a model to transform data and stores the results at a specified location."
-                actions={
-                    <div>
-                        <Button variant="link" onClick={onCancel}>Cancel</Button>
-                        <Button variant="primary" onClick={onSubmit}>Submit</Button>
-                    </div>
-                }>            
-                <FormSection header="Job configuration">
-                    <FormField label="Job name" controlId="formFieldIdJobName">
-                        <Input value = {transformJobName} invalid={invalidTransformJobName} onChange={(event) => onChange('formFieldIdJobName', event)}> </Input>
-                    </FormField>
-                    <FormField label="Model name" controlId="formFieldIdModelName">
-                        <Select
-                            placeholder="Choose an option"
-                            options={optionsModel}
-                            selectedOption={selectedModelName}
-                            invalid={invalidModelName}
-                            onChange={(event) => onChange('formFieldIdModelName', event)}
-                        />
-                    </FormField>
-                    <FormField label="Instance Type" controlId="formFieldIdInstanceType">
-                        <Select
-                            placeholder="Choose an option"
-                            options={optionsInstanceType}
-                            selectedOption={selectedInstanceType}
-                            invalid={invalidInstanceType}
-                            onChange={(event) => onChange('formFieldIdInstanceType', event)}
-                        />
-                    </FormField>
-                    <FormField label="Instance count" controlId="formFieldIdInstanceCount">
-                        <Input value = {instanceCount} type={'number'} required={true} onChange={(event) => onChange('formFieldIdInstanceCount', event)}> </Input>
-                    </FormField>
-                    <FormField label="Max concurrent transforms" controlId="formFieldId3">
-                        <Input value = {maxConcurrentTransforms} type={'number'} required={true} onChange={(event) => onChange('formFieldIdS3Input', event)}/>
-                    </FormField>
-                </FormSection>
-                <FormSection header="Input configuration">
-                    <FormField label="Data type" controlId="formFieldIdDataType">
-                        <Select
-                            placeholder="Choose an option"
-                            options={optionsDataType}
-                            selectedOption={selectedDataType}
-                            onChange={(event) => onChange('formFieldIdDataType', event)}
-                        />
-                    </FormField>
-                    <FormField label="S3 input path" controlId="formFieldIdS3InputUri">
-                        <Input type="text" placeholder='S3Uri' required={true} invalid={invalidS3InputUri} onChange={(event) => onChange('formFieldIdS3InputUri', event)}/>
-                    </FormField>
+        <Form
+            header="Create batch transform job"
+            description="A transform job uses a model to transform data and stores the results at a specified location."
+            actions={
+                <div>
+                    <Button variant="link" onClick={onCancel}>Cancel</Button>
+                    <Button variant="primary" onClick={onSubmit}>Submit</Button>
+                </div>
+            }>            
+            <FormSection header="Job configuration">
+                <FormField label="Job name" controlId="formFieldIdJobName">
+                    <Input value = {transformJobName} invalid={invalidTransformJobName} onChange={(event) => onChange('formFieldIdJobName', event)}> </Input>
+                </FormField>
+                <FormField label="Model name" controlId="formFieldIdModelName">
+                    <Select
+                        placeholder="Choose an option"
+                        options={optionsModel}
+                        selectedOption={selectedModelName}
+                        invalid={invalidModelName}
+                        onChange={(event) => onChange('formFieldIdModelName', event)}
+                    />
+                </FormField>
+                <FormField label="Instance Type" controlId="formFieldIdInstanceType">
+                    <Select
+                        placeholder="Choose an option"
+                        options={optionsInstanceType}
+                        selectedOption={selectedInstanceType}
+                        invalid={invalidInstanceType}
+                        onChange={(event) => onChange('formFieldIdInstanceType', event)}
+                    />
+                </FormField>
+                <FormField label="Instance count" controlId="formFieldIdInstanceCount">
+                    <Input value = {instanceCount} type={'number'} required={true} onChange={(event) => onChange('formFieldIdInstanceCount', event)}> </Input>
+                </FormField>
+                <FormField label="Max concurrent transforms" controlId="formFieldId3">
+                    <Input value = {maxConcurrentTransforms} type={'number'} required={true} onChange={(event) => onChange('formFieldIdS3Input', event)}/>
+                </FormField>
+            </FormSection>
+            <FormSection header="Input configuration">
+                <FormField label="Data type" controlId="formFieldIdDataType">
+                    <Select
+                        placeholder="Choose an option"
+                        options={optionsDataType}
+                        selectedOption={selectedDataType}
+                        onChange={(event) => onChange('formFieldIdDataType', event)}
+                    />
+                </FormField>
+                <FormField label="S3 input path" controlId="formFieldIdS3InputUri">
+                    <Input type="text" placeholder='S3Uri' required={true} invalid={invalidS3InputUri} onChange={(event) => onChange('formFieldIdS3InputUri', event)}/>
+                </FormField>
 
-                    <FormField label="Content type" controlId="formFieldIdContentType">
-                        <Select
-                            placeholder="Choose an option"
-                            options={optionsContentType}
-                            selectedOption={selectedContentType}
-                            onChange={(event) => onChange('formFieldIdContentType', event)}
-                        />
-                    </FormField>
-                </FormSection>
-                <FormSection header="Output configuration">
-                    <FormField label="S3 output path" controlId="formFieldIdS3OutputUri">
-                        <Input type="text" placeholder='S3Uri' required={true} invalid={invalidS3OutputUri} onChange={(event) => onChange('formFieldIdS3OutputUri', event)}/>
-                    </FormField>
-                </FormSection>
-            </Form>
-        </Stack>
+                <FormField label="Content type" controlId="formFieldIdContentType">
+                    <Select
+                        placeholder="Choose an option"
+                        options={optionsContentType}
+                        selectedOption={selectedContentType}
+                        onChange={(event) => onChange('formFieldIdContentType', event)}
+                    />
+                </FormField>
+            </FormSection>
+            <FormSection header="Output configuration">
+                <FormField label="S3 output path" controlId="formFieldIdS3OutputUri">
+                    <Input type="text" placeholder='S3Uri' required={true} invalid={invalidS3OutputUri} onChange={(event) => onChange('formFieldIdS3OutputUri', event)}/>
+                </FormField>
+            </FormSection>
+        </Form>
     );
 }
 

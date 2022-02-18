@@ -125,7 +125,7 @@ const InferenceForm: FunctionComponent = () => {
                         onChange={onChange}
                     ></FileUpload>
                 </Container>
-                <Container title="Start inference">
+                <Container title="Preview">
                     <FormField controlId='button'>
                         <URLImage src={'/image/' + filename} colors={COLORS} labels={labels} id={id} bbox={bbox}/>
                     </FormField>          

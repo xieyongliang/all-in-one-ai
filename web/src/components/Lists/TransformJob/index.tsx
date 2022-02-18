@@ -227,7 +227,7 @@ const TransformJobList: FunctionComponent = () => {
                                 <Image
                                     src={item}
                                     width={128}
-                                    height={12}
+                                    height={128}
                                     current={currentImage}
                                     onClick={onImageClick}
                                 />
@@ -238,7 +238,7 @@ const TransformJobList: FunctionComponent = () => {
                 }
                 {
                     !loadingReview && 
-                    <Container title = "Start inference">
+                    <Container title = "Preview">
                         <FormField controlId='button'>
                             <URLImage src={currentImage} colors={COLORS} labels={labels} id={id} bbox={bbox}/>
                         </FormField>

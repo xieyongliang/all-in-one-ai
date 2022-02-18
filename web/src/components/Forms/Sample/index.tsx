@@ -143,7 +143,7 @@ const SampleForm: FunctionComponent = () => {
                         ))}
                     </ImageList>
                 </Container>
-                <Container title = "Start inference">
+                <Container title = "Preview">
                     <FormField controlId='button'>
                         <URLImage src={current} colors={COLORS} labels={labels} id={id} bbox={bbox}/>
                     </FormField>
