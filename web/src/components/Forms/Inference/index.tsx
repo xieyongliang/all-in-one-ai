@@ -1,11 +1,11 @@
-import { FunctionComponent, useState } from 'react';
+import { FunctionComponent, useEffect, useRef, useState } from 'react';
+import { useParams } from 'react-router-dom';
+import { Container, FormField, Button, Inline, Stack } from 'aws-northstar';
 import FileUpload from 'aws-northstar/components/FileUpload';
 import axios from 'axios';
 import URLImage from '../../Utils/URLImage';
-import { Container, FormField, Button, Inline, Stack } from 'aws-northstar';
 import ImageAnnotate from '../../Utils/Annotate';
 import {LABELS, COLORS, CaseType} from '../../Data/data';
-import { useParams } from 'react-router-dom';
 import { PathParams } from '../../Interfaces/PathParams';
 
 interface FileMetadata {
@@ -24,19 +24,20 @@ const InferenceForm: FunctionComponent = () => {
     const [id, setId] = useState<number[]>([])
     const [bbox, setBbox] = useState<number[][]>([])
     const [visibleAnnotate, setVisibleAnnotate] = useState(false);
-    const [casename, setCaseName] = useState('');
     const [labels, setLabels] = useState([]);
+    const casename = useRef('');
 
     var params : PathParams = useParams();
 
-    if(casename !== params.name) {
-        setCaseName(params.name);
+    useEffect(() => {
+        casename.current = params.name;
         setFilename('');
+        setVisibleAnnotate(false)
         if(params.name === 'track')
             setLabels(LABELS[CaseType.TRACK])
         else if(params.name === 'mask')
             setLabels(LABELS[CaseType.FACE])
-    }
+    }, [params.name]);
 
     const onChange = (files: (File | FileMetadata)[]) => {
         axios.post('/image', files[0])

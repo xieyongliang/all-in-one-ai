@@ -1,14 +1,8 @@
-import React, { FunctionComponent, useState } from 'react';
-import Table from 'aws-northstar/components/Table';
-import StatusIndicator from 'aws-northstar/components/StatusIndicator';
-import Button from 'aws-northstar/components/Button';
-import Inline from 'aws-northstar/layouts/Inline';
-import ButtonDropdown from 'aws-northstar/components/ButtonDropdown';
-import Flashbar from 'aws-northstar/components/Flashbar';
-import {Column} from 'react-table'
+import React, { FunctionComponent, useEffect, useRef, useState } from 'react';
 import { useHistory, useParams } from 'react-router-dom'; 
+import { Container, FormField, Stack, Table, Button, Inline, ButtonDropdown, StatusIndicator, Flashbar } from 'aws-northstar'
+import { Column } from 'react-table'
 import axios from 'axios';
-import { Container, FormField, Stack } from 'aws-northstar';
 import ImageList from '@mui/material/ImageList';
 import ImageListItem from '@mui/material/ImageListItem';
 import URLImage from '../../Utils/URLImage';
@@ -36,15 +30,15 @@ const TransformJobList: FunctionComponent = () => {
     const [visibleAnnotate, setVisibleAnnotate] = useState(false);
     const [id, setId] = useState<number[]>([])
     const [bbox, setBbox] = useState<number[][]>([])
-    const [casename, setCaseName] = useState('')
     const [labels,  setLabels] = useState([])
+    const casename = useRef('');
 
     const history = useHistory();
 
     var params : PathParams = useParams();
 
-    if(casename !== params.name) {
-        setCaseName(params.name);
+    useEffect(() => {
+        casename.current = params.name;
         axios.get('/transformjob', {params : {'case': params.name}})
             .then((response) => {
             var items = []
@@ -53,8 +47,9 @@ const TransformJobList: FunctionComponent = () => {
             }
             setItems(items);
             setLoadingTable(false);
+            setVisibleAnnotate(false);
+            setVisibleReview(false);
             setCurrentImage('');
-            console.log(params.name)
             if(params.name === 'track')
                 setLabels(LABELS[CaseType.TRACK])
             else if(params.name === 'mask')
@@ -62,7 +57,7 @@ const TransformJobList: FunctionComponent = () => {
         }, (error) => {
             console.log(error);
         });
-    }
+    }, [params.name]);
     
     const onImageClick = (event: React.MouseEvent<HTMLImageElement>) => {
         const src = event.currentTarget.src

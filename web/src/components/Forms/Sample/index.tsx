@@ -1,4 +1,4 @@
-import { FunctionComponent, useState } from 'react';
+import { FunctionComponent, useEffect, useRef, useState } from 'react';
 import ImageList from '@mui/material/ImageList';
 import ImageListItem from '@mui/material/ImageListItem';
 import axios from 'axios';
@@ -17,22 +17,22 @@ const SampleForm: FunctionComponent = () => {
     const [id, setId] = useState<number[]>([])
     const [bbox, setBbox] = useState<number[][]>([])
     const [visibleAnnotate, setVisibleAnnotate] = useState(false);
-    const [casename, setCaseName] = useState('');
     const [labels, setLabels] = useState([])
+    const casename = useRef('');
 
     var params : PathParams = useParams();
 
-    if(casename !== params.name) {
-        setCaseName(params.name);
+    useEffect(() => {
+        casename.current = params.name;
         axios.get('/samples/' + params.name)
-            .then((response) => {
+        .then((response) => {
             var items : string[] = []
             for(let item of response.data) {
                 items.push(item)
             }
             setItems(items);
-            console.log(items);
             setFilename('');
+            setVisibleAnnotate(false);
             if(params.name === 'track')
                 setLabels(LABELS[CaseType.TRACK])
             else if(params.name === 'mask')
@@ -40,7 +40,7 @@ const SampleForm: FunctionComponent = () => {
         }, (error) => {
             console.log(error);
         });
-    }
+    },[params.name]);
 
     const onImageClick = (event: React.MouseEvent<HTMLImageElement>) => {
         const src = event.currentTarget.src
