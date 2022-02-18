@@ -1,29 +1,26 @@
-import KeyValuePair from 'aws-northstar/components/KeyValuePair';
-import Container from 'aws-northstar/layouts/Container';
-import StatusIndicator from 'aws-northstar/components/StatusIndicator';
-import Stack from 'aws-northstar/layouts/Stack';
 import { FunctionComponent, useEffect, useState } from 'react';
-import { Button, Form, FormSection, Link } from 'aws-northstar';
-import Grid from '@mui/material/Grid';
 import { useHistory, useLocation, useParams } from 'react-router-dom';
-import { PathParams } from '../../Interfaces/PathParams';
+import { KeyValuePair, StatusIndicator, Button, Form, FormSection, Link, Flashbar } from 'aws-northstar';
 import axios from 'axios';
+import Grid from '@mui/material/Grid';
+import { PathParams } from '../../Interfaces/PathParams';
 
 const TransformJobProp: FunctionComponent = () => {
-    const [transformJobName, setTransformJobName] = useState('')
-    const [creationTime, setCreationTime] = useState('')
-    const [transformStartTime, setTransformStartTime] = useState('')
-    const [transformEndTime, setTransformEndTime] = useState('')
-    const [status, setStatus] = useState('')
-    const [dataType, setDataType] = useState('')
-    const [instanceType, setInstanceType] = useState('')
-    const [instanceCount, setInstanceCount] = useState('')
-    const [contentType, setContentType] = useState('')
-    const [maxConcurrentTransforms, setMaxConncurrentTransforms] = useState('')
-    const [modelName, setModelName] = useState('')
-    const [duration, setDuration] = useState('')
-    const [s3InputUri, setS3InputUri] = useState('')
-    const [s3OutputUri, setS3OutputUri] = useState('');
+    const [ transformJobName, setTransformJobName ] = useState('')
+    const [ creationTime, setCreationTime ] = useState('')
+    const [ transformStartTime, setTransformStartTime ] = useState('')
+    const [ transformEndTime, setTransformEndTime ] = useState('')
+    const [ status, setStatus ] = useState('')
+    const [ dataType, setDataType ] = useState('')
+    const [ instanceType, setInstanceType ] = useState('')
+    const [ instanceCount, setInstanceCount ] = useState('')
+    const [ contentType, setContentType ] = useState('')
+    const [ maxConcurrentTransforms, setMaxConncurrentTransforms ] = useState('')
+    const [ modelName, setModelName ] = useState('')
+    const [ duration, setDuration ] = useState('')
+    const [ s3InputUri, setS3InputUri ] = useState('')
+    const [ s3OutputUri, setS3OutputUri ] = useState('');
+    const [ loading, setLoading ] = useState(true);
 
     const history = useHistory();
 
@@ -49,12 +46,13 @@ const TransformJobProp: FunctionComponent = () => {
             setDuration(response.data[0].duration)
             setS3InputUri(response.data[0].s3_input_uri)
             setS3OutputUri(response.data[0].s3_output_uri)
+            setLoading(false);
         }, (error) => {
             console.log(error);
         });
     }, [id, params.name])
 
-    function getStatus(status: string) {
+    const getStatus = (status: string) => {
         switch(status) {
             case 'Completed':
                 return <StatusIndicator  statusType='positive'>Completed</StatusIndicator>;
@@ -69,7 +67,7 @@ const TransformJobProp: FunctionComponent = () => {
         }
     }
 
-    function getLink(link: string) {
+    const getLink = (link: string) => {
         return <Link href={link}> {link} </Link>
     }
 
@@ -86,6 +84,14 @@ const TransformJobProp: FunctionComponent = () => {
                     <Button variant="primary" onClick={onClose}>Close</Button>
                 </div>
             }>   
+            {   
+                loading && <Flashbar items={[{
+                    header: 'Loading batch transform job information...',
+                    content: 'This may take up to an minute. Please wait a bit...',
+                    dismissible: true,
+                    loading: loading
+                }]} />
+            }
             <FormSection header='Job summary'>
                 <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }}>
                     <Grid item xs={2} sm={4} md={4}>
