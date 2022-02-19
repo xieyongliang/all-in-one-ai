@@ -52,7 +52,8 @@
     "react-redux": "^7.2.4",
     "react-spinners": "^0.11.0",
     "redux": "^4.1.1",
-    "http-proxy-middleware": "^1.0.6"
+    "http-proxy-middleware": "^1.0.6",
+    "react-code-blocks": "latest"
   },
   "devDependencies": {
     "@types/file-saver": "^2.0.3",

@@ -2,14 +2,16 @@ import React, { FunctionComponent, useEffect, useRef, useState } from 'react';
 import { useHistory, useParams } from 'react-router-dom'; 
 import { Container, FormField, Stack, Table, Button, Inline, ButtonDropdown, StatusIndicator, Flashbar } from 'aws-northstar'
 import { Column } from 'react-table'
-import axios from 'axios';
+import { CopyBlock } from 'react-code-blocks';
 import ImageList from '@mui/material/ImageList';
 import ImageListItem from '@mui/material/ImageListItem';
+import axios from 'axios';
 import URLImage from '../../Utils/URLImage';
 import {LABELS, COLORS, CaseType} from '../../Data/data';
 import ImageAnnotate from '../../Utils/Annotate';
 import Image from '../../Utils/Image';
 import { PathParams } from '../../Interfaces/PathParams';
+import { TransformSample } from '../../Data/code';
 
 interface TransformJobItem {
     name: string;
@@ -186,7 +188,7 @@ const TransformJobList: FunctionComponent = () => {
         </Inline>
     );
 
-    if(visibleAnnotate) {
+    const renderAnnotate = () => {
         var annotationData : string[] = [];
         var index = 0;
         bbox.forEach(item => {
@@ -208,7 +210,8 @@ const TransformJobList: FunctionComponent = () => {
             </Container>
         )
     }
-    else if(visibleReview) {
+
+    const renderReview = () => {
         return (
             <Stack>
                 {   
@@ -247,10 +250,11 @@ const TransformJobList: FunctionComponent = () => {
                         </FormField>
                     </Container>
                 }
-            </Stack>
+            </Stack>            
         )
     }
-    else {
+
+    const renderTransformJobList = () => {
         return (
             <Table
                 actionGroup={tableActions}
@@ -262,8 +266,41 @@ const TransformJobList: FunctionComponent = () => {
                 getRowId={getRowId}
                 loading={loadingTable}
             />
+        )    
+    }
+
+    const renderSampleCode = () => {
+        return (
+            <Container title="Sample code">
+                <FormField
+                    label="Expand to show sample code of realltime inference"
+                    controlId="formFieldIdSampleCode"
+                    stretch={true}
+                    expandable={true}
+                >
+                    <CopyBlock
+                        language="python"
+                        text={TransformSample}
+                        codeBlock
+                        theme={'github'}
+                        showLineNumbers={true}
+                    />
+                </FormField>
+            </Container>
         )
     }
+
+    if(visibleAnnotate) 
+        return renderAnnotate()
+    else if(visibleReview) 
+        return renderReview()
+    else 
+        return (
+            <Stack>
+                {renderTransformJobList()}
+                {renderSampleCode()}
+            </Stack>
+        )
 }
 
 export default TransformJobList;

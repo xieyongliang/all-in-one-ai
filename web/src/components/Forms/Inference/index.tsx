@@ -1,5 +1,6 @@
 import { FunctionComponent, useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
+import { CopyBlock } from 'react-code-blocks';
 import { Container, FormField, Button, Inline, Stack } from 'aws-northstar';
 import FileUpload from 'aws-northstar/components/FileUpload';
 import axios from 'axios';
@@ -7,16 +8,13 @@ import URLImage from '../../Utils/URLImage';
 import ImageAnnotate from '../../Utils/Annotate';
 import {LABELS, COLORS, CaseType} from '../../Data/data';
 import { PathParams } from '../../Interfaces/PathParams';
+import { InferenceSample } from '../../Data/code';
 
 interface FileMetadata {
     name: string;
     type?: string;
     size?: number;
     lastModified?: number;
-}
-
-interface InferenceFormProp {
-    name: string;
 }
 
 const InferenceForm: FunctionComponent = () => {
@@ -77,7 +75,7 @@ const InferenceForm: FunctionComponent = () => {
         setVisibleAnnotate(true);
     }
 
-    if(visibleAnnotate) {
+    const renderAnnotate = () => {
         var annotationData : string[] = [];
         var index = 0;
         bbox.forEach(item => {
@@ -89,7 +87,7 @@ const InferenceForm: FunctionComponent = () => {
         labels.forEach(label => {
             labelsData.push(label + '\r');
         })
-        
+            
         return (
             <Container title = "Image annotation">
                 <ImageAnnotate imageUri={window.location.protocol + '//' + window.location.host + '/image/' + filename} labelsData={labelsData} annotationData={annotationData} colorData={COLORS}/>
@@ -100,31 +98,28 @@ const InferenceForm: FunctionComponent = () => {
         )
     }
 
-    if(filename === '')
+    const renderImageDownload = () => {
         return (
-            <Stack>
-                <Container title="Select image file from local disk">
-                    <FileUpload
-                        controlId="file1"
-                        onChange={onChange}
-                    ></FileUpload>
-                </Container>
-                <Container title="Start inference">
+            <Container title="Select image file from local disk">
+                <FileUpload
+                    controlId="fileImage"
+                    onChange={onChange}
+                ></FileUpload>
+            </Container>
+        )
+    }
+
+    const renderPreview = () => {
+        if(filename === '') 
+            return (
+                <Container title="Preview">
                     <FormField controlId='button'>
                         <Button variant="primary" onClick={onInference} disabled={filename === ''}>Inference</Button>
                     </FormField>
                 </Container>
-            </Stack>
-        )
-    else
-        return (
-            <Stack>
-                <Container title="Select image file from local disk">
-                    <FileUpload
-                        controlId="file1"
-                        onChange={onChange}
-                    ></FileUpload>
-                </Container>
+            )
+        else 
+            return (
                 <Container title="Preview">
                     <FormField controlId='button'>
                         <URLImage src={'/image/' + filename} colors={COLORS} labels={labels} id={id} bbox={bbox}/>
@@ -138,6 +133,38 @@ const InferenceForm: FunctionComponent = () => {
                         </FormField>
                     </Inline>
                 </Container>
+            )
+    }
+
+    const renderSampleCode = () => {
+        return (
+            <Container title="Sample code">
+                <FormField
+                    label="Expand to show sample code of realltime inference"
+                    controlId="formFieldIdSampleCode"
+                    stretch={true}
+                    expandable={true}
+                >
+                    <CopyBlock
+                        language="python"
+                        text={InferenceSample}
+                        codeBlock
+                        theme={'github'}
+                        showLineNumbers={true}
+                    />
+                </FormField>
+            </Container>
+        )
+    }
+
+    if(visibleAnnotate)
+        return renderAnnotate();
+    else
+        return (
+            <Stack>
+                {renderImageDownload()}
+                {renderPreview()}
+                {renderSampleCode()}
             </Stack>
         )
 }
