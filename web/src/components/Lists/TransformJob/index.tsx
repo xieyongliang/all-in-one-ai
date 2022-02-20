@@ -21,18 +21,18 @@ interface TransformJobItem {
 }
 
 const TransformJobList: FunctionComponent = () => {
-    const [items, setItems] = useState([])
-    const [selectedTransformJob, setSelectedTransformJob] = useState('')
-    const [enabledReview, setEnabledReview] = useState(false)
-    const [loadingTable, setLoadingTable] = useState(true)
-    const [visibleReview, setVisibleReview] = useState(false)
-    const [loadingReview, setLoadingReview] = useState(true)
-    const [currentImage, setCurrentImage] = useState('')
-    const [transformJobResult, setTransformJobResult] = useState<any>({})
-    const [visibleAnnotate, setVisibleAnnotate] = useState(false);
-    const [id, setId] = useState<number[]>([])
-    const [bbox, setBbox] = useState<number[][]>([])
-    const [labels,  setLabels] = useState([])
+    const [ items, setItems ] = useState([])
+    const [ selectedTransformJob, setSelectedTransformJob ] = useState('')
+    const [ enabledReview, setEnabledReview ] = useState(false)
+    const [ loadingTable, setLoadingTable ] = useState(true)
+    const [ visibleReview, setVisibleReview ] = useState(false)
+    const [ loadingReview, setLoadingReview ] = useState(true)
+    const [ currentImage, setCurrentImage ] = useState('')
+    const [ transformJobResult, setTransformJobResult ] = useState<any>({})
+    const [ visibleAnnotate, setVisibleAnnotate ] = useState(false);
+    const [ id, setId ] = useState<number[]>([])
+    const [ bbox, setBbox ] = useState<number[][]>([])
+    const [ labels,  setLabels ] = useState([])
     const casename = useRef('');
 
     const history = useHistory();
@@ -100,12 +100,12 @@ const TransformJobList: FunctionComponent = () => {
 )
 
     const onCreate = () => {
-        history.push('/case/' + params.name + '?tab=demo#review')
+        history.push(`/case/${params.name}?tab=demo#review`)
     }
 
     const onReview = () => {
         setVisibleReview(true)
-        axios.get('/transformjob/' + selectedTransformJob + '/review?case=' + params.name)
+        axios.get(`/transformjob/${selectedTransformJob}/review?case=${params.name}`)
             .then((response) => {
             setTransformJobResult(response.data)
             setLoadingReview(false)
@@ -129,8 +129,7 @@ const TransformJobList: FunctionComponent = () => {
             accessor: 'name',
             Cell: ({ row  }) => {
                 if (row && row.original) {
-                    const name = row.original.name;
-                    return <a href={'/case/' + params.name +'?tab=demo#prop:id=' + name}> {name} </a>;
+                    return <a href={`/case/${params.name}?tab=demo#prop:id=${row.original.name}`}> {row.original.name} </a>;
                 }
                 return null;
             }
@@ -157,13 +156,13 @@ const TransformJobList: FunctionComponent = () => {
                     const status = row.original.status;
                     switch(status) {
                         case 'Completed':
-                            return <StatusIndicator  statusType='positive'>Completed</StatusIndicator>;
+                            return <StatusIndicator  statusType='positive'>{status}</StatusIndicator>;
                         case 'Failed':
-                            return <StatusIndicator  statusType='negative'>Error</StatusIndicator>;
+                            return <StatusIndicator  statusType='negative'>{status}</StatusIndicator>;
                         case 'InProgress':
-                            return <StatusIndicator  statusType='info'>In progress</StatusIndicator>;
+                            return <StatusIndicator  statusType='info'>{status}</StatusIndicator>;
                         case 'Stopped':
-                                return <StatusIndicator  statusType='warning'>Error</StatusIndicator>;
+                                return <StatusIndicator  statusType='warning'>{status}</StatusIndicator>;
                         default:
                             return null;
                     }

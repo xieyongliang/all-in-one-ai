@@ -1,6 +1,6 @@
 import { FunctionComponent, useEffect, useState } from 'react';
 import { useHistory, useParams } from 'react-router-dom'; 
-import { Form, FormSection, FormField, Input, Button, Stack, Select } from 'aws-northstar';
+import { Form, FormSection, FormField, Input, Button, Select } from 'aws-northstar';
 import axios from 'axios';
 import { PathParams } from '../../Interfaces/PathParams';
 import { SelectOption } from 'aws-northstar/components/Select';
@@ -41,21 +41,23 @@ const optionsInstanceType : SelectOption[]= [
 ];
 
 const TransformJobForm: FunctionComponent = () => {
-    const [selectedDataType, setSelectedDataType] = useState<SelectOption>({ label: 'S3Prefix', value: 'S3Prefix' });
-    const [selectedContentType, setSelectedContentType] = useState<SelectOption>({ label: 'image/png', value: 'image/png' });
-    const [selectedInstanceType, setSelectedInstanceType] = useState<SelectOption>({});
-    const [optionsModel, setOptionsModel] = useState([]);
-    const [selectedModelName, setSelectedModelName] = useState<SelectOption>({});
-    const [instanceCount, setInstanceCount] = useState(1);
-    const [maxConcurrentTransforms, setMaxConcurrentTransforms] = useState(1);
-    const [transformJobName, setTransformJobName] = useState('');
-    const [s3InputUri, setS3InputUri] = useState('');
-    const [s3OutputUri, setS3OutputUri] = useState('');
-    const [invalidTransformJobName, setInvalidTransformJobName] = useState(false);
-    const [invalidInstanceType, setInvalidInstanceType] = useState(false);
-    const [invalidModelName, setInvalidInvalidModelName] = useState(false);
-    const [invalidS3InputUri, setInvalidS3InputUri] = useState(false);
-    const [invalidS3OutputUri, setInvalidS3OutputUri] = useState(false);
+    const [ optionsModel, setOptionsModel ] = useState([]);
+    const [ selectedDataType, setSelectedDataType ] = useState<SelectOption>({ label: 'S3Prefix', value: 'S3Prefix' });
+    const [ selectedContentType, setSelectedContentType ] = useState<SelectOption>({ label: 'image/png', value: 'image/png' });
+    const [ selectedInstanceType, setSelectedInstanceType ] = useState<SelectOption>({});
+    const [ selectedModelName, setSelectedModelName ] = useState<SelectOption>({});
+    const [ transformJobName, setTransformJobName ] = useState('');
+    const [ instanceCount, setInstanceCount ] = useState(1);
+    const [ maxConcurrentTransforms, setMaxConcurrentTransforms ] = useState(1);
+    const [ inputS3Uri, setInputS3Uri ] = useState('');
+    const [ outputS3Uri, setOutputS3Uri ] = useState('');
+    const [ invalidTransformJobName, setInvalidTransformJobName ] = useState(false);
+    const [ invalidModelName, setInvalidInvalidModelName ] = useState(false);
+    const [ invalidInstanceType, setInvalidInstanceType ] = useState(false);
+    const [ invalidInstanceCount, setInvalidInstanceCount ] = useState(false);
+    const [ invalidMaxConcurrentTransform, setInvalidMaxconcurrentTransform ] = useState(false);
+    const [ invalidInputS3Uri, setInvalidInputS3Uri ] = useState(false);
+    const [ invalidOutputS3Uri, setInvalidOutputS3Uri ] = useState(false);
 
     const history = useHistory();
 
@@ -76,20 +78,17 @@ const TransformJobForm: FunctionComponent = () => {
     }, [])
 
     const onChange = ((id: string, event: any) => {
-        if(id === 'formFieldIdJobName') {
+        if(id === 'formFieldIdTransformJobName') {
             setTransformJobName(event);
-            setInvalidTransformJobName(event === '')
         }
         if(id === 'formFieldIdModelName') {
             setSelectedModelName({ label: event.target.value, value: event.target.value });
-            setInvalidInvalidModelName(false);
         }
         if(id === 'formFieldIdDataType') {
             setSelectedDataType({ label: event.target.value, value: event.target.value });
         }
         if(id === 'formFieldIdContentType') {
             setSelectedContentType({ label: event.target.value, value: event.target.value });
-            setInvalidInstanceType(true);
         }
         if(id === 'formFieldIdInstanceType') {
             setSelectedInstanceType({ label: event.target.value, value: event.target.value });
@@ -100,42 +99,44 @@ const TransformJobForm: FunctionComponent = () => {
         if(id === 'formFieldIdMaxConcurrentTransform') {
             setMaxConcurrentTransforms(event);
         }        
-        if(id === 'formFieldIdS3InputUri') {
-            setS3InputUri(event);
-            setInvalidS3InputUri(!event.startsWith('s3://'))
+        if(id === 'formFieldIdInputS3Uri') {
+            setInputS3Uri(event);
         }        
-        if(id === 'formFieldIdS3OutputUri') {
-            setS3OutputUri(event);
-            setInvalidS3OutputUri(!event.startsWith('s3://'))
+        if(id === 'formFieldIdOutputS3Uri') {
+            setOutputS3Uri(event);
         }        
     })
 
     const onSubmit = () => {
-        if(transformJobName === '' || invalidTransformJobName)
+        if(transformJobName === '')
             setInvalidTransformJobName(true)
-        else if(s3InputUri === '' || invalidS3InputUri)
-            setInvalidS3InputUri(true)
-        else if(s3OutputUri === '' || invalidS3OutputUri)
-            setInvalidS3OutputUri(true)
+        else if(inputS3Uri === '')
+            setInvalidInputS3Uri(true)
+        else if(outputS3Uri === '')
+            setInvalidOutputS3Uri(true)
         else if(selectedModelName.value === undefined)
             setInvalidInvalidModelName(true)
         else if(selectedInstanceType.value === undefined)
             setInvalidInstanceType(true)
+        else if(instanceCount < 0)
+            setInvalidInstanceCount(true)
+        else if(maxConcurrentTransforms < 0)
+            setInvalidMaxconcurrentTransform(true)
         else {
             var body = {
                 'transformjob_name' : transformJobName,
                 'model_name': selectedModelName.value,
-                'data__type': selectedDataType.value,
+                'data_type': selectedDataType.value,
                 'content_type': selectedContentType.value,
                 'instance_type': selectedInstanceType.value,
                 'instance_count': instanceCount,
                 'max_concurrent_transforms': maxConcurrentTransforms,
-                's3_input_uri': s3InputUri,
-                's3_output_uri': s3OutputUri
+                'input_s3uri': inputS3Uri,
+                'output_s3uri': outputS3Uri
             }
             axios.post('/transformjob', body) 
             .then((response) => {
-                history.push(`/case/${params.name}?tab=demo#transform`)
+                history.push(`/case/${params.name}?tab=demo#transformjob`)
             }, (error) => {
                 console.log(error);
             });    
@@ -143,7 +144,7 @@ const TransformJobForm: FunctionComponent = () => {
     }
 
     const onCancel = () => {
-        history.push(`/case/${params.name}?tab=demo#transform`)
+        history.push(`/case/${params.name}?tab=demo#transformjob`)
     }
     
     return (
@@ -158,7 +159,7 @@ const TransformJobForm: FunctionComponent = () => {
             }>            
             <FormSection header="Job configuration">
                 <FormField label="Job name" controlId="formFieldIdJobName">
-                    <Input value = {transformJobName} invalid={invalidTransformJobName} onChange={(event) => onChange('formFieldIdJobName', event)}> </Input>
+                    <Input value = {transformJobName} invalid={invalidTransformJobName} required={true} onChange={(event) => onChange('formFieldIdTransformJobName', event)}> </Input>
                 </FormField>
                 <FormField label="Model name" controlId="formFieldIdModelName">
                     <Select
@@ -179,10 +180,10 @@ const TransformJobForm: FunctionComponent = () => {
                     />
                 </FormField>
                 <FormField label="Instance count" controlId="formFieldIdInstanceCount">
-                    <Input value = {instanceCount} type={'number'} required={true} onChange={(event) => onChange('formFieldIdInstanceCount', event)}> </Input>
+                    <Input value = {instanceCount} type={'number'} required={true} invalid={invalidInstanceCount} onChange={(event) => onChange('formFieldIdInstanceCount', event)}> </Input>
                 </FormField>
                 <FormField label="Max concurrent transforms" controlId="formFieldId3">
-                    <Input value = {maxConcurrentTransforms} type={'number'} required={true} onChange={(event) => onChange('formFieldIdS3Input', event)}/>
+                    <Input value = {maxConcurrentTransforms} type={'number'} required={true} invalid={invalidMaxConcurrentTransform} onChange={(event) => onChange('formFieldIdS3Input', event)}/>
                 </FormField>
             </FormSection>
             <FormSection header="Input configuration">
@@ -195,7 +196,7 @@ const TransformJobForm: FunctionComponent = () => {
                     />
                 </FormField>
                 <FormField label="S3 input path" controlId="formFieldIdS3InputUri">
-                    <Input type="text" placeholder='S3Uri' required={true} invalid={invalidS3InputUri} onChange={(event) => onChange('formFieldIdS3InputUri', event)}/>
+                    <Input type="text" placeholder='S3Uri' required={true} invalid={invalidInputS3Uri} onChange={(event) => onChange('formFieldIdInputS3Uri', event)}/>
                 </FormField>
 
                 <FormField label="Content type" controlId="formFieldIdContentType">
@@ -209,7 +210,7 @@ const TransformJobForm: FunctionComponent = () => {
             </FormSection>
             <FormSection header="Output configuration">
                 <FormField label="S3 output path" controlId="formFieldIdS3OutputUri">
-                    <Input type="text" placeholder='S3Uri' required={true} invalid={invalidS3OutputUri} onChange={(event) => onChange('formFieldIdS3OutputUri', event)}/>
+                    <Input type="text" placeholder='S3Uri' required={true} invalid={invalidOutputS3Uri} onChange={(event) => onChange('formFieldIdOutputS3Uri', event)}/>
                 </FormField>
             </FormSection>
         </Form>

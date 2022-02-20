@@ -3,6 +3,7 @@ import { Form, FormSection, FormField, Input, Button, Inline, Stack, Text } from
 import { useHistory, useParams } from 'react-router-dom'; 
 import Select, { SelectOption } from 'aws-northstar/components/Select';
 import Grid from '@mui/material/Grid';
+import axios from 'axios';
 
 const optionsInstance : SelectOption[]= [
     {
@@ -79,54 +80,113 @@ interface TrainingJobFormProps {
 
 const TrainingJobForm: FunctionComponent<TrainingJobFormProps> = (props) => {
     const [ trainingJobName, setTrainingJobName ] = useState('')
-    const [ trainingImage, setTrainingImage ] = useState('')
-    const [ selectedInstanceType, setSelectedInstanceType ] = useState({})
-    const [ selectedInstanceCount, setSelectedInstanceCount ] = useState(1)
-    const [ volumeSizeInGb, setVolumeSizeInGb ] = useState(30)
+    const [ selectedInstanceType, setSelectedInstanceType ] = useState<SelectOption>({})
+    const [ instanceCount, setInstanceCount ] = useState(1)
+    const [ volumeSizeInGB, setVolumeSizeInGB ] = useState(30)
     const [ inputS3Uri, setInputS3Uri ] = useState('')
-    const [ imagesPrefix, setImagesPrefix ] = useState('')
-    const [ labelsPrefix, setLabelsPrefix ] = useState('')
-    const [ weightsPrefix, setWeightsPrefix ] = useState('')
-    const [ cfgPrefix, setCfgPrefix ] = useState('')
+    const [ imagesPrefix, setImagesPrefix ] = useState('images')
+    const [ labelsPrefix, setLabelsPrefix ] = useState('labels')
+    const [ weightsPrefix, setWeightsPrefix ] = useState('weights')
+    const [ cfgPrefix, setCfgPrefix ] = useState('cfg')
+    const [ outputS3Uri, setOutputS3Uri ] = useState('')
+    const [ tags, setTags ] = useState([{key:'', value:''}])
+    const [ forcedRefresh, setForcedRefresh ] = useState(false)
+    const [ invalidTrainingJobName, setInvalidTrainingJobName ] = useState(false)
+    const [ invalidInstanceType, setinvalidInstanceType ] = useState(false)
+    const [ invalidInstanceCount, setInvalidInstanceCount ] = useState(false)
+    const [ invalidVolumeSizeInGB, setInvalidVolumeSizeInGB ] = useState(false)
+    const [ invalidInputS3Uri, setInvalidInputS3Uri ] = useState(false)
+    const [ invalidImagesPrefix, setInvalidImagesPrefix ] = useState(false)
+    const [ invalidLabelsPrefix, setInvalidLabelsPrefix ] = useState(false)
+    const [ invalidWeightsPrefix, setInvalidWeightsPrefix ] = useState(false)
+    const [ invalidCfgPrefix, setInvalidCfgPrefix ] = useState(false)
+    const [ invalidOutputS3Uri, setInvalidOutputS3Uri ] = useState(false)
 
     const history = useHistory();
 
     var params : PathParams = useParams();
 
     const onChange = (id: string, event: any) => {
-        if(id === 'formFieldIdTrainingJobName') {
+        if(id === 'formFieldIdTrainingJobName')
             setTrainingJobName(event);
-        }
-        if(id === 'formFieldIdTrainingImage') {
-            setTrainingImage(event);
-        }
-        if(id === 'formFieldIdInstanceType') {
+        if(id === 'formFieldIdInstanceType')
             setSelectedInstanceType({ label: event.target.value, value: event.target.value });
-        }
-        if(id === 'formFieldId') {
-            
-        }
-        if(id === 'formFieldIdInstanceType') {
-        }
-        if(id === 'formFieldIdInstanceCount') {
-        }
-        if(id === 'formFieldIdMaxConcurrentTransform') {
-        }        
-        if(id === 'formFieldIdS3InputUri') {
-        }        
-        if(id === 'formFieldIdS3OutputUri') {
-        }        
+        if(id === 'formFieldIdInstanceCount')
+            setInstanceCount(parseInt(event));
+        if(id === 'formFieldIdVolumeSizeInGB')
+            setVolumeSizeInGB(parseInt(event));
+        if(id === 'formFieldIdInputS3Uri')
+            setInputS3Uri(event);
+        if(id === 'formFieldIdImagesPrefix')
+            setImagesPrefix(event);
+        if(id === 'formFieldIdLabelsPrefix')
+            setLabelsPrefix(event);
+        if(id === 'formFieldIdWeightsPrefix')
+            setWeightsPrefix(event);
+        if(id === 'formFieldIdCfgPrefix')
+            setCfgPrefix(event);
+        if(id === 'formFieldIdOutputS3Uri')
+            setOutputS3Uri(event);
     }
 
     const onSubmit = () => {
-        history.push(`/case/${params.name}?tab=trainingjob`)
+        if(trainingJobName === '')
+            setInvalidTrainingJobName(true)
+        else if(selectedInstanceType.value === undefined)
+            setinvalidInstanceType(true)
+        else if(instanceCount < 0)
+            setInvalidInstanceCount(true)
+        else if(volumeSizeInGB < 0)
+            setInvalidVolumeSizeInGB(true)
+        else if(inputS3Uri === '')
+            setInvalidInputS3Uri(true)
+        else if(imagesPrefix === '')
+            setInvalidImagesPrefix(true)
+        else if(labelsPrefix === '')
+            setInvalidLabelsPrefix(true)
+        else if(weightsPrefix === '')
+            setInvalidWeightsPrefix(true)
+        else if(cfgPrefix === '')
+            setInvalidCfgPrefix(true)
+        else if(outputS3Uri === '')
+            setInvalidOutputS3Uri(true)
+        else {
+            var body = {
+                'trainingjob_name' : trainingJobName,
+                'case_name': params.name,
+                'instance_type': selectedInstanceType.value,
+                'instance_count': instanceCount,
+                'volume_size_in_gb': volumeSizeInGB,
+                'input_s3uri': inputS3Uri,
+                'images_prefix': imagesPrefix,
+                'labels_prefix': labelsPrefix,
+                'weights_prefix': weightsPrefix,
+                'cfg_prefix': cfgPrefix,
+                'output_s3uri': outputS3Uri
+            }
+            if(tags.length > 1 || (tags.length == 1 && tags[0].key != '' && tags[0].value != ''))
+                body['tags'] = tags
+            axios.post('/trainingjob', body,  { headers: {'content-type': 'application/json' }}) 
+            .then((response) => {
+                history.push(`/case/${params.name}?tab=demo#trainingjob`)
+            }, (error) => {
+                console.log(error);
+            });    
+        }
     }
 
     const onCancel = () => {
         history.push(`/case/${params.name}?tab=trainingjob`)
     }
 
-    const onRemove = () => {
+    const onAddTag = () => {
+        tags.push({key:'', value:''});
+        setForcedRefresh(!forcedRefresh);
+    }
+
+    const onRemoveTag = (index) => {
+        tags.splice(index, 1);
+        setForcedRefresh(!forcedRefresh);
     }
 
     var wizard : boolean
@@ -140,74 +200,53 @@ const TrainingJobForm: FunctionComponent<TrainingJobFormProps> = (props) => {
             return (
                 <FormSection header="Job settings">
                     <FormField label="Job name" controlId="formFieldIdJobName" hintText='Maximum of 63 alphanumeric characters. Can include hyphens (-), but not spaces. Must be unique within your account in an AWS Region.'>
-                        <Input type="text" />
+                        <Input type="text" invalid={invalidTrainingJobName} required={true} onChange={(event) => onChange('formFieldIdTrainingJobName', event)}/>
                     </FormField>
-                    <FormField label="Container ECR path" controlId="formFieldIdTrainingImage" hintText='The registry path where the training image is stored in Amazon ECRThe registry path where the training image is stored in Amazon ECR'>
-                        <Input type="text" controlId="formFieldIdTrainingImage" />
-                    </FormField>
-                </FormSection>
-            )
-        }
-        else{
-            return (
-                <FormSection header="Job settings">
-                    <FormField label="Container ECR path" controlId="formFieldIdTrainingImage" hintText='The registry path where the training image is stored in Amazon ECR'>
-                        <Input type="text" />
-                    </FormField>
-                </FormSection>
-            )
-        }
-    }
-
-    const renderTrainingJobTag = () => {
-        if(wizard) {
-            return (
-                <FormSection header="Tags - optional">
-                    <Inline>
-                        <FormField label="Key" controlId="formFieldIdTagKey">
-                            <Input type="text" />
-                        </FormField>
-                        <FormField label="Value" controlId="formFieldIdTagValue">
-                            <Inline>
-                                <Input type="text" />
-                            </Inline>
-                        </FormField>
-                        <FormField label="Operation" controlId="formFieldIdOperation">
-                            <Inline>
-                                <Button onClick={onRemove}>Remove</Button>
-                            </Inline>
-                        </FormField>
-                    </Inline>
-                    <Button variant="link">Add tag</Button>
                 </FormSection>
             )
         }
         else
+            return ''
+    }
+
+    const renderTrainingJobTag = () => {
+        if(!wizard)
             return (
-                <FormSection header="Job configuration">
-                <Grid container spacing={{ xs: 1, md: 1 }} columns={{ xs: 4, sm: 8, md: 12 }}>
-                    <Grid item xs={2} sm={4} md={4}>
-                        <Text> Key </Text>
-                    </Grid>
-                    <Grid item xs={2} sm={4} md={4}>
-                        <Text> Value </Text> 
-                    </Grid>
-                    <Grid item xs={2} sm={4} md={4}>
-                        <Text>  </Text>
-                    </Grid>
-                    <Grid item xs={2} sm={4} md={4}>
-                        <Input type="text" />
-                    </Grid>
-                    <Grid item xs={2} sm={4} md={4}>
-                        <Input type="text" />
-                    </Grid>
-                    <Grid item xs={2} sm={4} md={4}>
-                        <Button onClick={onRemove}>Remove</Button>
-                    </Grid>
-                </Grid>
-                <Button variant="link" size="large">Add tag</Button>
+                <FormSection header="Tags - optional">
+                {
+                    tags.length>0 && 
+                        <Grid container spacing={{ xs: 1, md: 1 }} columns={{ xs: 4, sm: 8, md: 12 }}>
+                            <Grid item xs={2} sm={4} md={4}>
+                                <Text> Key </Text>
+                            </Grid>
+                            <Grid item xs={2} sm={4} md={4}>
+                                <Text> Value </Text> 
+                            </Grid>
+                            <Grid item xs={2} sm={4} md={4}>
+                                <Text>  </Text>
+                            </Grid>
+                        </Grid>
+                }
+                {
+                    tags.map((tag, index) => (
+                        <Grid container spacing={{ xs: 1, md: 1 }} columns={{ xs: 4, sm: 8, md: 12 }}>
+                            <Grid item xs={2} sm={4} md={4}>
+                                <Input type="text" value={tag.key}/>
+                            </Grid>
+                            <Grid item xs={2} sm={4} md={4}>
+                                <Input type="text" value={tag.value}/>
+                            </Grid>
+                            <Grid item xs={2} sm={4} md={4}>
+                                <Button onClick={() => onRemoveTag(index)}>Remove</Button>
+                            </Grid>
+                        </Grid>
+                    ))
+                }
+                <Button variant="link" size="large" onClick={onAddTag}>Add tag</Button>
             </FormSection>
             )
+        else
+            return ''
     }
 
     const renderTrainingJobContent = () => {
@@ -219,36 +258,37 @@ const TrainingJobForm: FunctionComponent<TrainingJobFormProps> = (props) => {
                             placeholder="Choose an option"
                             options={optionsInstance}
                             selectedOption={selectedInstanceType}
+                            invalid={invalidInstanceType}
                             onChange={(event) => onChange('formFieldIdInstanceType', event)}
                         />
                     </FormField>
                     <FormField label="Instance count" controlId="formFieldIdInstanceCount">
-                        <Input type="text" value='1' onChange={(event) => onChange('formFieldIdInstanceCount', event)} />
+                        <Input type="number" value={instanceCount} required={true} invalid={invalidInstanceCount} onChange={(event) => onChange('formFieldIdInstanceCount', event)} />
                     </FormField>
                     <FormField label="Additional storage volume per instance (GB)" controlId="formFieldIdVolumeSizeInGB">
-                        <Input type="text" value='30' onChange={(event) => onChange('formFieldIdVolumeSizeInGB', event)}/>
+                        <Input type="number" value={volumeSizeInGB} required={true} invalid={invalidVolumeSizeInGB} onChange={(event) => onChange('formFieldIdVolumeSizeInGB', event)}/>
                     </FormField>
                 </FormSection>
                 <FormSection header="Input data configuration">
                     <FormField label="S3 location" controlId="formFieldIdInputS3Uri">
-                        <Input type="text" placeholder='s3://' onChange={(event) => onChange('formFieldIdInputS3Uri', event)}/>
+                        <Input value={inputS3Uri} placeholder='s3://' required={true} invalid={invalidInputS3Uri} onChange={(event) => onChange('formFieldIdInputS3Uri', event)}/>
                     </FormField>
                     <FormField label="Images prefix" controlId="formFieldIdImagesPrefix">
-                        <Input type="text" value='images' onChange={(event) => onChange('formFieldIdImagesPrefix', event)}/>
+                        <Input value={imagesPrefix} required={true} invalid={invalidImagesPrefix} onChange={(event) => onChange('formFieldIdImagesPrefix', event)}/>
                     </FormField>
                     <FormField label="Lables prefix" controlId="formFieldIdLabelsPrefix">
-                        <Input type="text" value='labels' onChange={(event) => onChange('formFieldIdLabelsPrefix', event)} />
+                        <Input value={labelsPrefix} required={true} invalid={invalidLabelsPrefix} onChange={(event) => onChange('formFieldIdLabelsPrefix', event)} />
                     </FormField>
                     <FormField label="Weights prefix" controlId="formFieldIdWeightsPrefix">
-                        <Input type="text" value='weights' onChange={(event) => onChange('formFieldIdWeightsPrefix', event)} />
+                        <Input value={weightsPrefix} required={true} invalid={invalidWeightsPrefix} onChange={(event) => onChange('formFieldIdWeightsPrefix', event)} />
                     </FormField>
                     <FormField label="Cfg prefix" controlId="formFieldIdCfgPrefix">
-                        <Input type="text" value='cfg' onChange={(event) => onChange('formFieldIdCfgPrefix', event)} />
+                        <Input value={cfgPrefix} required={true} invalid={invalidCfgPrefix} onChange={(event) => onChange('formFieldIdCfgPrefix', event)} />
                     </FormField>
                 </FormSection>
                 <FormSection header="Output data configuration">
                     <FormField label="S3 output path" controlId="formFieldIdOutputS3Uri">
-                        <Input type="text" placeholder='s3://' onChange={(event) => onChange('formFieldIdOutputS3Uri', event)} />
+                        <Input value={outputS3Uri} placeholder='s3://' required={true} invalid={invalidOutputS3Uri} onChange={(event) => onChange('formFieldIdOutputS3Uri', event)} />
                     </FormField>
                 </FormSection>
             </Stack>

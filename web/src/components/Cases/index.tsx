@@ -1,6 +1,7 @@
 import { FunctionComponent } from 'react';
 import Tabs from 'aws-northstar/components/Tabs';
-import {useHistory, useLocation, useParams} from "react-router-dom";
+import { useHistory, useLocation, useParams } from "react-router-dom";
+import { PathParams } from '../Interfaces/PathParams';
 import DemoForm from '../Forms/Demo';
 import TrainingJobList from '../Lists/TrainingJob';
 import ModelList from '../Lists/Model';
@@ -18,7 +19,7 @@ import GreengrassComponentForm from '../Forms/GreengrassComponent';
 import GreengrassDeploymentForm from '../Forms/GreengrassDeployment';
 import TransformJobForm from '../Forms/TransformJob';
 import TransformJobProp from '../Props/TransformJob';
-import { PathParams } from '../Interfaces/PathParams';
+import TrainingJobProp from '../Props/TrainingJob';
 
 const Case: FunctionComponent = () => {
     var params : PathParams = useParams();
@@ -60,6 +61,8 @@ const Case: FunctionComponent = () => {
         switch(tab) {
             case 'demo':
                 return <TransformJobProp/>;
+            case 'trainingjob':
+                return <TrainingJobProp/>;
         }
     }
 

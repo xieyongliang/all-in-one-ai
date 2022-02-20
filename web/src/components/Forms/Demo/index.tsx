@@ -16,7 +16,7 @@ const DemoForm: FunctionComponent = () => {
     var localtion = useLocation();
     var hash = localtion.hash.substring(1);
 
-    var type = hash === 'sample' || hash === 'uploaded' || hash === 'transform' ? hash : 'sample'
+    var type = hash === 'sample' || hash === 'uploaded' || hash === 'transformjob' ? hash : 'sample'
 
     function onChange (value: string) {
         history.push(`/case/${params.name}?tab=demo#${value}`);
@@ -27,12 +27,12 @@ const DemoForm: FunctionComponent = () => {
             <Heading variant='h1'>{params.name}</Heading>
             <Container title = "Demo type">
                 <RadioGroup onChange={onChange} active={type}>
-		            <Radio value={'transform'}>Batch transform jobs</Radio>
+		            <Radio value={'transformjob'}>Batch transform jobs</Radio>
 		            <Radio value={'uploaded'}>Realtime inference with uploaded image</Radio>
 		            <Radio value={'sample'}>Realtime inference with sample image</Radio>
 		        </RadioGroup>
             </Container>
-            {type === 'transform' && <TransformJobList/>}
+            {type === 'transformjob' && <TransformJobList/>}
             {type === 'uploaded' && <InferenceForm/>}
             {type === 'sample' && <SampleForm/>}
         </Stack>

@@ -5,21 +5,23 @@ import axios from 'axios';
 import Grid from '@mui/material/Grid';
 import { PathParams } from '../../Interfaces/PathParams';
 
-const TransformJobProp: FunctionComponent = () => {
-    const [ transformJobName, setTransformJobName ] = useState('')
+const TrainingJobProp: FunctionComponent = () => {
+    const [ trainingJobName, setTrainingJobName ] = useState('')
     const [ creationTime, setCreationTime ] = useState('')
-    const [ transformStartTime, setTransformStartTime ] = useState('')
-    const [ transformEndTime, setTransformEndTime ] = useState('')
+    const [ trainingStartTime, setTrainingStartTime ] = useState('')
+    const [ trainingEndTime, setTrainingEndTime ] = useState('')
     const [ duration, setDuration ] = useState('')
     const [ status, setStatus ] = useState('')
-    const [ dataType, setDataType ] = useState('')
     const [ instanceType, setInstanceType ] = useState('')
     const [ instanceCount, setInstanceCount ] = useState('')
-    const [ contentType, setContentType ] = useState('')
-    const [ maxConcurrentTransforms, setMaxConncurrentTransforms ] = useState('')
-    const [ modelName, setModelName ] = useState('')
+    const [ volumeSizeInGB, setVolumeSizeInGB ] = useState(30)
     const [ inputS3Uri, setInputS3Uri ] = useState('')
-    const [ outputS3Uri, setOutputS3Uri ] = useState('');
+    const [ imagesPrefix, setImagesPrefix ] = useState('')
+    const [ labelsPrefix, setLabelsPrefix ] = useState('')
+    const [ weightsPrefix, setWeightsPrefix ] = useState('')
+    const [ cfgPrefix, setCfgPrefix ] = useState('')
+    const [ outputS3Uri, setOutputS3Uri ] = useState('')
+    const [ tags, setTags ] = useState([])
     const [ loading, setLoading ] = useState(true);
 
     const history = useHistory();
@@ -30,22 +32,24 @@ const TransformJobProp: FunctionComponent = () => {
     var id = localtion.hash.substring(9);
 
     useEffect(() => {
-        axios.get('/transformjob/' + id, {params: {'case': params.name}})
+        axios.get('/trainingjob/' + id, {params: {'case': params.name}})
             .then((response) => {
-            setTransformJobName(response.data[0].transformjob_name)
-            setCreationTime(response.data[0].creation_time)
-            setTransformStartTime(response.data[0].transform_start_time)
-            setTransformEndTime(response.data[0].transform_end_time)
-            setStatus(response.data[0].status)
-            setDataType(response.data[0].data_type)
-            setInstanceType(response.data[0].instance_type)
-            setInstanceCount(response.data[0].instance_count)
-            setContentType(response.data[0].content_type)
-            setMaxConncurrentTransforms(response.data[0].max_concurrent_transforms)
-            setModelName(response.data[0].model_name)
-            setDuration(response.data[0].duration)
-            setInputS3Uri(response.data[0].input_s3uri)
-            setOutputS3Uri(response.data[0].output_s3uri)
+            console.log(response)
+            setTrainingJobName(response.data.trainingjob_name)
+            setCreationTime(response.data.creation_time)
+            setTrainingStartTime(response.data.training_start_time)
+            setTrainingEndTime(response.data.training_end_time)
+            setStatus(response.data.status)
+            setInstanceType(response.data.instance_type)
+            setInstanceCount(response.data.instance_count)
+            setDuration(response.data.duration)
+            setInputS3Uri(response.data.input_s3uri)
+            setImagesPrefix(response.data.images_prefix)
+            setLabelsPrefix(response.data.labels_prefix)
+            setWeightsPrefix(response.data.weights_prefix)
+            setCfgPrefix(response.data.cfg_prefix)
+            setOutputS3Uri(response.data.output_s3uri)
+            setTags(response.data.tags)
             setLoading(false);
         }, (error) => {
             console.log(error);
@@ -61,10 +65,11 @@ const TransformJobProp: FunctionComponent = () => {
             case 'InProgress':
                 return <StatusIndicator  statusType='info'>{status}</StatusIndicator>;
             case 'Stopped':
-                    return <StatusIndicator  statusType='warning'>{status}</StatusIndicator>;
+            case 'Stopping':
+                return <StatusIndicator  statusType='warning'>{status}</StatusIndicator>;
             default:
                 return null;
-        }
+}
     }
 
     const getLink = (link: string) => {
@@ -72,13 +77,13 @@ const TransformJobProp: FunctionComponent = () => {
     }
 
     const onClose = () => {
-        history.push(`/case/${params.name}?tab=demo#transformjob`)
+        history.push(`/case/${params.name}?tab=trainingjob`)
     }
 
     return (
         <Form
-            header="Review batch transform job"
-            description="A transform job uses a model to transform data and stores the results at a specified location."
+            header="Review training job"
+            description="When you create a training job, Amazon SageMaker sets up the distributed compute cluster, performs the training, and deletes the cluster when training has completed. The resulting model artifacts are stored in the location you specified when you created the training job."
             actions={
                 <div>
                     <Button variant="primary" onClick={onClose}>Close</Button>
@@ -86,7 +91,7 @@ const TransformJobProp: FunctionComponent = () => {
             }>   
             {   
                 loading && <Flashbar items={[{
-                    header: 'Loading batch transform job information...',
+                    header: 'Loading training job information...',
                     content: 'This may take up to an minute. Please wait a bit...',
                     dismissible: true,
                     loading: loading
@@ -95,7 +100,7 @@ const TransformJobProp: FunctionComponent = () => {
             <FormSection header='Job summary'>
                 <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }}>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label="Job name" value={transformJobName}></KeyValuePair>
+                        <KeyValuePair label="Job name" value={trainingJobName}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
                         <KeyValuePair label="Status" value={getStatus(status)}></KeyValuePair>
@@ -107,18 +112,15 @@ const TransformJobProp: FunctionComponent = () => {
                         <KeyValuePair label="Creation time" value={creationTime}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label="Transform start time" value={transformStartTime}></KeyValuePair>
+                        <KeyValuePair label="Transform start time" value={trainingStartTime}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label="Transform end time" value={transformEndTime}></KeyValuePair>
+                        <KeyValuePair label="Transform end time" value={trainingEndTime}></KeyValuePair>
                     </Grid>
                 </Grid>
             </FormSection>
-            <FormSection header="Job configuration">
+            <FormSection header="Resource configuration">
                 <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }}>
-                    <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label="Model name" value={modelName}></KeyValuePair>
-                    </Grid>
                     <Grid item xs={2} sm={4} md={4}>
                         <KeyValuePair label="Instance type" value={instanceType}></KeyValuePair>
                     </Grid>
@@ -126,20 +128,26 @@ const TransformJobProp: FunctionComponent = () => {
                         <KeyValuePair label="Instance count" value={instanceCount}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label="Max concurrent transforms" value={maxConcurrentTransforms}></KeyValuePair>
+                        <KeyValuePair label="Additional storage" value={volumeSizeInGB}></KeyValuePair>
                     </Grid>
                 </Grid>
             </FormSection>
             <FormSection header="Input data configuration">
                 <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }}>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label="S3 data type" value={dataType}></KeyValuePair>
+                        <KeyValuePair label="S3 location" value={getLink(inputS3Uri)}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label="S3 URI" value={getLink(inputS3Uri)}></KeyValuePair>
+                        <KeyValuePair label="Images prefix" value={imagesPrefix}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label="Content type" value={contentType}></KeyValuePair>
+                        <KeyValuePair label="Labels prefix" value={labelsPrefix}></KeyValuePair>
+                    </Grid>
+                    <Grid item xs={2} sm={4} md={4}>
+                        <KeyValuePair label="Weights prefix" value={weightsPrefix}></KeyValuePair>
+                    </Grid>
+                    <Grid item xs={2} sm={4} md={4}>
+                        <KeyValuePair label="Cfg prefix" value={cfgPrefix}></KeyValuePair>
                     </Grid>
                 </Grid>
             </FormSection>
@@ -154,4 +162,4 @@ const TransformJobProp: FunctionComponent = () => {
     )
 }
 
-export default TransformJobProp;
+export default TrainingJobProp;

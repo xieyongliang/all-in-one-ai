@@ -100,4 +100,13 @@ module.exports = function(app) {
         secure: false,
         ws: false,
     }));
+    app.use(createProxyMiddleware('/trainingjob', {
+        target: baseUrl + '/trainingjob',
+        pathRewrite: {
+            '^/trainingjob': ''
+        },
+        changeOrigin: true,
+        secure: false,
+        ws: false,
+    }));
 };

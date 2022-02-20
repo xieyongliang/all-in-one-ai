@@ -3,7 +3,7 @@ import { BrowserRouter, useHistory, useParams } from 'react-router-dom';
 import FormField from 'aws-northstar/components/FormField'
 import Input from 'aws-northstar/components/Input';
 import Container from 'aws-northstar/layouts/Container';
-import { ChangeEvent, FunctionComponent, useState } from 'react';
+import { FunctionComponent, useState } from 'react';
 import { Stack } from 'aws-northstar';
 import TrainingJobForm from '../TrainingJob';
 import ModelForm from '../Model';

@@ -56,11 +56,9 @@ def lambda_handler(event, context):
         print(end_time)
         print(end_time-start_time)
         
-        result = json.loads(response["Body"].read())
-
         return {
             'statusCode': 200,
-            'body': json.dumps(result)
+            'body': response["Body"].read()
         }
 
     else:
