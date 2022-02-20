@@ -213,37 +213,37 @@ const TrainingJobForm: FunctionComponent<TrainingJobFormProps> = (props) => {
         if(!wizard)
             return (
                 <FormSection header="Tags - optional">
-                {
-                    tags.length>0 && 
-                        <Grid container spacing={{ xs: 1, md: 1 }} columns={{ xs: 4, sm: 8, md: 12 }}>
-                            <Grid item xs={2} sm={4} md={4}>
-                                <Text> Key </Text>
+                    {
+                        tags.length>0 && 
+                            <Grid container spacing={{ xs: 1, md: 1 }} columns={{ xs: 4, sm: 8, md: 12 }}>
+                                <Grid item xs={2} sm={4} md={4}>
+                                    <Text> Key </Text>
+                                </Grid>
+                                <Grid item xs={2} sm={4} md={4}>
+                                    <Text> Value </Text> 
+                                </Grid>
+                                <Grid item xs={2} sm={4} md={4}>
+                                    <Text>  </Text>
+                                </Grid>
                             </Grid>
-                            <Grid item xs={2} sm={4} md={4}>
-                                <Text> Value </Text> 
+                    }
+                    {
+                        tags.map((tag, index) => (
+                            <Grid container spacing={{ xs: 1, md: 1 }} columns={{ xs: 4, sm: 8, md: 12 }}>
+                                <Grid item xs={2} sm={4} md={4}>
+                                    <Input type="text" value={tag.key}/>
+                                </Grid>
+                                <Grid item xs={2} sm={4} md={4}>
+                                    <Input type="text" value={tag.value}/>
+                                </Grid>
+                                <Grid item xs={2} sm={4} md={4}>
+                                    <Button onClick={() => onRemoveTag(index)}>Remove</Button>
+                                </Grid>
                             </Grid>
-                            <Grid item xs={2} sm={4} md={4}>
-                                <Text>  </Text>
-                            </Grid>
-                        </Grid>
-                }
-                {
-                    tags.map((tag, index) => (
-                        <Grid container spacing={{ xs: 1, md: 1 }} columns={{ xs: 4, sm: 8, md: 12 }}>
-                            <Grid item xs={2} sm={4} md={4}>
-                                <Input type="text" value={tag.key}/>
-                            </Grid>
-                            <Grid item xs={2} sm={4} md={4}>
-                                <Input type="text" value={tag.value}/>
-                            </Grid>
-                            <Grid item xs={2} sm={4} md={4}>
-                                <Button onClick={() => onRemoveTag(index)}>Remove</Button>
-                            </Grid>
-                        </Grid>
-                    ))
-                }
-                <Button variant="link" size="large" onClick={onAddTag}>Add tag</Button>
-            </FormSection>
+                        ))
+                    }
+                    <Button variant="link" size="large" onClick={onAddTag}>Add tag</Button>
+                </FormSection>
             )
         else
             return ''

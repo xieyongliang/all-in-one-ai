@@ -1,6 +1,6 @@
 import { FunctionComponent, useEffect, useState } from 'react';
 import { useHistory, useLocation, useParams } from 'react-router-dom';
-import { KeyValuePair, StatusIndicator, Button, Form, FormSection, Link, Flashbar } from 'aws-northstar';
+import { KeyValuePair, StatusIndicator, Button, Form, FormSection, Link, Flashbar, Text, Input } from 'aws-northstar';
 import axios from 'axios';
 import Grid from '@mui/material/Grid';
 import { PathParams } from '../../Interfaces/PathParams';
@@ -23,6 +23,7 @@ const TrainingJobProp: FunctionComponent = () => {
     const [ outputS3Uri, setOutputS3Uri ] = useState('')
     const [ tags, setTags ] = useState([])
     const [ loading, setLoading ] = useState(true);
+    const [ forcedRefresh, setForcedRefresh ] = useState(false)
 
     const history = useHistory();
 
@@ -78,6 +79,16 @@ const TrainingJobProp: FunctionComponent = () => {
 
     const onClose = () => {
         history.push(`/case/${params.name}?tab=trainingjob`)
+    }
+
+    const onAddTag = () => {
+        tags.push({key:'', value:''});
+        setForcedRefresh(!forcedRefresh);
+    }
+
+    const onRemoveTag = (index) => {
+        tags.splice(index, 1);
+        setForcedRefresh(!forcedRefresh);
     }
 
     return (
@@ -157,6 +168,38 @@ const TrainingJobProp: FunctionComponent = () => {
                         <KeyValuePair label="S3 output path" value={getLink(outputS3Uri)}></KeyValuePair>
                     </Grid>
                 </Grid>
+            </FormSection>
+            <FormSection header="Tags - optional">
+                {
+                    tags.length>0 && 
+                        <Grid container spacing={{ xs: 1, md: 1 }} columns={{ xs: 4, sm: 8, md: 12 }}>
+                            <Grid item xs={2} sm={4} md={4}>
+                                <Text> Key </Text>
+                            </Grid>
+                            <Grid item xs={2} sm={4} md={4}>
+                                <Text> Value </Text> 
+                            </Grid>
+                            <Grid item xs={2} sm={4} md={4}>
+                                <Text>  </Text>
+                            </Grid>
+                        </Grid>
+                }
+                {
+                    tags.map((tag, index) => (
+                        <Grid container spacing={{ xs: 1, md: 1 }} columns={{ xs: 4, sm: 8, md: 12 }}>
+                            <Grid item xs={2} sm={4} md={4}>
+                                <Input type="text" value={tag.key}/>
+                            </Grid>
+                            <Grid item xs={2} sm={4} md={4}>
+                                <Input type="text" value={tag.value}/>
+                            </Grid>
+                            <Grid item xs={2} sm={4} md={4}>
+                                <Button onClick={() => onRemoveTag(index)}>Remove</Button>
+                            </Grid>
+                        </Grid>
+                    ))
+                }
+                <Button variant="link" size="large" onClick={onAddTag}>Add tag</Button>
             </FormSection>
         </Form>
     )
