@@ -25,25 +25,28 @@ app.get('/image/:filename', (req, res) => {
     var buffer = fs.readFileSync('images/' + filename + '.jpg')
     res.send(buffer)
 })
-app.get('/sample/:filename', (req, res) => {
+app.get('/sample/:case/:filename', (req, res) => {
+    var casename = req.params.case;
     var filename = req.params.filename;
-    var buffer = fs.readFileSync('samples/' + filename)
+    var buffer = fs.readFileSync('samples/' + casename + '/' + filename)
     res.send(buffer)
 })
-app.get('/samples', (req, res) => {
+app.get('/samples/:case', (req, res) => {
+    var casename = req.params.case;
     var items = [];
 
-    fs.readdir('samples', function (err, files) {
+    fs.readdir('samples/' + casename, function (err, files) {
         files.forEach(function (file, index) {
-            items.push('/sample/'+file)
+            items.push('/sample/'+ casename + '/' + file)
         });
         res.send(JSON.stringify(items))
     });
 })
-app.get('/inference/image/:filename', (req, res) => {
+app.get('/inference/image/:case/:filename', (req, res) => {
+    var casename = req.params.case;
     var filename = req.params.filename;
     var buffer = fs.readFileSync('images/' + filename + '.jpg')
-    options = {headers: {'content-type': 'image/jpg'}}
+    options = { headers: {'content-type': 'image/jpg'}, params : {model: casename}}
     var resuult = axios.post(baseUrl + '/inference', buffer, options)
         .then((response) => {
             res.send(response.data)
@@ -54,10 +57,11 @@ app.get('/inference/image/:filename', (req, res) => {
         }
     );
 })
-app.get('/inference/sample/:filename', (req, res) => {
+app.get('/inference/sample/:case/:filename', (req, res) => {
+    var casename = req.params.case;
     var filename = req.params.filename;
-    var buffer = fs.readFileSync('samples/' + filename)
-    options = {headers: {'content-type': 'image/png'}}
+    var buffer = fs.readFileSync('samples/' + casename + '/' + filename)
+    options = {headers: {'content-type': 'image/png'}, params : {model: casename}}
     var resuult = axios.post(baseUrl + '/inference', buffer, options)
         .then((response) => {
             res.send(response.data)
@@ -70,13 +74,11 @@ app.get('/inference/sample/:filename', (req, res) => {
 })
 app.get('/file/download', (req, res) => {
     var uri = decodeURIComponent(req.query['uri']);
-    console.log(uri);
     axios({
         url: uri,
         method: 'GET',
         responseType: 'arraybuffer', 
     }).then((response) => {
-        console.log(response.headers)
         res.setHeader('content-type', response.headers['content-type']);
         res.send(response.data);
     });
@@ -94,6 +96,15 @@ app.use(createProxyMiddleware('/transformjob', {
     target: baseUrl + '/transformjob',
     pathRewrite: {
         '^/transformjob': ''
+    },
+    changeOrigin: true,
+    secure: false,
+    ws: false,
+}));
+app.use(createProxyMiddleware('/trainingjob', {
+    target: baseUrl + '/trainingjob',
+    pathRewrite: {
+        '^/trainingjob': ''
     },
     changeOrigin: true,
     secure: false,
