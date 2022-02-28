@@ -1,8 +1,8 @@
-import React, { ChangeEvent, FunctionComponent, useState } from 'react';
+import React, { ChangeEvent, FunctionComponent } from 'react';
 import FormSection from 'aws-northstar/components/FormSection';
 import FormField from 'aws-northstar/components/FormField';
 import Input from 'aws-northstar/components/Input';
-import { Form, Button, RadioGroup, RadioButton, Inline, Text, Stack, Select } from 'aws-northstar';
+import { Form, Button, RadioGroup, RadioButton, Inline, Stack, Select } from 'aws-northstar';
 import { useHistory } from 'react-router-dom'; 
 import {useParams} from "react-router-dom";
 
@@ -34,9 +34,6 @@ interface GreengrassDeploymentFormProps {
 
 const GreengrassDeploymentForm: FunctionComponent<GreengrassDeploymentFormProps> = (props) => {
     const [stateType, setStateType] = React.useState('1');
-    const [selectedTargetName, setSelectedTargetName] = React.useState({});
-    const [selectedComponentName, setSelectedComponentName] = React.useState({});
-    const [selectedComponentVersion, setSelectedComponentVersion] = React.useState({});
 
     const history = useHistory();
 

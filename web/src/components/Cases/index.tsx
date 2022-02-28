@@ -20,6 +20,9 @@ import GreengrassDeploymentForm from '../Forms/GreengrassDeployment';
 import TransformJobForm from '../Forms/TransformJob';
 import TransformJobProp from '../Props/TransformJob';
 import TrainingJobProp from '../Props/TrainingJob';
+import ModelProp from '../Props/Model';
+import EndpointProp from '../Props/Endpoint';
+import RestApiProp from '../Props/RestApi'
 
 const Case: FunctionComponent = () => {
     var params : PathParams = useParams();
@@ -60,9 +63,15 @@ const Case: FunctionComponent = () => {
     if(hash.startsWith('prop')) {
         switch(tab) {
             case 'demo':
-                return <TransformJobProp/>;
+                return <TransformJobProp />;
             case 'trainingjob':
-                return <TrainingJobProp/>;
+                return <TrainingJobProp />;
+            case 'model':
+                return <ModelProp />;
+            case 'endpoint':
+                return <EndpointProp />;
+            case 'restapi':
+                return <RestApiProp />;
         }
     }
 
@@ -75,37 +84,37 @@ const Case: FunctionComponent = () => {
         {
             label: 'ML pipelines',
             id: 'pipeline',
-            content: <PipelineList name = {params.name} />
+            content: <PipelineList />
         },
         {
             label: 'Training jobs',
             id: 'trainingjob',
-            content: <TrainingJobList name = {params.name} />
+            content: <TrainingJobList />
         },
         {
             label: 'Models',
             id: 'model',
-            content: <ModelList name = {params.name}/>
+            content: <ModelList/>
         },
         {
             label: 'Endpoints',
             id: 'endpoint',
-            content: <EndpointList name = {params.name}/>
+            content: <EndpointList/>
         },
         {
             label: 'Rest apis',
             id: 'restapi',
-            content: <RestApiList name = {params.name}/>
+            content: <RestApiList/>
         },
         {
             label: 'Greengrass components',
             id: 'component',
-            content: <GreengrassComponentList name = {params.name}/>
+            content: <GreengrassComponentList/>
         },
         {
             label: 'Greengrass deployments',
             id: 'deployment',
-            content: <GreengrassDeploymentList name = {params.name}/>
+            content: <GreengrassDeploymentList/>
         }
     ];
     return (

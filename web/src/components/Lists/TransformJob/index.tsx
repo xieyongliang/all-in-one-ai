@@ -1,17 +1,19 @@
 import React, { FunctionComponent, useEffect, useRef, useState } from 'react';
 import { useHistory, useParams } from 'react-router-dom'; 
-import { Container, FormField, Stack, Table, Button, Inline, ButtonDropdown, StatusIndicator, Flashbar } from 'aws-northstar'
+import { Container, FormField, Stack, Table, Button, Inline, ButtonDropdown, StatusIndicator, Flashbar, Toggle, Link } from 'aws-northstar'
 import { Column } from 'react-table'
-import { CopyBlock } from 'react-code-blocks';
 import ImageList from '@mui/material/ImageList';
 import ImageListItem from '@mui/material/ImageListItem';
+import SyntaxHighlighter from 'react-syntax-highlighter';
+import { github } from 'react-syntax-highlighter/dist/esm/styles/hljs';
+import JSZip from 'jszip';
 import axios from 'axios';
 import URLImage from '../../Utils/URLImage';
 import {LABELS, COLORS, CaseType} from '../../Data/data';
 import ImageAnnotate from '../../Utils/Annotate';
 import Image from '../../Utils/Image';
 import { PathParams } from '../../Interfaces/PathParams';
-import { TransformSample } from '../../Data/code';
+import '../../Utils/Image/index.scss'
 
 interface TransformJobItem {
     name: string;
@@ -33,6 +35,9 @@ const TransformJobList: FunctionComponent = () => {
     const [ id, setId ] = useState<number[]>([])
     const [ bbox, setBbox ] = useState<number[][]>([])
     const [ labels,  setLabels ] = useState([])
+    const [ sampleCode, setSampleCode ] = useState('')
+    const [ sampleConsole, setSampleConsole ] = useState('')
+    const [ visibleSampleCode, setVisibleSampleCode ] = useState(false)
     const casename = useRef('');
 
     const history = useHistory();
@@ -41,11 +46,14 @@ const TransformJobList: FunctionComponent = () => {
 
     useEffect(() => {
         casename.current = params.name;
-        axios.get('/transformjob', {params : {'case': params.name}})
-            .then((response) => {
+        const request1 = axios.get('/transformjob', {params : {'case': params.name}});
+        const request2 = axios.get('/helper/function/all_in_one_ai_create_transform_job?action=code');
+        const request3 = axios.get('/helper/function/all_in_one_ai_create_transform_job?action=console');
+        axios.all([request1, request2, request3])
+        .then(axios.spread(function(response1, response2, response3) {
             var items = []
-            for(let item of response.data) {
-                items.push({name: item.transformjob_name, status : item.status, duration: item.duration, creation_time: item.creation_time})
+            for(let item of response1.data) {
+                items.push({name: item.transform_job_name, status : item.transform_job_status, duration: item.duration, creation_time: item.creation_time})
             }
             setItems(items);
             setLoadingTable(false);
@@ -56,16 +64,26 @@ const TransformJobList: FunctionComponent = () => {
                 setLabels(LABELS[CaseType.TRACK])
             else if(params.name === 'mask')
                 setLabels(LABELS[CaseType.FACE])
-        }, (error) => {
-            console.log(error);
-        });
-    }, [params.name]);
-    
-    const onImageClick = (event: React.MouseEvent<HTMLImageElement>) => {
-        const src = event.currentTarget.src
-        setCurrentImage(src)
-        var annotationUri = transformJobResult.output[transformJobResult.input.indexOf(src)]
-        console.log(annotationUri)
+            
+            axios.get('/file/download', {params: {uri: encodeURIComponent(response2.data)}, responseType: 'blob'})
+            .then((response4) => {
+                var zip = new JSZip();
+                zip.loadAsync(response4.data).then(async function(zipped) {
+                    zipped.file('lambda_function.py').async('string').then(function(data) {
+                        setSampleCode(data)
+                    })
+                })
+            });
+            setSampleConsole(response3.data)
+        }));
+    },[params.name]);
+        
+    const onImageClick = (src) => {
+        setId([]);
+        setBbox([]);
+        setCurrentImage(src);
+        
+        var annotationUri = transformJobResult.output[transformJobResult.input.indexOf(src)];
     
         axios.get('/file/download', {params : {'uri' : encodeURIComponent(annotationUri)}})
         .then((response) => {
@@ -117,7 +135,6 @@ const TransformJobList: FunctionComponent = () => {
     const onAnnotate = () => {
         setVisibleAnnotate(true);
     }
-
     
     const getRowId = React.useCallback(data => data.name, []);
 
@@ -239,10 +256,11 @@ const TransformJobList: FunctionComponent = () => {
                 </Container>
                 }
                 {
-                    !loadingReview && 
-                    <Container title = "Preview">
+                    !loadingReview && <Container title = "Preview">
                         <FormField controlId='button'>
-                            <URLImage src={currentImage} colors={COLORS} labels={labels} id={id} bbox={bbox}/>
+                            <div className='watermarked'>
+                                <URLImage src={currentImage} colors={COLORS} labels={labels} id={id} bbox={bbox}/>
+                            </div>
                         </FormField>
                         <FormField controlId='button'>
                             <Button onClick={onAnnotate} disabled={bbox.length === 0}>Annotate</Button>
@@ -270,21 +288,14 @@ const TransformJobList: FunctionComponent = () => {
 
     const renderSampleCode = () => {
         return (
-            <Container title="Sample code">
-                <FormField
-                    label="Expand to show sample code of realltime inference"
-                    controlId="formFieldIdSampleCode"
-                    stretch={true}
-                    expandable={true}
-                >
-                    <CopyBlock
-                        language="python"
-                        text={TransformSample}
-                        codeBlock
-                        theme={'github'}
-                        showLineNumbers={true}
-                    />
-                </FormField>
+            <Container title = "Sample code">
+                <Toggle label={visibleSampleCode ? "Show sample code" : "Hide sample code"} checked={visibleSampleCode} onChange={(checked) => {setVisibleSampleCode(checked)}} />
+                <Link href={sampleConsole}>Open in AWS Lambda console</Link>
+                {
+                    visibleSampleCode && <SyntaxHighlighter language="python" style={github} showLineNumbers={true}>
+                        {sampleCode}
+                    </SyntaxHighlighter>
+                }
             </Container>
         )
     }

@@ -83,15 +83,6 @@ app.get('/file/download', (req, res) => {
         res.send(response.data);
     });
 })
-app.use(createProxyMiddleware('/model', {
-    target: baseUrl + '/model',
-    pathRewrite: {
-        '^/model': ''
-    },
-    changeOrigin: true,
-    secure: false,
-    ws: false,
-}));
 app.use(createProxyMiddleware('/transformjob', {
     target: baseUrl + '/transformjob',
     pathRewrite: {
@@ -110,7 +101,51 @@ app.use(createProxyMiddleware('/trainingjob', {
     secure: false,
     ws: false,
 }));
-
+app.use(createProxyMiddleware('/model', {
+    target: baseUrl + '/model',
+    pathRewrite: {
+        '^/model': ''
+    },
+    changeOrigin: true,
+    secure: false,
+    ws: false,
+}));
+app.use(createProxyMiddleware('/endpoint', {
+    target: baseUrl + '/endpoint',
+    pathRewrite: {
+        '^/endpoint': ''
+    },
+    changeOrigin: true,
+    secure: false,
+    ws: false,
+}));
+app.use(createProxyMiddleware('/helper', {
+    target: baseUrl + '/helper',
+    pathRewrite: {
+        '^/helper': ''
+    },
+    changeOrigin: true,
+    secure: false,
+    ws: false,
+}));
+app.use(createProxyMiddleware('/api', {
+    target: baseUrl + '/api',
+    pathRewrite: {
+        '^/api': ''
+    },
+    changeOrigin: true,
+    secure: false,
+    ws: false,
+}));
+app.use(createProxyMiddleware('/greengrass', {
+    target: baseUrl + '/greengrass',
+    pathRewrite: {
+        '^/greengrass': ''
+    },
+    changeOrigin: true,
+    secure: false,
+    ws: false,
+}));
 app.use(express.static(path.join(__dirname, 'build')));
 
 +app.get('/*', function (req, res) {

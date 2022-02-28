@@ -1,26 +1,21 @@
 import { FunctionComponent, useEffect, useState } from 'react';
 import { useHistory, useLocation, useParams } from 'react-router-dom';
-import { KeyValuePair, StatusIndicator, Button, Form, FormSection, Link, Flashbar, Text, Input } from 'aws-northstar';
+import { KeyValuePair, StatusIndicator, Button, Form, FormSection, Flashbar, Text, Input } from 'aws-northstar';
 import axios from 'axios';
 import Grid from '@mui/material/Grid';
 import { PathParams } from '../../Interfaces/PathParams';
 
-const TrainingJobProp: FunctionComponent = () => {
-    const [ trainingJobName, setTrainingJobName ] = useState('')
+const EndpointProp: FunctionComponent = () => {
+    const [ endpointName, setEndpointName ] = useState('')
+    const [ endpointConfigName, setEndpointConfigName ] = useState('')
     const [ creationTime, setCreationTime ] = useState('')
-    const [ trainingStartTime, setTrainingStartTime ] = useState('')
-    const [ trainingEndTime, setTrainingEndTime ] = useState('')
-    const [ duration, setDuration ] = useState('')
-    const [ status, setStatus ] = useState('')
+    const [ lastModifiedTime, setLastModifiedTime ] = useState('')
+    const [ endpointStatus, setEndpointStatus ] = useState('')
+    const [ modelName, setModelName ] = useState('')
     const [ instanceType, setInstanceType ] = useState('')
-    const [ instanceCount, setInstanceCount ] = useState('')
-    const [ volumeSizeInGB, setVolumeSizeInGB ] = useState('')
-    const [ imagesS3Uri, setImagesS3Uri ] = useState('')
-    const [ labelsS3Uri, setLabelsS3Uri ] = useState('')
-    const [ weightsS3Uri, setWeightsS3Uri ] = useState('')
-    const [ cfgS3Uri, setCfgS3Uri ] = useState('')
-    const [ outputS3Uri, setOutputS3Uri ] = useState('')
-    const [ modelArtifacts, setModelArtifacts] = useState('')
+    const [ acceleratorType, setAcceleratorType ] = useState('')
+    const [ initialInstanceCount, setInitialInstanceCount ] = useState('')
+    const [ initialVariantWeight, setInitialVariantWeight ] = useState('')
     const [ tags, setTags ] = useState([])
     const [ loading, setLoading ] = useState(true);
     const [ forcedRefresh, setForcedRefresh ] = useState(false)
@@ -33,24 +28,19 @@ const TrainingJobProp: FunctionComponent = () => {
     var id = localtion.hash.substring(9);
 
     useEffect(() => {
-        axios.get('/trainingjob/' + id, {params: {'case': params.name}})
+        axios.get('/endpoint/' + id, {params: {'case': params.name}})
             .then((response) => {
             console.log(response)
-            setTrainingJobName(response.data.training_job_name)
+            setEndpointName(response.data.endpoint_name)
+            setEndpointConfigName(response.data.endpoint_config_name)
             setCreationTime(response.data.creation_time)
-            setTrainingStartTime(response.data.training_start_time)
-            setTrainingEndTime(response.data.training_end_time)
-            setStatus(response.data.training_job_status)
+            setLastModifiedTime(response.data.last_modified_time)
+            setEndpointStatus(response.data.endpoint_status)
+            setModelName(response.data.model_name)
             setInstanceType(response.data.instance_type)
-            setInstanceCount(response.data.instance_count)
-            setVolumeSizeInGB(response.data.instance_count)
-            setDuration(response.data.duration)
-            setImagesS3Uri(response.data.images_s3uri)
-            setLabelsS3Uri(response.data.labels_s3uri)
-            setWeightsS3Uri(response.data.weights_s3uri)
-            setCfgS3Uri(response.data.cfg_s3uri)
-            setOutputS3Uri(response.data.output_s3uri)
-            setModelArtifacts(response.data.model_artifacts.S3ModelArtifacts)
+            setAcceleratorType(response.data.accelerator_type)
+            setInitialInstanceCount(response.data.initial_instance_count)
+            setInitialVariantWeight(response.data.initial_variant_weight)
             if('tags' in response.data)
                 setTags(response.data.tags)
             setLoading(false);
@@ -61,26 +51,25 @@ const TrainingJobProp: FunctionComponent = () => {
 
     const getStatus = (status: string) => {
         switch(status) {
-            case 'Completed':
+            case 'InService':
                 return <StatusIndicator  statusType='positive'>{status}</StatusIndicator>;
+            case 'OutOfService':
             case 'Failed':
+            case 'RollingBack':
                 return <StatusIndicator  statusType='negative'>{status}</StatusIndicator>;
-            case 'InProgress':
+            case 'Creating':
+            case 'Updating':
+            case 'SystemUpdating':
                 return <StatusIndicator  statusType='info'>{status}</StatusIndicator>;
-            case 'Stopped':
-            case 'Stopping':
+            case 'Deleting':
                 return <StatusIndicator  statusType='warning'>{status}</StatusIndicator>;
             default:
                 return null;
-}
-    }
-
-    const getLink = (link: string) => {
-        return <Link href={link}> {link} </Link>
+        }
     }
 
     const onClose = () => {
-        history.push(`/case/${params.name}?tab=trainingjob`)
+        history.push(`/case/${params.name}?tab=endpoint`)
     }
 
     const onAddTag = () => {
@@ -95,8 +84,8 @@ const TrainingJobProp: FunctionComponent = () => {
 
     return (
         <Form
-            header="Review training job"
-            description="When you create a training job, Amazon SageMaker sets up the distributed compute cluster, performs the training, and deletes the cluster when training has completed. The resulting model artifacts are stored in the location you specified when you created the training job."
+            header="Review endpoint"
+            description="To deploy models to Amazon SageMaker, first create an endpoint. Specify which models to deploy, and the relative traffic weighting and hardware requirements for each. "
             actions={
                 <div>
                     <Button variant="primary" onClick={onClose}>Close</Button>
@@ -104,70 +93,47 @@ const TrainingJobProp: FunctionComponent = () => {
             }>   
             {   
                 loading && <Flashbar items={[{
-                    header: 'Loading training job information...',
+                    header: 'Loading endpoint information...',
                     content: 'This may take up to an minute. Please wait a bit...',
                     dismissible: true,
                     loading: loading
                 }]} />
             }
-            <FormSection header='Job summary'>
+            <FormSection header='Endpoint summary'>
                 <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }}>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label="Job name" value={trainingJobName}></KeyValuePair>
+                        <KeyValuePair label="Endpoint name" value={endpointName}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label="Status" value={getStatus(status)}></KeyValuePair>
+                        <KeyValuePair label="Endpoint config name" value={endpointConfigName}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label="Approx. batch transform duration" value={duration}></KeyValuePair>
+                        <KeyValuePair label="Status" value={getStatus(endpointStatus)}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
                         <KeyValuePair label="Creation time" value={creationTime}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label="Transform start time" value={trainingStartTime}></KeyValuePair>
-                    </Grid>
-                    <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label="Transform end time" value={trainingEndTime}></KeyValuePair>
-                    </Grid>
-                    <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label="Model artifacts" value={modelArtifacts}></KeyValuePair>
+                        <KeyValuePair label="Last modified time" value={lastModifiedTime}></KeyValuePair>
                     </Grid>
                 </Grid>
             </FormSection>
-            <FormSection header="Resource configuration">
+            <FormSection header="Endpoint configuration">
                 <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }}>
+                    <Grid item xs={2} sm={4} md={4}>
+                        <KeyValuePair label="Model name" value={modelName}></KeyValuePair>
+                    </Grid>
                     <Grid item xs={2} sm={4} md={4}>
                         <KeyValuePair label="Instance type" value={instanceType}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label="Instance count" value={instanceCount}></KeyValuePair>
+                        <KeyValuePair label="Accelerator type" value={acceleratorType}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label="Additional storage" value={volumeSizeInGB}></KeyValuePair>
-                    </Grid>
-                </Grid>
-            </FormSection>
-            <FormSection header="Input data configuration">
-                <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }}>
-                    <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label="Images prefix" value={imagesS3Uri}></KeyValuePair>
+                        <KeyValuePair label="Initial instance count" value={initialInstanceCount}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label="Labels prefix" value={labelsS3Uri}></KeyValuePair>
-                    </Grid>
-                    <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label="Weights prefix" value={weightsS3Uri}></KeyValuePair>
-                    </Grid>
-                    <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label="Cfg prefix" value={cfgS3Uri}></KeyValuePair>
-                    </Grid>
-                </Grid>
-            </FormSection>
-            <FormSection header="Output data configuration">
-                <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }}>
-                    <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label="S3 output path" value={getLink(outputS3Uri)}></KeyValuePair>
+                        <KeyValuePair label="Initial variant weight" value={initialVariantWeight}></KeyValuePair>
                     </Grid>
                 </Grid>
             </FormSection>
@@ -207,4 +173,4 @@ const TrainingJobProp: FunctionComponent = () => {
     )
 }
 
-export default TrainingJobProp;
+export default EndpointProp;

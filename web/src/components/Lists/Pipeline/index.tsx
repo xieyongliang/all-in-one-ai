@@ -1,11 +1,12 @@
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent } from 'react';
 import Table from 'aws-northstar/components/Table';
 import StatusIndicator from 'aws-northstar/components/StatusIndicator';
 import Button from 'aws-northstar/components/Button';
 import Inline from 'aws-northstar/layouts/Inline';
 import ButtonDropdown from 'aws-northstar/components/ButtonDropdown';
 import {Column} from 'react-table'
-import { useHistory } from 'react-router-dom';
+import { useHistory, useParams } from 'react-router-dom';
+import { PathParams } from '../../Interfaces/PathParams';
 
 interface DataType {
     name: string;
@@ -180,17 +181,15 @@ const data = [
     }
 ];
 
-interface PipelineListProps {
-    name: string;
-}
-
-const PipelineList: FunctionComponent<PipelineListProps> = (props) => {
+const PipelineList: FunctionComponent = () => {
     const getRowId = React.useCallback(data => data.name, []);
 
     const history = useHistory();
 
+    var params : PathParams = useParams();
+
     const onCreate = () => {
-        history.push('/case/' + props.name + '?tab=pipeline#form')
+        history.push('/case/' + params.name + '?tab=pipeline#form')
     }
 
     const tableActions = (

@@ -91,7 +91,11 @@ const ImageAnnotate: React.FC<IProps> = (props: PropsWithChildren<IProps>) => {
 
             props.updatePerClassColorationStatusAction(true)
 
-            var response = await axios.get('/file/download', {params : {'uri' : encodeURIComponent(props.imageUri)} , responseType: 'blob'})
+            var imageUri = props.imageUri
+            if(imageUri.startsWith('/'))
+                imageUri = `${window.location.protocol}//${window.location.host}${props.imageUri}`
+
+            var response = await axios.get('/file/download', {params : {'uri' : encodeURIComponent(imageUri)} , responseType: 'blob'})
 
             var data = response.data;
             imageFile = new File([data], 'image.png');

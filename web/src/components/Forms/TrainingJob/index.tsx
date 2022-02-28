@@ -1,5 +1,5 @@
 import { FunctionComponent, useState } from 'react';
-import { Form, FormSection, FormField, Input, Button, Inline, Stack, Text } from 'aws-northstar';
+import { Form, FormSection, FormField, Input, Button, Stack, Text } from 'aws-northstar';
 import { useHistory, useParams } from 'react-router-dom'; 
 import Select, { SelectOption } from 'aws-northstar/components/Select';
 import Grid from '@mui/material/Grid';
@@ -14,12 +14,7 @@ const optionsInstance : SelectOption[]= [
             { label: 'ml.m5.2xlarge', value: 'ml.m5.2xlarge' }, 
             { label: 'ml.m5.4xlarge', value: 'ml.m5.4xlarge' }, 
             { label: 'ml.m5.12xlarge', value: 'ml.m5.12xlarge' }, 
-            { label: 'ml.m5.24xlarge', value: 'ml.m5.24xlarge' },
-            { label: 'ml.m4.xlarge', value: 'ml.m4.xlarge' }, 
-            { label: 'ml.m4.2xlarge', value: 'ml.m4.2xlarge' }, 
-            { label: 'ml.m4.4xlarge', value: 'ml.m4.4xlarge' }, 
-            { label: 'ml.m4.10large', value: 'ml.m4.10large' }, 
-            { label: 'ml.m4.16xlarge', value: 'ml.m4.16xlarge' }, 
+            { label: 'ml.m5.24xlarge', value: 'ml.m5.24xlarge' } 
         ]
     },
     {
@@ -29,43 +24,18 @@ const optionsInstance : SelectOption[]= [
             { label: 'ml.c5.2xlarge', value: 'ml.c5.2xlarge' },
             { label: 'ml.c5.4xlarge', value: 'ml.c5.4xlarge' },
             { label: 'ml.c5.9xlarge', value: 'ml.c5.9xlarge' },
-            { label: 'ml.c5.18xlarge', value: 'ml.c5.18xlarge' },
-            { label: 'ml.c4.1xlarge', value: 'ml.c4.xlarge' },
-            { label: 'ml.c4.2xlarge', value: 'ml.c4.2xlarge' },
-            { label: 'ml.c4.4xlarge', value: 'ml.c4.4xlarge' },
-            { label: 'ml.c4.8xlarge', value: 'ml.c4.8xlarge' },
-            { label: 'ml.c5n.xlarge', value: 'ml.c5n.xlarge' },
-            { label: 'ml.c5n.2xlarge', value: 'ml.c5n.2xlarge' },
-            { label: 'ml.c5n.4xlarge', value: 'ml.c5n.4xlarge' },
-            { label: 'ml.c5n.9xlarge', value: 'ml.c5n.9xlarge' },
-            { label: 'ml.c5n.18xlarge', value: 'ml.c5n.18xlarge' }
+            { label: 'ml.c5.18xlarge', value: 'ml.c5.18xlarge' }
         ]
     },
     {
         label: 'Accelerated computing', 
         options: [ 
-            { label: 'ml.p2.xlarge', value: 'ml.p2.xlarge' },
-            { label: 'ml.p2.8xlarge', value: 'ml.p2.8xlarge' },
-            { label: 'ml.p2.16xlarge', value: 'ml.p2.16xlarge' },
-            { label: 'ml.p3.2xlarge', value: 'ml.p3.2xlarge' },
-            { label: 'ml.p3.8xlarge', value: 'ml.p3.8xlarge' },
-            { label: 'ml.p3.16xlarge', value: 'ml.p3.16xlarge' },
-            { label: 'ml.p3dn.24xlarge', value: 'ml.p3dn.24xlarge' },
-            { label: 'ml.p4dn.xlarge', value: 'ml.p4dn.xlarge' },
-            { label: 'ml.p4dn.2xlarge', value: 'ml.p4dn.2xlarge' },
-            { label: 'ml.p4dn.4xlarge', value: 'ml.p4dn.4xlarge' },
-            { label: 'ml.p4dn.8xlarge', value: 'ml.p4dn.8xlarge' },
-            { label: 'ml.p4dn.12xlarge', value: 'ml.p4dn.12xlarge' },
-            { label: 'ml.p4dn.16xlarge', value: 'ml.p4dn.16xlarge' },
-            { label: 'ml.p4d.24xlarge', value: 'ml.p4d.24xlarge' },
-            { label: 'ml.g5.xlarge', value: 'ml.g5.xlarge' },
-            { label: 'ml.g5.2xlarge', value: 'ml.g5.2xlarge' },
-            { label: 'ml.g5.4xlarge', value: 'ml.g5.4xlarge' },
-            { label: 'ml.g5.8xlarge', value: 'ml.g5.8xlarge' },
-            { label: 'ml.g5.12xlarge', value: 'ml.g5.12xlarge' },
-            { label: 'ml.g5.16xlarge', value: 'ml.g5.16xlarge' },
-            { label: 'ml.g5.24xlarge', value: 'ml.g5.24xlarge' },
-            { label: 'ml.g5.48xlarge', value: 'ml.g5.48xlarge' }
+            { label: 'ml.g4dn.xlarge', value: 'ml.p4dn.xlarge' },
+            { label: 'ml.g4dn.2xlarge', value: 'ml.p4dn.2xlarge' },
+            { label: 'ml.g4dn.4xlarge', value: 'ml.p4dn.4xlarge' },
+            { label: 'ml.g4dn.8xlarge', value: 'ml.p4dn.8xlarge' },
+            { label: 'ml.g4dn.12xlarge', value: 'ml.p4dn.12xlarge' },
+            { label: 'ml.g4dn.16xlarge', value: 'ml.p4dn.16xlarge' }
         ]
     }
 ];
@@ -83,11 +53,10 @@ const TrainingJobForm: FunctionComponent<TrainingJobFormProps> = (props) => {
     const [ selectedInstanceType, setSelectedInstanceType ] = useState<SelectOption>({})
     const [ instanceCount, setInstanceCount ] = useState(1)
     const [ volumeSizeInGB, setVolumeSizeInGB ] = useState(30)
-    const [ inputS3Uri, setInputS3Uri ] = useState('')
-    const [ imagesPrefix, setImagesPrefix ] = useState('images')
-    const [ labelsPrefix, setLabelsPrefix ] = useState('labels')
-    const [ weightsPrefix, setWeightsPrefix ] = useState('weights')
-    const [ cfgPrefix, setCfgPrefix ] = useState('cfg')
+    const [ imagesS3Uri, setImagesS3Uri ] = useState('')
+    const [ labelsS3Uri, setLabelsS3Uri ] = useState('')
+    const [ weightsS3Uri, setWeightsS3Uri ] = useState('')
+    const [ cfgS3Uri, setCfgS3Uri ] = useState('')
     const [ outputS3Uri, setOutputS3Uri ] = useState('')
     const [ tags, setTags ] = useState([{key:'', value:''}])
     const [ forcedRefresh, setForcedRefresh ] = useState(false)
@@ -95,11 +64,8 @@ const TrainingJobForm: FunctionComponent<TrainingJobFormProps> = (props) => {
     const [ invalidInstanceType, setinvalidInstanceType ] = useState(false)
     const [ invalidInstanceCount, setInvalidInstanceCount ] = useState(false)
     const [ invalidVolumeSizeInGB, setInvalidVolumeSizeInGB ] = useState(false)
-    const [ invalidInputS3Uri, setInvalidInputS3Uri ] = useState(false)
-    const [ invalidImagesPrefix, setInvalidImagesPrefix ] = useState(false)
-    const [ invalidLabelsPrefix, setInvalidLabelsPrefix ] = useState(false)
-    const [ invalidWeightsPrefix, setInvalidWeightsPrefix ] = useState(false)
-    const [ invalidCfgPrefix, setInvalidCfgPrefix ] = useState(false)
+    const [ invalidImagesS3Uri, setInvalidImagesS3Uri ] = useState(false)
+    const [ invalidLabelsS3Uri, setInvalidLabelsS3Uri ] = useState(false)
     const [ invalidOutputS3Uri, setInvalidOutputS3Uri ] = useState(false)
 
     const history = useHistory();
@@ -115,16 +81,16 @@ const TrainingJobForm: FunctionComponent<TrainingJobFormProps> = (props) => {
             setInstanceCount(parseInt(event));
         if(id === 'formFieldIdVolumeSizeInGB')
             setVolumeSizeInGB(parseInt(event));
-        if(id === 'formFieldIdInputS3Uri')
-            setInputS3Uri(event);
-        if(id === 'formFieldIdImagesPrefix')
-            setImagesPrefix(event);
-        if(id === 'formFieldIdLabelsPrefix')
-            setLabelsPrefix(event);
-        if(id === 'formFieldIdWeightsPrefix')
-            setWeightsPrefix(event);
-        if(id === 'formFieldIdCfgPrefix')
-            setCfgPrefix(event);
+        if(id === 'formFieldIdImagesS3Uri')
+            setImagesS3Uri(event);
+        if(id === 'formFieldIdLabelsS3Uri')
+            setLabelsS3Uri(event);
+        if(id === 'formFieldIdWeightsS3Uri')
+            setWeightsS3Uri(event);
+        if(id === 'formFieldIdCfgS3Uri')
+            setCfgS3Uri(event);
+        if(id === 'formFieldIdTags')
+            setTags(event);
         if(id === 'formFieldIdOutputS3Uri')
             setOutputS3Uri(event);
     }
@@ -134,42 +100,36 @@ const TrainingJobForm: FunctionComponent<TrainingJobFormProps> = (props) => {
             setInvalidTrainingJobName(true)
         else if(selectedInstanceType.value === undefined)
             setinvalidInstanceType(true)
-        else if(instanceCount < 0)
+        else if(instanceCount <= 0)
             setInvalidInstanceCount(true)
-        else if(volumeSizeInGB < 0)
+        else if(volumeSizeInGB <= 0)
             setInvalidVolumeSizeInGB(true)
-        else if(inputS3Uri === '')
-            setInvalidInputS3Uri(true)
-        else if(imagesPrefix === '')
-            setInvalidImagesPrefix(true)
-        else if(labelsPrefix === '')
-            setInvalidLabelsPrefix(true)
-        else if(weightsPrefix === '')
-            setInvalidWeightsPrefix(true)
-        else if(cfgPrefix === '')
-            setInvalidCfgPrefix(true)
+        else if(imagesS3Uri === '')
+            setInvalidImagesS3Uri(true)
+        else if(labelsS3Uri === '')
+            setInvalidLabelsS3Uri(true)
         else if(outputS3Uri === '')
             setInvalidOutputS3Uri(true)
         else {
             var body = {
-                'trainingjob_name' : trainingJobName,
+                'training_job_name' : trainingJobName,
                 'case_name': params.name,
                 'instance_type': selectedInstanceType.value,
                 'instance_count': instanceCount,
                 'volume_size_in_gb': volumeSizeInGB,
-                'input_s3uri': inputS3Uri,
-                'images_prefix': imagesPrefix,
-                'labels_prefix': labelsPrefix,
-                'weights_prefix': weightsPrefix,
-                'cfg_prefix': cfgPrefix,
+                'images_s3uri': imagesS3Uri,
+                'labels_s3uri': labelsS3Uri,
+                'weights_s3uri': weightsS3Uri,
+                'cfg_s3uri': cfgS3Uri,
                 'output_s3uri': outputS3Uri
             }
-            if(tags.length > 1 || (tags.length == 1 && tags[0].key != '' && tags[0].value != ''))
+            if(tags.length > 1 || (tags.length === 1 && tags[0].key !== '' && tags[0].value !== ''))
                 body['tags'] = tags
             axios.post('/trainingjob', body,  { headers: {'content-type': 'application/json' }}) 
             .then((response) => {
                 history.push(`/case/${params.name}?tab=demo#trainingjob`)
             }, (error) => {
+                alert('Error occured, please check and try it again');
                 console.log(error);
             });    
         }
@@ -270,20 +230,17 @@ const TrainingJobForm: FunctionComponent<TrainingJobFormProps> = (props) => {
                     </FormField>
                 </FormSection>
                 <FormSection header="Input data configuration">
-                    <FormField label="S3 location" controlId="formFieldIdInputS3Uri">
-                        <Input value={inputS3Uri} placeholder='s3://' required={true} invalid={invalidInputS3Uri} onChange={(event) => onChange('formFieldIdInputS3Uri', event)}/>
-                    </FormField>
-                    <FormField label="Images prefix" controlId="formFieldIdImagesPrefix">
-                        <Input value={imagesPrefix} required={true} invalid={invalidImagesPrefix} onChange={(event) => onChange('formFieldIdImagesPrefix', event)}/>
+                    <FormField label="Images S3Uri" controlId="formFieldIdImagesS3Uri">
+                        <Input value={imagesS3Uri} required={true} invalid={invalidImagesS3Uri} onChange={(event) => onChange('formFieldIdImagesS3Uri', event)}/>
                     </FormField>
                     <FormField label="Lables prefix" controlId="formFieldIdLabelsPrefix">
-                        <Input value={labelsPrefix} required={true} invalid={invalidLabelsPrefix} onChange={(event) => onChange('formFieldIdLabelsPrefix', event)} />
+                        <Input value={labelsS3Uri} required={true} invalid={invalidLabelsS3Uri} onChange={(event) => onChange('formFieldIdLabelsS3Uri', event)} />
                     </FormField>
-                    <FormField label="Weights prefix" controlId="formFieldIdWeightsPrefix">
-                        <Input value={weightsPrefix} required={true} invalid={invalidWeightsPrefix} onChange={(event) => onChange('formFieldIdWeightsPrefix', event)} />
+                    <FormField label="Weights S3Uri" controlId="formFieldIdWeightsS3Uri">
+                        <Input value={imagesS3Uri} required={true} placeholder={'default'} invalid={invalidImagesS3Uri} onChange={(event) => onChange('formFieldIdWeightsS3Uri', event)}/>
                     </FormField>
                     <FormField label="Cfg prefix" controlId="formFieldIdCfgPrefix">
-                        <Input value={cfgPrefix} required={true} invalid={invalidCfgPrefix} onChange={(event) => onChange('formFieldIdCfgPrefix', event)} />
+                        <Input value={labelsS3Uri} required={true} placeholder={'default'} invalid={invalidLabelsS3Uri} onChange={(event) => onChange('formFieldIdCfgPrefix', event)} />
                     </FormField>
                 </FormSection>
                 <FormSection header="Output data configuration">

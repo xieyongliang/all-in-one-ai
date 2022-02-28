@@ -56,3 +56,15 @@ export const LABELS : LabelMap = {
     [CaseType.RECEIPT]:     [],
     [CaseType.INSURANCE]:   []
 }
+
+export const APIS = {
+    'create_training_job': {'function': 'all_in_one_ai_create_training_job_yolov5', 'method': 'POST'},
+    'describe_training_job': {'function': 'all_in_one_ai_describe_training_job', 'method': 'GET'},
+    'create_transform_job': {'function': 'all_in_one_ai_create_transform_job', 'method': 'POST'},
+    'describe_transform_job': {'function': 'all_in_one_ai_describe_transform_job', 'method': 'GET'},
+    'create_model': {'function': 'all_in_one_ai_create_model', 'method': 'POST'},
+    'describe_model': {'function': 'all_in_one_ai_describe_model', 'method': 'GET'},
+    'create_endpoint': {'function': 'all_in_one_ai_create_endpoint', 'method': 'POST'},
+    'describe_endpoint': {'function': 'all_in_one_ai_describe_endpoint', 'method': 'GET'},
+    'inference': {'function': 'all_in_one_ai_inference', 'method': 'POST'}
+}

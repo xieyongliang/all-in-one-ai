@@ -44,6 +44,7 @@ const AppLayout: FunctionComponent = ({ children }) => {
                         "type": SideNavigationItemType.SECTION,
                         "text": "Use cases",
                         "items": [
+                            { text: 'Overview', type: SideNavigationItemType.LINK, href: '/case' },
                             { text: 'Track detection', type: SideNavigationItemType.LINK, href: '/case/track?tab=demo#sample' },
                             { text: 'Mask detection', type: SideNavigationItemType.LINK, href: '/case/mask?tab=demo#sample' },
                             { text: 'Helmet detection', type: SideNavigationItemType.LINK, href: '/case/helmet?tab=demo#sample' },                                                        

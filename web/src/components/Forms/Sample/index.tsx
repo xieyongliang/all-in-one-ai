@@ -1,52 +1,65 @@
 import { FunctionComponent, useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { CopyBlock } from 'react-code-blocks';
-import { Button, Container, FormField, Inline, Stack } from 'aws-northstar';
+import { Button, Container, Link, FormField, Inline, Stack, Toggle } from 'aws-northstar';
 import ImageList from '@mui/material/ImageList';
 import ImageListItem from '@mui/material/ImageListItem';
-import axios from 'axios';
+import SyntaxHighlighter from 'react-syntax-highlighter';
+import { github } from 'react-syntax-highlighter/dist/esm/styles/hljs';
+import JSZip from 'jszip';import axios from 'axios';
 import URLImage from '../../Utils/URLImage';
 import ImageAnnotate from '../../Utils/Annotate';
 import Image from '../../Utils/Image';
 import {LABELS, COLORS, CaseType} from '../../Data/data';
 import { PathParams } from '../../Interfaces/PathParams';
-
-import { InferenceSample } from '../../Data/code';
+import '../../Utils/Image/index.scss'
 
 const SampleForm: FunctionComponent = () => {
-    const [items, setItems] = useState<string[]>([])
-    const [current, setCurrent] = useState('')
-    const [filename, setFilename] = useState('')
-    const [id, setId] = useState<number[]>([])
-    const [bbox, setBbox] = useState<number[][]>([])
-    const [visibleAnnotate, setVisibleAnnotate] = useState(false);
-    const [labels, setLabels] = useState([])
+    const [ items, setItems ] = useState<string[]>([])
+    const [ current, setCurrent ] = useState('')
+    const [ filename, setFilename ] = useState('')
+    const [ id, setId ] = useState<number[]>([])
+    const [ bbox, setBbox ] = useState<number[][]>([])
+    const [ visibleAnnotate, setVisibleAnnotate ] = useState(false);
+    const [ labels, setLabels ] = useState([])
+    const [ sampleCode, setSampleCode ] = useState('')
+    const [ sampleConsole, setSampleConsole ] = useState('')
+    const [ visibleSampleCode, setVisibleSampleCode ] = useState(false)
     const casename = useRef('');
 
     var params : PathParams = useParams();
 
     useEffect(() => {
         casename.current = params.name;
-        axios.get('/samples/' + params.name)
-        .then((response) => {
+        const request1 = axios.get('/samples/' + params.name);
+        const request2 = axios.get('/helper/function/all_in_one_ai_invoke_endpoint?action=code');
+        const request3 = axios.get('/helper/function/all_in_one_ai_invoke_endpoint?action=console');
+        axios.all([request1, request2, request3])
+        .then(axios.spread(function(response1, response2, response3) {
             var items : string[] = []
-            for(let item of response.data) {
+            for(let item of response1.data) {
                 items.push(item)
+                setItems(items);
+                setFilename('');
+                setVisibleAnnotate(false);
+                if(params.name === 'track')
+                    setLabels(LABELS[CaseType.TRACK])
+                else if(params.name === 'mask')
+                    setLabels(LABELS[CaseType.FACE])    
             }
-            setItems(items);
-            setFilename('');
-            setVisibleAnnotate(false);
-            if(params.name === 'track')
-                setLabels(LABELS[CaseType.TRACK])
-            else if(params.name === 'mask')
-                setLabels(LABELS[CaseType.FACE])    
-        }, (error) => {
-            console.log(error);
-        });
+            axios.get('/file/download', {params: {uri: encodeURIComponent(response2.data)}, responseType: 'blob'})
+            .then((response4) => {
+                var zip = new JSZip();
+                zip.loadAsync(response4.data).then(async function(zipped) {
+                        zipped.file('lambda_function.py').async('string').then(function(data) {
+                        setSampleCode(data)
+                    })
+                })
+            });
+            setSampleConsole(response3.data)
+        }));
     },[params.name]);
 
-    const onImageClick = (event: React.MouseEvent<HTMLImageElement>) => {
-        const src = event.currentTarget.src
+    const onImageClick = (src) => {
         const filename = src.substring(src.lastIndexOf('/') + 1)
         setCurrent(src)
         setFilename(filename)
@@ -92,6 +105,7 @@ const SampleForm: FunctionComponent = () => {
         labels.forEach(label => {
             labelsData.push(label + '\r');
         })
+        console.log(current)
         return (
             <Container title = "Image annotation">
                 <ImageAnnotate imageUri={current} labelsData={labelsData} annotationData={annotationData} colorData={COLORS}/>
@@ -135,7 +149,9 @@ const SampleForm: FunctionComponent = () => {
             return (
                 <Container title = "Preview">
                     <FormField controlId='button'>
-                        <URLImage src={current} colors={COLORS} labels={labels} id={id} bbox={bbox}/>
+                        <div className='watermarked'>
+                            <URLImage src={current} colors={COLORS} labels={labels} id={id} bbox={bbox}/>
+                        </div>
                     </FormField>
                     <Inline>
                         <FormField controlId='button'>
@@ -151,21 +167,14 @@ const SampleForm: FunctionComponent = () => {
 
     const renderSampleCode = () => {
         return (
-            <Container title="Sample code">
-                <FormField
-                    label="Expand to show sample code of realltime inference"
-                    controlId="formFieldIdSampleCode"
-                    stretch={true}
-                    expandable={true}
-                >
-                    <CopyBlock
-                        language="python"
-                        text={InferenceSample}
-                        codeBlock
-                        theme={'github'}
-                        showLineNumbers={true}
-                    />
-                </FormField>
+            <Container title = "Sample code">
+                <Toggle label={visibleSampleCode ? "Show sample code" : "Hide sample code"} checked={visibleSampleCode} onChange={(checked) => {setVisibleSampleCode(checked)}} />
+                <Link href={sampleConsole}>Open in AWS Lambda console</Link>
+                {
+                    visibleSampleCode && <SyntaxHighlighter language="python" style={github} showLineNumbers={true}>
+                        {sampleCode}
+                    </SyntaxHighlighter>
+                }
             </Container>
         )
     }

@@ -1,4 +1,5 @@
 import { FunctionComponent } from "react"
+import "./index.scss"
 
 export interface ImageProps {
     src: string;
@@ -6,33 +7,69 @@ export interface ImageProps {
     width: number;
     height: number;
     current: string;
-    onClick?: (event: React.MouseEvent<HTMLImageElement>) => void;
+    public?: boolean;
+    onClick?: (src) => void;
 }
 
 const Image: FunctionComponent<ImageProps> = (props) => {
-    if(props.current.endsWith(props.src))
-        return (
-            <img
-                    src={props.src}
-                    width={props.width}
-                    height={props.height}
-                    alt={props.alt}
-                    loading="lazy"
-                    onClick={props.onClick}
-                    style={{"border": "5px solid red"}}
-                />
-        )
-    else
-        return (
-            <img
-                    src={props.src}
-                    width={props.width}
-                    height={props.height}
-                    alt={props.alt}
-                    loading="lazy"
-                    onClick={props.onClick}
-                />
-        )
+    const onLoad = (event) => {
+        event.target.parentNode.className = 'watermarked'
+    }
+    if(props.public === true) {
+        if(props.current.endsWith(props.src))
+            return (
+                <div onClick={(event)=>{props.onClick(props.src)}}>
+                    <img
+                        src={props.src}
+                        width={props.width}
+                        height={props.height}
+                        alt={props.alt}
+                        loading="lazy"
+                        style={{"border": "5px solid red"}}
+                    />
+                </div>
+            )
+        else
+            return (
+                <div onClick={(event)=>{props.onClick(props.src)}}>
+                    <img
+                        src={props.src}
+                        width={props.width}
+                        height={props.height}
+                        alt={props.alt}
+                        loading="lazy"
+                    />
+                </div>
+            )
+    } else {
+        if(props.current.endsWith(props.src))
+            return (
+                <div onClick={(event)=>{props.onClick(props.src)}}>
+                    <img
+                        src={props.src}
+                        width={props.width}
+                        height={props.height}
+                        alt={props.alt}
+                        loading="lazy"
+                        onLoad={onLoad}
+                        style={{"border": "5px solid red"}}
+                    />
+                </div>
+            )
+        else
+            return (
+                <div onClick={(event)=>{props.onClick(props.src)}}>
+                    <img
+                        src={props.src}
+                        width={props.width}
+                        height={props.height}
+                        alt={props.alt}
+                        loading="lazy"
+                        onLoad={onLoad}
+                    />
+                </div>
+            )
+    }
 }
 
 export default Image;

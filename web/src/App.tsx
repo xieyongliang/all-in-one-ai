@@ -20,6 +20,7 @@ import Dashboard from './components/Dashboard/index'
 import Case from './components/Cases'
 import Yolov5 from './components/Models/Yolov5'
 import PPE from './components/Scenarios/PPE';
+import CaseOverview from './components/Cases/Overview';
 
 const withLayout = (Component : any, props? : any) => {
     return (
@@ -37,6 +38,7 @@ const App = () => {
                     <Route exact path="/scenarios/:name">{withLayout(PPE)}</Route>
                     <Route exact path="/model/:name">{withLayout(Yolov5)}</Route>
                     <Route exact path="/case/:name">{withLayout(Case)}</Route>
+                    <Route exact path="/case">{withLayout(CaseOverview)}</Route>
                     <Route exact path="/">{withLayout(Dashboard)}</Route>
                 </Switch>
             </Router>

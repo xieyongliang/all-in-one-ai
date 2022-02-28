@@ -5,7 +5,7 @@ import axios from 'axios';
 import { PathParams } from '../../Interfaces/PathParams';
 import { SelectOption } from 'aws-northstar/components/Select';
 
-const optionsDataType : SelectOption[]= [
+const optionsS3DataType : SelectOption[]= [
     { label: 'S3Prefix', value: 'S3Prefix' },
     { label: 'ManifestFile', value: 'ManifestFile' }
 ];
@@ -42,7 +42,7 @@ const optionsInstanceType : SelectOption[]= [
 
 const TransformJobForm: FunctionComponent = () => {
     const [ optionsModel, setOptionsModel ] = useState([]);
-    const [ selectedDataType, setSelectedDataType ] = useState<SelectOption>({ label: 'S3Prefix', value: 'S3Prefix' });
+    const [ selectedS3DataType, setSelectedS3DataType ] = useState<SelectOption>({ label: 'S3Prefix', value: 'S3Prefix' });
     const [ selectedContentType, setSelectedContentType ] = useState<SelectOption>({ label: 'image/png', value: 'image/png' });
     const [ selectedInstanceType, setSelectedInstanceType ] = useState<SelectOption>({});
     const [ selectedModelName, setSelectedModelName ] = useState<SelectOption>({});
@@ -84,8 +84,8 @@ const TransformJobForm: FunctionComponent = () => {
         if(id === 'formFieldIdModelName') {
             setSelectedModelName({ label: event.target.value, value: event.target.value });
         }
-        if(id === 'formFieldIdDataType') {
-            setSelectedDataType({ label: event.target.value, value: event.target.value });
+        if(id === 'formFieldIdS3DataType') {
+            setSelectedS3DataType({ label: event.target.value, value: event.target.value });
         }
         if(id === 'formFieldIdContentType') {
             setSelectedContentType({ label: event.target.value, value: event.target.value });
@@ -124,9 +124,9 @@ const TransformJobForm: FunctionComponent = () => {
             setInvalidMaxconcurrentTransform(true)
         else {
             var body = {
-                'transformjob_name' : transformJobName,
+                'transform_job_name' : transformJobName,
                 'model_name': selectedModelName.value,
-                'data_type': selectedDataType.value,
+                's3_data_type': selectedS3DataType.value,
                 'content_type': selectedContentType.value,
                 'instance_type': selectedInstanceType.value,
                 'instance_count': instanceCount,
@@ -138,6 +138,7 @@ const TransformJobForm: FunctionComponent = () => {
             .then((response) => {
                 history.push(`/case/${params.name}?tab=demo#transformjob`)
             }, (error) => {
+                alert('Error occured, please check and try it again');
                 console.log(error);
             });    
         }
@@ -187,12 +188,12 @@ const TransformJobForm: FunctionComponent = () => {
                 </FormField>
             </FormSection>
             <FormSection header="Input configuration">
-                <FormField label="Data type" controlId="formFieldIdDataType">
+                <FormField label="Data type" controlId="formFieldIdS3DataType">
                     <Select
                         placeholder="Choose an option"
-                        options={optionsDataType}
-                        selectedOption={selectedDataType}
-                        onChange={(event) => onChange('formFieldIdDataType', event)}
+                        options={optionsS3DataType}
+                        selectedOption={selectedS3DataType}
+                        onChange={(event) => onChange('formFieldIdS3DataType', event)}
                     />
                 </FormField>
                 <FormField label="S3 input path" controlId="formFieldIdS3InputUri">

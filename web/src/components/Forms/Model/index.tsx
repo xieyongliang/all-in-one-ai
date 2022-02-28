@@ -1,11 +1,10 @@
-import React, { FunctionComponent } from 'react';
-import FormSection from 'aws-northstar/components/FormSection';
-import FormField from 'aws-northstar/components/FormField';
-import Input from 'aws-northstar/components/Input';
-import { Form, Button, Inline, Stack } from 'aws-northstar';
+import { FunctionComponent, useState } from 'react';
 import { useHistory, useParams } from 'react-router-dom'; 
-import RadioButton from 'aws-northstar/components/RadioButton';
-import RadioGroup from 'aws-northstar/components/RadioGroup';
+import { Form, FormSection, FormField, Input, Button, Text, Stack } from 'aws-northstar';
+import Grid from '@mui/material/Grid';
+import Radio from '../../Utils/Radio';
+import RadioGroup from '../../Utils/RadioGroup';
+import axios from 'axios';
 
 interface PathParams {
     name: string;
@@ -16,20 +15,68 @@ interface ModelFormProps {
 }
 
 const ModelForm: FunctionComponent<ModelFormProps> = (props) => {
+    const [ modelName, setModelName ] = useState('')
+    const [ containerIamge, setContainerImage ] = useState('')
+    const [ modelDataUrl, setModelDataUrl ] = useState('')
+    const [ mode, setMode ] = useState('SingleModel')
+    const [ tags, setTags ] = useState([{key:'', value:''}])
+    const [ forcedRefresh, setForcedRefresh ] = useState(false)
+    const [ invalidModelName, setInvalidModelName ] = useState(false)
+    const [ invalidModelDataUrl, setInvalidModelDataUrl ] = useState(false)
     const history = useHistory();
 
     var params : PathParams = useParams();
-    var name = params.name
+
+    const onChange = (id: string, event: any) => {
+        if(id === 'formFieldIdModelName')
+            setModelName(event);
+        if(id === 'formFieldIdContainerImage')
+            setContainerImage(event)
+        if(id === 'formFieldIdModelDataUrl')
+            setModelDataUrl(event)
+        if(id === 'formFieldIdMode')
+            setMode(event)
+        if(id === 'formFieldIdTags')
+            setTags(event)
+    }
 
     const onSubmit = () => {
-        history.push('/case/' + name + '?tab=model')
+        if(modelName === '')
+            setInvalidModelName(true)
+        else if(modelDataUrl === '')
+            setInvalidModelDataUrl(true)
+        else {
+            var body = {
+                'model_name' : modelName,
+                'case_name': params.name,
+                'container_image': containerIamge,
+                'model_data_url': modelDataUrl,
+                'mode': mode
+            }
+            if(tags.length > 1 || (tags.length === 1 && tags[0].key !== '' && tags[0].value !== ''))
+                body['tags'] = tags
+            axios.post('/model', body,  { headers: {'content-type': 'application/json' }}) 
+            .then((response) => {
+                history.push(`/case/${params.name}?tab=model`)
+            }, (error) => {
+                alert('Error occured, please check and try it again');
+                console.log(error);
+            });
+        }
     }
  
     const onCancel = () => {
-        history.push('/case/' + name + '?tab=model')
+        history.push(`/case/${params.name}?tab=model`)
     }
 
-    const onRemove = () => {
+    const onAddTag = () => {
+        tags.push({key:'', value:''});
+        setForcedRefresh(!forcedRefresh);
+    }
+
+    const onRemoveTag = (index) => {
+        tags.splice(index, 1);
+        setForcedRefresh(!forcedRefresh);
     }
 
     var wizard : boolean
@@ -42,8 +89,8 @@ const ModelForm: FunctionComponent<ModelFormProps> = (props) => {
         if(!wizard) {
             return (
                 <FormSection header="Model settings">
-                    <FormField label="Model name" controlId="formFieldId1">
-                        <Input type="text" controlId="formFieldId1" />
+                    <FormField label="Model name" controlId="formFieldIdModelName">
+                        <Input type="text" required={true} value={modelName} invalid={invalidModelName} onChange={(event)=>onChange('formFieldIdModelName', event)}/>
                     </FormField>
                 </FormSection>
             )
@@ -56,22 +103,36 @@ const ModelForm: FunctionComponent<ModelFormProps> = (props) => {
         if(!wizard) {
             return (
                 <FormSection header="Tags - optional">
-                    <Inline>
-                        <FormField label="Key" controlId="formFieldId1">
-                            <Input type="text" controlId="formFieldId1"/>
-                        </FormField>
-                        <FormField label="Value" controlId="formFieldId1">
-                            <Inline>
-                                <Input type="text" controlId="formFieldId1"/>
-                            </Inline>
-                        </FormField>
-                        <FormField label="Operation" controlId="formFieldId1">
-                            <Inline>
-                                <Button onClick={onRemove}>Remove</Button>
-                            </Inline>
-                        </FormField>
-                    </Inline>
-                    <Button variant="link">Add tag</Button>
+                    {
+                        tags.length>0 && 
+                            <Grid container spacing={{ xs: 1, md: 1 }} columns={{ xs: 4, sm: 8, md: 12 }}>
+                                <Grid item xs={2} sm={4} md={4}>
+                                    <Text> Key </Text>
+                                </Grid>
+                                <Grid item xs={2} sm={4} md={4}>
+                                    <Text> Value </Text> 
+                                </Grid>
+                                <Grid item xs={2} sm={4} md={4}>
+                                    <Text>  </Text>
+                                </Grid>
+                            </Grid>
+                    }
+                    {
+                        tags.map((tag, index) => (
+                            <Grid container spacing={{ xs: 1, md: 1 }} columns={{ xs: 4, sm: 8, md: 12 }}>
+                                <Grid item xs={2} sm={4} md={4}>
+                                    <Input type="text" value={tag.key}/>
+                                </Grid>
+                                <Grid item xs={2} sm={4} md={4}>
+                                    <Input type="text" value={tag.value}/>
+                                </Grid>
+                                <Grid item xs={2} sm={4} md={4}>
+                                    <Button onClick={() => onRemoveTag(index)}>Remove</Button>
+                                </Grid>
+                            </Grid>
+                        ))
+                    }
+                    <Button variant="link" size="large" onClick={onAddTag}>Add tag</Button>
                 </FormSection>
             )
         }
@@ -83,19 +144,16 @@ const ModelForm: FunctionComponent<ModelFormProps> = (props) => {
         return (
             <FormSection header="Container definition">
                 <FormField controlId='formFieldId1'>
-                    <RadioGroup
-                        items={[
-                            <RadioButton value="single" description='Use this to host a single model in this container.'  checked={true}>Use a single model</RadioButton>, 
-                            <RadioButton value="multiple" description='Use this to host multiple models in this container.' disabled={true}>Use multiple models</RadioButton>
-                        ]}
-                    />
+                    <RadioGroup onChange={onChange} active={mode}>
+                        <Radio value={'SingleModel'}> Use a single model.</Radio>
+                        <Radio value={'MultiModel'}>Use multiple models.</Radio>
+                    </RadioGroup>
                 </FormField>          
-                <FormField label="Location of inference code image" description='Type the registry path where the inference code image is stored in Amazon ECR.
-    ' controlId="formFieldId1">
-                    <Input type="text" controlId="formFieldId1" />
+                <FormField label="Location of inference code image" description='Type the registry path where the inference code image is stored in Amazon ECR.' controlId="formFieldIdContainerImage">
+                    <Input type="text" value={containerIamge} placeholder={'default'} onChange={(event)=>{onChange('formFieldIdContainerImage', event)}} />
                 </FormField>
-                <FormField label="Location of model artifacts" description='Type the URL where model artifacts are stored in S3.' controlId="formFieldId1">
-                    <Input type="text" controlId="formFieldId1" />
+                <FormField label="Location of model artifacts" description='Type the URL where model artifacts are stored in S3.' controlId="formFieldIdModelDataUrl">
+                    <Input type="text" required={true} value={modelDataUrl} invalid={invalidModelDataUrl} onChange={(event)=>{onChange('formFieldIdModelDataUrl', event)}} />
                 </FormField>
         </FormSection>    
         )

@@ -1,6 +1,6 @@
 import { FunctionComponent, useEffect, useState } from 'react';
 import { useHistory, useLocation, useParams } from 'react-router-dom';
-import { KeyValuePair, StatusIndicator, Button, Form, FormSection, Link, Flashbar } from 'aws-northstar';
+import { KeyValuePair, StatusIndicator, Button, Form, FormSection, Link, Text, Flashbar, Input } from 'aws-northstar';
 import axios from 'axios';
 import Grid from '@mui/material/Grid';
 import { PathParams } from '../../Interfaces/PathParams';
@@ -12,7 +12,7 @@ const TransformJobProp: FunctionComponent = () => {
     const [ transformEndTime, setTransformEndTime ] = useState('')
     const [ duration, setDuration ] = useState('')
     const [ status, setStatus ] = useState('')
-    const [ dataType, setDataType ] = useState('')
+    const [ s3DataType, setS3DataType ] = useState('')
     const [ instanceType, setInstanceType ] = useState('')
     const [ instanceCount, setInstanceCount ] = useState('')
     const [ contentType, setContentType ] = useState('')
@@ -20,7 +20,9 @@ const TransformJobProp: FunctionComponent = () => {
     const [ modelName, setModelName ] = useState('')
     const [ inputS3Uri, setInputS3Uri ] = useState('')
     const [ outputS3Uri, setOutputS3Uri ] = useState('');
+    const [ tags, setTags ] = useState([])
     const [ loading, setLoading ] = useState(true);
+    const [ forcedRefresh, setForcedRefresh ] = useState(false)
 
     const history = useHistory();
 
@@ -30,22 +32,24 @@ const TransformJobProp: FunctionComponent = () => {
     var id = localtion.hash.substring(9);
 
     useEffect(() => {
-        axios.get('/transformjob/' + id, {params: {'case': params.name}})
+        axios.get(`/transformjob/${id}`, {params: {'case': params.name}})
             .then((response) => {
-            setTransformJobName(response.data[0].transformjob_name)
-            setCreationTime(response.data[0].creation_time)
-            setTransformStartTime(response.data[0].transform_start_time)
-            setTransformEndTime(response.data[0].transform_end_time)
-            setStatus(response.data[0].status)
-            setDataType(response.data[0].data_type)
-            setInstanceType(response.data[0].instance_type)
-            setInstanceCount(response.data[0].instance_count)
-            setContentType(response.data[0].content_type)
-            setMaxConncurrentTransforms(response.data[0].max_concurrent_transforms)
-            setModelName(response.data[0].model_name)
-            setDuration(response.data[0].duration)
-            setInputS3Uri(response.data[0].input_s3uri)
-            setOutputS3Uri(response.data[0].output_s3uri)
+            setTransformJobName(response.data.transform_job_name)
+            setCreationTime(response.data.creation_time)
+            setTransformStartTime(response.data.transform_start_time)
+            setTransformEndTime(response.data.transform_end_time)
+            setStatus(response.data.transform_job_status)
+            setS3DataType(response.data.s3_data_type)
+            setInstanceType(response.data.instance_type)
+            setInstanceCount(response.data.instance_count)
+            setContentType(response.data.content_type)
+            setMaxConncurrentTransforms(response.data.max_concurrent_transforms)
+            setModelName(response.data.model_name)
+            setDuration(response.data.duration)
+            setInputS3Uri(response.data.input_s3uri)
+            setOutputS3Uri(response.data.output_s3uri)
+            if('tags' in response.data)
+                setTags(response.data.tags)
             setLoading(false);
         }, (error) => {
             console.log(error);
@@ -73,6 +77,16 @@ const TransformJobProp: FunctionComponent = () => {
 
     const onClose = () => {
         history.push(`/case/${params.name}?tab=demo#transformjob`)
+    }
+
+    const onAddTag = () => {
+        tags.push({key:'', value:''});
+        setForcedRefresh(!forcedRefresh);
+    }
+
+    const onRemoveTag = (index) => {
+        tags.splice(index, 1);
+        setForcedRefresh(!forcedRefresh);
     }
 
     return (
@@ -133,7 +147,7 @@ const TransformJobProp: FunctionComponent = () => {
             <FormSection header="Input data configuration">
                 <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }}>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label="S3 data type" value={dataType}></KeyValuePair>
+                        <KeyValuePair label="S3 data type" value={s3DataType}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
                         <KeyValuePair label="S3 URI" value={getLink(inputS3Uri)}></KeyValuePair>
@@ -149,6 +163,38 @@ const TransformJobProp: FunctionComponent = () => {
                         <KeyValuePair label="S3 output path" value={getLink(outputS3Uri)}></KeyValuePair>
                     </Grid>
                 </Grid>
+            </FormSection>
+            <FormSection header="Tags - optional">
+                {
+                    tags.length>0 && 
+                        <Grid container spacing={{ xs: 1, md: 1 }} columns={{ xs: 4, sm: 8, md: 12 }}>
+                            <Grid item xs={2} sm={4} md={4}>
+                                <Text> Key </Text>
+                            </Grid>
+                            <Grid item xs={2} sm={4} md={4}>
+                                <Text> Value </Text> 
+                            </Grid>
+                            <Grid item xs={2} sm={4} md={4}>
+                                <Text>  </Text>
+                            </Grid>
+                        </Grid>
+                }
+                {
+                    tags.map((tag, index) => (
+                        <Grid container spacing={{ xs: 1, md: 1 }} columns={{ xs: 4, sm: 8, md: 12 }}>
+                            <Grid item xs={2} sm={4} md={4}>
+                                <Input type="text" value={tag.key}/>
+                            </Grid>
+                            <Grid item xs={2} sm={4} md={4}>
+                                <Input type="text" value={tag.value}/>
+                            </Grid>
+                            <Grid item xs={2} sm={4} md={4}>
+                                <Button onClick={() => onRemoveTag(index)}>Remove</Button>
+                            </Grid>
+                        </Grid>
+                    ))
+                }
+                <Button variant="link" size="large" onClick={onAddTag}>Add tag</Button>
             </FormSection>
         </Form>
     )

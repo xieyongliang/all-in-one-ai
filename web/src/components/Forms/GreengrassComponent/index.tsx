@@ -1,45 +1,79 @@
-import React, { FunctionComponent } from 'react';
-import { Form, FormSection, FormField, Button, Input, Inline, Text, Stack, Select } from 'aws-northstar';
+import { FunctionComponent, useEffect, useState } from 'react';
 import { useHistory, useParams } from 'react-router-dom'; 
-
-interface SelectOption {
-    label?: string;
-    value?: string;
-    options?: SelectOption[];
-}
-
-const optionsModel : SelectOption[] = [
-    { label: 'model-1', value: 'model-1' }
-]
-
-interface PathParams {
-    name: string;
-}
+import { Form, FormSection, FormField, Button, Stack, Select, Input } from 'aws-northstar';
+import { SelectOption } from 'aws-northstar/components/Select';
+import axios from 'axios';
+import { PathParams } from '../../Interfaces/PathParams';
 
 interface GreengrassComponentFormProps {
     wizard?: boolean;
 }
 
 const GreengrassComponentForm: FunctionComponent<GreengrassComponentFormProps> = (props) => {
-    const [selectedModelName, setSelectedModelName] = React.useState({});
+    const [ optionsModels, setOptionsModels ] = useState([]);
+    const [ selectedModel, setSelectedModel ] = useState<SelectOption>({});
+    const optionsComponents = [];
+    optionsComponents.push({label: 'yolov5', value: 'com.example.yolov5'})
+    const [ selectedComponent, setSelectedComponent ] = useState<SelectOption>({})
+    const [ componentVersion, setComponentVersion ] = useState('')
+    const [ invalidModel, setInvalidModel ] = useState(false)
+    const [ invalidComponent, setInvalidComponent ] = useState(false)
+    const [ invalidComponentVersion, setInvalidComponentVersion ] = useState(false)
 
     const history = useHistory();
+    
     var params : PathParams = useParams();
 
+    useEffect(() => {
+        axios.get(`/model?case=${params.name}`)
+            .then((response) => {
+            var items = []
+            for(let item of response.data) {
+                items.push({label: item.model_name, value: item.model_data_url})
+            }
+            setOptionsModels(items);
+            console.log(items);
+        }, (error) => {
+            console.log(error);
+        });
+    }, [params.name])
+
     const onChange = (id: string, event: any) => {
-        if(id === 'formFieldIdModelName')
-            setSelectedModelName({ label: event.target.value, value: event.target.value });
+        if(id === 'formFieldIdModels')
+            setSelectedModel({ label: event.target.key, value: event.target.value });
+        if(id === 'formFieldIdComponents')
+            setSelectedComponent({ label: event.target.key, value: event.target.value });
+        if(id === 'formFieldIdMComponentVersion')
+            setComponentVersion(event)
     }
 
     const onSubmit = () => {
-        history.push('/case/' + params.name + '?tab=component')
+        if(selectedComponent.value === undefined)
+            setInvalidComponent(true)
+        else if(selectedModel.value === undefined)
+            setInvalidModel(true)
+        else if(componentVersion === '')
+            setInvalidComponentVersion(true)
+        else {
+            var body = {
+                'component_name' : selectedComponent.value,
+                'component_version': componentVersion,
+                'case_name': params.name,
+                'model_data_url': selectedModel.value
+            }
+            axios.post('/greengrass/component', body,  { headers: {'content-type': 'application/json' }}) 
+            .then((response) => {
+                history.push(`/case/${params.name}?tab=component`)
+            }, (error) => {
+                alert('Error occured, please check and try it again');
+                console.log(error);
+            });
+
+        }
     }
 
     const onCancel = () => {
         history.push('/case/' + params.name + '?tab=component')
-    }
-
-    const onRemove = () => {
     }
 
     var wizard : boolean
@@ -52,9 +86,15 @@ const GreengrassComponentForm: FunctionComponent<GreengrassComponentFormProps> =
         if(!wizard) {
             return (
                 <FormSection header="Greengrass component setting">
-                    <FormField label="Component name" controlId="formFieldId1">
-                        <Input type="text" controlId="formFieldId1" />
-                    </FormField>
+                    <FormField label="Component name" controlId="formFieldIdComponents">
+                        <Select
+                                placeholder="Choose an option"
+                                options={optionsComponents}
+                                selectedOption={selectedComponent}
+                                invalid={invalidComponent}
+                                onChange={(event) => onChange('formFieldIdComponents', event)}
+                            />
+                        </FormField>
                 </FormSection>
             )
         }
@@ -62,38 +102,20 @@ const GreengrassComponentForm: FunctionComponent<GreengrassComponentFormProps> =
             return ''
     }
 
-    const renderGreengrassTag = () => {
-        if(!wizard) {
-            <FormSection header="Tags - optional">
-                <Inline>
-                    <FormField label="Key" controlId="formFieldId1">
-                        <Input type="text" controlId="formFieldId1"/>
-                    </FormField>
-                    <FormField label="Value" controlId="formFieldId1">
-                        <Inline>
-                            <Input type="text" controlId="formFieldId1"/>
-                        </Inline>
-                    </FormField>
-                    <FormField label="Operation" controlId="formFieldId1">
-                        <Inline>
-                            <Button onClick={onRemove}>Remove</Button>
-                        </Inline>
-                    </FormField>
-                </Inline>
-                <Button variant="link">Add tag</Button>
-            </FormSection>
-        }
-    }
-
     const renderGreengrassContent = () => {
         return (
             <FormSection header="Production variants">
-                <FormField label="Model name" controlId="formFieldIdModelName">
+                <FormField label="Model name" controlId="formFieldIdModels">
                     <Select
                             placeholder="Choose an option"
-                            options={optionsModel}
-                            onChange={(event) => onChange('formFieldIdDataType', event)}
+                            options={optionsModels}
+                            selectedOption={selectedModel}
+                            invalid={invalidModel}
+                            onChange={(event) => onChange('formFieldIdModels', event)}
                         />
+                </FormField>
+                <FormField label="Component version" controlId="formFieldIdMComponentVersion">
+                    <Input value={componentVersion} invalid={invalidComponentVersion} onChange={(event) => onChange('formFieldIdMComponentVersion', event)} />
                 </FormField>
             </FormSection>
         )
@@ -104,7 +126,6 @@ const GreengrassComponentForm: FunctionComponent<GreengrassComponentFormProps> =
             <Stack>
                 {renderGreengrassComponentSetting()}
                 {renderGreengrassContent()}
-                {renderGreengrassTag()}
             </Stack>
         )
     }
@@ -120,7 +141,6 @@ const GreengrassComponentForm: FunctionComponent<GreengrassComponentFormProps> =
                 }>
                 {renderGreengrassComponentSetting()}
                 {renderGreengrassContent()}
-                {renderGreengrassTag()}
             </Form>
         )
     }

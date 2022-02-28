@@ -52,7 +52,7 @@ const PipelineForm: FunctionComponent<PipelineFormProps> = (props) => {
                 </FormField>
                 <FormField label="Pipeline type" controlId="formFieldId2">
                     <RadioGroup onChange={onChange} active={stateType}>
-                        <Radio value={'0'}>Both trining and inference and deploy in both cloud and edge</Radio>
+                        <Radio value={'0'}>Both training and inference and deploy in both cloud and edge</Radio>
                         <Radio value={'1'}>Both training and inference and deploy only in cloud</Radio>
                         <Radio value={'2'}>Only inference and deploy in both cloud and edge</Radio>
                         <Radio value={'3'}>Only inference and deploy only in cloud</Radio>
