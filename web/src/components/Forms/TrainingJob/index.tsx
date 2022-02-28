@@ -233,13 +233,13 @@ const TrainingJobForm: FunctionComponent<TrainingJobFormProps> = (props) => {
                     <FormField label="Images S3Uri" controlId="formFieldIdImagesS3Uri">
                         <Input value={imagesS3Uri} required={true} invalid={invalidImagesS3Uri} onChange={(event) => onChange('formFieldIdImagesS3Uri', event)}/>
                     </FormField>
-                    <FormField label="Lables prefix" controlId="formFieldIdLabelsPrefix">
+                    <FormField label="Lables S3Uri" controlId="formFieldIdLabelsPrefix">
                         <Input value={labelsS3Uri} required={true} invalid={invalidLabelsS3Uri} onChange={(event) => onChange('formFieldIdLabelsS3Uri', event)} />
                     </FormField>
                     <FormField label="Weights S3Uri" controlId="formFieldIdWeightsS3Uri">
                         <Input value={imagesS3Uri} required={true} placeholder={'default'} invalid={invalidImagesS3Uri} onChange={(event) => onChange('formFieldIdWeightsS3Uri', event)}/>
                     </FormField>
-                    <FormField label="Cfg prefix" controlId="formFieldIdCfgPrefix">
+                    <FormField label="Cfg S3Uri" controlId="formFieldIdCfgPrefix">
                         <Input value={labelsS3Uri} required={true} placeholder={'default'} invalid={invalidLabelsS3Uri} onChange={(event) => onChange('formFieldIdCfgPrefix', event)} />
                     </FormField>
                 </FormSection>

@@ -91,9 +91,6 @@ const GreengrassDeploymentList: FunctionComponent = () => {
 
     const tableActions = (
         <Inline>
-            <Button onClick={() => alert('Add button clicked')}>
-                Sample code
-            </Button>
             <ButtonDropdown
                 content="Action"
                     items={[{ text: 'Clone' }, { text: 'Create rest api' }, { text: 'Stop', disabled: true }, { text: 'Add/Edit tags' }]}

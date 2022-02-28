@@ -194,9 +194,6 @@ const PipelineList: FunctionComponent = () => {
 
     const tableActions = (
         <Inline>
-            <Button onClick={() => alert('Add button clicked')}>
-                Sample code
-            </Button>
             <ButtonDropdown
                 content="Action"
                     items={[{ text: 'Clone' }, { text: 'Create model' }, { text: 'Stop', disabled: true }, { text: 'Add/Edit tags' }]}
