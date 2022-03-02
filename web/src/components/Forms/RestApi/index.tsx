@@ -23,7 +23,7 @@ const RestApiForm: FunctionComponent<RestApiFormProps> = (props) => {
     const [ apiMethod, setApiMethod ] = useState('')
     const [ apiFunction, setApiFunction ] = useState('')
     const [ type, setType] = useState('1')
-    const [ tags, setTags ] = useState([{key:'', value:''}])
+    const [ tags ] = useState([{key:'', value:''}])
     const [ optionsRestApis, setOptionsRestApis ] = useState([]);
     const [ optionsApis, setOptionsApis ] = useState([]);
     const [ forcedRefresh, setForcedRefresh ] = useState(false)
@@ -50,8 +50,6 @@ const RestApiForm: FunctionComponent<RestApiFormProps> = (props) => {
             setApiPath(event)
         if(id === 'formFieldIdApiStage')
             setApiStage(event)
-        if(id === 'formFieldIdTags')
-            setTags(event)
     }
 
     const onChangeOption = (value: string)=>{

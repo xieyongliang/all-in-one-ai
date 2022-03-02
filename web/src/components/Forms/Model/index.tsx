@@ -19,7 +19,7 @@ const ModelForm: FunctionComponent<ModelFormProps> = (props) => {
     const [ containerIamge, setContainerImage ] = useState('')
     const [ modelDataUrl, setModelDataUrl ] = useState('')
     const [ mode, setMode ] = useState('SingleModel')
-    const [ tags, setTags ] = useState([{key:'', value:''}])
+    const [ tags ] = useState([{key:'', value:''}])
     const [ forcedRefresh, setForcedRefresh ] = useState(false)
     const [ invalidModelName, setInvalidModelName ] = useState(false)
     const [ invalidModelDataUrl, setInvalidModelDataUrl ] = useState(false)
@@ -36,8 +36,6 @@ const ModelForm: FunctionComponent<ModelFormProps> = (props) => {
             setModelDataUrl(event)
         if(id === 'formFieldIdMode')
             setMode(event)
-        if(id === 'formFieldIdTags')
-            setTags(event)
     }
 
     const onSubmit = () => {

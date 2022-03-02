@@ -4,7 +4,7 @@ const fs = require('fs');
 const { default: axios } = require('axios');
 const url = require('url');
 
-const baseUrl = 'https://rs0vxek8w9.execute-api.ap-east-1.amazonaws.com/prod'
+const baseUrl = 'https://4a8oxccfn7.execute-api.ap-southeast-1.amazonaws.com/prod'
 
 module.exports = function(app) {
     app.post('/image', (req, res) => {
@@ -118,10 +118,10 @@ module.exports = function(app) {
         secure: false,
         ws: false,
     }));
-    app.use(createProxyMiddleware('/helper', {
-        target: baseUrl + '/helper',
+    app.use(createProxyMiddleware('/function', {
+        target: baseUrl + '/function',
         pathRewrite: {
-            '^/helper': ''
+            '^/function': ''
         },
         changeOrigin: true,
         secure: false,

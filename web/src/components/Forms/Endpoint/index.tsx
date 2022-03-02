@@ -115,7 +115,7 @@ const EndpointForm: FunctionComponent<EndpointFormProps> = (props) => {
     const [ selectedAcceleratorTypeType, setSelectedAcceleratorTypeType ] = useState<SelectOption>({});
     const [ initialInstanceCount, setInitialInstanceCount ] = useState(1);
     const [ initialVariantWeight, setInitialVariantWeight ] = useState<number>(1);
-    const [ tags, setTags ] = useState([{key:'', value:''}])
+    const [ tags ] = useState([{key:'', value:''}])
     const [ forcedRefresh, setForcedRefresh ] = useState(false)
     const [ invalidEndpointName, setInvalidEndpointName ] = useState(false)
     const [ invalidModelName, setInvalidModelName ] = useState(false);
@@ -155,8 +155,6 @@ const EndpointForm: FunctionComponent<EndpointFormProps> = (props) => {
             setInitialInstanceCount(parseInt(event))
         if(id === 'formFieldIdInitialVariantWeight')
             setInitialVariantWeight(parseFloat(event))
-        if(id === 'formFieldIdTags')
-            setTags(tags)
     }
 
     const onSubmit = () => {

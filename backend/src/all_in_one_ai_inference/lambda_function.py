@@ -1,66 +1,64 @@
 import json
 import boto3
-import datetime
-from botocore.config import Config
-from boto3.session import Session
 import base64
 
-endpoints_dict = {
+endpoints = {
   "track": "all-in-one-ai-yolov5-track",
   "mask": "all-in-one-ai-yolov5-mask"
 }
 
-config = Config(
-    read_timeout=120,
-    retries={
-        'max_attempts': 0
-    }
-)
-
-sagemaker_runtime_client = boto3.client('sagemaker-runtime', config=config)
-session = Session(sagemaker_runtime_client)
+lambda_client = boto3.client('lambda')
 
 def lambda_handler(event, context):
-    # TODO implement
-
-    print(event)
-
-    model = 'track'
-    if event['queryStringParameters'] != None:
-        if 'model' in event['queryStringParameters']:
-            model = event['queryStringParameters']['model']
-
     if event['httpMethod'] == 'POST':
         payload = event['body']
 
+        print(event['headers'])
+        print(event['queryStringParameters'])
+
+        model_name = None
+        if event['queryStringParameters'] != None:
+            if 'model' in event['queryStringParameters']:
+                model_name = event['queryStringParameters']['model']
+        
         if('Content-Type' in event['headers']):
             content_type = event['headers']['Content-Type']
-        else:
+        elif('content-type' in event['headers']):
             content_type = event['headers']['content-type']
-
-        start_time=datetime.datetime.utcnow()
-        
-        if content_type == 'application/json':
-            body = payload
         else:
-            body = base64.b64decode(payload)
+            content_type = None
 
-        response = sagemaker_runtime_client.invoke_endpoint(
-            EndpointName=endpoints_dict[model],
-            ContentType=content_type,
-            Body=body)
-            
-        end_time=datetime.datetime.utcnow()
-        print(response)
-        print(start_time)
-        print(end_time)
-        print(end_time-start_time)
+        if(model_name not in endpoints or content_type == None):
+            return {
+                'statusCode': 400,
+                'body': "Invalid parameter"
+            }
         
-        return {
-            'statusCode': 200,
-            'body': response["Body"].read()
-        }
+        endpoint_name = endpoints[model_name]
 
+        body = {
+            "endpoint_name": endpoint_name,
+            "content_type": content_type,
+            "payload": payload
+        }
+        
+        response = lambda_client.invoke(
+            FunctionName = 'all_in_one_ai_invoke_endpoint',
+            InvocationType = 'RequestResponse',
+            Payload = json.dumps(body)
+        )
+
+        if('FunctionError' not in response):
+            return {
+                'statusCode': response['StatusCode'],
+                'body': response["Payload"].read().decode("utf-8")
+            }
+        else:
+            return {
+                'statusCode': 400,
+                'body': response["FunctionError"]
+            }
+        
     else:
         return {
             'statusCode': 400,

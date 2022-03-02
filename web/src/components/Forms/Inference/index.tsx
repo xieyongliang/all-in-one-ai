@@ -40,8 +40,8 @@ const InferenceForm: FunctionComponent = () => {
         else if(params.name === 'mask')
             setLabels(LABELS[CaseType.FACE])
 
-        const request1 = axios.get('/helper/function/all_in_one_ai_invoke_endpoint?action=code');
-        const request2 = axios.get('/helper/function/all_in_one_ai_invoke_endpoint?action=console');
+        const request1 = axios.get('/function/all_in_one_ai_invoke_endpoint?action=code');
+        const request2 = axios.get('/function/all_in_one_ai_invoke_endpoint?action=console');
         axios.all([request1, request2])
         .then(axios.spread(function(response1, response2) {
             axios.get('/file/download', {params: {uri: encodeURIComponent(response1.data)}, responseType: 'blob'})

@@ -23,6 +23,8 @@ import TrainingJobProp from '../Props/TrainingJob';
 import ModelProp from '../Props/Model';
 import EndpointProp from '../Props/Endpoint';
 import RestApiProp from '../Props/RestApi'
+import GreengrassComponentProp from '../Props/GreengrassComponent';
+import GreengrassDeploymentProp from '../Props/GreengrassDeployment';
 
 const Case: FunctionComponent = () => {
     var params : PathParams = useParams();
@@ -53,9 +55,9 @@ const Case: FunctionComponent = () => {
                 return <EndpointForm/>;
             case 'restapi':
                 return <RestApiForm/>;
-            case 'component':
+            case 'greengrasscomponent':
                 return <GreengrassComponentForm/>;
-            case 'deployment':
+            case 'greengrassdeployment':
                 return <GreengrassDeploymentForm/>;
         }
     }
@@ -72,6 +74,10 @@ const Case: FunctionComponent = () => {
                 return <EndpointProp />;
             case 'restapi':
                 return <RestApiProp />;
+            case 'greengrasscomponent':
+                return <GreengrassComponentProp/>;
+            case 'greengrassdeployment':
+                return <GreengrassDeploymentProp/>;
         }
     }
 
@@ -108,12 +114,12 @@ const Case: FunctionComponent = () => {
         },
         {
             label: 'Greengrass components',
-            id: 'component',
+            id: 'greengrasscomponent',
             content: <GreengrassComponentList/>
         },
         {
             label: 'Greengrass deployments',
-            id: 'deployment',
+            id: 'greengrassdeployment',
             content: <GreengrassDeploymentList/>
         }
     ];

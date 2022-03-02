@@ -58,7 +58,7 @@ const TrainingJobForm: FunctionComponent<TrainingJobFormProps> = (props) => {
     const [ weightsS3Uri, setWeightsS3Uri ] = useState('')
     const [ cfgS3Uri, setCfgS3Uri ] = useState('')
     const [ outputS3Uri, setOutputS3Uri ] = useState('')
-    const [ tags, setTags ] = useState([{key:'', value:''}])
+    const [ tags ] = useState([{key:'', value:''}])
     const [ forcedRefresh, setForcedRefresh ] = useState(false)
     const [ invalidTrainingJobName, setInvalidTrainingJobName ] = useState(false)
     const [ invalidInstanceType, setinvalidInstanceType ] = useState(false)
@@ -89,8 +89,6 @@ const TrainingJobForm: FunctionComponent<TrainingJobFormProps> = (props) => {
             setWeightsS3Uri(event);
         if(id === 'formFieldIdCfgS3Uri')
             setCfgS3Uri(event);
-        if(id === 'formFieldIdTags')
-            setTags(event);
         if(id === 'formFieldIdOutputS3Uri')
             setOutputS3Uri(event);
     }

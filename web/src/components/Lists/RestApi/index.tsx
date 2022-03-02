@@ -16,7 +16,7 @@ interface DataType {
 }
 
 const RestApiList: FunctionComponent = () => {
-    const [ items, setItems ] = useState([])
+    const [ items ] = useState([])
     const [ loading, setLoading ] = useState(true);
 
     const casename = useRef('');
@@ -29,16 +29,14 @@ const RestApiList: FunctionComponent = () => {
         casename.current = params.name;
         axios.get('/api', {params : {'case': params.name}})
             .then((response) => {
-            var items = []
             for(let item of response.data) {
                 items.push({name: item.api_name, function: item.api_function, created_date: item.created_date, url: item.api_url})
             }
-            setItems(items);
             setLoading(false);
         }, (error) => {
             console.log(error);
         });
-    }, [params.name]);
+    }, [params.name, items]);
 
     const onCreate = () => {
         history.push('/case/' + params.name + '?tab=restapi#form')
@@ -81,9 +79,6 @@ const RestApiList: FunctionComponent = () => {
     
     const tableActions = (
         <Inline>
-            <Button onClick={() => alert('Add button clicked')}>
-                Sample code
-            </Button>
             <ButtonDropdown
                 content="Action"
                     items={[{ text: 'Clone' }, { text: 'Delete' }, { text: 'Add/Edit tags' }]}

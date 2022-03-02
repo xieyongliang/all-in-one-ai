@@ -14,7 +14,7 @@ interface ModelItem {
 }
 
 const ModelList: FunctionComponent = () => {
-    const [ items, setItems ] = useState([])
+    const [ items ] = useState([])
     const [ loading, setLoading ] = useState(true);
     const [ sampleCode, setSampleCode ] = useState('')
     const [ sampleConsole, setSampleConsole ] = useState('')
@@ -29,15 +29,13 @@ const ModelList: FunctionComponent = () => {
     useEffect(() => {
         casename.current = params.name;
         const request1 = axios.get('/model', {params : {'case': params.name}})
-        const request2 = axios.get('/helper/function/all_in_one_ai_create_model?action=code');
-        const request3 = axios.get('/helper/function/all_in_one_ai_create_model?action=console');
+        const request2 = axios.get('/function/all_in_one_ai_create_model?action=code');
+        const request3 = axios.get('/function/all_in_one_ai_create_model?action=console');
         axios.all([request1, request2, request3])
         .then(axios.spread(function(response1, response2, response3) {
-            var items = []
             for(let item of response1.data) {
                 items.push({name: item.model_name, creation_time: item.creation_time})
             }
-            setItems(items);
             setLoading(false);
             axios.get('/file/download', {params: {uri: encodeURIComponent(response2.data)}, responseType: 'blob'})
             .then((response4) => {
@@ -50,7 +48,7 @@ const ModelList: FunctionComponent = () => {
             });
             setSampleConsole(response3.data)
         }));
-    },[params.name]);
+    },[params.name, items]);
 
     const getRowId = React.useCallback(data => data.name, []);
 

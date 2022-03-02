@@ -17,7 +17,7 @@ interface TrainingJobItem {
 }
 
 const TrainingJobList: FunctionComponent = () => {
-    const [ items, setItems ] = useState([])
+    const [ items ] = useState([])
     const [ loading, setLoading ] = useState(true);
     const [ sampleCode, setSampleCode ] = useState('')
     const [ sampleConsole, setSampleConsole ] = useState('')
@@ -32,15 +32,13 @@ const TrainingJobList: FunctionComponent = () => {
     useEffect(() => {
         casename.current = params.name;
         const request1 = axios.get('/trainingjob', {params : {'case': params.name}})
-        const request2 = axios.get('/helper/function/all_in_one_ai_create_training_job_yolov5?action=code');
-        const request3 = axios.get('/helper/function/all_in_one_ai_create_training_job_yolov5?action=console');
+        const request2 = axios.get('/function/all_in_one_ai_create_training_job_yolov5?action=code');
+        const request3 = axios.get('/function/all_in_one_ai_create_training_job_yolov5?action=console');
         axios.all([request1, request2, request3])
         .then(axios.spread(function(response1, response2, response3) {
-            var items = []
             for(let item of response1.data) {
                 items.push({name: item.training_job_name, status : item.training_job_status, duration: item.duration, creation_time: item.creation_time})
             }
-            setItems(items);
             setLoading(false);
             axios.get('/file/download', {params: {uri: encodeURIComponent(response2.data)}, responseType: 'blob'})
             .then((response4) => {
@@ -53,7 +51,7 @@ const TrainingJobList: FunctionComponent = () => {
             });
             setSampleConsole(response3.data)
         }));
-    },[params.name]);
+    },[params.name, items]);
 
 
     const onCreate = () => {
@@ -116,9 +114,6 @@ const TrainingJobList: FunctionComponent = () => {
     
     const tableActions = (
         <Inline>
-            <Button onClick={() => alert('Add button clicked')}>
-                Sample code
-            </Button>
             <ButtonDropdown
                 content="Action"
                     items={[{ text: 'Clone' }, { text: 'Create model' }, { text: 'Stop', disabled: true }, { text: 'Add/Edit tags' }]}

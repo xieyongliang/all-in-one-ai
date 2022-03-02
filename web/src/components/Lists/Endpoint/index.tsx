@@ -19,7 +19,7 @@ interface DataType {
 }
 
 const EndpointList: FunctionComponent = () => {
-    const [ items, setItems ] = useState([])
+    const [ items ] = useState([])
     const [ loading, setLoading ] = useState(true);
     const [ sampleCode, setSampleCode ] = useState('')
     const [ sampleConsole, setSampleConsole ] = useState('')
@@ -34,15 +34,13 @@ const EndpointList: FunctionComponent = () => {
     useEffect(() => {
         casename.current = params.name;
         const request1 = axios.get('/endpoint', {params : {'case': params.name}})
-        const request2 = axios.get('/helper/function/all_in_one_ai_create_endpoint?action=code');
-        const request3 = axios.get('/helper/function/all_in_one_ai_create_endpoint?action=console');
+        const request2 = axios.get('/function/all_in_one_ai_create_endpoint?action=code');
+        const request3 = axios.get('/function/all_in_one_ai_create_endpoint?action=console');
         axios.all([request1, request2, request3])
         .then(axios.spread(function(response1, response2, response3) {
-            var items = []
             for(let item of response1.data) {
                 items.push({name: item.endpoint_name, model: item.model_name, creation_time: item.creation_time, status : item.endpoint_status, last_updated: item.last_modified_time})
             }
-            setItems(items);
             setLoading(false);
             axios.get('/file/download', {params: {uri: encodeURIComponent(response2.data)}, responseType: 'blob'})
             .then((response4) => {
@@ -55,7 +53,7 @@ const EndpointList: FunctionComponent = () => {
             });
             setSampleConsole(response3.data)
         }));
-    },[params.name]);
+    },[params.name, items]);
 
     const onCreate = () => {
         history.push('/case/' + params.name + '?tab=endpoint#form')

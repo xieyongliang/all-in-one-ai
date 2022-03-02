@@ -13,12 +13,13 @@ const GreengrassComponentForm: FunctionComponent<GreengrassComponentFormProps> =
     const [ optionsModels, setOptionsModels ] = useState([]);
     const [ selectedModel, setSelectedModel ] = useState<SelectOption>({});
     const optionsComponents = [];
-    optionsComponents.push({label: 'yolov5', value: 'com.example.yolov5'})
+    optionsComponents.push({label: 'com.example.yolov5', value: 'com.example.yolov5'})
     const [ selectedComponent, setSelectedComponent ] = useState<SelectOption>({})
     const [ componentVersion, setComponentVersion ] = useState('')
     const [ invalidModel, setInvalidModel ] = useState(false)
     const [ invalidComponent, setInvalidComponent ] = useState(false)
     const [ invalidComponentVersion, setInvalidComponentVersion ] = useState(false)
+    const [ modelDict ] = useState({})
 
     const history = useHistory();
     
@@ -29,20 +30,20 @@ const GreengrassComponentForm: FunctionComponent<GreengrassComponentFormProps> =
             .then((response) => {
             var items = []
             for(let item of response.data) {
-                items.push({label: item.model_name, value: item.model_data_url})
+                items.push({label: item.model_name, value: item.model_name})
+                modelDict[item.model_name] = item.model_data_url
             }
             setOptionsModels(items);
-            console.log(items);
         }, (error) => {
             console.log(error);
         });
-    }, [params.name])
+    }, [params.name, modelDict])
 
     const onChange = (id: string, event: any) => {
         if(id === 'formFieldIdModels')
-            setSelectedModel({ label: event.target.key, value: event.target.value });
+            setSelectedModel({ label: event.target.value, value: event.target.value });
         if(id === 'formFieldIdComponents')
-            setSelectedComponent({ label: event.target.key, value: event.target.value });
+            setSelectedComponent({ label: event.target.value, value: event.target.value });
         if(id === 'formFieldIdMComponentVersion')
             setComponentVersion(event)
     }
@@ -56,14 +57,13 @@ const GreengrassComponentForm: FunctionComponent<GreengrassComponentFormProps> =
             setInvalidComponentVersion(true)
         else {
             var body = {
-                'component_name' : selectedComponent.value,
                 'component_version': componentVersion,
                 'case_name': params.name,
-                'model_data_url': selectedModel.value
+                'model_data_url': modelDict[selectedModel.value]
             }
-            axios.post('/greengrass/component', body,  { headers: {'content-type': 'application/json' }}) 
+            axios.post(`/greengrass/component/${selectedComponent.value}`, body,  { headers: {'content-type': 'application/json' }}) 
             .then((response) => {
-                history.push(`/case/${params.name}?tab=component`)
+                history.push(`/case/${params.name}?tab=greengrasscomponent`)
             }, (error) => {
                 alert('Error occured, please check and try it again');
                 console.log(error);

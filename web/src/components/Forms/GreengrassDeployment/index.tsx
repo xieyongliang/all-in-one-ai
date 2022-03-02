@@ -1,28 +1,17 @@
-import React, { ChangeEvent, FunctionComponent } from 'react';
-import FormSection from 'aws-northstar/components/FormSection';
-import FormField from 'aws-northstar/components/FormField';
-import Input from 'aws-northstar/components/Input';
-import { Form, Button, RadioGroup, RadioButton, Inline, Stack, Select } from 'aws-northstar';
-import { useHistory } from 'react-router-dom'; 
-import {useParams} from "react-router-dom";
+import { ChangeEvent, FunctionComponent, useEffect, useRef, useState, useCallback } from 'react';
+import { useHistory, useParams } from 'react-router-dom'; 
+import { Column } from 'react-table'
+import { Form, Button, RadioGroup, RadioButton, Inline, Stack, Select, Table, Text, FormSection, FormField, Input } from 'aws-northstar';
+import axios from 'axios';
+import { SelectOption } from 'aws-northstar/components/Select';
 
-interface SelectOption {
-    label?: string;
-    value?: string;
-    options?: SelectOption[];
+interface DataType {
+    name: string;
+    versions: string[];
+    arns: string[];
+    config: string;
+    selected: boolean;
 }
-
-const optionsTarget : SelectOption[] = [
-    { label: 'GreengrassQuickStartGroup', value: 'GreengrassQuickStartGroup' }
-]
-
-const optionsComponent : SelectOption[] = [
-    { label: 'com.example.yolov5', value: 'com.example.yolov5' }
-]
-
-const optionsVersion : SelectOption[] = [
-    { label: '1.0.0', value: '1.0.0' }
-]
 
 interface PathParams {
     name: string;
@@ -33,24 +22,124 @@ interface GreengrassDeploymentFormProps {
 }
 
 const GreengrassDeploymentForm: FunctionComponent<GreengrassDeploymentFormProps> = (props) => {
-    const [stateType, setStateType] = React.useState('1');
+    const [ deploymentName, setDeploymentName ] = useState('')
+    const [ itemsComponents ] = useState<DataType[]>([])
+    const [ itemsCoreDevices ] = useState([])
+    const [ optionsCoreDevices ] = useState([])
+    const [ itemsThingGroups ] = useState([])
+    const [ optionsThingGroups ] = useState([])
+    const [ loading, setLoading ] = useState(true);
+    const [ targetType, setTargetType ] = useState('1');
+    const [ selectedComponentVersions ] = useState([]);
+    const [ selectedCoreDevice, setSelectedCoreDevice ] = useState<SelectOption>({})
+    const [ selectedThingGroup, setSelectedThingGroup ] = useState<SelectOption>({})
+    const [ invalidCoreDevice, setInvalidCoreDevice ] = useState(false)
+    const [ invalidThingGroup, setInvalidThingGroup ] = useState(false)
+    const [ forceRefreshed, setForceRefreshed ] = useState(false)
+
+    const casename = useRef('');
 
     const history = useHistory();
 
     var params : PathParams = useParams();
-    var name = params.name
 
-    const onChange = (id: string, event: any) => {
-        if(id === 'target')
-            setStateType(event);
+    useEffect(() => {
+        casename.current = params.name;
+        const request1 = axios.get(`/greengrass/component`, {params : {'case': params.name}})
+        const request2 = axios.get(`/greengrass/coredevices`, {params : {'case': params.name}})
+        const request3 = axios.get(`/greengrass/thinggroups`, {params : {'case': params.name}})
+        axios.all([request1, request2, request3])
+        .then(axios.spread(function(response1, response2, response3) {
+            for(let item of response1.data) {
+                var names = Object.keys(item)
+                var name = names[0]
+                var config = ''
+                var selected = false;
+                var versions = item[names[0]]['component_versions']
+                var arns = item[names[0]]['component_version_arns']
+                itemsComponents.push({name: name, versions: versions, arns : arns, config: config, selected: selected})
+                selectedComponentVersions[name] = {label: versions[0], value: versions[0]}
+            }
+            for(let item of response2.data) {
+                name = item['coreDeviceThingName']
+                var status = item['status']
+                var last_updated = item['lastStatusUpdateTimestamp']
+                optionsCoreDevices.push({label: name, value: name})
+                itemsCoreDevices.push({name: name, status: status, last_updated: last_updated})
+            }
+            for(let item of response3.data) {
+                name = item['groupName']
+                var arn = item['groupArn']
+                optionsThingGroups.push({label: name, value: name})
+                itemsThingGroups.push({name: name, arn: arn})
+            }
+            
+            setLoading(false);
+        }));
+    }, [params.name, itemsComponents, itemsCoreDevices, itemsThingGroups, selectedComponentVersions, optionsCoreDevices, optionsThingGroups]);
+
+    const onChange = (id: string, event: any, option?: string) => {
+        if(id === 'formFieldIdCoreDevices') {
+            setSelectedCoreDevice({label: event.target.value, value: event.target.value})
+            setInvalidCoreDevice(false)
+        }
+        else if(id === 'formFieldIdThingGroups') {
+            setSelectedThingGroup({label: event.target.value, value: event.target.value})
+            setInvalidThingGroup(false)
+        }
+        else if(id === 'formFieldIdDeploymentName')
+            setDeploymentName(event)
+        else if(option === 'versions') {
+            console.log(id)
+            selectedComponentVersions[id] = {label: event.target.value, value: event.target.value};
+            setForceRefreshed(!forceRefreshed)
+        } 
+        else if(option === 'config') {
+            var index = itemsComponents.findIndex((item)=> item.name === id )
+            itemsComponents[index].config = event;
+            setForceRefreshed(!forceRefreshed)
+        }
     }
 
     const onSubmit = () => {
-        history.push('/case/' + name + '?tab=deployment')
+        if(targetType === '1' && selectedThingGroup.value === undefined)
+            setInvalidThingGroup(true)
+        else if(targetType ==='0' && selectedCoreDevice.value === undefined)
+            setInvalidCoreDevice(true)
+        else {
+            var target_arn
+            if(targetType === '1')
+                target_arn = itemsThingGroups[itemsThingGroups.findIndex((item) => item.name === selectedThingGroup.value)]['arn']
+            else
+                target_arn = itemsCoreDevices[itemsCoreDevices.findIndex((item) => item.name === selectedCoreDevice.value)]['name']
+            var deployment_name = deploymentName
+            var components = {}
+            
+            itemsComponents.forEach(itemComponent => {
+                if(itemComponent.selected)
+                    components[itemComponent.name] = {componentVersion: selectedComponentVersions[itemComponent.name].value}
+            });
+
+            var body = {
+                'deployment_name': deployment_name,
+                'target_arn': target_arn,
+                'components': components,
+                'case_name': params.name
+            }
+
+            axios.post('/greengrass/deployment', body,  { headers: {'content-type': 'application/json' }}) 
+            .then((response) => {
+                history.push(`/case/${params.name}?tab=greengrassdeployment`)
+            }, (error) => {
+                alert('Error occured, please check and try it again');
+                console.log(error);
+            });
+
+        }
     }
 
     const onCancel = () => {
-        history.push('/case/' + name + '?tab=deployment')
+        history.push('/case/' + params.name + '?tab=greengrassdeployment')
     }
 
     const onRemove = () => {
@@ -58,7 +147,17 @@ const GreengrassDeploymentForm: FunctionComponent<GreengrassDeploymentFormProps>
 
     const onChangeOption = (event?: ChangeEvent<HTMLInputElement>, value?: string)=>{
         var target : string = value || ''
-        setStateType(target)
+        setTargetType(target)
+    }
+
+    const onSelectionChange = (selectedItems: DataType[]) => {
+        var selected = {}
+        selectedItems.forEach((selectedItem) => {
+            selected[selectedItem.name] = ''    
+        })
+        itemsComponents.forEach((itemComponent) => {
+            itemComponent.selected = (itemComponent.name in selected)
+        })
     }
 
     var wizard : boolean
@@ -67,12 +166,67 @@ const GreengrassDeploymentForm: FunctionComponent<GreengrassDeploymentFormProps>
     else
         wizard = props.wizard
     
+        const getRowId = useCallback(data => data.name, []);
+
+    const columnDefinitions : Column<DataType>[]= [
+        {
+            id: 'name',
+            width: 400,
+            Header: 'Component name',
+            accessor: 'name',
+            Cell: ({ row  }) => {
+                if (row && row.original) {
+                    return (
+                        <Text> {row.original.name} </Text>
+                    )
+                }
+                return null;
+            }
+        },
+        {
+            id: 'version',
+            width: 400,
+            Header: 'Component version',
+            accessor: 'versions',
+            Cell: ({ row  }) => {
+                if (row && row.original) {
+                    var options = []
+                    row.original.versions.forEach(version => {
+                        options.push({label: version, value: version})
+                    });
+                    return (
+                        <Select
+                            placeholder="Choose an option"
+                            options={options}
+                            selectedOption={selectedComponentVersions[row.original.name]}
+                            onChange={(event) => onChange(row.original.name, event, 'versions')}
+                    />
+                    )
+                }
+                return null;
+            }
+        },
+        {
+            id: 'config',
+            width: 400,
+            Header: 'Component deployment configuration',
+            accessor: 'config',
+            Cell: ({ row  }) => {
+                if (row && row.original) {
+                    var index = itemsComponents.findIndex((item)=> item.name === row.original.name)
+                    return <Input type='text' value={itemsComponents[index].config} placeholder='Default' onChange={(event) => onChange(row.original.name, event, 'config')} />;
+                }
+                return null;
+            }        
+        }
+    ];
+        
     const renderGreengrassDeploymentSetting = () => {
         if(!wizard) {
             return (
                 <FormSection header="Greengrass deployment setting">
-                <FormField label="Deployment name" description='A friendly name lets you identify this deployment. If you leave it blank, the deployment displays its ID instead of a name.' controlId="formFieldId1">
-                    <Input type="text" controlId="formFieldId1" />
+                <FormField label="Deployment name" description='A friendly name lets you identify this deployment. If you leave it blank, the deployment displays its ID instead of a name.' controlId="formFieldIdDeploymentName">
+                    <Input type="text" value={deploymentName} onChange={(event)=>{onChange('formFieldIdDeploymentName', event)}}/>
                 </FormField>
                 </FormSection>
             )
@@ -82,10 +236,10 @@ const GreengrassDeploymentForm: FunctionComponent<GreengrassDeploymentFormProps>
     }
 
     const renderGreengrassDeploymentTarget = () => {
-        if(stateType === '1') {
+        if(targetType === '1') {
             return (
                 <FormSection header="Deployment target" description='You can deploy to a single Greengrass core device or a group of core devices.'>
-                    <FormField label="Target type" controlId="formFieldId1">
+                    <FormField label="Target type" controlId="formFieldIdTargetType">
                         <RadioGroup onChange={onChangeOption}
                                 items={[
                                     <RadioButton value='0' checked={false}>Core device</RadioButton>, 
@@ -93,12 +247,14 @@ const GreengrassDeploymentForm: FunctionComponent<GreengrassDeploymentFormProps>
                                 ]}
                             />
                     </FormField>
-                    <FormField label="Target name" controlId="formFieldIdTargetName">
+                    <FormField label="Target name" controlId="formFieldIdThingGroups">
                         <Select
-                                placeholder="Choose an option"
-                                options={optionsTarget}
-                                onChange={(event) => onChange('formFieldIdTargetName', event)}
-                            />
+                            placeholder="Choose an option"
+                            options={optionsThingGroups}
+                            selectedOption={selectedThingGroup}
+                            invalid={invalidThingGroup}
+                            onChange={(event) => onChange('formFieldIdThingGroups', event)}
+                        />
                     </FormField>
                 </FormSection>
             )
@@ -106,7 +262,7 @@ const GreengrassDeploymentForm: FunctionComponent<GreengrassDeploymentFormProps>
         else {
             return (
                 <FormSection header="Deployment target" description='You can deploy to a single Greengrass core device or a group of core devices.'>
-                    <FormField label="Target type" controlId="formFieldId1">
+                    <FormField label="Target type" controlId="formFieldIdTargetType">
                         <RadioGroup onChange={onChangeOption}
                                 items={[
                                     <RadioButton value='0' checked={true}>Core device</RadioButton>, 
@@ -115,7 +271,13 @@ const GreengrassDeploymentForm: FunctionComponent<GreengrassDeploymentFormProps>
                             />
                     </FormField>
                     <FormField label="Target name" controlId="formFieldId1">
-                        <Input type="text" controlId="formFieldId1" />
+                        <Select
+                            placeholder="Choose an option"
+                            options={optionsCoreDevices}
+                            selectedOption={selectedCoreDevice}
+                            invalid={invalidCoreDevice}
+                            onChange={(event) => onChange('formFieldIdCoreDevices', event)}
+                        />
                     </FormField>
                 </FormSection>
             )
@@ -151,22 +313,14 @@ const GreengrassDeploymentForm: FunctionComponent<GreengrassDeploymentFormProps>
 
     const renderGreengrassDeploymentContent = () => {
         return (
-            <FormSection header="Production variants">
-                <FormField label="Component name" controlId="formFieldIdComponentName">
-                        <Select
-                                placeholder="Choose an option"
-                                options={optionsComponent}
-                                onChange={(event) => onChange('formFieldIdComponentName', event)}
-                            />
-                </FormField>
-                <FormField label="Component version" controlId="formFieldIdComponentVersion">
-                        <Select
-                                placeholder="Choose an option"
-                                options={optionsVersion}
-                                onChange={(event) => onChange('formFieldIdComponentVersion', event)}
-                            />
-                </FormField>
-            </FormSection>
+            <Table
+                tableTitle='Greengrass components'
+                columnDefinitions={columnDefinitions}
+                items={itemsComponents}
+                loading={loading}
+                onSelectionChange={onSelectionChange}
+                getRowId={getRowId}
+            />
         )
     }
 

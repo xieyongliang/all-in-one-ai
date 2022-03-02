@@ -23,7 +23,7 @@ interface TransformJobItem {
 }
 
 const TransformJobList: FunctionComponent = () => {
-    const [ items, setItems ] = useState([])
+    const [ items ] = useState([])
     const [ selectedTransformJob, setSelectedTransformJob ] = useState('')
     const [ enabledReview, setEnabledReview ] = useState(false)
     const [ loadingTable, setLoadingTable ] = useState(true)
@@ -47,15 +47,13 @@ const TransformJobList: FunctionComponent = () => {
     useEffect(() => {
         casename.current = params.name;
         const request1 = axios.get('/transformjob', {params : {'case': params.name}});
-        const request2 = axios.get('/helper/function/all_in_one_ai_create_transform_job?action=code');
-        const request3 = axios.get('/helper/function/all_in_one_ai_create_transform_job?action=console');
+        const request2 = axios.get('/function/all_in_one_ai_create_transform_job?action=code');
+        const request3 = axios.get('/function/all_in_one_ai_create_transform_job?action=console');
         axios.all([request1, request2, request3])
         .then(axios.spread(function(response1, response2, response3) {
-            var items = []
             for(let item of response1.data) {
                 items.push({name: item.transform_job_name, status : item.transform_job_status, duration: item.duration, creation_time: item.creation_time})
             }
-            setItems(items);
             setLoadingTable(false);
             setVisibleAnnotate(false);
             setVisibleReview(false);
@@ -76,7 +74,7 @@ const TransformJobList: FunctionComponent = () => {
             });
             setSampleConsole(response3.data)
         }));
-    },[params.name]);
+    },[params.name, items]);
         
     const onImageClick = (src) => {
         setId([]);

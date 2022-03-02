@@ -31,8 +31,8 @@ const SampleForm: FunctionComponent = () => {
     useEffect(() => {
         casename.current = params.name;
         const request1 = axios.get('/samples/' + params.name);
-        const request2 = axios.get('/helper/function/all_in_one_ai_invoke_endpoint?action=code');
-        const request3 = axios.get('/helper/function/all_in_one_ai_invoke_endpoint?action=console');
+        const request2 = axios.get('/function/all_in_one_ai_invoke_endpoint?action=code');
+        const request3 = axios.get('/function/all_in_one_ai_invoke_endpoint?action=console');
         axios.all([request1, request2, request3])
         .then(axios.spread(function(response1, response2, response3) {
             var items : string[] = []
