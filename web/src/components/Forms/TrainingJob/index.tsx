@@ -30,12 +30,12 @@ const optionsInstance : SelectOption[]= [
     {
         label: 'Accelerated computing', 
         options: [ 
-            { label: 'ml.g4dn.xlarge', value: 'ml.p4dn.xlarge' },
-            { label: 'ml.g4dn.2xlarge', value: 'ml.p4dn.2xlarge' },
-            { label: 'ml.g4dn.4xlarge', value: 'ml.p4dn.4xlarge' },
-            { label: 'ml.g4dn.8xlarge', value: 'ml.p4dn.8xlarge' },
-            { label: 'ml.g4dn.12xlarge', value: 'ml.p4dn.12xlarge' },
-            { label: 'ml.g4dn.16xlarge', value: 'ml.p4dn.16xlarge' }
+            { label: 'ml.g4dn.xlarge', value: 'ml.g4dn.xlarge' },
+            { label: 'ml.g4dn.2xlarge', value: 'ml.g4dn.2xlarge' },
+            { label: 'ml.g4dn.4xlarge', value: 'ml.g4dn.4xlarge' },
+            { label: 'ml.g4dn.8xlarge', value: 'ml.g4dn.8xlarge' },
+            { label: 'ml.g4dn.12xlarge', value: 'ml.g4dn.12xlarge' },
+            { label: 'ml.g4dn.16xlarge', value: 'ml.g4dn.16xlarge' }
         ]
     }
 ];
@@ -125,7 +125,7 @@ const TrainingJobForm: FunctionComponent<TrainingJobFormProps> = (props) => {
                 body['tags'] = tags
             axios.post('/trainingjob', body,  { headers: {'content-type': 'application/json' }}) 
             .then((response) => {
-                history.push(`/case/${params.name}?tab=demo#trainingjob`)
+                history.push(`/case/${params.name}?tab=trainingjob`)
             }, (error) => {
                 alert('Error occured, please check and try it again');
                 console.log(error);
@@ -235,10 +235,10 @@ const TrainingJobForm: FunctionComponent<TrainingJobFormProps> = (props) => {
                         <Input value={labelsS3Uri} required={true} invalid={invalidLabelsS3Uri} onChange={(event) => onChange('formFieldIdLabelsS3Uri', event)} />
                     </FormField>
                     <FormField label="Weights S3Uri" controlId="formFieldIdWeightsS3Uri">
-                        <Input value={imagesS3Uri} required={true} placeholder={'default'} invalid={invalidImagesS3Uri} onChange={(event) => onChange('formFieldIdWeightsS3Uri', event)}/>
+                        <Input value={weightsS3Uri} required={true} placeholder={'default'} onChange={(event) => onChange('formFieldIdWeightsS3Uri', event)}/>
                     </FormField>
                     <FormField label="Cfg S3Uri" controlId="formFieldIdCfgPrefix">
-                        <Input value={labelsS3Uri} required={true} placeholder={'default'} invalid={invalidLabelsS3Uri} onChange={(event) => onChange('formFieldIdCfgPrefix', event)} />
+                        <Input value={cfgS3Uri} required={true} placeholder={'default'} onChange={(event) => onChange('formFieldIdCfgPrefix', event)} />
                     </FormField>
                 </FormSection>
                 <FormSection header="Output data configuration">

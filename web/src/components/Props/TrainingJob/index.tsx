@@ -50,7 +50,8 @@ const TrainingJobProp: FunctionComponent = () => {
             setWeightsS3Uri(response.data.weights_s3uri)
             setCfgS3Uri(response.data.cfg_s3uri)
             setOutputS3Uri(response.data.output_s3uri)
-            setModelArtifacts(response.data.model_artifacts.S3ModelArtifacts)
+            if('S3ModelArtifacts' in response.data)
+                setModelArtifacts(response.data.model_artifacts.S3ModelArtifacts)
             if('tags' in response.data)
                 setTags(response.data.tags)
             setLoading(false);

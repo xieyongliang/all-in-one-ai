@@ -64,7 +64,7 @@ const EndpointList: FunctionComponent = () => {
     const columnDefinitions : Column<DataType>[]= [
         {
             id: 'name',
-            width: 100,
+            width: 200,
             Header: 'Name',
             accessor: 'name',
             Cell: ({ row  }) => {
@@ -76,8 +76,8 @@ const EndpointList: FunctionComponent = () => {
         },
         {
             id: 'model',
-            width: 400,
-            Header: 'Container image',
+            width: 200,
+            Header: 'Model',
             accessor: 'model'
         },
         {
@@ -88,8 +88,8 @@ const EndpointList: FunctionComponent = () => {
         },
         {
             id: 'status',
-            width: 400,
-            Header: 'Model artificate',
+            width: 200,
+            Header: 'Status',
             accessor: 'status',
             Cell: ({ row  }) => {
                 if (row && row.original) {
@@ -116,7 +116,7 @@ const EndpointList: FunctionComponent = () => {
         },
         {
             id: 'last_update',
-            width: 400,
+            width: 200,
             Header: 'Last updated',
             accessor: 'last_updated'
         }
@@ -138,7 +138,7 @@ const EndpointList: FunctionComponent = () => {
         return (
             <Table
                 actionGroup={tableActions}
-                tableTitle='Models'
+                tableTitle='Endpoints'
                 multiSelect={false}
                 columnDefinitions={columnDefinitions}
                 items={items}

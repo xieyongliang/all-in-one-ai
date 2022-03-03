@@ -72,7 +72,7 @@ const optionsInstance : SelectOption[]= [
             { label: 'ml.p3.2xlarge', value: 'ml.p3.2xlarge' },
             { label: 'ml.p3.8xlarge', value: 'ml.p3.8xlarge' },
             { label: 'ml.p3.16xlarge', value: 'ml.p3.16xlarge' },
-            { label: 'ml.g4dn.xlarge', value: 'ml.p4dn.xlarge' },
+            { label: 'ml.g4dn.xlarge', value: 'ml.g4dn.xlarge' },
             { label: 'ml.g4dn.2xlarge', value: 'ml.g4dn.2xlarge' },
             { label: 'ml.g4dn.4xlarge', value: 'ml.g4dn.4xlarge' },
             { label: 'ml.g4dn.8xlarge', value: 'ml.g4dn.8xlarge' },
@@ -90,7 +90,7 @@ const optionsInstance : SelectOption[]= [
 ];
 
 const optionsAcceleratorType : SelectOption[] = [
-    { label: 'none', value: '' },
+    { label: 'none', value: 'none' },
     { label: 'ml.eia1.medium', value: 'ml.eia1.medium' },
     { label: 'ml.eia1.large', value: 'ml.eia1.large' },
     { label: 'ml.eia1.xlarge', value: 'ml.eia1.xlarge' },
@@ -145,12 +145,18 @@ const EndpointForm: FunctionComponent<EndpointFormProps> = (props) => {
     const onChange = (id: string, event: any) => {
         if(id === 'formFieldIdEndpointName')
             setEndpointName(event)
-        if(id === 'formFieldIdModelName')
+        if(id === 'formFieldIdModelName') {
             setSelectedModelName({label: event.target.value, value: event.target.value});
-        if(id === 'formFieldIdInstanceType')
+            setInvalidModelName(false)
+        }
+        if(id === 'formFieldIdInstanceType') {
             setSelectedInstanceType({label: event.target.value, value: event.target.value});
-        if(id === 'formFieldIdAcceleratorType')
+            setInvalidInstanceType(false)
+        }
+        if(id === 'formFieldIdAcceleratorType') {
             setSelectedAcceleratorTypeType({label: event.target.value, value: event.target.value});
+            setInvalidAcceleratorTypeType(false)
+        }
         if(id === 'formFieldIdInitialInstanceCount')
             setInitialInstanceCount(parseInt(event))
         if(id === 'formFieldIdInitialVariantWeight')
@@ -176,7 +182,7 @@ const EndpointForm: FunctionComponent<EndpointFormProps> = (props) => {
                 'model_name' : selectedModelName.value,
                 'case_name': params.name,
                 'instance_type': selectedInstanceType.value,
-                'accelerator_type': selectedAcceleratorTypeType.value,
+                'accelerator_type': selectedAcceleratorTypeType.value === 'none' ? '': selectedAcceleratorTypeType.value,
                 'initial_instance_count': initialInstanceCount,
                 'initial_variant_weight': initialVariantWeight
             }
@@ -184,7 +190,7 @@ const EndpointForm: FunctionComponent<EndpointFormProps> = (props) => {
                 body['tags'] = tags
             axios.post('/endpoint', body,  { headers: {'content-type': 'application/json' }}) 
             .then((response) => {
-                history.push(`/case/${params.name}?tab=model`)
+                history.push(`/case/${params.name}?tab=endpoint`)
             }, (error) => {
                 alert('Error occured, please check and try it again');
                 console.log(error);
