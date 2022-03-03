@@ -35,7 +35,7 @@ const DemoForm: FunctionComponent = () => {
     return (
         <Stack>
             <Heading variant='h1'>{params.name}</Heading>
-            <Container title = "Demo type">
+            <Container title = 'Demo type'>
                 {renderDemoOptions()}
             </Container>
             {demoType === 'transformjob' && <TransformJobList/>}

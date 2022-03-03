@@ -4,13 +4,13 @@ import { Heading, Paper, Stack, Box, Text } from 'aws-northstar';
 const Dashboard: FunctionComponent = () => {
     return (
         <Paper>
-            <Box p={1} width="100%">
-                <Stack spacing="xs">
+            <Box p={1} width='100%'>
+                <Stack spacing='xs'>
                     <Heading variant='h1'>All-In-One AI</Heading>
                     <Text>
                         <b>Introduction</b>
                     </Text>
-                    <Text variant="p">
+                    <Text variant='p'>
                         2022 Gartner Survey revealed a 3.6% year-over-year growth rate, the fastest in more than a decade. In terms of specific technologies driving this surge in expenditure would be artificial intelligence (AI) and machine learning (ML), accounting for a whopping 48% of the whole pie. The survey also highlights the relative immaturity of AI technologies compared to the other innovation areas. Just over half of respondents report significant target customer adoption of their AI-enabled products and services. 41% of respondents cited AI emerging technologies as still being in development or early adoption stages, meaning there is a wave of potential adoption as new or augmented AI products and services enter general availability. 
 Technology immaturity is cited as a top reason among AI-investing organizations leading to failure when integrating an emerging technology. Furthermore, product leaders investing in AI whose implementations are progressing slower than expected reported product complexity and a lack of skills as the main hindrances to their progress. There are a couple of industry AI/ML models built on top of AWS SageMaker as the supplement of AWS managed AI/ML services. Those AI/ML models are scattered, lack of web visualization, and not ready to present to customer directly, especially for the customers’ business staff. The customers may not aware of the existing matured AI/ML models which can solve their complex business problems. It will be nice to allow the customers to get aware of the matured AI/ML models existing in AWS for specific industry AI/ML scenarios and experience the AI/ML models in an intuitive way and adopt directly or after customization.</Text>
                     <Text>

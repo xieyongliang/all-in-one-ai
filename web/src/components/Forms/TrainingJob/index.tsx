@@ -156,9 +156,9 @@ const TrainingJobForm: FunctionComponent<TrainingJobFormProps> = (props) => {
     const renderTrainingJobSetting = () => {
         if(!wizard) {
             return (
-                <FormSection header="Job settings">
-                    <FormField label="Job name" controlId="formFieldIdJobName" hintText='Maximum of 63 alphanumeric characters. Can include hyphens (-), but not spaces. Must be unique within your account in an AWS Region.'>
-                        <Input type="text" invalid={invalidTrainingJobName} required={true} onChange={(event) => onChange('formFieldIdTrainingJobName', event)}/>
+                <FormSection header='Job settings'>
+                    <FormField label='Job name' controlId='formFieldIdJobName' hintText='Maximum of 63 alphanumeric characters. Can include hyphens (-), but not spaces. Must be unique within your account in an AWS Region.'>
+                        <Input type='text' invalid={invalidTrainingJobName} required={true} onChange={(event) => onChange('formFieldIdTrainingJobName', event)}/>
                     </FormField>
                 </FormSection>
             )
@@ -170,7 +170,7 @@ const TrainingJobForm: FunctionComponent<TrainingJobFormProps> = (props) => {
     const renderTrainingJobTag = () => {
         if(!wizard)
             return (
-                <FormSection header="Tags - optional">
+                <FormSection header='Tags - optional'>
                     {
                         tags.length>0 && 
                             <Grid container spacing={{ xs: 1, md: 1 }} columns={{ xs: 4, sm: 8, md: 12 }}>
@@ -189,10 +189,10 @@ const TrainingJobForm: FunctionComponent<TrainingJobFormProps> = (props) => {
                         tags.map((tag, index) => (
                             <Grid container spacing={{ xs: 1, md: 1 }} columns={{ xs: 4, sm: 8, md: 12 }}>
                                 <Grid item xs={2} sm={4} md={4}>
-                                    <Input type="text" value={tag.key}/>
+                                    <Input type='text' value={tag.key}/>
                                 </Grid>
                                 <Grid item xs={2} sm={4} md={4}>
-                                    <Input type="text" value={tag.value}/>
+                                    <Input type='text' value={tag.value}/>
                                 </Grid>
                                 <Grid item xs={2} sm={4} md={4}>
                                     <Button onClick={() => onRemoveTag(index)}>Remove</Button>
@@ -200,7 +200,7 @@ const TrainingJobForm: FunctionComponent<TrainingJobFormProps> = (props) => {
                             </Grid>
                         ))
                     }
-                    <Button variant="link" size="large" onClick={onAddTag}>Add tag</Button>
+                    <Button variant='link' size='large' onClick={onAddTag}>Add tag</Button>
                 </FormSection>
             )
         else
@@ -210,39 +210,39 @@ const TrainingJobForm: FunctionComponent<TrainingJobFormProps> = (props) => {
     const renderTrainingJobContent = () => {
         return (
             <Stack>
-                <FormSection header="Resource configuration">
-                    <FormField label="Instance type" controlId="formFieldIdInstanceType">
+                <FormSection header='Resource configuration'>
+                    <FormField label='Instance type' controlId='formFieldIdInstanceType'>
                     <Select
-                            placeholder="Choose an option"
+                            placeholder='Choose an option'
                             options={optionsInstance}
                             selectedOption={selectedInstanceType}
                             invalid={invalidInstanceType}
                             onChange={(event) => onChange('formFieldIdInstanceType', event)}
                         />
                     </FormField>
-                    <FormField label="Instance count" controlId="formFieldIdInstanceCount">
-                        <Input type="number" value={instanceCount} required={true} invalid={invalidInstanceCount} onChange={(event) => onChange('formFieldIdInstanceCount', event)} />
+                    <FormField label='Instance count' controlId='formFieldIdInstanceCount'>
+                        <Input type='number' value={instanceCount} required={true} invalid={invalidInstanceCount} onChange={(event) => onChange('formFieldIdInstanceCount', event)} />
                     </FormField>
-                    <FormField label="Additional storage volume per instance (GB)" controlId="formFieldIdVolumeSizeInGB">
-                        <Input type="number" value={volumeSizeInGB} required={true} invalid={invalidVolumeSizeInGB} onChange={(event) => onChange('formFieldIdVolumeSizeInGB', event)}/>
+                    <FormField label='Additional storage volume per instance (GB)' controlId='formFieldIdVolumeSizeInGB'>
+                        <Input type='number' value={volumeSizeInGB} required={true} invalid={invalidVolumeSizeInGB} onChange={(event) => onChange('formFieldIdVolumeSizeInGB', event)}/>
                     </FormField>
                 </FormSection>
-                <FormSection header="Input data configuration">
-                    <FormField label="Images S3Uri" controlId="formFieldIdImagesS3Uri">
+                <FormSection header='Input data configuration'>
+                    <FormField label='Images S3Uri' controlId='formFieldIdImagesS3Uri'>
                         <Input value={imagesS3Uri} required={true} invalid={invalidImagesS3Uri} onChange={(event) => onChange('formFieldIdImagesS3Uri', event)}/>
                     </FormField>
-                    <FormField label="Lables S3Uri" controlId="formFieldIdLabelsPrefix">
+                    <FormField label='Lables S3Uri' controlId='formFieldIdLabelsPrefix'>
                         <Input value={labelsS3Uri} required={true} invalid={invalidLabelsS3Uri} onChange={(event) => onChange('formFieldIdLabelsS3Uri', event)} />
                     </FormField>
-                    <FormField label="Weights S3Uri" controlId="formFieldIdWeightsS3Uri">
+                    <FormField label='Weights S3Uri' controlId='formFieldIdWeightsS3Uri'>
                         <Input value={weightsS3Uri} required={true} placeholder={'default'} onChange={(event) => onChange('formFieldIdWeightsS3Uri', event)}/>
                     </FormField>
-                    <FormField label="Cfg S3Uri" controlId="formFieldIdCfgPrefix">
+                    <FormField label='Cfg S3Uri' controlId='formFieldIdCfgPrefix'>
                         <Input value={cfgS3Uri} required={true} placeholder={'default'} onChange={(event) => onChange('formFieldIdCfgPrefix', event)} />
                     </FormField>
                 </FormSection>
-                <FormSection header="Output data configuration">
-                    <FormField label="S3 output path" controlId="formFieldIdOutputS3Uri">
+                <FormSection header='Output data configuration'>
+                    <FormField label='S3 output path' controlId='formFieldIdOutputS3Uri'>
                         <Input value={outputS3Uri} placeholder='s3://' required={true} invalid={invalidOutputS3Uri} onChange={(event) => onChange('formFieldIdOutputS3Uri', event)} />
                     </FormField>
                 </FormSection>
@@ -262,12 +262,12 @@ const TrainingJobForm: FunctionComponent<TrainingJobFormProps> = (props) => {
     else {
         return (
             <Form
-                header="Create training job"
-                description="When you create a training job, Amazon SageMaker sets up the distributed compute cluster, performs the training, and deletes the cluster when training has completed. The resulting model artifacts are stored in the location you specified when you created the training job."
+                header='Create training job'
+                description='When you create a training job, Amazon SageMaker sets up the distributed compute cluster, performs the training, and deletes the cluster when training has completed. The resulting model artifacts are stored in the location you specified when you created the training job.'
                 actions={
                     <div>
-                        <Button variant="link" onClick={onCancel}>Cancel</Button>
-                        <Button variant="primary" onClick={onSubmit}>Submit</Button>
+                        <Button variant='link' onClick={onCancel}>Cancel</Button>
+                        <Button variant='primary' onClick={onSubmit}>Submit</Button>
                     </div>
                 }>            
                 {renderTrainingJobSetting()}

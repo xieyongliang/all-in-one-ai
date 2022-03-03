@@ -193,7 +193,7 @@ const TransformJobList: FunctionComponent = () => {
                 Review
             </Button>
             <ButtonDropdown
-                content="Action"
+                content='Action'
                     items={[{ text: 'Stop', disabled: true }, { text: 'Add/Edit tags' }]}
             />        
             <Button variant='primary' onClick={onCreate}>
@@ -216,10 +216,10 @@ const TransformJobList: FunctionComponent = () => {
         })
             
         return (
-            <Container title = "Image annotation">
+            <Container title = 'Image annotation'>
                 <ImageAnnotate imageUri={currentImage} labelsData={labelsData} annotationData={annotationData} colorData={COLORS}/>
                 <FormField controlId='button'>
-                    <Button variant="primary" onClick={()=>setVisibleAnnotate(false)}>Close</Button>
+                    <Button variant='primary' onClick={()=>setVisibleAnnotate(false)}>Close</Button>
                 </FormField>
             </Container>
         )
@@ -237,8 +237,8 @@ const TransformJobList: FunctionComponent = () => {
                     }]} />
                 }
                 {
-                    !loadingReview && <Container title = "Select image file from batch transform result">
-                    <ImageList cols={12} rowHeight={64} gap={10} variant={'quilted'} style={{"height":"550px"}}>
+                    !loadingReview && <Container title = 'Select image file from batch transform result'>
+                    <ImageList cols={12} rowHeight={64} gap={10} variant={'quilted'} style={{'height':'550px'}}>
                         {transformJobResult.input.map((item, index) => (
                             <ImageListItem key={item} rows={2}>
                                 <Image
@@ -254,7 +254,7 @@ const TransformJobList: FunctionComponent = () => {
                 </Container>
                 }
                 {
-                    !loadingReview && <Container title = "Preview">
+                    !loadingReview && <Container title = 'Preview'>
                         <FormField controlId='button'>
                             <div className='watermarked'>
                                 <URLImage src={currentImage} colors={COLORS} labels={labels} id={id} bbox={bbox}/>
@@ -286,11 +286,11 @@ const TransformJobList: FunctionComponent = () => {
 
     const renderSampleCode = () => {
         return (
-            <Container title = "Sample code">
-                <Toggle label={visibleSampleCode ? "Show sample code" : "Hide sample code"} checked={visibleSampleCode} onChange={(checked) => {setVisibleSampleCode(checked)}} />
+            <Container title = 'Sample code'>
+                <Toggle label={visibleSampleCode ? 'Show sample code' : 'Hide sample code'} checked={visibleSampleCode} onChange={(checked) => {setVisibleSampleCode(checked)}} />
                 <Link href={sampleConsole}>Open in AWS Lambda console</Link>
                 {
-                    visibleSampleCode && <SyntaxHighlighter language="python" style={github} showLineNumbers={true}>
+                    visibleSampleCode && <SyntaxHighlighter language='python' style={github} showLineNumbers={true}>
                         {sampleCode}
                     </SyntaxHighlighter>
                 }

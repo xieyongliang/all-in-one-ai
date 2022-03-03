@@ -61,11 +61,11 @@ const RestApiProp: FunctionComponent = () => {
 
     return (
         <Form
-            header="Review rest api"
-            description="To deploy a model to Amazon SageMaker, first create the model by providing the location of the model artifacts and inference code."
+            header='Review rest api'
+            description='To deploy a model to Amazon SageMaker, first create the model by providing the location of the model artifacts and inference code.'
             actions={
                 <div>
-                    <Button variant="primary" onClick={onClose}>Close</Button>
+                    <Button variant='primary' onClick={onClose}>Close</Button>
                 </div>
             }>   
             {   
@@ -79,36 +79,36 @@ const RestApiProp: FunctionComponent = () => {
             <FormSection header='Rest api summary'>
                 <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }}>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label="Api name" value={apilName}></KeyValuePair>
+                        <KeyValuePair label='Api name' value={apilName}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label="Created date" value={createdDate}></KeyValuePair>
+                        <KeyValuePair label='Created date' value={createdDate}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label="Function" value={apiFunction}></KeyValuePair>
+                        <KeyValuePair label='Function' value={apiFunction}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label="Url" value={apiUrl}></KeyValuePair>
+                        <KeyValuePair label='Url' value={apiUrl}></KeyValuePair>
                     </Grid>
                 </Grid>
             </FormSection>
-            <FormSection header="Product variant">
+            <FormSection header='Product variant'>
                 <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }}>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label="Rest api name" value={restApiName}></KeyValuePair>
+                        <KeyValuePair label='Rest api name' value={restApiName}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label="Path" value={apiPath}></KeyValuePair>
+                        <KeyValuePair label='Path' value={apiPath}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label="Stage" value={apiStage}></KeyValuePair>
+                        <KeyValuePair label='Stage' value={apiStage}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label="Method" value={apiMethod}></KeyValuePair>
+                        <KeyValuePair label='Method' value={apiMethod}></KeyValuePair>
                     </Grid>
                 </Grid>
             </FormSection>
-            <FormSection header="Tags - optional">
+            <FormSection header='Tags - optional'>
                 {
                     tags.length>0 && 
                         <Grid container spacing={{ xs: 1, md: 1 }} columns={{ xs: 4, sm: 8, md: 12 }}>
@@ -127,10 +127,10 @@ const RestApiProp: FunctionComponent = () => {
                     tags.map((tag, index) => (
                         <Grid container spacing={{ xs: 1, md: 1 }} columns={{ xs: 4, sm: 8, md: 12 }}>
                             <Grid item xs={2} sm={4} md={4}>
-                                <Input type="text" value={tag.key}/>
+                                <Input type='text' value={tag.key}/>
                             </Grid>
                             <Grid item xs={2} sm={4} md={4}>
-                                <Input type="text" value={tag.value}/>
+                                <Input type='text' value={tag.value}/>
                             </Grid>
                             <Grid item xs={2} sm={4} md={4}>
                                 <Button onClick={() => onRemoveTag(index)}>Remove</Button>
@@ -138,7 +138,7 @@ const RestApiProp: FunctionComponent = () => {
                         </Grid>
                     ))
                 }
-                <Button variant="link" size="large" onClick={onAddTag}>Add tag</Button>
+                <Button variant='link' size='large' onClick={onAddTag}>Add tag</Button>
             </FormSection>
         </Form>
     )

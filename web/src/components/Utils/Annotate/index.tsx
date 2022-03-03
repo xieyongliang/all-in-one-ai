@@ -84,7 +84,7 @@ const ImageAnnotate: React.FC<IProps> = (props: PropsWithChildren<IProps>) => {
         async function init() {
             props.updateActiveLabelNameId(null);
             props.updateLabelNames([]);
-            props.updateProjectData({type: null, name: "my-project-name"});
+            props.updateProjectData({type: null, name: 'my-project-name'});
             props.updateActiveImageIndex(null);
             props.updateImageData([]);
             props.updateFirstLabelCreatedFlag(false);

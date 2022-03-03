@@ -150,16 +150,16 @@ const RestApiForm: FunctionComponent<RestApiFormProps> = (props) => {
     const renderRestApiSetting = () => {
         if(apiType === '1') {
             return (
-                <FormSection header="API setting">
-                    <FormField label="API name" controlId="formFieldIdApiName">
-                        <Input type="text" value={apiName} invalid={invalidApiName} onChange={(event) => onChange('formFieldIdApiName', event)} />
+                <FormSection header='API setting'>
+                    <FormField label='API name' controlId='formFieldIdApiName'>
+                        <Input type='text' value={apiName} invalid={invalidApiName} onChange={(event) => onChange('formFieldIdApiName', event)} />
                     </FormField>
-                    <FormField label="API gateway" controlId="formFieldIdApiType">
+                    <FormField label='API gateway' controlId='formFieldIdApiType'>
                         {renderApiOptions()}
                     </FormField>
                     <FormField controlId='formFieldIdRestApis'>
                         <Select
-                            placeholder="Choose an option"
+                            placeholder='Choose an option'
                             options={optionsRestApis}
                             selectedOption={selectedRestApis}
                             invalid={invalidRestApi}
@@ -171,15 +171,15 @@ const RestApiForm: FunctionComponent<RestApiFormProps> = (props) => {
         }
         else {
             return (
-                <FormSection header="API setting">
-                    <FormField label="API name" controlId="formFieldIdName">
-                        <Input type="text" value={apiName} invalid={invalidApiName} />
+                <FormSection header='API setting'>
+                    <FormField label='API name' controlId='formFieldIdName'>
+                        <Input type='text' value={apiName} invalid={invalidApiName} />
                     </FormField>
-                    <FormField label="API gateway" controlId="formFieldIdRestApi">
+                    <FormField label='API gateway' controlId='formFieldIdRestApi'>
                         {renderApiOptions()}
                     </FormField>
                     <FormField controlId='formFieldIdRestApiName'>
-                        <Input type="text" value={restApiName} invalid={invalidRestApiName} onChange={(event) => onChange('formFieldIdRestApiName', event)}/>
+                        <Input type='text' value={restApiName} invalid={invalidRestApiName} onChange={(event) => onChange('formFieldIdRestApiName', event)}/>
                     </FormField>
                 </FormSection>
             )
@@ -189,7 +189,7 @@ const RestApiForm: FunctionComponent<RestApiFormProps> = (props) => {
     const renderRestApiTag = () => {
         if(!wizard) {
             return (
-                <FormSection header="Tags - optional">
+                <FormSection header='Tags - optional'>
                     {
                         tags.length>0 && 
                             <Grid container spacing={{ xs: 1, md: 1 }} columns={{ xs: 4, sm: 8, md: 12 }}>
@@ -208,10 +208,10 @@ const RestApiForm: FunctionComponent<RestApiFormProps> = (props) => {
                         tags.map((tag, index) => (
                             <Grid container spacing={{ xs: 1, md: 1 }} columns={{ xs: 4, sm: 8, md: 12 }}>
                                 <Grid item xs={2} sm={4} md={4}>
-                                    <Input type="text" value={tag.key}/>
+                                    <Input type='text' value={tag.key}/>
                                 </Grid>
                                 <Grid item xs={2} sm={4} md={4}>
-                                    <Input type="text" value={tag.value}/>
+                                    <Input type='text' value={tag.value}/>
                                 </Grid>
                                 <Grid item xs={2} sm={4} md={4}>
                                     <Button onClick={() => onRemoveTag(index)}>Remove</Button>
@@ -219,7 +219,7 @@ const RestApiForm: FunctionComponent<RestApiFormProps> = (props) => {
                             </Grid>
                         ))
                     }
-                    <Button variant="link" size="large" onClick={onAddTag}>Add tag</Button>
+                    <Button variant='link' size='large' onClick={onAddTag}>Add tag</Button>
                 </FormSection>
             )
         }
@@ -229,16 +229,16 @@ const RestApiForm: FunctionComponent<RestApiFormProps> = (props) => {
 
     const renderRestApiFormContent = () => {
         return (
-            <FormSection header="Production variants">
-                <FormField label="API path" controlId="formFieldIdApiPath">
-                    <Input type="text" value={apiPath} invalid={invalidApiPath} onChange={(event) => onChange('formFieldIdApiPath', event)} />
+            <FormSection header='Production variants'>
+                <FormField label='API path' controlId='formFieldIdApiPath'>
+                    <Input type='text' value={apiPath} invalid={invalidApiPath} onChange={(event) => onChange('formFieldIdApiPath', event)} />
                 </FormField>
-                <FormField label="API stage" controlId="formFieldIdApiStage">
-                    <Input type="text" value={apiStage} invalid={invalidApiStage} onChange={(event) => onChange('formFieldIdApiStage', event)}/>
+                <FormField label='API stage' controlId='formFieldIdApiStage'>
+                    <Input type='text' value={apiStage} invalid={invalidApiStage} onChange={(event) => onChange('formFieldIdApiStage', event)}/>
                 </FormField>
-                <FormField controlId='formFieldIdApis' label="APIs to deployed" >
+                <FormField controlId='formFieldIdApis' label='APIs to deployed' >
                     <Select
-                        placeholder="Choose an option"
+                        placeholder='Choose an option'
                         options={optionsApis}
                         selectedOption={selectedApis}
                         invalid={invalidApis}
@@ -261,11 +261,11 @@ const RestApiForm: FunctionComponent<RestApiFormProps> = (props) => {
     else {
         return (
             <Form
-                header="Create restapi"
+                header='Create restapi'
                 actions={
                     <div>
-                        <Button variant="link" onClick={onCancel}>Cancel</Button>
-                        <Button variant="primary" onClick={onSubmit}>Submit</Button>
+                        <Button variant='link' onClick={onCancel}>Cancel</Button>
+                        <Button variant='primary' onClick={onSubmit}>Submit</Button>
                     </div>
                 }> 
                 {renderRestApiSetting()}

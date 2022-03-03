@@ -85,10 +85,10 @@ const GreengrassComponentForm: FunctionComponent<GreengrassComponentFormProps> =
     const renderGreengrassComponentSetting = () => {
         if(!wizard) {
             return (
-                <FormSection header="Greengrass component setting">
-                    <FormField label="Component name" controlId="formFieldIdComponents">
+                <FormSection header='Greengrass component setting'>
+                    <FormField label='Component name' controlId='formFieldIdComponents'>
                         <Select
-                                placeholder="Choose an option"
+                                placeholder='Choose an option'
                                 options={optionsComponents}
                                 selectedOption={selectedComponent}
                                 invalid={invalidComponent}
@@ -104,17 +104,17 @@ const GreengrassComponentForm: FunctionComponent<GreengrassComponentFormProps> =
 
     const renderGreengrassContent = () => {
         return (
-            <FormSection header="Production variants">
-                <FormField label="Model name" controlId="formFieldIdModels">
+            <FormSection header='Production variants'>
+                <FormField label='Model name' controlId='formFieldIdModels'>
                     <Select
-                            placeholder="Choose an option"
+                            placeholder='Choose an option'
                             options={optionsModels}
                             selectedOption={selectedModel}
                             invalid={invalidModel}
                             onChange={(event) => onChange('formFieldIdModels', event)}
                         />
                 </FormField>
-                <FormField label="Component version" controlId="formFieldIdMComponentVersion">
+                <FormField label='Component version' controlId='formFieldIdMComponentVersion'>
                     <Input value={componentVersion} invalid={invalidComponentVersion} onChange={(event) => onChange('formFieldIdMComponentVersion', event)} />
                 </FormField>
             </FormSection>
@@ -132,11 +132,11 @@ const GreengrassComponentForm: FunctionComponent<GreengrassComponentFormProps> =
     else {
         return (
             <Form
-                header="Create Greengrass component"
+                header='Create Greengrass component'
                 actions={
                     <div>
-                        <Button variant="link" onClick={onCancel}>Cancel</Button>
-                        <Button variant="primary" onClick={onSubmit}>Submit</Button>
+                        <Button variant='link' onClick={onCancel}>Cancel</Button>
+                        <Button variant='primary' onClick={onSubmit}>Submit</Button>
                     </div>
                 }>
                 {renderGreengrassComponentSetting()}

@@ -109,10 +109,10 @@ const InferenceForm: FunctionComponent = () => {
         })
             
         return (
-            <Container title = "Image annotation">
+            <Container title = 'Image annotation'>
                 <ImageAnnotate imageUri={`/image/${filename}`} labelsData={labelsData} annotationData={annotationData} colorData={COLORS}/>
                 <FormField controlId='button'>
-                    <Button variant="primary" onClick={()=>setVisibleAnnotate(false)}>Close</Button>
+                    <Button variant='primary' onClick={()=>setVisibleAnnotate(false)}>Close</Button>
                 </FormField>
             </Container>
         )
@@ -120,9 +120,9 @@ const InferenceForm: FunctionComponent = () => {
 
     const renderImageDownload = () => {
         return (
-            <Container title="Select image file from local disk">
+            <Container title='Select image file from local disk'>
                 <FileUpload
-                    controlId="fileImage"
+                    controlId='fileImage'
                     onChange={onChange}
                 ></FileUpload>
             </Container>
@@ -132,21 +132,21 @@ const InferenceForm: FunctionComponent = () => {
     const renderPreview = () => {
         if(filename === '') 
             return (
-                <Container title="Preview">
+                <Container title='Preview'>
                     <FormField controlId='button'>
-                        <Button variant="primary" onClick={onInference} disabled={filename === ''}>Inference</Button>
+                        <Button variant='primary' onClick={onInference} disabled={filename === ''}>Inference</Button>
                     </FormField>
                 </Container>
             )
         else 
             return (
-                <Container title="Preview">
+                <Container title='Preview'>
                     <FormField controlId='button'>
                         <URLImage src={'/image/' + filename} colors={COLORS} labels={labels} id={id} bbox={bbox}/>
                     </FormField>          
                     <Inline>      
                         <FormField controlId='button'>
-                            <Button variant="primary" onClick={onInference} disabled={filename === ''}>Inference</Button>
+                            <Button variant='primary' onClick={onInference} disabled={filename === ''}>Inference</Button>
                         </FormField>
                         <FormField controlId='button'>
                                 <Button onClick={onAnnotate} disabled={bbox.length === 0}>Annotate</Button>
@@ -158,11 +158,11 @@ const InferenceForm: FunctionComponent = () => {
 
     const renderSampleCode = () => {
         return (
-            <Container title = "Sample code">
-                <Toggle label={visibleSampleCode ? "Show sample code" : "Hide sample code"} checked={visibleSampleCode} onChange={(checked) => {setVisibleSampleCode(checked)}} />
+            <Container title = 'Sample code'>
+                <Toggle label={visibleSampleCode ? 'Show sample code' : 'Hide sample code'} checked={visibleSampleCode} onChange={(checked) => {setVisibleSampleCode(checked)}} />
                 <Link href={sampleConsole}>Open in AWS Lambda console</Link>
                 {
-                    visibleSampleCode && <SyntaxHighlighter language="python" style={github} showLineNumbers={true}>
+                    visibleSampleCode && <SyntaxHighlighter language='python' style={github} showLineNumbers={true}>
                         {sampleCode}
                     </SyntaxHighlighter>
                 }

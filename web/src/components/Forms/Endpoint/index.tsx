@@ -221,9 +221,9 @@ const EndpointForm: FunctionComponent<EndpointFormProps> = (props) => {
     const renderEndpointSetting = () => {
         if(!wizard) {
             return (
-                <FormSection header="Endpoint setting">
-                    <FormField label="Endpooint name" description='Your application uses this name to access this endpoint.' controlId="formFieldIdEndpointName" hintText='Maximum of 63 alphanumeric characters. Can include hyphens (-), but not spaces. Must be unique within your account in an AWS Region.'>
-                        <Input type="text" value={endpointName} invalid={invalidEndpointName} onChange={(event) => {onChange('formFieldIdEndpointName', event)}} />
+                <FormSection header='Endpoint setting'>
+                    <FormField label='Endpooint name' description='Your application uses this name to access this endpoint.' controlId='formFieldIdEndpointName' hintText='Maximum of 63 alphanumeric characters. Can include hyphens (-), but not spaces. Must be unique within your account in an AWS Region.'>
+                        <Input type='text' value={endpointName} invalid={invalidEndpointName} onChange={(event) => {onChange('formFieldIdEndpointName', event)}} />
                     </FormField>
                 </FormSection>
             )
@@ -235,7 +235,7 @@ const EndpointForm: FunctionComponent<EndpointFormProps> = (props) => {
     const renderEndpointTag = () => {
         if(!wizard) {
             return (
-                <FormSection header="Tags - optional">
+                <FormSection header='Tags - optional'>
                     {
                         tags.length>0 && 
                             <Grid container spacing={{ xs: 1, md: 1 }} columns={{ xs: 4, sm: 8, md: 12 }}>
@@ -254,10 +254,10 @@ const EndpointForm: FunctionComponent<EndpointFormProps> = (props) => {
                         tags.map((tag, index) => (
                             <Grid container spacing={{ xs: 1, md: 1 }} columns={{ xs: 4, sm: 8, md: 12 }}>
                                 <Grid item xs={2} sm={4} md={4}>
-                                    <Input type="text" value={tag.key}/>
+                                    <Input type='text' value={tag.key}/>
                                 </Grid>
                                 <Grid item xs={2} sm={4} md={4}>
-                                    <Input type="text" value={tag.value}/>
+                                    <Input type='text' value={tag.value}/>
                                 </Grid>
                                 <Grid item xs={2} sm={4} md={4}>
                                     <Button onClick={() => onRemoveTag(index)}>Remove</Button>
@@ -265,7 +265,7 @@ const EndpointForm: FunctionComponent<EndpointFormProps> = (props) => {
                             </Grid>
                         ))
                     }
-                    <Button variant="link" size="large" onClick={onAddTag}>Add tag</Button>
+                    <Button variant='link' size='large' onClick={onAddTag}>Add tag</Button>
                 </FormSection>
             )
         }
@@ -275,39 +275,39 @@ const EndpointForm: FunctionComponent<EndpointFormProps> = (props) => {
 
     const renderEndpointFormContent = () => {
         return (
-            <FormSection header="Production variants">
-                <FormField label="Model name" controlId="formFieldIdModel">
+            <FormSection header='Production variants'>
+                <FormField label='Model name' controlId='formFieldIdModel'>
                     <Select
-                            placeholder="Choose an option"
+                            placeholder='Choose an option'
                             options={optionsModelName}
                             selectedOption={selectedModelName}
                             invalid={invalidModelName}
                             onChange={(event) => onChange('formFieldIdModelName', event)}
                         />
                 </FormField>
-                <FormField label="Instance type" controlId="formFieldIdInstanceType">
+                <FormField label='Instance type' controlId='formFieldIdInstanceType'>
                     <Select
-                            placeholder="Choose an option"
+                            placeholder='Choose an option'
                             options={optionsInstance}
                             selectedOption={selectedInstanceType}
                             invalid={invalidInstanceType}
                             onChange={(event) => onChange('formFieldIdInstanceType', event)}
                         />
                 </FormField>
-                <FormField label="Elastic Inference" controlId="formFieldIdAcceleratorType">
+                <FormField label='Elastic Inference' controlId='formFieldIdAcceleratorType'>
                     <Select
-                            placeholder="Choose an option"
+                            placeholder='Choose an option'
                             options={optionsAcceleratorType}
                             selectedOption={selectedAcceleratorTypeType}
                             invalid={invalidAcceleratorTypeType}
                             onChange={(event) => onChange('formFieldIdAcceleratorType', event)}
                         />
                 </FormField>
-                <FormField label="Initial instance count" controlId="formFieldIdInitialInstanceCount">
-                    <Input type="text" value={initialInstanceCount} invalid={invalidInitialInstanceCount} onChange={(event) => {onChange('formFieldIdInitialInstanceCount', event)}} />
+                <FormField label='Initial instance count' controlId='formFieldIdInitialInstanceCount'>
+                    <Input type='text' value={initialInstanceCount} invalid={invalidInitialInstanceCount} onChange={(event) => {onChange('formFieldIdInitialInstanceCount', event)}} />
                 </FormField>
-                <FormField label="Initial weight" controlId="formFieldIdInitialVariantWeight">
-                    <Input type="text" value={initialVariantWeight} invalid={invalidInitialVariantWeight} onChange={(event) => {onChange('formFieldIdInitialVariantWeight', event)}} />
+                <FormField label='Initial weight' controlId='formFieldIdInitialVariantWeight'>
+                    <Input type='text' value={initialVariantWeight} invalid={invalidInitialVariantWeight} onChange={(event) => {onChange('formFieldIdInitialVariantWeight', event)}} />
                 </FormField>
             </FormSection>
         )
@@ -325,12 +325,12 @@ const EndpointForm: FunctionComponent<EndpointFormProps> = (props) => {
     else {
         return (
             <Form
-                header="Create endpoint"
-                description="To deploy models to Amazon SageMaker, first create an endpoint. Specify which models to deploy, and the relative traffic weighting and hardware requirements for each. "
+                header='Create endpoint'
+                description='To deploy models to Amazon SageMaker, first create an endpoint. Specify which models to deploy, and the relative traffic weighting and hardware requirements for each. '
                 actions={
                     <div>
-                        <Button variant="link" onClick={onCancel}>Cancel</Button>
-                        <Button variant="primary" onClick={onSubmit}>Submit</Button>
+                        <Button variant='link' onClick={onCancel}>Cancel</Button>
+                        <Button variant='primary' onClick={onSubmit}>Submit</Button>
                     </div>
                 }>
                 {renderEndpointSetting()}

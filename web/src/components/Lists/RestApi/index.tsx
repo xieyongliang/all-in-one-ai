@@ -80,7 +80,7 @@ const RestApiList: FunctionComponent = () => {
     const tableActions = (
         <Inline>
             <ButtonDropdown
-                content="Action"
+                content='Action'
                     items={[{ text: 'Clone' }, { text: 'Delete' }, { text: 'Add/Edit tags' }]}
             />        
             <Button variant='primary' onClick={onCreate}>

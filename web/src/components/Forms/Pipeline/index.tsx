@@ -44,10 +44,10 @@ const PipelineForm: FunctionComponent<PipelineFormProps> = (props) => {
         return (
             <RadioGroup onChange={onChangeOptions}
                 items={[
-                    <RadioButton value="0" checked={pipelineType==='0'}>Both training and inference and deploy in both cloud and edge</RadioButton>, 
-                    <RadioButton value="1" checked={pipelineType==='1'}>Both training and inference and deploy only in cloud</RadioButton>,
-                    <RadioButton value="2" checked={pipelineType==='2'}>Only inference and deploy in both cloud and edge</RadioButton>,
-                    <RadioButton value="3" checked={pipelineType==='3'}>Only inference and deploy only in cloud</RadioButton>
+                    <RadioButton value='0' checked={pipelineType==='0'}>Both training and inference and deploy in both cloud and edge</RadioButton>, 
+                    <RadioButton value='1' checked={pipelineType==='1'}>Both training and inference and deploy only in cloud</RadioButton>,
+                    <RadioButton value='2' checked={pipelineType==='2'}>Only inference and deploy in both cloud and edge</RadioButton>,
+                    <RadioButton value='3' checked={pipelineType==='3'}>Only inference and deploy only in cloud</RadioButton>
                 ]}
             />
         )
@@ -58,10 +58,10 @@ const PipelineForm: FunctionComponent<PipelineFormProps> = (props) => {
             title: 'Pipeline',
             content: 
                 <Stack>
-                    <FormField label="Pipeline name" controlId="formFieldId1">
-                        <Input type="text" controlId="formFieldId1" />
+                    <FormField label='Pipeline name' controlId='formFieldId1'>
+                        <Input type='text' controlId='formFieldId1' />
                     </FormField>
-                    <FormField label="Pipeline type" controlId="formFieldId2">
+                    <FormField label='Pipeline type' controlId='formFieldId2'>
                         {renderPipelineOptions()}
                     </FormField>
                 </Stack>
@@ -115,10 +115,10 @@ const PipelineForm: FunctionComponent<PipelineFormProps> = (props) => {
             title: 'Pipeline',
             content: 
                 <Stack>
-                    <FormField label="Pipeline name" controlId="formFieldId1">
-                        <Input type="text" controlId="formFieldId1" />
+                    <FormField label='Pipeline name' controlId='formFieldId1'>
+                        <Input type='text' controlId='formFieldId1' />
                     </FormField>
-                    <FormField label="Pipeline type" controlId="formFieldId2">
+                    <FormField label='Pipeline type' controlId='formFieldId2'>
                         {renderPipelineOptions()}
                     </FormField>
                 </Stack>
@@ -127,10 +127,10 @@ const PipelineForm: FunctionComponent<PipelineFormProps> = (props) => {
             title: 'Pipeline',
             content: 
                 <Stack>
-                    <FormField label="Pipeline name" controlId="formFieldId1">
-                        <Input type="text" controlId="formFieldId1" />
+                    <FormField label='Pipeline name' controlId='formFieldId1'>
+                        <Input type='text' controlId='formFieldId1' />
                     </FormField>
-                    <FormField label="Pipeline type" controlId="formFieldId2">
+                    <FormField label='Pipeline type' controlId='formFieldId2'>
                         {renderPipelineOptions()}
                     </FormField>
                 </Stack>
@@ -170,10 +170,10 @@ const PipelineForm: FunctionComponent<PipelineFormProps> = (props) => {
             title: 'Pipeline',
             content: 
                 <Stack>
-                    <FormField label="Pipeline name" controlId="formFieldId1">
-                        <Input type="text" controlId="formFieldId1" />
+                    <FormField label='Pipeline name' controlId='formFieldId1'>
+                        <Input type='text' controlId='formFieldId1' />
                     </FormField>
-                    <FormField label="Pipeline type" controlId="formFieldId2">
+                    <FormField label='Pipeline type' controlId='formFieldId2'>
                         {renderPipelineOptions()}
                     </FormField>
                 </Stack>
@@ -220,10 +220,10 @@ const PipelineForm: FunctionComponent<PipelineFormProps> = (props) => {
             title: 'Pipeline',
             content: 
                 <Stack>
-                    <FormField label="Pipeline name" controlId="formFieldId1">
-                        <Input type="text" controlId="formFieldId1" />
+                    <FormField label='Pipeline name' controlId='formFieldId1'>
+                        <Input type='text' controlId='formFieldId1' />
                     </FormField>
-                    <FormField label="Pipeline type" controlId="formFieldId2">
+                    <FormField label='Pipeline type' controlId='formFieldId2'>
                         {renderPipelineOptions()}
                     </FormField>
                 </Stack>

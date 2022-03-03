@@ -51,11 +51,11 @@ const GreengrassComponentProp: FunctionComponent = () => {
 
     return (
         <Form
-            header="Review Greengrass component"
-            description="When you finish your component, you can add it to AWS IoT Greengrass to deploy to core devices. Provide the component recipe and artifacts to create the component. This component is private and visible only to your AWS account."
+            header='Review Greengrass component'
+            description='When you finish your component, you can add it to AWS IoT Greengrass to deploy to core devices. Provide the component recipe and artifacts to create the component. This component is private and visible only to your AWS account.'
             actions={
                 <div>
-                    <Button variant="primary" onClick={onClose}>Close</Button>
+                    <Button variant='primary' onClick={onClose}>Close</Button>
                 </div>
             }>   
             {   
@@ -69,35 +69,35 @@ const GreengrassComponentProp: FunctionComponent = () => {
             <FormSection header='Greengrass component version summary'>
                 <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }}>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label="Component name" value={componentName}></KeyValuePair>
+                        <KeyValuePair label='Component name' value={componentName}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label="Component version" value={componentVersion}></KeyValuePair>
+                        <KeyValuePair label='Component version' value={componentVersion}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label="Creation time" value={creationTimestamp}></KeyValuePair>
+                        <KeyValuePair label='Creation time' value={creationTimestamp}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label="Publisher" value={publisher}></KeyValuePair>
+                        <KeyValuePair label='Publisher' value={publisher}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label="Description" value={description}></KeyValuePair>
+                        <KeyValuePair label='Description' value={description}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label="Platforms" value={platforms}></KeyValuePair>
+                        <KeyValuePair label='Platforms' value={platforms}></KeyValuePair>
                     </Grid>
                 </Grid>
             </FormSection>
             <FormSection header='Greengrass component status'>
                 <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }}>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label="Component state" value={componentState}></KeyValuePair>
+                        <KeyValuePair label='Component state' value={componentState}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label="Message" value={messages}></KeyValuePair>
+                        <KeyValuePair label='Message' value={messages}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label="Errors" value={errors}></KeyValuePair>
+                        <KeyValuePair label='Errors' value={errors}></KeyValuePair>
                     </Grid>
                 </Grid>
             </FormSection>

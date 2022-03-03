@@ -96,11 +96,11 @@ const TrainingJobProp: FunctionComponent = () => {
 
     return (
         <Form
-            header="Review training job"
-            description="When you create a training job, Amazon SageMaker sets up the distributed compute cluster, performs the training, and deletes the cluster when training has completed. The resulting model artifacts are stored in the location you specified when you created the training job."
+            header='Review training job'
+            description='When you create a training job, Amazon SageMaker sets up the distributed compute cluster, performs the training, and deletes the cluster when training has completed. The resulting model artifacts are stored in the location you specified when you created the training job.'
             actions={
                 <div>
-                    <Button variant="primary" onClick={onClose}>Close</Button>
+                    <Button variant='primary' onClick={onClose}>Close</Button>
                 </div>
             }>   
             {   
@@ -114,65 +114,65 @@ const TrainingJobProp: FunctionComponent = () => {
             <FormSection header='Job summary'>
                 <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }}>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label="Job name" value={trainingJobName}></KeyValuePair>
+                        <KeyValuePair label='Job name' value={trainingJobName}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label="Status" value={getStatus(status)}></KeyValuePair>
+                        <KeyValuePair label='Status' value={getStatus(status)}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label="Approx. batch transform duration" value={duration}></KeyValuePair>
+                        <KeyValuePair label='Approx. batch transform duration' value={duration}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label="Creation time" value={creationTime}></KeyValuePair>
+                        <KeyValuePair label='Creation time' value={creationTime}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label="Transform start time" value={trainingStartTime}></KeyValuePair>
+                        <KeyValuePair label='Transform start time' value={trainingStartTime}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label="Transform end time" value={trainingEndTime}></KeyValuePair>
+                        <KeyValuePair label='Transform end time' value={trainingEndTime}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label="Model artifacts" value={modelArtifacts}></KeyValuePair>
+                        <KeyValuePair label='Model artifacts' value={modelArtifacts}></KeyValuePair>
                     </Grid>
                 </Grid>
             </FormSection>
-            <FormSection header="Resource configuration">
+            <FormSection header='Resource configuration'>
                 <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }}>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label="Instance type" value={instanceType}></KeyValuePair>
+                        <KeyValuePair label='Instance type' value={instanceType}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label="Instance count" value={instanceCount}></KeyValuePair>
+                        <KeyValuePair label='Instance count' value={instanceCount}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label="Additional storage" value={volumeSizeInGB}></KeyValuePair>
+                        <KeyValuePair label='Additional storage' value={volumeSizeInGB}></KeyValuePair>
                     </Grid>
                 </Grid>
             </FormSection>
-            <FormSection header="Input data configuration">
+            <FormSection header='Input data configuration'>
                 <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }}>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label="Images prefix" value={imagesS3Uri}></KeyValuePair>
+                        <KeyValuePair label='Images prefix' value={imagesS3Uri}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label="Labels prefix" value={labelsS3Uri}></KeyValuePair>
+                        <KeyValuePair label='Labels prefix' value={labelsS3Uri}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label="Weights prefix" value={weightsS3Uri}></KeyValuePair>
+                        <KeyValuePair label='Weights prefix' value={weightsS3Uri}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label="Cfg prefix" value={cfgS3Uri}></KeyValuePair>
+                        <KeyValuePair label='Cfg prefix' value={cfgS3Uri}></KeyValuePair>
                     </Grid>
                 </Grid>
             </FormSection>
-            <FormSection header="Output data configuration">
+            <FormSection header='Output data configuration'>
                 <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }}>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label="S3 output path" value={getLink(outputS3Uri)}></KeyValuePair>
+                        <KeyValuePair label='S3 output path' value={getLink(outputS3Uri)}></KeyValuePair>
                     </Grid>
                 </Grid>
             </FormSection>
-            <FormSection header="Tags - optional">
+            <FormSection header='Tags - optional'>
                 {
                     tags.length>0 && 
                         <Grid container spacing={{ xs: 1, md: 1 }} columns={{ xs: 4, sm: 8, md: 12 }}>
@@ -191,10 +191,10 @@ const TrainingJobProp: FunctionComponent = () => {
                     tags.map((tag, index) => (
                         <Grid container spacing={{ xs: 1, md: 1 }} columns={{ xs: 4, sm: 8, md: 12 }}>
                             <Grid item xs={2} sm={4} md={4}>
-                                <Input type="text" value={tag.key}/>
+                                <Input type='text' value={tag.key}/>
                             </Grid>
                             <Grid item xs={2} sm={4} md={4}>
-                                <Input type="text" value={tag.value}/>
+                                <Input type='text' value={tag.value}/>
                             </Grid>
                             <Grid item xs={2} sm={4} md={4}>
                                 <Button onClick={() => onRemoveTag(index)}>Remove</Button>
@@ -202,7 +202,7 @@ const TrainingJobProp: FunctionComponent = () => {
                         </Grid>
                     ))
                 }
-                <Button variant="link" size="large" onClick={onAddTag}>Add tag</Button>
+                <Button variant='link' size='large' onClick={onAddTag}>Add tag</Button>
             </FormSection>
         </Form>
     )

@@ -84,11 +84,11 @@ const EndpointProp: FunctionComponent = () => {
 
     return (
         <Form
-            header="Review endpoint"
-            description="To deploy models to Amazon SageMaker, first create an endpoint. Specify which models to deploy, and the relative traffic weighting and hardware requirements for each. "
+            header='Review endpoint'
+            description='To deploy models to Amazon SageMaker, first create an endpoint. Specify which models to deploy, and the relative traffic weighting and hardware requirements for each. '
             actions={
                 <div>
-                    <Button variant="primary" onClick={onClose}>Close</Button>
+                    <Button variant='primary' onClick={onClose}>Close</Button>
                 </div>
             }>   
             {   
@@ -102,42 +102,42 @@ const EndpointProp: FunctionComponent = () => {
             <FormSection header='Endpoint summary'>
                 <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }}>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label="Endpoint name" value={endpointName}></KeyValuePair>
+                        <KeyValuePair label='Endpoint name' value={endpointName}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label="Endpoint config name" value={endpointConfigName}></KeyValuePair>
+                        <KeyValuePair label='Endpoint config name' value={endpointConfigName}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label="Status" value={getStatus(endpointStatus)}></KeyValuePair>
+                        <KeyValuePair label='Status' value={getStatus(endpointStatus)}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label="Creation time" value={creationTime}></KeyValuePair>
+                        <KeyValuePair label='Creation time' value={creationTime}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label="Last modified time" value={lastModifiedTime}></KeyValuePair>
+                        <KeyValuePair label='Last modified time' value={lastModifiedTime}></KeyValuePair>
                     </Grid>
                 </Grid>
             </FormSection>
-            <FormSection header="Endpoint configuration">
+            <FormSection header='Endpoint configuration'>
                 <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }}>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label="Model name" value={modelName}></KeyValuePair>
+                        <KeyValuePair label='Model name' value={modelName}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label="Instance type" value={instanceType}></KeyValuePair>
+                        <KeyValuePair label='Instance type' value={instanceType}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label="Accelerator type" value={acceleratorType}></KeyValuePair>
+                        <KeyValuePair label='Accelerator type' value={acceleratorType}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label="Initial instance count" value={initialInstanceCount}></KeyValuePair>
+                        <KeyValuePair label='Initial instance count' value={initialInstanceCount}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label="Initial variant weight" value={initialVariantWeight}></KeyValuePair>
+                        <KeyValuePair label='Initial variant weight' value={initialVariantWeight}></KeyValuePair>
                     </Grid>
                 </Grid>
             </FormSection>
-            <FormSection header="Tags - optional">
+            <FormSection header='Tags - optional'>
                 {
                     tags.length>0 && 
                         <Grid container spacing={{ xs: 1, md: 1 }} columns={{ xs: 4, sm: 8, md: 12 }}>
@@ -156,10 +156,10 @@ const EndpointProp: FunctionComponent = () => {
                     tags.map((tag, index) => (
                         <Grid container spacing={{ xs: 1, md: 1 }} columns={{ xs: 4, sm: 8, md: 12 }}>
                             <Grid item xs={2} sm={4} md={4}>
-                                <Input type="text" value={tag.key}/>
+                                <Input type='text' value={tag.key}/>
                             </Grid>
                             <Grid item xs={2} sm={4} md={4}>
-                                <Input type="text" value={tag.value}/>
+                                <Input type='text' value={tag.value}/>
                             </Grid>
                             <Grid item xs={2} sm={4} md={4}>
                                 <Button onClick={() => onRemoveTag(index)}>Remove</Button>
@@ -167,7 +167,7 @@ const EndpointProp: FunctionComponent = () => {
                         </Grid>
                     ))
                 }
-                <Button variant="link" size="large" onClick={onAddTag}>Add tag</Button>
+                <Button variant='link' size='large' onClick={onAddTag}>Add tag</Button>
             </FormSection>
         </Form>
     )

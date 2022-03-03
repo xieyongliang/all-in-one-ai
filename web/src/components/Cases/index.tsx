@@ -1,6 +1,6 @@
 import { FunctionComponent } from 'react';
 import Tabs from 'aws-northstar/components/Tabs';
-import { useHistory, useLocation, useParams } from "react-router-dom";
+import { useHistory, useLocation, useParams } from 'react-router-dom';
 import { PathParams } from '../Interfaces/PathParams';
 import DemoForm from '../Forms/Demo';
 import TrainingJobList from '../Lists/TrainingJob';
@@ -124,7 +124,7 @@ const Case: FunctionComponent = () => {
         }
     ];
     return (
-        <Tabs tabs={tabs} variant="container" activeId={tab} onChange={onChange}/>
+        <Tabs tabs={tabs} variant='container' activeId={tab} onChange={onChange}/>
     )
 }
 export default Case;

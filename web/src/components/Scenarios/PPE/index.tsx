@@ -6,7 +6,7 @@ const PPE: FunctionComponent = () => {
         <Stack>
             <Container title='About PPE'>
                 <Text> 
-                Personal protective equipment, commonly referred to as "PPE", is equipment worn to minimize exposure to hazards that cause serious workplace injuries and illnesses. These injuries and illnesses may result from contact with chemical, radiological, physical, electrical, mechanical, or other workplace hazards. Personal protective equipment may include items such as gloves, safety glasses and shoes, earplugs or muffs, hard hats, respirators, or coveralls, vests and full body suits.
+                Personal protective equipment, commonly referred to as 'PPE', is equipment worn to minimize exposure to hazards that cause serious workplace injuries and illnesses. These injuries and illnesses may result from contact with chemical, radiological, physical, electrical, mechanical, or other workplace hazards. Personal protective equipment may include items such as gloves, safety glasses and shoes, earplugs or muffs, hard hats, respirators, or coveralls, vests and full body suits.
                 </Text>
             </Container>
             <Container title = 'AWS PPE detection solution'>
@@ -21,7 +21,7 @@ If you violate the rules (without wearing a helmet), an alarm message will be au
             </Container>
             <Container title = 'Reference Website'>
             <Text>
-                    Check out <Link href="https://cn.spot-bot.examples.pro"> PPE Detection </Link> for demostration.
+                    Check out <Link href='https://cn.spot-bot.examples.pro'> PPE Detection </Link> for demostration.
                 </Text>
             </Container>
         </Stack>

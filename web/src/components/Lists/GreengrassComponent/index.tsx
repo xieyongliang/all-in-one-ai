@@ -89,7 +89,7 @@ const GreengrassComponentList: FunctionComponent = () => {
     const tableActions = (
         <Inline>
             <ButtonDropdown
-                content="Action"
+                content='Action'
                     items={[{ text: 'Clone' }, { text: 'Create endpoint' }, { text: 'Add/Edit tags' }]}
             />        
             <Button variant='primary' onClick={onCreate}>
@@ -115,11 +115,11 @@ const GreengrassComponentList: FunctionComponent = () => {
 
     const renderSampleCode = () => {
         return (
-            <Container title = "Sample code">
-                <Toggle label={visibleSampleCode ? "Show sample code" : "Hide sample code"} checked={visibleSampleCode} onChange={(checked) => {setVisibleSampleCode(checked)}} />
+            <Container title = 'Sample code'>
+                <Toggle label={visibleSampleCode ? 'Show sample code' : 'Hide sample code'} checked={visibleSampleCode} onChange={(checked) => {setVisibleSampleCode(checked)}} />
                 <Link href={sampleConsole}>Open in AWS Lambda console</Link>
                 {
-                    visibleSampleCode && <SyntaxHighlighter language="python" style={github} showLineNumbers={true}>
+                    visibleSampleCode && <SyntaxHighlighter language='python' style={github} showLineNumbers={true}>
                         {sampleCode}
                     </SyntaxHighlighter>
                 }

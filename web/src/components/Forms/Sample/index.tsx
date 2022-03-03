@@ -107,10 +107,10 @@ const SampleForm: FunctionComponent = () => {
         })
         console.log(current)
         return (
-            <Container title = "Image annotation">
+            <Container title = 'Image annotation'>
                 <ImageAnnotate imageUri={current} labelsData={labelsData} annotationData={annotationData} colorData={COLORS}/>
                 <FormField controlId='button'>
-                    <Button variant="primary" onClick={()=>setVisibleAnnotate(false)}>Close</Button>
+                    <Button variant='primary' onClick={()=>setVisibleAnnotate(false)}>Close</Button>
                 </FormField>
             </Container>
         )
@@ -118,8 +118,8 @@ const SampleForm: FunctionComponent = () => {
     
     const renderImageList = () => {
         return (
-            <Container title = "Select image file from sample list">
-                <ImageList cols={12} rowHeight={64} gap={10} variant={'quilted'} style={{"height":"550px"}}>
+            <Container title = 'Select image file from sample list'>
+                <ImageList cols={12} rowHeight={64} gap={10} variant={'quilted'} style={{'height':'550px'}}>
                     {items.map((item, index) => (
                         <ImageListItem key={item} rows={2}>
                             <Image
@@ -139,15 +139,15 @@ const SampleForm: FunctionComponent = () => {
     const renderPreview = () => {
         if(filename === '')
             return (
-                <Container title = "Preview">
+                <Container title = 'Preview'>
                     <FormField controlId='button'>
-                        <Button variant="primary" onClick={onInference} disabled={filename === ''}>Inference</Button>
+                        <Button variant='primary' onClick={onInference} disabled={filename === ''}>Inference</Button>
                     </FormField>
                 </Container>
             )
         else
             return (
-                <Container title = "Preview">
+                <Container title = 'Preview'>
                     <FormField controlId='button'>
                         <div className='watermarked'>
                             <URLImage src={current} colors={COLORS} labels={labels} id={id} bbox={bbox}/>
@@ -155,7 +155,7 @@ const SampleForm: FunctionComponent = () => {
                     </FormField>
                     <Inline>
                         <FormField controlId='button'>
-                            <Button variant="primary" onClick={onInference} disabled={filename === ''}>Inference</Button>
+                            <Button variant='primary' onClick={onInference} disabled={filename === ''}>Inference</Button>
                         </FormField>
                         <FormField controlId='button'>
                             <Button onClick={onAnnotate} disabled={bbox.length === 0}>Annotate</Button>
@@ -167,11 +167,11 @@ const SampleForm: FunctionComponent = () => {
 
     const renderSampleCode = () => {
         return (
-            <Container title = "Sample code">
-                <Toggle label={visibleSampleCode ? "Show sample code" : "Hide sample code"} checked={visibleSampleCode} onChange={(checked) => {setVisibleSampleCode(checked)}} />
+            <Container title = 'Sample code'>
+                <Toggle label={visibleSampleCode ? 'Show sample code' : 'Hide sample code'} checked={visibleSampleCode} onChange={(checked) => {setVisibleSampleCode(checked)}} />
                 <Link href={sampleConsole}>Open in AWS Lambda console</Link>
                 {
-                    visibleSampleCode && <SyntaxHighlighter language="python" style={github} showLineNumbers={true}>
+                    visibleSampleCode && <SyntaxHighlighter language='python' style={github} showLineNumbers={true}>
                         {sampleCode}
                     </SyntaxHighlighter>
                 }

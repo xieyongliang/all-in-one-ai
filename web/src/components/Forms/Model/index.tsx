@@ -88,9 +88,9 @@ const ModelForm: FunctionComponent<ModelFormProps> = (props) => {
     const renderModelSetting = () => {
         if(!wizard) {
             return (
-                <FormSection header="Model settings">
-                    <FormField label="Model name" controlId="formFieldIdModelName">
-                        <Input type="text" required={true} value={modelName} invalid={invalidModelName} onChange={(event)=>onChange('formFieldIdModelName', event)}/>
+                <FormSection header='Model settings'>
+                    <FormField label='Model name' controlId='formFieldIdModelName'>
+                        <Input type='text' required={true} value={modelName} invalid={invalidModelName} onChange={(event)=>onChange('formFieldIdModelName', event)}/>
                     </FormField>
                 </FormSection>
             )
@@ -102,7 +102,7 @@ const ModelForm: FunctionComponent<ModelFormProps> = (props) => {
     const renderModelTag = () => {
         if(!wizard) {
             return (
-                <FormSection header="Tags - optional">
+                <FormSection header='Tags - optional'>
                     {
                         tags.length>0 && 
                             <Grid container spacing={{ xs: 1, md: 1 }} columns={{ xs: 4, sm: 8, md: 12 }}>
@@ -121,10 +121,10 @@ const ModelForm: FunctionComponent<ModelFormProps> = (props) => {
                         tags.map((tag, index) => (
                             <Grid container spacing={{ xs: 1, md: 1 }} columns={{ xs: 4, sm: 8, md: 12 }}>
                                 <Grid item xs={2} sm={4} md={4}>
-                                    <Input type="text" value={tag.key}/>
+                                    <Input type='text' value={tag.key}/>
                                 </Grid>
                                 <Grid item xs={2} sm={4} md={4}>
-                                    <Input type="text" value={tag.value}/>
+                                    <Input type='text' value={tag.value}/>
                                 </Grid>
                                 <Grid item xs={2} sm={4} md={4}>
                                     <Button onClick={() => onRemoveTag(index)}>Remove</Button>
@@ -132,7 +132,7 @@ const ModelForm: FunctionComponent<ModelFormProps> = (props) => {
                             </Grid>
                         ))
                     }
-                    <Button variant="link" size="large" onClick={onAddTag}>Add tag</Button>
+                    <Button variant='link' size='large' onClick={onAddTag}>Add tag</Button>
                 </FormSection>
             )
         }
@@ -144,8 +144,8 @@ const ModelForm: FunctionComponent<ModelFormProps> = (props) => {
         return (
             <RadioGroup onChange={onChangeOptions}
                 items={[
-                    <RadioButton value="SingleModel" checked={containerType === 'SingleModel'}>Use a single model.</RadioButton>, 
-                    <RadioButton value="MultiModel" checked={containerType === 'MultiModel'}>Use multiple models.</RadioButton>,
+                    <RadioButton value='SingleModel' checked={containerType === 'SingleModel'}>Use a single model.</RadioButton>, 
+                    <RadioButton value='MultiModel' checked={containerType === 'MultiModel'}>Use multiple models.</RadioButton>,
                 ]}
             />
         )
@@ -153,15 +153,15 @@ const ModelForm: FunctionComponent<ModelFormProps> = (props) => {
 
     const renderModelFormContent = () => {
         return (
-            <FormSection header="Container definition">
+            <FormSection header='Container definition'>
                 <FormField controlId='formFieldId1'>
                     {renderContainerOptions()}
                 </FormField>          
-                <FormField label="Location of inference code image" description='Type the registry path where the inference code image is stored in Amazon ECR.' controlId="formFieldIdContainerImage">
-                    <Input type="text" value={containerIamge} placeholder={'default'} onChange={(event)=>{onChange('formFieldIdContainerImage', event)}} />
+                <FormField label='Location of inference code image' description='Type the registry path where the inference code image is stored in Amazon ECR.' controlId='formFieldIdContainerImage'>
+                    <Input type='text' value={containerIamge} placeholder={'default'} onChange={(event)=>{onChange('formFieldIdContainerImage', event)}} />
                 </FormField>
-                <FormField label="Location of model artifacts" description='Type the URL where model artifacts are stored in S3.' controlId="formFieldIdModelDataUrl">
-                    <Input type="text" required={true} value={modelDataUrl} invalid={invalidModelDataUrl} onChange={(event)=>{onChange('formFieldIdModelDataUrl', event)}} />
+                <FormField label='Location of model artifacts' description='Type the URL where model artifacts are stored in S3.' controlId='formFieldIdModelDataUrl'>
+                    <Input type='text' required={true} value={modelDataUrl} invalid={invalidModelDataUrl} onChange={(event)=>{onChange('formFieldIdModelDataUrl', event)}} />
                 </FormField>
         </FormSection>    
         )
@@ -179,12 +179,12 @@ const ModelForm: FunctionComponent<ModelFormProps> = (props) => {
     else {
         return (
             <Form
-                header="Create model"
-                description="To deploy a model to Amazon SageMaker, first create the model by providing the location of the model artifacts and inference code."
+                header='Create model'
+                description='To deploy a model to Amazon SageMaker, first create the model by providing the location of the model artifacts and inference code.'
                 actions={
                     <div>
-                        <Button variant="link" onClick={onCancel}>Cancel</Button>
-                        <Button variant="primary" onClick={onSubmit}>Submit</Button>
+                        <Button variant='link' onClick={onCancel}>Cancel</Button>
+                        <Button variant='primary' onClick={onSubmit}>Submit</Button>
                     </div>
                 }>            
                 {renderModelSetting()}

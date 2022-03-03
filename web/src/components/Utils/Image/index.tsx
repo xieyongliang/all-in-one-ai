@@ -1,5 +1,5 @@
-import { FunctionComponent } from "react"
-import "./index.scss"
+import { FunctionComponent } from 'react'
+import './index.scss'
 
 export interface ImageProps {
     src: string;
@@ -24,8 +24,8 @@ const Image: FunctionComponent<ImageProps> = (props) => {
                         width={props.width}
                         height={props.height}
                         alt={props.alt}
-                        loading="lazy"
-                        style={{"border": "5px solid red"}}
+                        loading='lazy'
+                        style={{'border': '5px solid red'}}
                     />
                 </div>
             )
@@ -37,7 +37,7 @@ const Image: FunctionComponent<ImageProps> = (props) => {
                         width={props.width}
                         height={props.height}
                         alt={props.alt}
-                        loading="lazy"
+                        loading='lazy'
                     />
                 </div>
             )
@@ -50,9 +50,9 @@ const Image: FunctionComponent<ImageProps> = (props) => {
                         width={props.width}
                         height={props.height}
                         alt={props.alt}
-                        loading="lazy"
+                        loading='lazy'
                         onLoad={onLoad}
-                        style={{"border": "5px solid red"}}
+                        style={{'border': '5px solid red'}}
                     />
                 </div>
             )
@@ -64,7 +64,7 @@ const Image: FunctionComponent<ImageProps> = (props) => {
                         width={props.width}
                         height={props.height}
                         alt={props.alt}
-                        loading="lazy"
+                        loading='lazy'
                         onLoad={onLoad}
                     />
                 </div>

@@ -104,11 +104,11 @@ const GreengrassDeploymentProp: FunctionComponent = () => {
 
     return (
         <Form
-            header="Review Greengrass deployment"
-            description="This deployment targets an AWS IoT thing group. Add a core device to the thing group to apply this deployment to it."
+            header='Review Greengrass deployment'
+            description='This deployment targets an AWS IoT thing group. Add a core device to the thing group to apply this deployment to it.'
             actions={
                 <div>
-                    <Button variant="primary" onClick={onClose}>Close</Button>
+                    <Button variant='primary' onClick={onClose}>Close</Button>
                 </div>
             }>   
             {   
@@ -122,19 +122,19 @@ const GreengrassDeploymentProp: FunctionComponent = () => {
             <FormSection header='Greengrass deployment overview'>
                 <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }}>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label="Target" value={targetArn}></KeyValuePair>
+                        <KeyValuePair label='Target' value={targetArn}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label="Deployment status" value={deploymentStatus}></KeyValuePair>
+                        <KeyValuePair label='Deployment status' value={deploymentStatus}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label="Deployment created" value={creationTimestamp}></KeyValuePair>
+                        <KeyValuePair label='Deployment created' value={creationTimestamp}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label="IoT job" value={iotJobId}></KeyValuePair>
+                        <KeyValuePair label='IoT job' value={iotJobId}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label="Revision Id" value={revisionId}></KeyValuePair>
+                        <KeyValuePair label='Revision Id' value={revisionId}></KeyValuePair>
                     </Grid>
                 </Grid>
             </FormSection>

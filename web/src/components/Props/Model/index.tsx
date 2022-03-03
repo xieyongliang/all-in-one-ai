@@ -55,11 +55,11 @@ const ModelProp: FunctionComponent = () => {
 
     return (
         <Form
-            header="Review model"
-            description="To deploy a model to Amazon SageMaker, first create the model by providing the location of the model artifacts and inference code."
+            header='Review model'
+            description='To deploy a model to Amazon SageMaker, first create the model by providing the location of the model artifacts and inference code.'
             actions={
                 <div>
-                    <Button variant="primary" onClick={onClose}>Close</Button>
+                    <Button variant='primary' onClick={onClose}>Close</Button>
                 </div>
             }>   
             {   
@@ -73,27 +73,27 @@ const ModelProp: FunctionComponent = () => {
             <FormSection header='Model summary'>
                 <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }}>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label="Model name" value={modelName}></KeyValuePair>
+                        <KeyValuePair label='Model name' value={modelName}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label="Creation time" value={creationTime}></KeyValuePair>
+                        <KeyValuePair label='Creation time' value={creationTime}></KeyValuePair>
                     </Grid>
                 </Grid>
             </FormSection>
-            <FormSection header="Container definition">
+            <FormSection header='Container definition'>
                 <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }}>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label="Mode" value={mode}></KeyValuePair>
+                        <KeyValuePair label='Mode' value={mode}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label="Container image" value={containerIamge}></KeyValuePair>
+                        <KeyValuePair label='Container image' value={containerIamge}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label="Model data url" value={modelDataUrl}></KeyValuePair>
+                        <KeyValuePair label='Model data url' value={modelDataUrl}></KeyValuePair>
                     </Grid>
                 </Grid>
             </FormSection>
-            <FormSection header="Tags - optional">
+            <FormSection header='Tags - optional'>
                 {
                     tags.length>0 && 
                         <Grid container spacing={{ xs: 1, md: 1 }} columns={{ xs: 4, sm: 8, md: 12 }}>
@@ -112,10 +112,10 @@ const ModelProp: FunctionComponent = () => {
                     tags.map((tag, index) => (
                         <Grid container spacing={{ xs: 1, md: 1 }} columns={{ xs: 4, sm: 8, md: 12 }}>
                             <Grid item xs={2} sm={4} md={4}>
-                                <Input type="text" value={tag.key}/>
+                                <Input type='text' value={tag.key}/>
                             </Grid>
                             <Grid item xs={2} sm={4} md={4}>
-                                <Input type="text" value={tag.value}/>
+                                <Input type='text' value={tag.value}/>
                             </Grid>
                             <Grid item xs={2} sm={4} md={4}>
                                 <Button onClick={() => onRemoveTag(index)}>Remove</Button>
@@ -123,7 +123,7 @@ const ModelProp: FunctionComponent = () => {
                         </Grid>
                     ))
                 }
-                <Button variant="link" size="large" onClick={onAddTag}>Add tag</Button>
+                <Button variant='link' size='large' onClick={onAddTag}>Add tag</Button>
             </FormSection>
         </Form>
     )

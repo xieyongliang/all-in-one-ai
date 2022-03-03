@@ -91,11 +91,11 @@ const TransformJobProp: FunctionComponent = () => {
 
     return (
         <Form
-            header="Review batch transform job"
-            description="A transform job uses a model to transform data and stores the results at a specified location."
+            header='Review batch transform job'
+            description='A transform job uses a model to transform data and stores the results at a specified location.'
             actions={
                 <div>
-                    <Button variant="primary" onClick={onClose}>Close</Button>
+                    <Button variant='primary' onClick={onClose}>Close</Button>
                 </div>
             }>   
             {   
@@ -109,62 +109,62 @@ const TransformJobProp: FunctionComponent = () => {
             <FormSection header='Job summary'>
                 <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }}>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label="Job name" value={transformJobName}></KeyValuePair>
+                        <KeyValuePair label='Job name' value={transformJobName}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label="Status" value={getStatus(status)}></KeyValuePair>
+                        <KeyValuePair label='Status' value={getStatus(status)}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label="Approx. batch transform duration" value={duration}></KeyValuePair>
+                        <KeyValuePair label='Approx. batch transform duration' value={duration}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label="Creation time" value={creationTime}></KeyValuePair>
+                        <KeyValuePair label='Creation time' value={creationTime}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label="Transform start time" value={transformStartTime}></KeyValuePair>
+                        <KeyValuePair label='Transform start time' value={transformStartTime}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label="Transform end time" value={transformEndTime}></KeyValuePair>
+                        <KeyValuePair label='Transform end time' value={transformEndTime}></KeyValuePair>
                     </Grid>
                 </Grid>
             </FormSection>
-            <FormSection header="Job configuration">
+            <FormSection header='Job configuration'>
                 <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }}>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label="Model name" value={modelName}></KeyValuePair>
+                        <KeyValuePair label='Model name' value={modelName}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label="Instance type" value={instanceType}></KeyValuePair>
+                        <KeyValuePair label='Instance type' value={instanceType}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label="Instance count" value={instanceCount}></KeyValuePair>
+                        <KeyValuePair label='Instance count' value={instanceCount}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label="Max concurrent transforms" value={maxConcurrentTransforms}></KeyValuePair>
+                        <KeyValuePair label='Max concurrent transforms' value={maxConcurrentTransforms}></KeyValuePair>
                     </Grid>
                 </Grid>
             </FormSection>
-            <FormSection header="Input data configuration">
+            <FormSection header='Input data configuration'>
                 <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }}>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label="S3 data type" value={s3DataType}></KeyValuePair>
+                        <KeyValuePair label='S3 data type' value={s3DataType}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label="S3 URI" value={getLink(inputS3Uri)}></KeyValuePair>
+                        <KeyValuePair label='S3 URI' value={getLink(inputS3Uri)}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label="Content type" value={contentType}></KeyValuePair>
+                        <KeyValuePair label='Content type' value={contentType}></KeyValuePair>
                     </Grid>
                 </Grid>
             </FormSection>
-            <FormSection header="Output data configuration">
+            <FormSection header='Output data configuration'>
                 <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }}>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label="S3 output path" value={getLink(outputS3Uri)}></KeyValuePair>
+                        <KeyValuePair label='S3 output path' value={getLink(outputS3Uri)}></KeyValuePair>
                     </Grid>
                 </Grid>
             </FormSection>
-            <FormSection header="Tags - optional">
+            <FormSection header='Tags - optional'>
                 {
                     tags.length>0 && 
                         <Grid container spacing={{ xs: 1, md: 1 }} columns={{ xs: 4, sm: 8, md: 12 }}>
@@ -183,10 +183,10 @@ const TransformJobProp: FunctionComponent = () => {
                     tags.map((tag, index) => (
                         <Grid container spacing={{ xs: 1, md: 1 }} columns={{ xs: 4, sm: 8, md: 12 }}>
                             <Grid item xs={2} sm={4} md={4}>
-                                <Input type="text" value={tag.key}/>
+                                <Input type='text' value={tag.key}/>
                             </Grid>
                             <Grid item xs={2} sm={4} md={4}>
-                                <Input type="text" value={tag.value}/>
+                                <Input type='text' value={tag.value}/>
                             </Grid>
                             <Grid item xs={2} sm={4} md={4}>
                                 <Button onClick={() => onRemoveTag(index)}>Remove</Button>
@@ -194,7 +194,7 @@ const TransformJobProp: FunctionComponent = () => {
                         </Grid>
                     ))
                 }
-                <Button variant="link" size="large" onClick={onAddTag}>Add tag</Button>
+                <Button variant='link' size='large' onClick={onAddTag}>Add tag</Button>
             </FormSection>
         </Form>
     )
