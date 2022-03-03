@@ -1,9 +1,10 @@
-import { ChangeEvent, FunctionComponent, useEffect, useRef, useState, useCallback } from 'react';
+import { FunctionComponent, useEffect, useRef, useState, useCallback } from 'react';
 import { useHistory, useParams } from 'react-router-dom'; 
 import { Column } from 'react-table'
-import { Form, Button, RadioGroup, RadioButton, Inline, Stack, Select, Table, Text, FormSection, FormField, Input } from 'aws-northstar';
-import axios from 'axios';
+import { Form, Button, RadioGroup, RadioButton, Stack, Select, Table, Text, FormSection, FormField, Input } from 'aws-northstar';
 import { SelectOption } from 'aws-northstar/components/Select';
+import Grid from '@mui/material/Grid';
+import axios from 'axios';
 
 interface DataType {
     name: string;
@@ -33,6 +34,8 @@ const GreengrassDeploymentForm: FunctionComponent<GreengrassDeploymentFormProps>
     const [ selectedComponentVersions ] = useState([]);
     const [ selectedCoreDevice, setSelectedCoreDevice ] = useState<SelectOption>({})
     const [ selectedThingGroup, setSelectedThingGroup ] = useState<SelectOption>({})
+    const [ tags ] = useState([])
+    const [ forcedRefresh, setForcedRefresh ] = useState(false)
     const [ invalidCoreDevice, setInvalidCoreDevice ] = useState(false)
     const [ invalidThingGroup, setInvalidThingGroup ] = useState(false)
     const [ forceRefreshed, setForceRefreshed ] = useState(false)
@@ -142,12 +145,8 @@ const GreengrassDeploymentForm: FunctionComponent<GreengrassDeploymentFormProps>
         history.push('/case/' + params.name + '?tab=greengrassdeployment')
     }
 
-    const onRemove = () => {
-    }
-
-    const onChangeOption = (event?: ChangeEvent<HTMLInputElement>, value?: string)=>{
-        var target : string = value || ''
-        setTargetType(target)
+    const onChangeOptions = (event, value)=>{
+        setTargetType(value)
     }
 
     const onSelectionChange = (selectedItems: DataType[]) => {
@@ -158,6 +157,16 @@ const GreengrassDeploymentForm: FunctionComponent<GreengrassDeploymentFormProps>
         itemsComponents.forEach((itemComponent) => {
             itemComponent.selected = (itemComponent.name in selected)
         })
+    }
+
+    const onAddTag = () => {
+        tags.push({key:'', value:''});
+        setForcedRefresh(!forcedRefresh);
+    }
+
+    const onRemoveTag = (index) => {
+        tags.splice(index, 1);
+        setForcedRefresh(!forcedRefresh);
     }
 
     var wizard : boolean
@@ -196,11 +205,11 @@ const GreengrassDeploymentForm: FunctionComponent<GreengrassDeploymentFormProps>
                     });
                     return (
                         <Select
-                            placeholder="Choose an option"
+                            placeholder='Choose an option'
                             options={options}
                             selectedOption={selectedComponentVersions[row.original.name]}
                             onChange={(event) => onChange(row.original.name, event, 'versions')}
-                    />
+                        />
                     )
                 }
                 return null;
@@ -224,10 +233,10 @@ const GreengrassDeploymentForm: FunctionComponent<GreengrassDeploymentFormProps>
     const renderGreengrassDeploymentSetting = () => {
         if(!wizard) {
             return (
-                <FormSection header="Greengrass deployment setting">
-                <FormField label="Deployment name" description='A friendly name lets you identify this deployment. If you leave it blank, the deployment displays its ID instead of a name.' controlId="formFieldIdDeploymentName">
-                    <Input type="text" value={deploymentName} onChange={(event)=>{onChange('formFieldIdDeploymentName', event)}}/>
-                </FormField>
+                <FormSection header='Greengrass deployment setting'>
+                    <FormField label='Deployment name' description='A friendly name lets you identify this deployment. If you leave it blank, the deployment displays its ID instead of a name.' controlId='formFieldIdDeploymentName'>
+                        <Input type='text' value={deploymentName} onChange={(event)=>{onChange('formFieldIdDeploymentName', event)}}/>
+                    </FormField>
                 </FormSection>
             )
         }
@@ -235,21 +244,26 @@ const GreengrassDeploymentForm: FunctionComponent<GreengrassDeploymentFormProps>
             return ''
     }
 
+    const renderTargetOptions = () => {
+        return (
+            <RadioGroup onChange={onChangeOptions}
+                items={[
+                    <RadioButton value='0' checked={targetType === '0'}>Core device</RadioButton>, 
+                    <RadioButton value='1' checked={targetType === '1'}>Thing group</RadioButton>                
+                ]}
+            />
+        )
+    }
     const renderGreengrassDeploymentTarget = () => {
         if(targetType === '1') {
             return (
-                <FormSection header="Deployment target" description='You can deploy to a single Greengrass core device or a group of core devices.'>
-                    <FormField label="Target type" controlId="formFieldIdTargetType">
-                        <RadioGroup onChange={onChangeOption}
-                                items={[
-                                    <RadioButton value='0' checked={false}>Core device</RadioButton>, 
-                                    <RadioButton value='1' checked={true}>Thing group</RadioButton>                
-                                ]}
-                            />
+                <FormSection header='Deployment target' description='You can deploy to a single Greengrass core device or a group of core devices.'>
+                    <FormField label='Target type' controlId='formFieldIdTargetType'>
+                        {renderTargetOptions()}
                     </FormField>
-                    <FormField label="Target name" controlId="formFieldIdThingGroups">
+                    <FormField label='Target name' controlId='formFieldIdThingGroups'>
                         <Select
-                            placeholder="Choose an option"
+                            placeholder='Choose an option'
                             options={optionsThingGroups}
                             selectedOption={selectedThingGroup}
                             invalid={invalidThingGroup}
@@ -261,18 +275,13 @@ const GreengrassDeploymentForm: FunctionComponent<GreengrassDeploymentFormProps>
         }
         else {
             return (
-                <FormSection header="Deployment target" description='You can deploy to a single Greengrass core device or a group of core devices.'>
-                    <FormField label="Target type" controlId="formFieldIdTargetType">
-                        <RadioGroup onChange={onChangeOption}
-                                items={[
-                                    <RadioButton value='0' checked={true}>Core device</RadioButton>, 
-                                    <RadioButton value='1' checked={false}>Thing group</RadioButton>                
-                                ]}
-                            />
+                <FormSection header='Deployment target' description='You can deploy to a single Greengrass core device or a group of core devices.'>
+                    <FormField label='Target type' controlId='formFieldIdTargetType'>
+                        {renderTargetOptions()}
                     </FormField>
-                    <FormField label="Target name" controlId="formFieldId1">
+                    <FormField label='Target name' controlId='formFieldIdTargetName'>
                         <Select
-                            placeholder="Choose an option"
+                            placeholder='Choose an option'
                             options={optionsCoreDevices}
                             selectedOption={selectedCoreDevice}
                             invalid={invalidCoreDevice}
@@ -287,23 +296,37 @@ const GreengrassDeploymentForm: FunctionComponent<GreengrassDeploymentFormProps>
     const renderGreengrassDeploymentTag = () => {
         if(!wizard) {
             return (
-                <FormSection header="Tags - optional">
-                    <Inline>
-                        <FormField label="Key" controlId="formFieldId1">
-                            <Input type="text" controlId="formFieldId1"/>
-                        </FormField>
-                        <FormField label="Value" controlId="formFieldId1">
-                            <Inline>
-                                <Input type="text" controlId="formFieldId1"/>
-                            </Inline>
-                        </FormField>
-                        <FormField label="Operation" controlId="formFieldId1">
-                            <Inline>
-                                <Button onClick={onRemove}>Remove</Button>
-                            </Inline>
-                        </FormField>
-                    </Inline>
-                    <Button variant="link">Add tag</Button>
+                <FormSection header='Tags - optional'>
+                    {
+                        tags.length>0 && 
+                            <Grid container spacing={{ xs: 1, md: 1 }} columns={{ xs: 4, sm: 8, md: 12 }}>
+                                <Grid item xs={2} sm={4} md={4}>
+                                    <Text> Key </Text>
+                                </Grid>
+                                <Grid item xs={2} sm={4} md={4}>
+                                    <Text> Value </Text> 
+                                </Grid>
+                                <Grid item xs={2} sm={4} md={4}>
+                                    <Text>  </Text>
+                                </Grid>
+                            </Grid>
+                    }
+                    {
+                        tags.map((tag, index) => (
+                            <Grid container spacing={{ xs: 1, md: 1 }} columns={{ xs: 4, sm: 8, md: 12 }}>
+                                <Grid item xs={2} sm={4} md={4}>
+                                    <Input type='text' value={tag.key}/>
+                                </Grid>
+                                <Grid item xs={2} sm={4} md={4}>
+                                    <Input type='text' value={tag.value}/>
+                                </Grid>
+                                <Grid item xs={2} sm={4} md={4}>
+                                    <Button onClick={() => onRemoveTag(index)}>Remove</Button>
+                                </Grid>
+                            </Grid>
+                        ))
+                    }
+                    <Button variant='link' size='large' onClick={onAddTag}>Add tag</Button>
                 </FormSection>
             )
         }
@@ -337,11 +360,11 @@ const GreengrassDeploymentForm: FunctionComponent<GreengrassDeploymentFormProps>
     else {
         return (
             <Form
-                header="Create Greengrass deployment"
+                header='Create Greengrass deployment'
                 actions={
                     <div>
-                        <Button variant="link" onClick={onCancel}>Cancel</Button>
-                        <Button variant="primary" onClick={onSubmit}>Submit</Button>
+                        <Button variant='link' onClick={onCancel}>Cancel</Button>
+                        <Button variant='primary' onClick={onSubmit}>Submit</Button>
                     </div>
                 }>        
                 {renderGreengrassDeploymentSetting()}

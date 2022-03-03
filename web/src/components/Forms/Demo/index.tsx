@@ -1,10 +1,8 @@
 import { FunctionComponent } from 'react';
-import { Stack, Heading, Container } from 'aws-northstar';
+import { Stack, Heading, Container, RadioButton, RadioGroup } from 'aws-northstar';
 import InferenceForm from '../Inference';
 import TransformJobList from '../../Lists/TransformJob';
 import SampleForm from '../Sample';
-import Radio from '../../Utils/Radio';
-import RadioGroup from '../../Utils/RadioGroup';
 import { useParams, useLocation, useHistory } from 'react-router-dom';
 import { PathParams } from '../../Interfaces/PathParams';
 
@@ -16,25 +14,33 @@ const DemoForm: FunctionComponent = () => {
     var localtion = useLocation();
     var hash = localtion.hash.substring(1);
 
-    var type = hash === 'sample' || hash === 'uploaded' || hash === 'transformjob' ? hash : 'sample'
+    var demoType = hash === 'sample' || hash === 'uploaded' || hash === 'transformjob' ? hash : 'sample'
 
-    function onChange (value: string) {
+    const onChangeOptions = (event, value) => {
         history.push(`/case/${params.name}?tab=demo#${value}`);
     }
     
+    const renderDemoOptions = () => {
+        return (
+            <RadioGroup onChange={onChangeOptions}
+                items={[
+                    <RadioButton value='transformjob' checked={demoType === 'transformjob'} >Batch transform jobs</RadioButton>, 
+                    <RadioButton value='uploaded' checked={demoType === 'uploaded'} >Realtime inference with uploaded image</RadioButton>,
+                    <RadioButton value='sample' checked={demoType === 'sample'} >Realtime inference with sample image</RadioButton>,
+                ]}
+            />
+        )
+    }
+
     return (
         <Stack>
             <Heading variant='h1'>{params.name}</Heading>
             <Container title = "Demo type">
-                <RadioGroup onChange={onChange} active={type}>
-		            <Radio value={'transformjob'}>Batch transform jobs</Radio>
-		            <Radio value={'uploaded'}>Realtime inference with uploaded image</Radio>
-		            <Radio value={'sample'}>Realtime inference with sample image</Radio>
-		        </RadioGroup>
+                {renderDemoOptions()}
             </Container>
-            {type === 'transformjob' && <TransformJobList/>}
-            {type === 'uploaded' && <InferenceForm/>}
-            {type === 'sample' && <SampleForm/>}
+            {demoType === 'transformjob' && <TransformJobList/>}
+            {demoType === 'uploaded' && <InferenceForm/>}
+            {demoType === 'sample' && <SampleForm/>}
         </Stack>
     )
 }

@@ -1,9 +1,7 @@
 import { FunctionComponent, useState } from 'react';
 import { useHistory, useParams } from 'react-router-dom'; 
-import { Form, FormSection, FormField, Input, Button, Text, Stack } from 'aws-northstar';
+import { Form, FormSection, FormField, Input, Button, Text, Stack, RadioButton, RadioGroup } from 'aws-northstar';
 import Grid from '@mui/material/Grid';
-import Radio from '../../Utils/Radio';
-import RadioGroup from '../../Utils/RadioGroup';
 import axios from 'axios';
 
 interface PathParams {
@@ -18,7 +16,7 @@ const ModelForm: FunctionComponent<ModelFormProps> = (props) => {
     const [ modelName, setModelName ] = useState('')
     const [ containerIamge, setContainerImage ] = useState('')
     const [ modelDataUrl, setModelDataUrl ] = useState('')
-    const [ mode, setMode ] = useState('SingleModel')
+    const [ containerType, setContainerType ] = useState('SingleModel')
     const [ tags ] = useState([{key:'', value:''}])
     const [ forcedRefresh, setForcedRefresh ] = useState(false)
     const [ invalidModelName, setInvalidModelName ] = useState(false)
@@ -35,9 +33,13 @@ const ModelForm: FunctionComponent<ModelFormProps> = (props) => {
         if(id === 'formFieldIdModelDataUrl')
             setModelDataUrl(event)
         if(id === 'formFieldIdMode')
-            setMode(event)
+            setContainerType(event)
     }
 
+    const onChangeOptions = (event, value) => {
+        setContainerType(value)
+    }
+    
     const onSubmit = () => {
         if(modelName === '')
             setInvalidModelName(true)
@@ -49,7 +51,7 @@ const ModelForm: FunctionComponent<ModelFormProps> = (props) => {
                 'case_name': params.name,
                 'container_image': containerIamge,
                 'model_data_url': modelDataUrl,
-                'mode': mode
+                'mode': containerType
             }
             if(tags.length > 1 || (tags.length === 1 && tags[0].key !== '' && tags[0].value !== ''))
                 body['tags'] = tags
@@ -138,14 +140,22 @@ const ModelForm: FunctionComponent<ModelFormProps> = (props) => {
             return ''
     }
 
+    const renderContainerOptions = () => {
+        return (
+            <RadioGroup onChange={onChangeOptions}
+                items={[
+                    <RadioButton value="SingleModel" checked={containerType === 'SingleModel'}>Use a single model.</RadioButton>, 
+                    <RadioButton value="MultiModel" checked={containerType === 'MultiModel'}>Use multiple models.</RadioButton>,
+                ]}
+            />
+        )
+    }
+
     const renderModelFormContent = () => {
         return (
             <FormSection header="Container definition">
                 <FormField controlId='formFieldId1'>
-                    <RadioGroup onChange={onChange} active={mode}>
-                        <Radio value={'SingleModel'}> Use a single model.</Radio>
-                        <Radio value={'MultiModel'}>Use multiple models.</Radio>
-                    </RadioGroup>
+                    {renderContainerOptions()}
                 </FormField>          
                 <FormField label="Location of inference code image" description='Type the registry path where the inference code image is stored in Amazon ECR.' controlId="formFieldIdContainerImage">
                     <Input type="text" value={containerIamge} placeholder={'default'} onChange={(event)=>{onChange('formFieldIdContainerImage', event)}} />

@@ -1,13 +1,11 @@
 import { FunctionComponent, useEffect, useState } from 'react';
-import { Form, FormSection, FormField, Input, Button, Text, Stack, Select } from 'aws-northstar';
 import { useHistory, useParams } from 'react-router-dom'; 
+import { Form, FormSection, FormField, Input, Button, Text, Stack, Select, RadioButton, RadioGroup } from 'aws-northstar';
+import { SelectOption } from 'aws-northstar/components/Select';
 import Grid from '@mui/material/Grid';
 import axios from 'axios';
-import Radio from '../../Utils/Radio';
-import RadioGroup from '../../Utils/RadioGroup';
 import { PathParams } from '../../Interfaces/PathParams';
 import { APIS } from '../../Data/data';
-import { SelectOption } from 'aws-northstar/components/Select';
 
 interface RestApiFormProps {
     wizard?: boolean;
@@ -22,7 +20,7 @@ const RestApiForm: FunctionComponent<RestApiFormProps> = (props) => {
     const [ apiStage, setApiStage ] = useState('')
     const [ apiMethod, setApiMethod ] = useState('')
     const [ apiFunction, setApiFunction ] = useState('')
-    const [ type, setType] = useState('1')
+    const [ apiType, setApiType] = useState('1')
     const [ tags ] = useState([{key:'', value:''}])
     const [ optionsRestApis, setOptionsRestApis ] = useState([]);
     const [ optionsApis, setOptionsApis ] = useState([]);
@@ -52,8 +50,8 @@ const RestApiForm: FunctionComponent<RestApiFormProps> = (props) => {
             setApiStage(event)
     }
 
-    const onChangeOption = (value: string)=>{
-        setType(value)
+    const onChangeOptions = (event, value)=>{
+        setApiType(value)
     }
 
     const history = useHistory();
@@ -84,11 +82,11 @@ const RestApiForm: FunctionComponent<RestApiFormProps> = (props) => {
     const onSubmit = () => {
         if(apiName === '')
             setInvalidApiName(true)
-        else if(type === '1' && selectedRestApis.value === undefined)
+        else if(apiType === '1' && selectedRestApis.value === undefined)
             setInvalidRestApi(true)
         else if(selectedApis.value === undefined)
             setInvalidApis(true)
-        else if(type === '0' && restApiName === '')
+        else if(apiType === '0' && restApiName === '')
             setInvalidRestApiName(true)        
         else if(apiPath === '' || apiPath.startsWith('/') )
             setInvalidApiPath(true)
@@ -138,18 +136,26 @@ const RestApiForm: FunctionComponent<RestApiFormProps> = (props) => {
     else
         wizard = props.wizard
 
+    const renderApiOptions = () => {
+        return (
+            <RadioGroup onChange={onChangeOptions}
+                items={[
+                    <RadioButton value='0' checked={apiType === 'SingleModel'}>Create new Rest API.</RadioButton>, 
+                    <RadioButton value='1' checked={apiType === 'MultiModel'}>Select existing Rest API.</RadioButton>,
+                ]}
+            />
+        )
+    }
+
     const renderRestApiSetting = () => {
-        if(type === '1') {
+        if(apiType === '1') {
             return (
                 <FormSection header="API setting">
                     <FormField label="API name" controlId="formFieldIdApiName">
                         <Input type="text" value={apiName} invalid={invalidApiName} onChange={(event) => onChange('formFieldIdApiName', event)} />
                     </FormField>
-                    <FormField label="API gateway" controlId="formFieldIdType">
-                        <RadioGroup onChange={onChangeOption} active={type} >
-                            <Radio value={'0'}>Create new Rest API</Radio>
-                            <Radio value={'1'}>Select existing Rest API</Radio>
-                        </RadioGroup>
+                    <FormField label="API gateway" controlId="formFieldIdApiType">
+                        {renderApiOptions()}
                     </FormField>
                     <FormField controlId='formFieldIdRestApis'>
                         <Select
@@ -170,10 +176,7 @@ const RestApiForm: FunctionComponent<RestApiFormProps> = (props) => {
                         <Input type="text" value={apiName} invalid={invalidApiName} />
                     </FormField>
                     <FormField label="API gateway" controlId="formFieldIdRestApi">
-                        <RadioGroup onChange={onChangeOption} active={type} >
-                            <Radio value={'0'}>Create new Rest API</Radio>
-                            <Radio value={'1'}>Select existing Rest API</Radio>
-                        </RadioGroup>
+                        {renderApiOptions()}
                     </FormField>
                     <FormField controlId='formFieldIdRestApiName'>
                         <Input type="text" value={restApiName} invalid={invalidRestApiName} onChange={(event) => onChange('formFieldIdRestApiName', event)}/>

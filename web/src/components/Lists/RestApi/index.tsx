@@ -47,7 +47,7 @@ const RestApiList: FunctionComponent = () => {
     const columnDefinitions : Column<DataType>[]= [
         {
             id: 'name',
-            width: 10,
+            width: 200,
             Header: 'Name',
             accessor: 'name',
             Cell: ({ row  }) => {
@@ -59,7 +59,7 @@ const RestApiList: FunctionComponent = () => {
         },
         {
             id: 'function',
-            width: 150,
+            width: 250,
             Header: 'Function',
             accessor: 'function'
         },
