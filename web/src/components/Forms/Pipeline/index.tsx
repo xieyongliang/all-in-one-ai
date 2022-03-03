@@ -124,18 +124,6 @@ const PipelineForm: FunctionComponent<PipelineFormProps> = (props) => {
                 </Stack>
         },
         {
-            title: 'Pipeline',
-            content: 
-                <Stack>
-                    <FormField label='Pipeline name' controlId='formFieldId1'>
-                        <Input type='text' controlId='formFieldId1' />
-                    </FormField>
-                    <FormField label='Pipeline type' controlId='formFieldId2'>
-                        {renderPipelineOptions()}
-                    </FormField>
-                </Stack>
-        },
-        {
             title: 'Training job',
             content: 
                 <Stack>

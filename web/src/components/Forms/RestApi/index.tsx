@@ -140,8 +140,8 @@ const RestApiForm: FunctionComponent<RestApiFormProps> = (props) => {
         return (
             <RadioGroup onChange={onChangeOptions}
                 items={[
-                    <RadioButton value='0' checked={apiType === 'SingleModel'}>Create new Rest API.</RadioButton>, 
-                    <RadioButton value='1' checked={apiType === 'MultiModel'}>Select existing Rest API.</RadioButton>,
+                    <RadioButton value='0' checked={apiType === '0'}>Create new Rest API.</RadioButton>, 
+                    <RadioButton value='1' checked={apiType === '1'}>Select existing Rest API.</RadioButton>,
                 ]}
             />
         )
