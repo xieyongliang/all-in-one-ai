@@ -18,7 +18,7 @@ const Image: FunctionComponent<ImageProps> = (props) => {
     if(props.public === true) {
         if(props.current.endsWith(props.src))
             return (
-                <div onClick={(event)=>{props.onClick(props.src)}}>
+                <div onClick={(event)=>{if(props.onClick != undefined) props.onClick(props.src)}}>
                     <img
                         src={props.src}
                         width={props.width}
@@ -31,7 +31,7 @@ const Image: FunctionComponent<ImageProps> = (props) => {
             )
         else
             return (
-                <div onClick={(event)=>{props.onClick(props.src)}}>
+                <div onClick={(event)=>{if(props.onClick != undefined) props.onClick(props.src)}}>
                     <img
                         src={props.src}
                         width={props.width}
@@ -44,7 +44,7 @@ const Image: FunctionComponent<ImageProps> = (props) => {
     } else {
         if(props.current.endsWith(props.src))
             return (
-                <div onClick={(event)=>{props.onClick(props.src)}}>
+                <div onClick={(event)=>{if(props.onClick != undefined) props.onClick(props.src)}}>
                     <img
                         src={props.src}
                         width={props.width}
@@ -58,7 +58,7 @@ const Image: FunctionComponent<ImageProps> = (props) => {
             )
         else
             return (
-                <div onClick={(event)=>{props.onClick(props.src)}}>
+                <div onClick={(event)=>{if(props.onClick != undefined) props.onClick(props.src)}}>
                     <img
                         src={props.src}
                         width={props.width}

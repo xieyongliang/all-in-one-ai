@@ -21,11 +21,16 @@ const optionsInstanceType : SelectOption[]= [
         label: 'Standard', 
         options: [ 
             { label: 'ml.m5.large', value: 'ml.m5.large' }, 
-            { label: 'ml.m5.2large', value: 'ml.m5.xlarge' }, 
-            { label: 'ml.m5.2large', value: 'ml.m5.2xlarge' }, 
-            { label: 'ml.m5.4large', value: 'ml.m5.4xlarge' }, 
+            { label: 'ml.m5.xlarge', value: 'ml.m5.xlarge' }, 
+            { label: 'ml.m5.2xlarge', value: 'ml.m5.2xlarge' }, 
+            { label: 'ml.m5.4xlarge', value: 'ml.m5.4xlarge' }, 
             { label: 'ml.m5.12large', value: 'ml.m5.12xlarge' }, 
-            { label: 'ml.m5.24large', value: 'ml.m5.24xlarge' }
+            { label: 'ml.m5.24xlarge', value: 'ml.m5.24xlarge' },
+            { label: 'ml.m4.xlarge', value: 'ml.m4.xlarge'},    
+            { label: 'ml.m4.2xlarge', value: 'ml.m4.2xlarge'},    
+            { label: 'ml.m4.4xlarge', value: 'ml.m4.4xlarge'},    
+            { label: 'ml.m4.10xlarge', value: 'ml.m4.10xlarge'},    
+            { label: 'ml.m4.16xlarge', value: 'ml.m4.16xlarge'}
         ]
     },
     {
@@ -35,7 +40,22 @@ const optionsInstanceType : SelectOption[]= [
             { label: 'ml.c5.2xlarge', value: 'ml.c5.2xlarge' },
             { label: 'ml.c5.4xlarge', value: 'ml.c5.4xlarge' },
             { label: 'ml.c5.9xlarge', value: 'ml.c5.9xlarge' },
-            { label: 'ml.c5.18xlarge', value: 'ml.c5.18xlarge' }
+            { label: 'ml.c5.18xlarge', value: 'ml.c5.18xlarge' },
+            { label: 'ml.c4.xlarge', value: 'ml.c4.xlarge' },
+            { label: 'ml.c4.2xlarge', value: 'ml.c4.2xlarge' },
+            { label: 'ml.c4.4xlarge', value: 'ml.c4.4xlarge' },
+            { label: 'ml.c4.8xlarge', value: 'ml.c4.8xlarge' }
+        ]
+    },
+    {
+        label: 'Compute optimized', 
+        options: [ 
+            { label: 'ml.p2.xlarge', value: 'ml.p2.xlarge' },
+            { label: 'ml.p2.8xlarge', value: 'ml.p2.8xlarge' },
+            { label: 'ml.p2.16xlarge', value: 'ml.p2.16xlarge' },
+            { label: 'ml.p3.xlarge', value: 'ml.p3.xlarge' },
+            { label: 'ml.p3.8xlarge', value: 'ml.p3.8xlarge' },
+            { label: 'ml.p3.16xlarge', value: 'ml.p3.16xlarge' }
         ]
     }
 ];
@@ -132,7 +152,8 @@ const TransformJobForm: FunctionComponent = () => {
                 'instance_count': instanceCount,
                 'max_concurrent_transforms': maxConcurrentTransforms,
                 'input_s3uri': inputS3Uri,
-                'output_s3uri': outputS3Uri
+                'output_s3uri': outputS3Uri,
+                'case_name': params.name
             }
             axios.post('/transformjob', body) 
             .then((response) => {
