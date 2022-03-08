@@ -2,9 +2,9 @@ import { Box, Button, Card, Container, Stack } from 'aws-northstar';
 import { FunctionComponent } from 'react';
 import Grid from '@mui/material/Grid';
 import { useHistory } from 'react-router-dom';
-import Image from '../../Utils/Image';
+import Image from '../Utils/Image'
 
-const CaseOverview: FunctionComponent = () => {
+const Overview: FunctionComponent = () => {
     const history = useHistory();
 
     return (
@@ -55,4 +55,4 @@ const CaseOverview: FunctionComponent = () => {
     )
 }
 
-export default CaseOverview;
+export default Overview;

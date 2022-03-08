@@ -17,10 +17,10 @@ import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
 import NorthStarThemeProvider from 'aws-northstar/components/NorthStarThemeProvider';
 import AppLayout from './components/AppLayout';
 import Dashboard from './components/Dashboard/index'
-import Case from './components/Cases'
-import Yolov5 from './components/Models/Yolov5'
+import Case from './components/Models'
+import Yolov5 from './components/Algorithms/Yolov5'
 import PPE from './components/Scenarios/PPE';
-import CaseOverview from './components/Cases/Overview';
+import Overview from './components/Overview';
 
 const withLayout = (Component : any, props? : any) => {
     return (
@@ -35,10 +35,10 @@ const App = () => {
         <NorthStarThemeProvider>
             <Router>
                 <Switch>
-                    <Route exact path="/scenarios/:name">{withLayout(PPE)}</Route>
-                    <Route exact path="/model/:name">{withLayout(Yolov5)}</Route>
+                    <Route exact path="/scenario/:name">{withLayout(PPE)}</Route>
+                    <Route exact path="/algorithm/:name">{withLayout(Yolov5)}</Route>
                     <Route exact path="/case/:name">{withLayout(Case)}</Route>
-                    <Route exact path="/case">{withLayout(CaseOverview)}</Route>
+                    <Route exact path="/case">{withLayout(Overview)}</Route>
                     <Route exact path="/">{withLayout(Dashboard)}</Route>
                 </Switch>
             </Router>

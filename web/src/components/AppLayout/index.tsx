@@ -34,15 +34,15 @@ const AppLayout: FunctionComponent = ({ children }) => {
                         'type': SideNavigationItemType.SECTION,
                         'text': 'Scenarios',
                         'items': [
-                            { text: 'PPE Detector', type: SideNavigationItemType.LINK, href: '/scenarios/ppe' },
-                            { text: 'Track maintenance', type: SideNavigationItemType.LINK, href: '/scenarios/ppe' },
-                            { text: 'Intelligent steaming videos', type: SideNavigationItemType.LINK, href: '/scenarios/ppe' },                                                        
-                            { text: 'Shelf recognition', type: SideNavigationItemType.LINK, href: '/scenarios/ppe' }
+                            { text: 'PPE Detector', type: SideNavigationItemType.LINK, href: '/scenario/ppe' },
+                            { text: 'Track maintenance', type: SideNavigationItemType.LINK, href: '/scenario/ppe' },
+                            { text: 'Intelligent steaming videos', type: SideNavigationItemType.LINK, href: '/scenario/ppe' },                                                        
+                            { text: 'Shelf recognition', type: SideNavigationItemType.LINK, href: '/scenario/ppe' }
                         ]
                     },
                     {
                         'type': SideNavigationItemType.SECTION,
-                        'text': 'Use cases',
+                        'text': 'Industrial models',
                         'items': [
                             { text: 'Overview', type: SideNavigationItemType.LINK, href: '/case' },
                             { text: 'Track detection', type: SideNavigationItemType.LINK, href: '/case/track?tab=demo#sample' },
@@ -54,10 +54,10 @@ const AppLayout: FunctionComponent = ({ children }) => {
                     },
                     {
                         'type': SideNavigationItemType.SECTION,
-                        'text': 'Models',
+                        'text': 'Algorithms',
                         'items': [
-                            { text: 'Yolov5', type: SideNavigationItemType.LINK, href: '/model/yolov5' },
-                            { text: 'Paddle', type: SideNavigationItemType.LINK, href: '/model/yolov5' }
+                            { text: 'Yolov5', type: SideNavigationItemType.LINK, href: '/algorithm/yolov5' },
+                            { text: 'Paddle', type: SideNavigationItemType.LINK, href: '/algorithm/yolov5' }
                         ]
                     }
                 ]}
