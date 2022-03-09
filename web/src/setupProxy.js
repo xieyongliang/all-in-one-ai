@@ -100,6 +100,15 @@ module.exports = function(app) {
         secure: false,
         ws: false,
     }));
+    app.use(createProxyMiddleware('/modelpackage', {
+        target: baseUrl + '/modelpackage',
+        pathRewrite: {
+            '^/modelpackage': ''
+        },
+        changeOrigin: true,
+        secure: false,
+        ws: false,
+    }));
     app.use(createProxyMiddleware('/model', {
         target: baseUrl + '/model',
         pathRewrite: {

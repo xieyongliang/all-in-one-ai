@@ -276,15 +276,17 @@ const EndpointForm: FunctionComponent<EndpointFormProps> = (props) => {
     const renderEndpointFormContent = () => {
         return (
             <FormSection header='Production variants'>
-                <FormField label='Model name' controlId='formFieldIdModel'>
-                    <Select
-                            placeholder='Choose an option'
-                            options={optionsModelName}
-                            selectedOption={selectedModelName}
-                            invalid={invalidModelName}
-                            onChange={(event) => onChange('formFieldIdModelName', event)}
-                        />
-                </FormField>
+                {   !wizard && 
+                    <FormField label='Model name' controlId='formFieldIdModel'>
+                        <Select
+                                placeholder='Choose an option'
+                                options={optionsModelName}
+                                selectedOption={selectedModelName}
+                                invalid={invalidModelName}
+                                onChange={(event) => onChange('formFieldIdModelName', event)}
+                            />
+                    </FormField>
+                }
                 <FormField label='Instance type' controlId='formFieldIdInstanceType'>
                     <Select
                             placeholder='Choose an option'

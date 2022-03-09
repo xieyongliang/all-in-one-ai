@@ -101,6 +101,15 @@ app.use(createProxyMiddleware('/trainingjob', {
     secure: false,
     ws: false,
 }));
+app.use(createProxyMiddleware('/modelpackage', {
+    target: baseUrl + '/modelpackage',
+    pathRewrite: {
+        '^/modelpackage': ''
+    },
+    changeOrigin: true,
+    secure: false,
+    ws: false,
+}));
 app.use(createProxyMiddleware('/model', {
     target: baseUrl + '/model',
     pathRewrite: {
@@ -146,6 +155,7 @@ app.use(createProxyMiddleware('/greengrass', {
     secure: false,
     ws: false,
 }));
+
 app.use(express.static(path.join(__dirname, 'build')));
 
 +app.get('/*', function (req, res) {

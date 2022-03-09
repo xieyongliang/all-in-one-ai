@@ -11,6 +11,7 @@ const ModelProp: FunctionComponent = () => {
     const [ containerIamge, setContainerImage ] = useState('')
     const [ modelDataUrl, setModelDataUrl ] = useState('')
     const [ mode, setMode ] = useState('')
+    const [ modelPackageArn, setModelPackageArn ] = useState('')
     const [ tags, setTags ] = useState([])
     const [ loading, setLoading ] = useState(true);
     const [ forcedRefresh, setForcedRefresh ] = useState(false)
@@ -28,9 +29,14 @@ const ModelProp: FunctionComponent = () => {
             console.log(response.data);
             setModelName(response.data.model_name);
             setCreationTime(response.data.creation_time);
-            setContainerImage(response.data.container_image);
-            setModelDataUrl(response.data.model_data_url);
-            setMode(response.data.mode);
+            if('model_package_arn' in response.data) {
+                setModelPackageArn(response.data.model_package_arn)
+            }
+            else {
+                setContainerImage(response.data.container_image);
+                setModelDataUrl(response.data.model_data_url);
+                setMode(response.data.mode);    
+            }
             if('tags' in response.data)
                 setTags(response.data.tags);
             setLoading(false);
@@ -81,17 +87,28 @@ const ModelProp: FunctionComponent = () => {
                 </Grid>
             </FormSection>
             <FormSection header='Container definition'>
-                <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }}>
-                    <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label='Mode' value={mode}></KeyValuePair>
+                {
+                    modelPackageArn === '' &&
+                    <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }}>
+                        <Grid item xs={2} sm={4} md={4}>
+                            <KeyValuePair label='Mode' value={mode}></KeyValuePair>
+                        </Grid>
+                        <Grid item xs={2} sm={4} md={4}>
+                            <KeyValuePair label='Container image' value={containerIamge}></KeyValuePair>
+                        </Grid>
+                        <Grid item xs={2} sm={4} md={4}>
+                            <KeyValuePair label='Model data url' value={modelDataUrl}></KeyValuePair>
+                        </Grid>
                     </Grid>
-                    <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label='Container image' value={containerIamge}></KeyValuePair>
+                }
+                {
+                    modelPackageArn !== '' &&
+                    <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }}>
+                        <Grid item xs={6} sm={6} md={6}>
+                            <KeyValuePair label='Model package arn' value={modelPackageArn}></KeyValuePair>
+                        </Grid>
                     </Grid>
-                    <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label='Model data url' value={modelDataUrl}></KeyValuePair>
-                    </Grid>
-                </Grid>
+                }
             </FormSection>
             <FormSection header='Tags - optional'>
                 {

@@ -1,6 +1,7 @@
-import { FunctionComponent, useState } from 'react';
+import { FunctionComponent, useState, useCallback, useEffect } from 'react';
 import { useHistory, useParams } from 'react-router-dom'; 
-import { Form, FormSection, FormField, Input, Button, Text, Stack, RadioButton, RadioGroup } from 'aws-northstar';
+import {Column} from 'react-table'
+import { Form, FormSection, FormField, Input, Button, Text, Stack, RadioButton, RadioGroup, Table, ExpandableSection, Select } from 'aws-northstar';
 import Grid from '@mui/material/Grid';
 import axios from 'axios';
 
@@ -12,56 +13,146 @@ interface ModelFormProps {
     wizard?: boolean;
 }
 
+interface ModelPackageItem {
+    name: string;
+    versions: string[];
+    creation_time: string;
+}
+
 const ModelForm: FunctionComponent<ModelFormProps> = (props) => {
+    const [ itemsModelPackageGroups ] = useState([])
+    const [ loading, setLoading ] = useState(true);
     const [ modelName, setModelName ] = useState('')
     const [ containerIamge, setContainerImage ] = useState('')
     const [ modelDataUrl, setModelDataUrl ] = useState('')
-    const [ containerType, setContainerType ] = useState('SingleModel')
+    const [ containerInputType, setContainerInputType ] = useState('0')
+    const [ containerModelType, setContainerModelType ] = useState('SingleModel')
+    const [ selectedModelPackage, setSelectedModelPackage ] = useState({});
+    const [ selectedModelPackageVersions ] = useState([]);
+    const [ itemsModelPackageVersions ] = useState({})
+    const [ modelPackageGroupName, setModelPackageGroupName ] = useState('')
     const [ tags ] = useState([{key:'', value:''}])
     const [ forcedRefresh, setForcedRefresh ] = useState(false)
     const [ invalidModelName, setInvalidModelName ] = useState(false)
     const [ invalidModelDataUrl, setInvalidModelDataUrl ] = useState(false)
+    const [ invalidModelPackageName, setInvalidModelPackageName ] = useState(false)
+    const [ forceRefreshed, setForceRefreshed ] = useState(false)
+
     const history = useHistory();
 
     var params : PathParams = useParams();
 
-    const onChange = (id: string, event: any) => {
+    async function getModelPackageVersions(modelPackageGroupName) {
+        const response = await axios.get(`/modelpackage/${modelPackageGroupName}`)
+        return response.data
+    }
+
+    useEffect(() => {
+        axios.get('/modelpackage/group')
+            .then((response) => {
+            for(let item of response.data) {
+                getModelPackageVersions(item.ModelPackageGroupName).then(value => {
+                    var versions = []
+                    var arns = []
+                    value.forEach(modelPackage => {
+                        versions.push(modelPackage['ModelPackageVersion'])
+                        arns.push(modelPackage['ModelPackageArn'])
+                    })
+                    itemsModelPackageGroups.find(({name}) => name === item.ModelPackageGroupName)['versions'] = versions
+                    itemsModelPackageVersions[item.ModelPackageGroupName] = {
+                        versions: versions,
+                        arns: arns
+                    }
+                })
+                itemsModelPackageGroups.push({name: item.ModelPackageGroupName, creation_time: item.CreationTime, versions: []})
+            }
+            setLoading(false)
+        }, (error) => {
+            console.log(error);
+        });
+    }, [itemsModelPackageGroups, itemsModelPackageVersions])
+
+    const onChange = (id: string, event: any, option?: string) => {
         if(id === 'formFieldIdModelName')
             setModelName(event);
-        if(id === 'formFieldIdContainerImage')
+        else if(id === 'formFieldIdContainerImage')
             setContainerImage(event)
-        if(id === 'formFieldIdModelDataUrl')
+        else if(id === 'formFieldIdModelDataUrl')
             setModelDataUrl(event)
-        if(id === 'formFieldIdMode')
-            setContainerType(event)
+        else if(id === 'formFieldIdMode')
+            setContainerModelType(event)
+        else if(id === 'formFieldIdModelPackageGroup')
+            setModelPackageGroupName(event)
+        else if(option === 'versions') {
+            selectedModelPackageVersions[id] = {label: event.target.value, value: event.target.value};
+            setForceRefreshed(!forceRefreshed)
+        }
     }
 
     const onChangeOptions = (event, value) => {
-        setContainerType(value)
+        if(value === '0' || value === '1')
+            setContainerInputType(value)
+        else
+            setContainerModelType(value)
+        console.log(itemsModelPackageGroups)
     }
-    
+ 
+    const onSelectionChange = (selectedItems: ModelPackageItem[]) => {
+        selectedItems.forEach((selectedItem) => {
+            setSelectedModelPackage(selectedItem)
+        })
+    }
+
     const onSubmit = () => {
-        if(modelName === '')
-            setInvalidModelName(true)
-        else if(modelDataUrl === '')
-            setInvalidModelDataUrl(true)
-        else {
-            var body = {
-                'model_name' : modelName,
-                'case_name': params.name,
-                'container_image': containerIamge,
-                'model_data_url': modelDataUrl,
-                'mode': containerType
+        var body = {}
+        if(containerInputType === '0'){
+            if(modelName === '')
+                setInvalidModelName(true)
+            else if(modelDataUrl === '')
+                setInvalidModelDataUrl(true)
+            else {
+                body = {
+                    'model_name' : modelName,
+                    'case_name': params.name,
+                    'container_image': containerIamge,
+                    'model_data_url': modelDataUrl,
+                    'mode': containerModelType
+                }
+                if(tags.length > 1 || (tags.length === 1 && tags[0].key !== '' && tags[0].value !== ''))
+                    body['tags'] = tags
+                axios.post('/model', body,  { headers: {'content-type': 'application/json' }}) 
+                .then((response) => {
+                    history.push(`/case/${params.name}?tab=model`)
+                }, (error) => {
+                    alert('Error occured, please check and try it again');
+                    console.log(error);
+                });
             }
-            if(tags.length > 1 || (tags.length === 1 && tags[0].key !== '' && tags[0].value !== ''))
-                body['tags'] = tags
-            axios.post('/model', body,  { headers: {'content-type': 'application/json' }}) 
-            .then((response) => {
-                history.push(`/case/${params.name}?tab=model`)
-            }, (error) => {
-                alert('Error occured, please check and try it again');
-                console.log(error);
-            });
+        }
+        else if(containerInputType === '1') {
+            if(modelName === '')
+                setInvalidModelName(true)
+            else {
+                var model_package_group_name = selectedModelPackage['name']
+                var model_package_version = selectedModelPackageVersions[model_package_group_name]['value']
+                var index = itemsModelPackageVersions[model_package_group_name]['versions'].findIndex((version) => version === model_package_version)
+                var model_package_arn = itemsModelPackageVersions[model_package_group_name]['arns'][index]
+                body = {
+                    'model_name' : modelName,
+                    'case_name': params.name,
+                    'model_package_arn': model_package_arn
+                }
+                console.log(body)         
+                if(tags.length > 1 || (tags.length === 1 && tags[0].key !== '' && tags[0].value !== ''))
+                    body['tags'] = tags
+                axios.post('/model', body,  { headers: {'content-type': 'application/json' }}) 
+                .then((response) => {
+                    history.push(`/case/${params.name}?tab=model`)
+                }, (error) => {
+                    alert('Error occured, please check and try it again');
+                    console.log(error);
+                });
+            }
         }
     }
  
@@ -140,38 +231,210 @@ const ModelForm: FunctionComponent<ModelFormProps> = (props) => {
             return ''
     }
 
-    const renderContainerOptions = () => {
+    const renderContainerInputOptions = () => {
         return (
             <RadioGroup onChange={onChangeOptions}
                 items={[
-                    <RadioButton value='SingleModel' checked={containerType === 'SingleModel'}>Use a single model.</RadioButton>, 
-                    <RadioButton value='MultiModel' checked={containerType === 'MultiModel'}>Use multiple models.</RadioButton>,
+                    <RadioButton value='0' checked={containerInputType === '0'}>Provide model artifacts and inference image location.</RadioButton>, 
+                    <RadioButton value='1' checked={containerInputType === '1'}>Select a model package resource.</RadioButton>,
                 ]}
             />
         )
     }
 
-    const renderModelFormContent = () => {
+    const renderContainerModelOptions = () => {
         return (
-            <FormSection header='Container definition'>
-                <FormField controlId='formFieldId1'>
-                    {renderContainerOptions()}
-                </FormField>          
+            <RadioGroup onChange={onChangeOptions}
+                items={[
+                    <RadioButton value='SingleModel' checked={containerModelType === 'SingleModel'}>Use a single model.</RadioButton>, 
+                    <RadioButton value='MultiModel' checked={containerModelType === 'MultiModel'}>Use multiple models.</RadioButton>,
+                ]}
+            />
+        )
+    }
+
+    const getRowId = useCallback(data => data.name, []);
+
+    const columnDefinitions : Column<ModelPackageItem>[]= [
+        {
+            id: 'name',
+            width: 400,
+            Header: 'Name',
+            accessor: 'name',
+            Cell: ({ row  }) => {
+                if (row && row.original) {
+                    return <a href={`/case/${params.name}?tab=modelpackage#prop:id=${row.original.name}`}> {row.original.name} </a>;
+                }
+                return null;
+            }
+        },
+        {
+            id: 'version',
+            width: 400,
+            Header: 'Component version',
+            accessor: 'versions',
+            Cell: ({ row  }) => {
+                if (row && row.original) {
+                    var options = []
+                    row.original.versions.forEach(version => {
+                        options.push({label: version, value: version})
+                    });
+                    return (
+                        <Select
+                            placeholder='Choose an option'
+                            options={options}
+                            selectedOption={selectedModelPackageVersions[row.original.name]}
+                            onChange={(event) => onChange(row.original.name, event, 'versions')}
+                        />
+                    )
+                }
+                return null;
+            }
+        },
+        {
+            id: 'creation_time',
+            width: 400,
+            Header: 'Creation time',
+            accessor: 'creation_time'
+        }
+    ];
+
+    const renderModelPackageTable = () => {
+        return (
+            <Table
+                tableTitle='Model packages'
+                multiSelect={false}
+                columnDefinitions={columnDefinitions}
+                items={itemsModelPackageGroups}
+                loading={loading}
+                onSelectionChange={onSelectionChange}
+                getRowId={getRowId}
+            />
+        )
+    }
+
+    const onCreateModelPackageGroup = () => {
+        if(modelPackageGroupName === '')
+            setInvalidModelPackageName(true)
+        else{
+            var body = {
+                'model_package_group_name': modelPackageGroupName
+            }
+            axios.post('/modelpackage/group', body,  { headers: {'content-type': 'application/json' }}) 
+            .then((response) => {
+                itemsModelPackageGroups.push({name: modelPackageGroupName, creation_time: response.data.creation_time, versions: []})
+                itemsModelPackageVersions[modelPackageGroupName] = {
+                    versions: [],
+                    arns: []
+                }
+                setForcedRefresh(!forcedRefresh);
+            }, (error) => {
+                alert('Error occured, please check and try it again');
+                console.log(error);
+            });
+        }
+    }
+
+    const renderModelPackageGroupForm = () => {
+        return (
+            <Stack>
+                <FormField label='Name of model package group' controlId='formFieldIdModelPackageGroup'>
+                    <Input type='text' required={true} value={modelPackageGroupName} invalid={invalidModelPackageName} onChange={(event)=>{onChange('formFieldIdModelPackageGroup', event)}} />
+                </FormField>
+                <FormField controlId='formfieldIdCreateModelPackageGroup'>
+                    <Button onClick={onCreateModelPackageGroup}>Create model package group</Button>
+                </FormField>
+            </Stack>
+        )
+    }
+
+    const onCreateModelPackage = () => {
+        if(modelDataUrl === '')
+            setInvalidModelDataUrl(true)
+        else{
+            var body = {
+                'container_image': containerIamge,
+                'model_data_url': modelDataUrl,
+                'supported_content_types': 'image/png image/jpg image/jpeg',
+                'supported_response_mime_types': 'application/json'
+            }
+            axios.post(`/modelpackage/${selectedModelPackage['name']}`, body,  { headers: {'content-type': 'application/json' }}) 
+            .then((response) => {
+                console.log(response.data)
+                getModelPackageVersions(selectedModelPackage['name']).then(value => {
+                    var versions = []
+                    var arns = []
+                    value.forEach(modelPackage => {
+                        versions.push(modelPackage['ModelPackageVersion'])
+                        arns.push(modelPackage['ModelPackageArn'])
+                    })
+                    itemsModelPackageGroups.find(({name}) => name === selectedModelPackage['name'])['versions'] = versions
+                    itemsModelPackageVersions[selectedModelPackage['name']] = {
+                        versions: versions,
+                        arns: arns
+                    }
+                    setForcedRefresh(!forcedRefresh);
+                })                
+            }, (error) => {
+                alert('Error occured, please check and try it again');
+                console.log(error);
+            });
+        }
+    }
+
+    const renderModelPackageForm = () => {
+        return (
+            <Stack>
                 <FormField label='Location of inference code image' description='Type the registry path where the inference code image is stored in Amazon ECR.' controlId='formFieldIdContainerImage'>
-                    <Input type='text' value={containerIamge} placeholder={'default'} onChange={(event)=>{onChange('formFieldIdContainerImage', event)}} />
+                    <Input type='text' required={true} value={containerIamge} placeholder={'default'} onChange={(event)=>{onChange('formFieldIdContainerImage', event)}} />
                 </FormField>
                 <FormField label='Location of model artifacts' description='Type the URL where model artifacts are stored in S3.' controlId='formFieldIdModelDataUrl'>
                     <Input type='text' required={true} value={modelDataUrl} invalid={invalidModelDataUrl} onChange={(event)=>{onChange('formFieldIdModelDataUrl', event)}} />
                 </FormField>
-        </FormSection>    
+                <FormField controlId='formfieldIdCreateModelPackage'>
+                    <Button onClick={onCreateModelPackage}>Create model package</Button>
+                </FormField>
+            </Stack>
         )
+    }
+
+    const renderModelFormContent = () => {
+        if(containerInputType === '0')
+            return (
+                <FormSection header='Container definition'>
+                    <ExpandableSection header="Container input options" expanded={true}>{renderContainerInputOptions()}</ExpandableSection>  
+                    <ExpandableSection header="Provide model artifacts and inference image options" expanded={true}>
+                        <Stack>
+                            <FormField controlId='formFieldIdContainerModelOptions'>
+                                {renderContainerModelOptions()}
+                            </FormField>
+                            <FormField label='Location of inference code image' description='Type the registry path where the inference code image is stored in Amazon ECR.' controlId='formFieldIdContainerImage'>
+                                <Input type='text' required={true} value={containerIamge} placeholder={'default'} onChange={(event)=>{onChange('formFieldIdContainerImage', event)}} />
+                            </FormField>
+                            <FormField label='Location of model artifacts' description='Type the URL where model artifacts are stored in S3.' controlId='formFieldIdModelDataUrl'>
+                                <Input type='text' required={true} value={modelDataUrl} invalid={invalidModelDataUrl} onChange={(event)=>{onChange('formFieldIdModelDataUrl', event)}} />
+                            </FormField>
+                        </Stack>
+                    </ExpandableSection>  
+                </FormSection>    
+            )
+        else
+            return (
+                <FormSection header='Container definition'>
+                    <ExpandableSection header="Container input options" expanded={true}>{renderContainerInputOptions()}</ExpandableSection>  
+                    {renderModelPackageTable()}
+                    <ExpandableSection header="Create a new model package group">{renderModelPackageGroupForm()}</ExpandableSection>
+                    <ExpandableSection header="Create a new model package">{renderModelPackageForm()}</ExpandableSection>
+                </FormSection>
+            )
     }
 
     if(wizard) {
         return (
             <Stack>
                 {renderModelSetting()}
-                {renderModelFormContent()}
+                {renderModelPackageTable()}
+                {renderModelPackageGroupForm()}
                 {renderModelTag()}
             </Stack>
         )
