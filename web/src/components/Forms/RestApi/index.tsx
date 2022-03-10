@@ -6,21 +6,39 @@ import Grid from '@mui/material/Grid';
 import axios from 'axios';
 import { PathParams } from '../../Interfaces/PathParams';
 import { APIS } from '../../Data/data';
+import { AppState } from '../../../store';
+import { connect } from 'react-redux';
+import { UpdateApiFuntion, UpdateApiMethod, UpdateApiName, UpdateApiPath, UpdateApiRestApiId, UpdateApiRestApiName, UpdateApiStage, UpdateApiType } from '../../../store/pipelines/actionCreators';
 
-interface RestApiFormProps {
+interface IProps {
+    updateApiNameAction: (apiName: string) => any;
+    updateApiRestApiNameAction: (apiRestApiName: string) => any;
+    updateApiRestApiIdAction: (apiRestApiId: string) => any;
+    updateApiTypeAction: (apiType: string) => any;
+    updateApiPathAction: (apiPath: string) => any;
+    updateApiStageAction: (apiStage: string) => any;
+    updateApiFuntionAction: (apiFunction: string) => any;
+    updateApiMethodAction: (apiMethod: string) => any;
+    apiName : string;
+    apiRestApiName : string;
+    apiRestApiId : string;
+    apiType: string;
+    apiPath : string;
+    apiStage : string;
+    apiFunction : string;
     wizard?: boolean;
 }
 
-const RestApiForm: FunctionComponent<RestApiFormProps> = (props) => {
-    const [ apiName, setApiName ] = useState('')
-    const [ restApiName, setRestApiName ] = useState('')
+const RestApiForm: FunctionComponent<IProps> = (props) => {
+    const [ apiName, setApiName ] = useState(props.wizard ? props.apiName : '')
+    const [ restApiName, setRestApiName ] = useState(props.wizard ? props.apiRestApiName : '')
     const [ selectedRestApis, setSelectedRestApis ] = useState<SelectOption>({})
-    const [ selectedApis, setSelectedApis ] = useState<SelectOption>({})
-    const [ apiPath, setApiPath ] = useState('')
-    const [ apiStage, setApiStage ] = useState('')
-    const [ apiMethod, setApiMethod ] = useState('')
-    const [ apiFunction, setApiFunction ] = useState('')
-    const [ apiType, setApiType] = useState('1')
+    const [ selectedApis, setSelectedApis ] = useState<SelectOption>(props.wizard ? {label: 'inerence', value:'inference'}: {})
+    const [ apiPath, setApiPath ] = useState(props.wizard ? props.apiPath : '')
+    const [ apiStage, setApiStage ] = useState(props.wizard ? props.apiStage : '')
+    const [ apiMethod, setApiMethod ] = useState(props.wizard ? APIS['inference'].method : '')
+    const [ apiFunction, setApiFunction ] = useState(props.wizard ? APIS['inference'].function : '')
+    const [ apiType, setApiType] = useState(props.wizard ? props.apiType : '1')
     const [ tags ] = useState([{key:'', value:''}])
     const [ optionsRestApis, setOptionsRestApis ] = useState([]);
     const [ optionsApis, setOptionsApis ] = useState([]);
@@ -33,25 +51,38 @@ const RestApiForm: FunctionComponent<RestApiFormProps> = (props) => {
     const [ invalidApiStage, setInvalidApiStage ] = useState(false)
 
     const onChange = (id: string, event: any) => {
-        if(id === 'formFieldIdApiName')
+        if(id === 'formFieldIdApiName') {
             setApiName(event)
-        if(id === 'formFieldIdRestApis')
+            props.updateApiNameAction(event)
+        }
+        if(id === 'formFieldIdRestApis') {
             setSelectedRestApis({label: event.target.value, value: event.target.value});
+            props.updateApiRestApiIdAction(event.target.value)
+        }
         if(id === 'formFieldIdApis') {
             setSelectedApis({label: event.target.value, value: event.target.value});
             setApiFunction(APIS[event.target.value].function)
             setApiMethod(APIS[event.target.value].method)
+            props.updateApiFuntionAction(APIS[event.target.value].function)
+            props.updateApiMethodAction(APIS[event.target.value].method)
         }
-        if(id === 'formFieldIdRestApiName')
-            setRestApiName(event)
-        if(id === 'formFieldIdApiPath')
-            setApiPath(event)
-        if(id === 'formFieldIdApiStage')
-            setApiStage(event)
+        if(id === 'formFieldIdRestApiName') {
+            setRestApiName(event);
+            props.updateApiRestApiNameAction(event);
+        }
+        if(id === 'formFieldIdApiPath') {
+            setApiPath(event);
+            props.updateApiPathAction(event);
+        }
+        if(id === 'formFieldIdApiStage') {
+            setApiStage(event);
+            props.updateApiStageAction(event);
+        }
     }
 
     const onChangeOptions = (event, value)=>{
-        setApiType(value)
+        setApiType(value);
+        props.updateApiTypeAction(value);
     }
 
     const history = useHistory();
@@ -64,9 +95,12 @@ const RestApiForm: FunctionComponent<RestApiFormProps> = (props) => {
             var items = []
             for(let item of response.data) {
                 items.push({label: item.name, value: item.id})
+                if(wizard) {
+                    if(item.id === props.apiRestApiId) 
+                        setSelectedRestApis({label: item.name, value: item.id})
+                }
             }
             setOptionsRestApis(items);
-            console.log(items);
         }, (error) => {
             console.log(error);
         });
@@ -103,7 +137,6 @@ const RestApiForm: FunctionComponent<RestApiFormProps> = (props) => {
                 'api_method': apiMethod,
                 'api_function': apiFunction
             }
-            console.log(body)
             if(tags.length > 1 || (tags.length === 1 && tags[0].key !== '' && tags[0].value !== ''))
                 body['tags'] = tags
             axios.post('/api', body,  { headers: {'content-type': 'application/json' }}) 
@@ -276,4 +309,29 @@ const RestApiForm: FunctionComponent<RestApiFormProps> = (props) => {
     }
 }
 
-export default RestApiForm;
+const mapDispatchToProps = {
+    updateApiNameAction: UpdateApiName,
+    updateApiRestApiNameAction: UpdateApiRestApiName,
+    updateApiRestApiIdAction: UpdateApiRestApiId,
+    updateApiTypeAction: UpdateApiType,
+    updateApiPathAction: UpdateApiPath,
+    updateApiStageAction: UpdateApiStage,
+    updateApiFuntionAction: UpdateApiFuntion,
+    updateApiMethodAction: UpdateApiMethod
+};
+
+const mapStateToProps = (state: AppState) => ({
+    apiName : state.pipeline.apiName,
+    apiRestApiName : state.pipeline.apiRestApiName,
+    apiRestApiId : state.pipeline.apiRestApiId,
+    apiType: state.pipeline.apiType,
+    apiPath : state.pipeline.apiPath,
+    apiStage : state.pipeline.apiStage,
+    apiFunction : state.pipeline.apiFunction,
+    apiMethod: state.pipeline.apiMethod
+});
+
+export default connect(
+    mapStateToProps,
+    mapDispatchToProps
+)(RestApiForm);

@@ -4,6 +4,29 @@ import { useHistory, useParams } from 'react-router-dom';
 import Select, { SelectOption } from 'aws-northstar/components/Select';
 import Grid from '@mui/material/Grid';
 import axios from 'axios';
+import {connect} from 'react-redux';
+import { AppState } from '../../../store';
+import { UpdateTrainingjobImageS3Uri, UpdateTrainingjobInstanceCount, UpdateTrainingjobInstanceType, UpdateTrainingjobLabelsS3Uri, UpdateTrainingjobVolumeSizeInGB, UpdateTrainingjobWeightsS3Uri, UpdateTrainingjobCfgS3Uri, UpdateTrainingjobOutputS3Uri } from '../../../store/pipelines/actionCreators';
+
+interface IProps {
+    updateTrainingjobInstanceTypeAction: (trainingjobInstanceType: string) => any;
+    updateTrainingjobInstanceCountAction: (trainingjobInstanceCount: number) => any;
+    updateTrainingjobVolumeSizeInGBAction: (trainingjobVolumeSizeInGB: number) => any;
+    updateTrainingjobImageS3UriAction: (trainingjobImagesS3Uri: string) => any;
+    updateTrainingjobLabelsS3UriAction: (trainingjobLabelsS3Uri: string) => any;
+    updateTrainingjobWeightsS3UriAction: (trainingjobWeightsS3Uri: string) => any;
+    updateTrainingjobCfgS3UriAction: (trainingjobCfgS3Uri: string) => any;
+    updateTrainingjobOutputS3UriAction: (trainingjobOutputS3Uri: string) => any;
+    trainingjobInstanceType : string;
+    trainingjobInstanceCount : number;
+    trainingjobVolumeSizeInGB : number;
+    trainingjobImagesS3Uri : string;
+    trainingjobLabelsS3Uri : string;
+    trainingjobWeightsS3Uri : string;
+    trainingjobCfgS3Uri : string;
+    trainingjobOutputS3Uri : string;
+    wizard?: boolean;
+}
 
 const optionsInstance : SelectOption[]= [
     {
@@ -44,20 +67,16 @@ interface PathParams {
     name: string;
 }
 
-interface TrainingJobFormProps {
-    wizard?: boolean;
-}
-
-const TrainingJobForm: FunctionComponent<TrainingJobFormProps> = (props) => {
+const TrainingJobForm: FunctionComponent<IProps> = (props) => {
     const [ trainingJobName, setTrainingJobName ] = useState('')
-    const [ selectedInstanceType, setSelectedInstanceType ] = useState<SelectOption>({})
-    const [ instanceCount, setInstanceCount ] = useState(1)
-    const [ volumeSizeInGB, setVolumeSizeInGB ] = useState(30)
-    const [ imagesS3Uri, setImagesS3Uri ] = useState('')
-    const [ labelsS3Uri, setLabelsS3Uri ] = useState('')
-    const [ weightsS3Uri, setWeightsS3Uri ] = useState('')
-    const [ cfgS3Uri, setCfgS3Uri ] = useState('')
-    const [ outputS3Uri, setOutputS3Uri ] = useState('')
+    const [ selectedInstanceType, setSelectedInstanceType ] = useState<SelectOption>(props.wizard ? {label: props.trainingjobInstanceType, value: props.trainingjobInstanceType} : {})
+    const [ instanceCount, setInstanceCount ] = useState(props.wizard ? props.trainingjobInstanceCount : 1)
+    const [ volumeSizeInGB, setVolumeSizeInGB ] = useState(props.wizard ? props.trainingjobVolumeSizeInGB : 30)
+    const [ imagesS3Uri, setImagesS3Uri ] = useState(props.wizard ? props.trainingjobImagesS3Uri : '')
+    const [ labelsS3Uri, setLabelsS3Uri ] = useState(props.wizard ? props.trainingjobLabelsS3Uri : '')
+    const [ weightsS3Uri, setWeightsS3Uri ] = useState(props.wizard ? props.trainingjobWeightsS3Uri : '')
+    const [ cfgS3Uri, setCfgS3Uri ] = useState(props.wizard ? props.trainingjobCfgS3Uri : '')
+    const [ outputS3Uri, setOutputS3Uri ] = useState(props.wizard ? props.trainingjobOutputS3Uri : '')
     const [ tags ] = useState([{key:'', value:''}])
     const [ forcedRefresh, setForcedRefresh ] = useState(false)
     const [ invalidTrainingJobName, setInvalidTrainingJobName ] = useState(false)
@@ -75,22 +94,46 @@ const TrainingJobForm: FunctionComponent<TrainingJobFormProps> = (props) => {
     const onChange = (id: string, event: any) => {
         if(id === 'formFieldIdTrainingJobName')
             setTrainingJobName(event);
-        if(id === 'formFieldIdInstanceType')
+        if(id === 'formFieldIdInstanceType') {
             setSelectedInstanceType({ label: event.target.value, value: event.target.value });
-        if(id === 'formFieldIdInstanceCount')
+            if(props.wizard)
+                props.updateTrainingjobInstanceTypeAction(event.target.value);
+        }
+        if(id === 'formFieldIdInstanceCount') {
             setInstanceCount(parseInt(event));
-        if(id === 'formFieldIdVolumeSizeInGB')
+            if(props.wizard)
+                props.updateTrainingjobInstanceCountAction(parseInt(event));
+        }
+        if(id === 'formFieldIdVolumeSizeInGB') {
             setVolumeSizeInGB(parseInt(event));
-        if(id === 'formFieldIdImagesS3Uri')
+            if(props.wizard)
+                props.updateTrainingjobVolumeSizeInGBAction(parseInt(event));
+        }
+        if(id === 'formFieldIdImagesS3Uri') {
             setImagesS3Uri(event);
-        if(id === 'formFieldIdLabelsS3Uri')
+            if(props.wizard)
+                props.updateTrainingjobImageS3UriAction(event);
+        }
+        if(id === 'formFieldIdLabelsS3Uri') {
             setLabelsS3Uri(event);
-        if(id === 'formFieldIdWeightsS3Uri')
+            if(props.wizard)
+                props.updateTrainingjobLabelsS3UriAction(event)
+        }
+        if(id === 'formFieldIdWeightsS3Uri') {
             setWeightsS3Uri(event);
-        if(id === 'formFieldIdCfgS3Uri')
+            if(props.wizard)
+                props.updateTrainingjobWeightsS3UriAction(event)
+        }
+        if(id === 'formFieldIdCfgS3Uri') {
             setCfgS3Uri(event);
-        if(id === 'formFieldIdOutputS3Uri')
+            if(props.wizard)
+                props.updateTrainingjobCfgS3UriAction(event)
+        }
+        if(id === 'formFieldIdOutputS3Uri') {
             setOutputS3Uri(event);
+            if(props.wizard)
+                props.updateTrainingjobOutputS3UriAction(event)
+        }
     }
 
     const onSubmit = () => {
@@ -237,8 +280,8 @@ const TrainingJobForm: FunctionComponent<TrainingJobFormProps> = (props) => {
                     <FormField label='Weights S3Uri' controlId='formFieldIdWeightsS3Uri'>
                         <Input value={weightsS3Uri} required={true} placeholder={'default'} onChange={(event) => onChange('formFieldIdWeightsS3Uri', event)}/>
                     </FormField>
-                    <FormField label='Cfg S3Uri' controlId='formFieldIdCfgPrefix'>
-                        <Input value={cfgS3Uri} required={true} placeholder={'default'} onChange={(event) => onChange('formFieldIdCfgPrefix', event)} />
+                    <FormField label='Cfg S3Uri' controlId='formFieldIdCfgS3Uri'>
+                        <Input value={cfgS3Uri} required={true} placeholder={'default'} onChange={(event) => onChange('formFieldIdCfgS3Uri', event)} />
                     </FormField>
                 </FormSection>
                 <FormSection header='Output data configuration'>
@@ -278,4 +321,29 @@ const TrainingJobForm: FunctionComponent<TrainingJobFormProps> = (props) => {
     }
 }
 
-export default TrainingJobForm;
+const mapDispatchToProps = {
+    updateTrainingjobInstanceTypeAction: UpdateTrainingjobInstanceType,
+    updateTrainingjobInstanceCountAction: UpdateTrainingjobInstanceCount,
+    updateTrainingjobVolumeSizeInGBAction: UpdateTrainingjobVolumeSizeInGB,
+    updateTrainingjobImageS3UriAction: UpdateTrainingjobImageS3Uri,
+    updateTrainingjobLabelsS3UriAction: UpdateTrainingjobLabelsS3Uri,
+    updateTrainingjobWeightsS3UriAction: UpdateTrainingjobWeightsS3Uri,
+    updateTrainingjobCfgS3UriAction: UpdateTrainingjobCfgS3Uri,
+    updateTrainingjobOutputS3UriAction: UpdateTrainingjobOutputS3Uri
+};
+
+const mapStateToProps = (state: AppState) => ({
+    trainingjobInstanceType : state.pipeline.trainingjobInstanceType,
+    trainingjobInstanceCount : state.pipeline.trainingjobInstanceCount,
+    trainingjobVolumeSizeInGB : state.pipeline.trainingjobVolumeSizeInGB,
+    trainingjobImagesS3Uri : state.pipeline.trainingjobImagesS3Uri,
+    trainingjobLabelsS3Uri : state.pipeline.trainingjobImagesS3Uri,
+    trainingjobWeightsS3Uri : state.pipeline.trainingjobWeightsS3Uri,
+    trainingjobCfgS3Uri : state.pipeline.trainingjobCfgS3Uri,
+    trainingjobOutputS3Uri : state.pipeline.trainingjobOutputS3Uri,
+});
+
+export default connect(
+    mapStateToProps,
+    mapDispatchToProps
+)(TrainingJobForm);

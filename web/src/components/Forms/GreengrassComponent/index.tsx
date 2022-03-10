@@ -4,18 +4,22 @@ import { Form, FormSection, FormField, Button, Stack, Select, Input } from 'aws-
 import { SelectOption } from 'aws-northstar/components/Select';
 import axios from 'axios';
 import { PathParams } from '../../Interfaces/PathParams';
+import { UpdateGreenGrassComponentVersion } from '../../../store/pipelines/actionCreators';
+import { AppState } from '../../../store';
+import { connect } from 'react-redux';
 
-interface GreengrassComponentFormProps {
+interface IProps {
+    updateGreenGrassComponentVersionAction: (greengrassComponentVersion: string) => any;
+    greengrassComponentVersion: string;
     wizard?: boolean;
 }
 
-const GreengrassComponentForm: FunctionComponent<GreengrassComponentFormProps> = (props) => {
+const GreengrassComponentForm: FunctionComponent<IProps> = (props) => {
     const [ optionsModels, setOptionsModels ] = useState([]);
     const [ selectedModel, setSelectedModel ] = useState<SelectOption>({});
-    const optionsComponents = [];
-    optionsComponents.push({label: 'com.example.yolov5', value: 'com.example.yolov5'})
+    const optionsComponents = [{label: 'com.example.yolov5', value: 'com.example.yolov5'}];
     const [ selectedComponent, setSelectedComponent ] = useState<SelectOption>({})
-    const [ componentVersion, setComponentVersion ] = useState('')
+    const [ componentVersion, setComponentVersion ] = useState(props.wizard ? props.greengrassComponentVersion : '')
     const [ invalidModel, setInvalidModel ] = useState(false)
     const [ invalidComponent, setInvalidComponent ] = useState(false)
     const [ invalidComponentVersion, setInvalidComponentVersion ] = useState(false)
@@ -44,8 +48,10 @@ const GreengrassComponentForm: FunctionComponent<GreengrassComponentFormProps> =
             setSelectedModel({ label: event.target.value, value: event.target.value });
         if(id === 'formFieldIdComponents')
             setSelectedComponent({ label: event.target.value, value: event.target.value });
-        if(id === 'formFieldIdMComponentVersion')
-            setComponentVersion(event)
+        if(id === 'formFieldIdMComponentVersion') {
+            setComponentVersion(event);
+            props.updateGreenGrassComponentVersionAction(event);
+        }
     }
 
     const onSubmit = () => {
@@ -103,23 +109,32 @@ const GreengrassComponentForm: FunctionComponent<GreengrassComponentFormProps> =
     }
 
     const renderGreengrassContent = () => {
-        return (
-            <FormSection header='Production variants'>
-                <FormField label='Model name' controlId='formFieldIdModels'>
-                    <Select
-                            placeholder='Choose an option'
-                            options={optionsModels}
-                            selectedOption={selectedModel}
-                            invalid={invalidModel}
-                            onChange={(event) => onChange('formFieldIdModels', event)}
-                        />
-                </FormField>
-                <FormField label='Component version' controlId='formFieldIdMComponentVersion'>
-                    <Input value={componentVersion} invalid={invalidComponentVersion} onChange={(event) => onChange('formFieldIdMComponentVersion', event)} />
-                </FormField>
-            </FormSection>
-        )
-    }
+        if(!wizard)
+            return (
+                <FormSection header='Production variants'>
+                    <FormField label='Model name' controlId='formFieldIdModels'>
+                        <Select
+                                placeholder='Choose an option'
+                                options={optionsModels}
+                                selectedOption={selectedModel}
+                                invalid={invalidModel}
+                                onChange={(event) => onChange('formFieldIdModels', event)}
+                            />
+                    </FormField>
+                    <FormField label='Component version' controlId='formFieldIdMComponentVersion'>
+                        <Input value={componentVersion} invalid={invalidComponentVersion} onChange={(event) => onChange('formFieldIdMComponentVersion', event)} />
+                    </FormField>
+                </FormSection>
+            )
+        else
+            return (
+                <FormSection header='Production variants'>
+                    <FormField label='Component version' controlId='formFieldIdMComponentVersion'>
+                        <Input value={componentVersion} invalid={invalidComponentVersion} onChange={(event) => onChange('formFieldIdMComponentVersion', event)} />
+                    </FormField>
+                </FormSection>
+            )
+}
 
     if(wizard) {
         return (
@@ -146,4 +161,15 @@ const GreengrassComponentForm: FunctionComponent<GreengrassComponentFormProps> =
     }
 }
 
-export default GreengrassComponentForm;
+const mapDispatchToProps = {
+    updateGreenGrassComponentVersionAction: UpdateGreenGrassComponentVersion
+};
+
+const mapStateToProps = (state: AppState) => ({
+    greengrassComponentVersion : state.pipeline.greengrassComponentVersion
+});
+
+export default connect(
+    mapStateToProps,
+    mapDispatchToProps
+)(GreengrassComponentForm);

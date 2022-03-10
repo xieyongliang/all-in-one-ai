@@ -4,13 +4,12 @@ import {Column} from 'react-table'
 import { Form, FormSection, FormField, Input, Button, Text, Stack, RadioButton, RadioGroup, Table, ExpandableSection, Select } from 'aws-northstar';
 import Grid from '@mui/material/Grid';
 import axios from 'axios';
+import { AppState } from '../../../store';
+import { connect } from 'react-redux';
+import { UpdateModelModelPackageGroupName } from '../../../store/pipelines/actionCreators';
 
 interface PathParams {
     name: string;
-}
-
-interface ModelFormProps {
-    wizard?: boolean;
 }
 
 interface ModelPackageItem {
@@ -19,7 +18,13 @@ interface ModelPackageItem {
     creation_time: string;
 }
 
-const ModelForm: FunctionComponent<ModelFormProps> = (props) => {
+interface IProps {
+    updateModelModelPackageGroupNameAction : (modelModelPackageGroupName: string) => any;
+    modelModelPackageGroupName: string;
+    wizard?: boolean;
+}
+
+const ModelForm: FunctionComponent<IProps> = (props) => {
     const [ itemsModelPackageGroups ] = useState([])
     const [ loading, setLoading ] = useState(true);
     const [ modelName, setModelName ] = useState('')
@@ -70,7 +75,7 @@ const ModelForm: FunctionComponent<ModelFormProps> = (props) => {
         }, (error) => {
             console.log(error);
         });
-    }, [itemsModelPackageGroups, itemsModelPackageVersions])
+    }, [itemsModelPackageGroups, itemsModelPackageVersions, props])
 
     const onChange = (id: string, event: any, option?: string) => {
         if(id === 'formFieldIdModelName')
@@ -94,12 +99,14 @@ const ModelForm: FunctionComponent<ModelFormProps> = (props) => {
             setContainerInputType(value)
         else
             setContainerModelType(value)
-        console.log(itemsModelPackageGroups)
     }
  
     const onSelectionChange = (selectedItems: ModelPackageItem[]) => {
         selectedItems.forEach((selectedItem) => {
             setSelectedModelPackage(selectedItem)
+            if(props.wizard)
+                props.updateModelModelPackageGroupNameAction(selectedItem.name)
+            console.log(props.modelModelPackageGroupName)
         })
     }
 
@@ -300,6 +307,20 @@ const ModelForm: FunctionComponent<ModelFormProps> = (props) => {
     ];
 
     const renderModelPackageTable = () => {
+        if(wizard)
+            return (
+                <Table
+                    tableTitle='Model packages'
+                    multiSelect={false}
+                    columnDefinitions={columnDefinitions}
+                    items={itemsModelPackageGroups}
+                    loading={loading}
+                    selectedRowIds={[props.modelModelPackageGroupName]}
+                    onSelectionChange={onSelectionChange}
+                    getRowId={getRowId}
+                />
+            )
+        else
         return (
             <Table
                 tableTitle='Model packages'
@@ -458,4 +479,15 @@ const ModelForm: FunctionComponent<ModelFormProps> = (props) => {
     }
 }
 
-export default ModelForm;
+const mapDispatchToProps = {
+    updateModelModelPackageGroupNameAction: UpdateModelModelPackageGroupName,
+};
+
+const mapStateToProps = (state: AppState) => ({
+    modelModelPackageGroupName : state.pipeline.modelModelPackageGroupName
+});
+
+export default connect(
+    mapStateToProps,
+    mapDispatchToProps
+)(ModelForm);

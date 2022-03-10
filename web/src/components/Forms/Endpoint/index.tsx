@@ -4,7 +4,9 @@ import { Form, FormSection, FormField, Button, Text, Input, Stack, Select } from
 import { SelectOption } from 'aws-northstar/components/Select';
 import Grid from '@mui/material/Grid';
 import axios from 'axios';
-
+import { AppState } from '../../../store';
+import { connect } from 'react-redux';
+import { UpdateEndpointAcceleratorType, UpdateEndpointInitialInstanceCount, UpdateEndpointInitialVariantWeight, UpdateEndpointInstanceType } from '../../../store/pipelines/actionCreators';
 
 const optionsInstance : SelectOption[]= [
     {
@@ -103,18 +105,26 @@ interface PathParams {
     name: string;
 }
 
-interface EndpointFormProps {
+interface IProps {
+    updateEndpointInstanceTypeAction: (endpointInstanceType: string) => any;
+    updateEndpointAcceleratorTypeAction: (endpointAcceleratorType: string) => any;
+    updateEndpointInitialInstanceCountAction: (endpointInitialInstanceCount: number) => any,
+    updateEndpointInitialVariantWeightAction: (endpointInitialVariantWeight: number) => any
+    endpointInstanceType : string;
+    endpointAcceleratorType: string;
+    endpointInitialInstanceCount: number;
+    endpointInitialVariantWeight: number;
     wizard?: boolean;
 }
 
-const EndpointForm: FunctionComponent<EndpointFormProps> = (props) => {
+const EndpointForm: FunctionComponent<IProps> = (props) => {
     const [ optionsModelName, setOptionsModelName ] = useState([])
     const [ endpointName, setEndpointName ] = useState(''); 
     const [ selectedModelName, setSelectedModelName ] = useState<SelectOption>({});
-    const [ selectedInstanceType, setSelectedInstanceType ] = useState<SelectOption>({});
-    const [ selectedAcceleratorTypeType, setSelectedAcceleratorTypeType ] = useState<SelectOption>({});
-    const [ initialInstanceCount, setInitialInstanceCount ] = useState(1);
-    const [ initialVariantWeight, setInitialVariantWeight ] = useState<number>(1);
+    const [ selectedInstanceType, setSelectedInstanceType ] = useState<SelectOption>(props.wizard ? {label: props.endpointInstanceType, value: props.endpointInstanceType} : {});
+    const [ selectedAcceleratorTypeType, setSelectedAcceleratorTypeType ] = useState<SelectOption>(props.wizard ? {label: props.endpointAcceleratorType, value: props.endpointAcceleratorType} : {});
+    const [ initialInstanceCount, setInitialInstanceCount ] = useState<number>(props.wizard ? props.endpointInitialInstanceCount : 1);
+    const [ initialVariantWeight, setInitialVariantWeight ] = useState<number>(props.wizard ? props.endpointInitialVariantWeight : 1);
     const [ tags ] = useState([{key:'', value:''}])
     const [ forcedRefresh, setForcedRefresh ] = useState(false)
     const [ invalidEndpointName, setInvalidEndpointName ] = useState(false)
@@ -151,16 +161,22 @@ const EndpointForm: FunctionComponent<EndpointFormProps> = (props) => {
         }
         if(id === 'formFieldIdInstanceType') {
             setSelectedInstanceType({label: event.target.value, value: event.target.value});
+            props.updateEndpointInstanceTypeAction(event.target.value)
             setInvalidInstanceType(false)
         }
         if(id === 'formFieldIdAcceleratorType') {
             setSelectedAcceleratorTypeType({label: event.target.value, value: event.target.value});
+            props.updateEndpointAcceleratorTypeAction(event.target.value)
             setInvalidAcceleratorTypeType(false)
         }
-        if(id === 'formFieldIdInitialInstanceCount')
+        if(id === 'formFieldIdInitialInstanceCount') {
             setInitialInstanceCount(parseInt(event))
-        if(id === 'formFieldIdInitialVariantWeight')
+            props.updateEndpointInitialInstanceCountAction(parseInt(event))
+        }
+        if(id === 'formFieldIdInitialVariantWeight') {
             setInitialVariantWeight(parseFloat(event))
+            props.updateEndpointInitialVariantWeightAction(event)
+        }
     }
 
     const onSubmit = () => {
@@ -343,4 +359,21 @@ const EndpointForm: FunctionComponent<EndpointFormProps> = (props) => {
     }
 }
 
-export default EndpointForm;
+const mapDispatchToProps = {
+    updateEndpointInstanceTypeAction: UpdateEndpointInstanceType,
+    updateEndpointAcceleratorTypeAction: UpdateEndpointAcceleratorType,
+    updateEndpointInitialInstanceCountAction: UpdateEndpointInitialInstanceCount,
+    updateEndpointInitialVariantWeightAction: UpdateEndpointInitialVariantWeight
+};
+
+const mapStateToProps = (state: AppState) => ({
+    endpointInstanceType : state.pipeline.endpointInstanceType,
+    endpointAcceleratorType: state.pipeline.endpointAcceleratorType,
+    endpointInitialInstanceCount: state.pipeline.endpointInitialInstanceCount,
+    endpointInitialVariantWeight: state.pipeline.endpointInitialVariantWeight
+});
+
+export default connect(
+    mapStateToProps,
+    mapDispatchToProps
+)(EndpointForm);
