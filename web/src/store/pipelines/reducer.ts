@@ -2,8 +2,6 @@ import {PipelineActionTypes, PipelineState} from './types';
 import {Action} from '../Actions';
 
 const initialState: PipelineState = {
-    name: '',
-    type: '',
     trainingjobInstanceType: '',
     trainingjobInstanceCount: 1,
     trainingjobVolumeSizeInGB: 30,
@@ -17,7 +15,6 @@ const initialState: PipelineState = {
     endpointAcceleratorType: '',
     endpointInitialInstanceCount: 1,
     endpointInitialVariantWeight: 1,
-    apiName: '',
     apiRestApiName: '',
     apiRestApiId: '',
     apiType: '1',
@@ -36,18 +33,6 @@ export function pipelineReducer(
     action: PipelineActionTypes
 ): PipelineState {
     switch (action.type) {
-        case Action.UPDATE_PIPELINE_NAME: {
-            return {
-                ...state,
-                name: action.payload.name
-            }
-        }
-        case Action.UPDATE_PIPELINE_TYPE: {
-            return {
-                ...state,
-                type: action.payload.type
-            }
-        }
         case Action.UPDATE_PIPELINE_TRAINING_JOB_INSTANCE_TYPE: {
             return {
                 ...state,
@@ -124,12 +109,6 @@ export function pipelineReducer(
             return {
                 ...state,
                 endpointInitialVariantWeight: action.payload.endpointInitialVariantWeight
-            }
-        }
-        case Action.UPDATE_PIPELINE_API_NAME: {
-            return {
-                ...state,
-                apiName: action.payload.apiName
             }
         }
         case Action.UPDATE_PIPELINE_API_REST_API_NAME: {

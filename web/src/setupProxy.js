@@ -154,4 +154,13 @@ module.exports = function(app) {
         secure: false,
         ws: false,
     }));
+    app.use(createProxyMiddleware('/pipeline', {
+        target: baseUrl + '/pipeline',
+        pathRewrite: {
+            '^/pipeline': ''
+        },
+        changeOrigin: true,
+        secure: false,
+        ws: false,
+    }));
 };

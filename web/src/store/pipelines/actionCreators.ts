@@ -1,24 +1,6 @@
 import {Action} from '../Actions';
 import {PipelineActionTypes} from './types';
 
-export function UpdatePipelineName(name: string): PipelineActionTypes {
-    return {
-        type: Action.UPDATE_PIPELINE_NAME,
-        payload: {
-            name,
-        },
-    };
-}
-
-export function UpdatePipelineType(type: string): PipelineActionTypes {
-    return {
-        type: Action.UPDATE_PIPELINE_TYPE,
-        payload: {
-            type,
-        },
-    };
-}
-
 export function UpdateTrainingjobInstanceType(trainingjobInstanceType: string): PipelineActionTypes {
     return {
         type: Action.UPDATE_PIPELINE_TRAINING_JOB_INSTANCE_TYPE,
@@ -132,15 +114,6 @@ export function UpdateEndpointInitialVariantWeight(endpointInitialVariantWeight:
         type: Action.UPDATE_PIPELINE_ENDPOINT_INITIAL_VARIANT_WEIGHT,
         payload: {
             endpointInitialVariantWeight,
-        },
-    };
-}
-
-export function UpdateApiName(apiName: string): PipelineActionTypes {
-    return {
-        type: Action.UPDATE_PIPELINE_API_NAME,
-        payload: {
-            apiName,
         },
     };
 }

@@ -8,10 +8,9 @@ import { PathParams } from '../../Interfaces/PathParams';
 import { APIS } from '../../Data/data';
 import { AppState } from '../../../store';
 import { connect } from 'react-redux';
-import { UpdateApiFuntion, UpdateApiMethod, UpdateApiName, UpdateApiPath, UpdateApiRestApiId, UpdateApiRestApiName, UpdateApiStage, UpdateApiType } from '../../../store/pipelines/actionCreators';
+import { UpdateApiFuntion, UpdateApiMethod, UpdateApiPath, UpdateApiRestApiId, UpdateApiRestApiName, UpdateApiStage, UpdateApiType } from '../../../store/pipelines/actionCreators';
 
 interface IProps {
-    updateApiNameAction: (apiName: string) => any;
     updateApiRestApiNameAction: (apiRestApiName: string) => any;
     updateApiRestApiIdAction: (apiRestApiId: string) => any;
     updateApiTypeAction: (apiType: string) => any;
@@ -19,7 +18,6 @@ interface IProps {
     updateApiStageAction: (apiStage: string) => any;
     updateApiFuntionAction: (apiFunction: string) => any;
     updateApiMethodAction: (apiMethod: string) => any;
-    apiName : string;
     apiRestApiName : string;
     apiRestApiId : string;
     apiType: string;
@@ -30,7 +28,7 @@ interface IProps {
 }
 
 const RestApiForm: FunctionComponent<IProps> = (props) => {
-    const [ apiName, setApiName ] = useState(props.wizard ? props.apiName : '')
+    const [ apiName, setApiName ] = useState('')
     const [ restApiName, setRestApiName ] = useState(props.wizard ? props.apiRestApiName : '')
     const [ selectedRestApis, setSelectedRestApis ] = useState<SelectOption>({})
     const [ selectedApis, setSelectedApis ] = useState<SelectOption>(props.wizard ? {label: 'inerence', value:'inference'}: {})
@@ -50,10 +48,13 @@ const RestApiForm: FunctionComponent<IProps> = (props) => {
     const [ invalidApiPath, setInvalidApiPath ] = useState(false)
     const [ invalidApiStage, setInvalidApiStage ] = useState(false)
 
+    const history = useHistory();
+
+    var params : PathParams = useParams();
+
     const onChange = (id: string, event: any) => {
         if(id === 'formFieldIdApiName') {
             setApiName(event)
-            props.updateApiNameAction(event)
         }
         if(id === 'formFieldIdRestApis') {
             setSelectedRestApis({label: event.target.value, value: event.target.value});
@@ -85,10 +86,6 @@ const RestApiForm: FunctionComponent<IProps> = (props) => {
         props.updateApiTypeAction(value);
     }
 
-    const history = useHistory();
-
-    var params : PathParams = useParams();
-
     useEffect(() => {
         axios.get(`/api?query=restapis`)
             .then((response) => {
@@ -101,6 +98,8 @@ const RestApiForm: FunctionComponent<IProps> = (props) => {
                 }
             }
             setOptionsRestApis(items);
+            props.updateApiFuntionAction(apiFunction)
+            props.updateApiMethodAction(apiMethod)
         }, (error) => {
             console.log(error);
         });
@@ -184,9 +183,12 @@ const RestApiForm: FunctionComponent<IProps> = (props) => {
         if(apiType === '1') {
             return (
                 <FormSection header='API setting'>
-                    <FormField label='API name' controlId='formFieldIdApiName'>
-                        <Input type='text' value={apiName} invalid={invalidApiName} onChange={(event) => onChange('formFieldIdApiName', event)} />
-                    </FormField>
+                    {
+                        !wizard &&
+                        <FormField label='API name' controlId='formFieldIdApiName'>
+                            <Input type='text' value={apiName} invalid={invalidApiName} onChange={(event) => onChange('formFieldIdApiName', event)} />
+                        </FormField>
+                    }
                     <FormField label='API gateway' controlId='formFieldIdApiType'>
                         {renderApiOptions()}
                     </FormField>
@@ -205,9 +207,12 @@ const RestApiForm: FunctionComponent<IProps> = (props) => {
         else {
             return (
                 <FormSection header='API setting'>
-                    <FormField label='API name' controlId='formFieldIdName'>
-                        <Input type='text' value={apiName} invalid={invalidApiName} />
-                    </FormField>
+                    {
+                        !wizard &&
+                        <FormField label='API name' controlId='formFieldIdName'>
+                            <Input type='text' value={apiName} invalid={invalidApiName} />
+                        </FormField>
+                    }
                     <FormField label='API gateway' controlId='formFieldIdRestApi'>
                         {renderApiOptions()}
                     </FormField>
@@ -310,7 +315,6 @@ const RestApiForm: FunctionComponent<IProps> = (props) => {
 }
 
 const mapDispatchToProps = {
-    updateApiNameAction: UpdateApiName,
     updateApiRestApiNameAction: UpdateApiRestApiName,
     updateApiRestApiIdAction: UpdateApiRestApiId,
     updateApiTypeAction: UpdateApiType,
@@ -321,7 +325,6 @@ const mapDispatchToProps = {
 };
 
 const mapStateToProps = (state: AppState) => ({
-    apiName : state.pipeline.apiName,
     apiRestApiName : state.pipeline.apiRestApiName,
     apiRestApiId : state.pipeline.apiRestApiId,
     apiType: state.pipeline.apiType,

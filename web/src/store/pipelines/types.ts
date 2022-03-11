@@ -1,8 +1,6 @@
 import {Action} from '../Actions';
 
 export type PipelineState = {
-    name: string;
-    type: string;
     trainingjobInstanceType: string;
     trainingjobInstanceCount: number;
     trainingjobVolumeSizeInGB: number;
@@ -16,7 +14,6 @@ export type PipelineState = {
     endpointAcceleratorType: string;
     endpointInitialInstanceCount: number;
     endpointInitialVariantWeight: number;
-    apiName: string;
     apiRestApiName: string;
     apiRestApiId: string;
     apiType: string;
@@ -28,20 +25,6 @@ export type PipelineState = {
     greengrassDeploymentTargetType: string;
     greengrassDeploymentTargetArn: string;
     greengrassDeploymentComponents: string;
-}
-
-interface UpdatePipelineName {
-    type: typeof Action.UPDATE_PIPELINE_NAME;
-    payload: {
-        name: string;
-    }
-}
-
-interface UpdatePipelineType {
-    type: typeof Action.UPDATE_PIPELINE_TYPE;
-    payload: {
-        type: string;
-    }
 }
 
 interface UpdateTrainingjobInstanceType {
@@ -135,13 +118,6 @@ interface UpdateEndpointInitialVariantWeight {
     }
 }
 
-interface UpdateApiName {
-    type: typeof Action.UPDATE_PIPELINE_API_NAME;
-    payload: {
-        apiName: string;
-    }
-}
-
 interface UpdateApiRestApiName {
     type: typeof Action.UPDATE_PIPELINE_API_REST_API_NAME;
     payload: {
@@ -219,8 +195,7 @@ interface UpdateGreenGrassDeploymentComponents {
     }
 }
 
-export type PipelineActionTypes = UpdatePipelineName
-    | UpdatePipelineType
+export type PipelineActionTypes = 
     | UpdateTrainingjobInstanceType
     | UpdateTrainingjobInstanceCount
     | UpdateTrainingjobVolumeSizeInGB
@@ -234,7 +209,6 @@ export type PipelineActionTypes = UpdatePipelineName
     | UpdateEndpointAcceleratorType
     | UpdateEndpointInitialInstanceCount
     | UpdateEndpointInitialVariantWeight
-    | UpdateApiName
     | UpdateApiRestApiName
     | UpdateApiRestApiId
     | UpdateApiType

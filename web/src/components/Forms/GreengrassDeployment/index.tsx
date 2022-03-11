@@ -176,11 +176,8 @@ const GreengrassDeploymentForm: FunctionComponent<IProps> = (props) => {
     }
 
     const onChangeOptions = (event, value)=>{
-        console.log('222')
         setTargetType(value)
-        console.log(value)
         propsref.current.updateGreenGrassDeploymentTargetTypeAction(value)
-        console.log(propsref.current.greengrassDeploymentTargetType)
     }
 
     const onSelectionChange = (selectedItems: DataType[]) => {
@@ -287,9 +284,6 @@ const GreengrassDeploymentForm: FunctionComponent<IProps> = (props) => {
     }
 
     const renderTargetOptions = () => {
-        console.log('111')
-        console.log(targetType)
-        console.log(propsref.current.greengrassDeploymentTargetType)
         return (
             <RadioGroup onChange={onChangeOptions}
                 items={[
@@ -300,12 +294,6 @@ const GreengrassDeploymentForm: FunctionComponent<IProps> = (props) => {
         )
     }
     const renderGreengrassDeploymentTarget = () => {
-        console.log('111222')
-        console.log(selectedThingGroup)
-        console.log(optionsThingGroups)
-        console.log(selectedCoreDevice)
-        console.log(optionsCoreDevices)
-        console.log(propsref.current.greengrassDeploymentTargetArn)
         if(targetType === '1') {
             return (
                 <FormSection header='Deployment target' description='You can deploy to a single Greengrass core device or a group of core devices.'>
