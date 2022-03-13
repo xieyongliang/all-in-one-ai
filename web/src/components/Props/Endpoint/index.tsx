@@ -60,23 +60,19 @@ const EndpointProp: FunctionComponent = () => {
         history.goBack()
     }
 
-    return (
-        <Form
-            header='Review endpoint'
-            description='To deploy models to Amazon SageMaker, first create an endpoint. Specify which models to deploy, and the relative traffic weighting and hardware requirements for each. '
-            actions={
-                <div>
-                    <Button variant='primary' onClick={onClose}>Close</Button>
-                </div>
-            }>   
-            {   
-                loading && <Flashbar items={[{
-                    header: 'Loading endpoint information...',
-                    content: 'This may take up to an minute. Please wait a bit...',
-                    dismissible: true,
-                    loading: loading
-                }]} />
-            }
+    const renderFlashbar = () => {
+        return (
+            <Flashbar items={[{
+                header: 'Loading endpoint information...',
+                content: 'This may take up to an minute. Please wait a bit...',
+                dismissible: true,
+                loading: loading
+            }]} />
+        )
+    }
+
+    const renderEndpointSummary = () => {
+        return (
             <FormSection header='Endpoint summary'>
                 <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }}>
                     <Grid item xs={2} sm={4} md={4}>
@@ -93,57 +89,76 @@ const EndpointProp: FunctionComponent = () => {
                     </Grid>
                 </Grid>
             </FormSection>
+        )
+    }
+
+    const renderEndpointRuntimeSettings = () => {
+        return (
             <FormSection header='Endpoint runtime settings'> 
-                {
-                    productionVariants !== undefined && productionVariants.length > 0 &&
+                <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }}>
+                    <Grid item xs={2} sm={4} md={4}>
+                        <KeyValuePair label='Variant name' value={productionVariants[0]['VariantName']}></KeyValuePair>
+                    </Grid>
+                    <Grid item xs={2} sm={4} md={4}>
+                        <KeyValuePair label='Current weight' value={productionVariants[0]['CurrentWeight']}></KeyValuePair>
+                    </Grid>
+                    <Grid item xs={2} sm={4} md={4}>
+                        <KeyValuePair label='Desired weight' value={productionVariants[0]['DesiredWeight']}></KeyValuePair>
+                    </Grid>
+                    <Grid item xs={2} sm={4} md={4}>
+                        <KeyValuePair label='Current instance count' value={productionVariants[0]['CurrentInstanceCount']}></KeyValuePair>
+                    </Grid>
+                    <Grid item xs={2} sm={4} md={4}>
+                        <KeyValuePair label='Desired instance count' value={productionVariants[0]['DesiredInstanceCount']}></KeyValuePair>
+                    </Grid>
+                </Grid>
+            </FormSection>
+        )
+    }
+
+    const renderEndpointConfigurationSettings = () => {
+        return (
+            <FormSection header='Endpoint configuration settings'>
+                <Stack>
                     <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }}>
                         <Grid item xs={2} sm={4} md={4}>
-                            <KeyValuePair label='Variant name' value={productionVariants[0]['VariantName']}></KeyValuePair>
+                            <KeyValuePair label='Endpoint config name' value={endpointConfig['EndpointConfigName']}></KeyValuePair>
                         </Grid>
                         <Grid item xs={2} sm={4} md={4}>
-                            <KeyValuePair label='Current weight' value={productionVariants[0]['CurrentWeight']}></KeyValuePair>
-                        </Grid>
-                        <Grid item xs={2} sm={4} md={4}>
-                            <KeyValuePair label='Desired weight' value={productionVariants[0]['DesiredWeight']}></KeyValuePair>
-                        </Grid>
-                        <Grid item xs={2} sm={4} md={4}>
-                            <KeyValuePair label='Current instance count' value={productionVariants[0]['CurrentInstanceCount']}></KeyValuePair>
-                        </Grid>
-                        <Grid item xs={2} sm={4} md={4}>
-                            <KeyValuePair label='Desired instance count' value={productionVariants[0]['DesiredInstanceCount']}></KeyValuePair>
+                            <KeyValuePair label='Creation time' value={getUtcDate(endpointConfig['CreationTime'])}></KeyValuePair>
                         </Grid>
                     </Grid>
-                }
-            </FormSection>
-            <FormSection header='Endpoint configuration settings'>
-                {
-                    endpointConfig['ProductionVariants'] !== undefined && endpointConfig['ProductionVariants'].length > 0 &&
-                    <Stack>
-                        <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }}>
-                            <Grid item xs={2} sm={4} md={4}>
-                                <KeyValuePair label='Endpoint config name' value={endpointConfig['EndpointConfigName']}></KeyValuePair>
-                            </Grid>
-                            <Grid item xs={2} sm={4} md={4}>
-                                <KeyValuePair label='Creation time' value={getUtcDate(endpointConfig['CreationTime'])}></KeyValuePair>
-                            </Grid>
+                    <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }}>
+                        <Grid item xs={2} sm={4} md={4}>
+                            <KeyValuePair label='Model name' value={endpointConfig['ProductionVariants'][0]['ModelName']}></KeyValuePair>
                         </Grid>
-                        <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }}>
-                            <Grid item xs={2} sm={4} md={4}>
-                                <KeyValuePair label='Model name' value={endpointConfig['ProductionVariants'][0]['ModelName']}></KeyValuePair>
-                            </Grid>
-                            <Grid item xs={2} sm={4} md={4}>
-                                <KeyValuePair label='Instance type' value={endpointConfig['ProductionVariants'][0]['InstanceType']}></KeyValuePair>
-                            </Grid>
-                            <Grid item xs={2} sm={4} md={4}>
-                                <KeyValuePair label='Initial instance count' value={endpointConfig['ProductionVariants'][0]['InitialInstanceCount']}></KeyValuePair>
-                            </Grid>
-                            <Grid item xs={2} sm={4} md={4}>
-                                <KeyValuePair label='Initial variant weight' value={endpointConfig['ProductionVariants'][0]['InitialVariantWeight']}></KeyValuePair>
-                            </Grid>
+                        <Grid item xs={2} sm={4} md={4}>
+                            <KeyValuePair label='Instance type' value={endpointConfig['ProductionVariants'][0]['InstanceType']}></KeyValuePair>
                         </Grid>
-                    </Stack>
-                }
+                        <Grid item xs={2} sm={4} md={4}>
+                            <KeyValuePair label='Initial instance count' value={endpointConfig['ProductionVariants'][0]['InitialInstanceCount']}></KeyValuePair>
+                        </Grid>
+                        <Grid item xs={2} sm={4} md={4}>
+                            <KeyValuePair label='Initial variant weight' value={endpointConfig['ProductionVariants'][0]['InitialVariantWeight']}></KeyValuePair>
+                        </Grid>
+                    </Grid>
+                </Stack>
             </FormSection>
+        )
+    }
+    return (
+        <Form
+            header='Review endpoint'
+            description='To deploy models to Amazon SageMaker, first create an endpoint. Specify which models to deploy, and the relative traffic weighting and hardware requirements for each. '
+            actions={
+                <div>
+                    <Button variant='primary' onClick={onClose}>Close</Button>
+                </div>
+            }>   
+            { loading && renderFlashbar() }
+            { !loading && renderEndpointSummary() }
+            { !loading && renderEndpointRuntimeSettings() }
+            { !loading && renderEndpointConfigurationSettings() }
         </Form>
     )
 }

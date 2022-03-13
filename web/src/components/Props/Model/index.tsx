@@ -37,23 +37,19 @@ const ModelProp: FunctionComponent = () => {
         history.goBack()
     }
 
-    return (
-        <Form
-            header='Review model'
-            description='To deploy a model to Amazon SageMaker, first create the model by providing the location of the model artifacts and inference code.'
-            actions={
-                <div>
-                    <Button variant='primary' onClick={onClose}>Close</Button>
-                </div>
-            }>   
-            {   
-                loading && <Flashbar items={[{
-                    header: 'Loading model information...',
-                    content: 'This may take up to an minute. Please wait a bit...',
-                    dismissible: true,
-                    loading: loading
-                }]} />
-            }
+    const renderFlashbar = () => {
+        return (
+            <Flashbar items={[{
+                header: 'Loading model information...',
+                content: 'This may take up to an minute. Please wait a bit...',
+                dismissible: true,
+                loading: loading
+            }]} />
+        )
+    }
+
+    const renderModelSummary = () => {
+        return (
             <FormSection header='Model summary'>
                 <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }}>
                     <Grid item xs={2} sm={4} md={4}>
@@ -64,6 +60,11 @@ const ModelProp: FunctionComponent = () => {
                     </Grid>
                 </Grid>
             </FormSection>
+        )
+    }
+
+    const renderContainerDefinition = () => {
+        return (
             <FormSection header='Container definition'>
                 {
                     primaryContainer !== undefined &&
@@ -88,6 +89,21 @@ const ModelProp: FunctionComponent = () => {
                     </Grid>
                 }
             </FormSection>
+        )
+    }
+
+    return (
+        <Form
+            header='Review model'
+            description='To deploy a model to Amazon SageMaker, first create the model by providing the location of the model artifacts and inference code.'
+            actions={
+                <div>
+                    <Button variant='primary' onClick={onClose}>Close</Button>
+                </div>
+            }>   
+            { loading && renderFlashbar() }
+            { !loading && renderModelSummary() }
+            { !loading && renderContainerDefinition() }
         </Form>
     )
 }

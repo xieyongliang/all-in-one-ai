@@ -71,23 +71,19 @@ const TransformJobProp: FunctionComponent = () => {
         history.push(`/case/${params.name}?tab=demo#transformjob`)
     }
 
-    return (
-        <Form
-            header='Review batch transform job'
-            description='A transform job uses a model to transform data and stores the results at a specified location.'
-            actions={
-                <div>
-                    <Button variant='primary' onClick={onClose}>Close</Button>
-                </div>
-            }>   
-            {   
-                loading && <Flashbar items={[{
-                    header: 'Loading batch transform job information...',
-                    content: 'This may take up to an minute. Please wait a bit...',
-                    dismissible: true,
-                    loading: loading
-                }]} />
-            }
+    const renderFlashbar = () => {
+        return (
+            <Flashbar items={[{
+                header: 'Loading batch transform job information...',
+                content: 'This may take up to an minute. Please wait a bit...',
+                dismissible: true,
+                loading: loading
+            }]} />
+        )
+    }
+
+    const renderTransformJobSummary = () => {
+        return (
             <FormSection header='Job summary'>
                 <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }}>
                     <Grid item xs={2} sm={4} md={4}>
@@ -104,6 +100,11 @@ const TransformJobProp: FunctionComponent = () => {
                     </Grid>
                 </Grid>
             </FormSection>
+        )
+    }
+
+    const renderTransformJobConfiguration = () => {
+        return (
             <FormSection header='Job configuration'>
                 <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }}>
                     <Grid item xs={2} sm={4} md={4}>
@@ -120,41 +121,61 @@ const TransformJobProp: FunctionComponent = () => {
                     </Grid>
                 </Grid>
             </FormSection>
+        )
+    }
+
+    const renderInputDataConfiguration = () => {
+        return (
             <FormSection header='Input data configuration'>
-                {
-                    transformInput['DataSource'] !== undefined  &&
-                    <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }}>
-                        <Grid item xs={2} sm={4} md={4}>
-                            <KeyValuePair label='S3 data type' value={transformInput['DataSource']['S3DataSource']['S3DataType']}></KeyValuePair>
-                        </Grid>
-                        <Grid item xs={2} sm={4} md={4}>
-                            <KeyValuePair label='Split type' value={transformInput['SplitType']}></KeyValuePair>
-                        </Grid>
-                        <Grid item xs={2} sm={4} md={4}>
-                            <KeyValuePair label='Compression type' value={transformInput['CompressionType']}></KeyValuePair>
-                        </Grid>
-                        <Grid item xs={4} sm={4} md={4}>
-                            <KeyValuePair label='S3 URI' value={getLink(transformInput['DataSource']['S3DataSource']['S3Uri'])}></KeyValuePair>
-                        </Grid>
-                        <Grid item xs={2} sm={4} md={4}>
-                            <KeyValuePair label='Content type' value={transformInput['ContentType']}></KeyValuePair>
-                        </Grid>
-                </Grid>
-                }
-            </FormSection>
-            <FormSection header='Output data configuration'>
-                {
-                    transformOutput !== undefined && 
-                    <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }}>
-                        <Grid item xs={2} sm={4} md={4}>
-                            <KeyValuePair label='S3 output path' value={getLink(transformOutput['S3OutputPath'])}></KeyValuePair>
-                        </Grid>
-                        <Grid item xs={2} sm={4} md={4}>
-                            <KeyValuePair label='Assemble with' value={transformOutput['AssembleWith']}></KeyValuePair>
-                        </Grid>
+                <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }}>
+                    <Grid item xs={2} sm={4} md={4}>
+                        <KeyValuePair label='S3 data type' value={transformInput['DataSource']['S3DataSource']['S3DataType']}></KeyValuePair>
                     </Grid>
-                }
+                    <Grid item xs={2} sm={4} md={4}>
+                        <KeyValuePair label='Split type' value={transformInput['SplitType']}></KeyValuePair>
+                    </Grid>
+                    <Grid item xs={2} sm={4} md={4}>
+                        <KeyValuePair label='Compression type' value={transformInput['CompressionType']}></KeyValuePair>
+                    </Grid>
+                    <Grid item xs={4} sm={4} md={4}>
+                        <KeyValuePair label='S3 URI' value={getLink(transformInput['DataSource']['S3DataSource']['S3Uri'])}></KeyValuePair>
+                    </Grid>
+                    <Grid item xs={2} sm={4} md={4}>
+                        <KeyValuePair label='Content type' value={transformInput['ContentType']}></KeyValuePair>
+                    </Grid>
+                </Grid>
             </FormSection>
+        )
+    }
+
+    const renderOutputDataConfiguration = () => {
+        return (
+            <FormSection header='Output data configuration'>
+                <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }}>
+                    <Grid item xs={2} sm={4} md={4}>
+                        <KeyValuePair label='S3 output path' value={getLink(transformOutput['S3OutputPath'])}></KeyValuePair>
+                    </Grid>
+                    <Grid item xs={2} sm={4} md={4}>
+                        <KeyValuePair label='Assemble with' value={transformOutput['AssembleWith']}></KeyValuePair>
+                    </Grid>
+                </Grid>
+            </FormSection>
+        )
+    }
+    return (
+        <Form
+            header='Review batch transform job'
+            description='A transform job uses a model to transform data and stores the results at a specified location.'
+            actions={
+                <div>
+                    <Button variant='primary' onClick={onClose}>Close</Button>
+                </div>
+            }>   
+            { loading && renderFlashbar() }
+            { !loading && renderTransformJobSummary() }
+            { !loading && renderTransformJobConfiguration() }
+            { !loading && renderInputDataConfiguration() }
+            { !loading && renderOutputDataConfiguration() }
         </Form>
     )
 }

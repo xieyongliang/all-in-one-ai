@@ -88,6 +88,41 @@ const GreengrassDeploymentProp: FunctionComponent = () => {
         }
     ];
     
+    const renderFlashbar = () => {
+        return (
+            <Flashbar items={[{
+                header: 'Loading Greengrass deployment information...',
+                content: 'This may take up to an minute. Please wait a bit...',
+                dismissible: true,
+                loading: loading
+            }]} />
+        )
+    }
+
+    const renderGreengrassDeploymentOverview = () => {
+        return (
+            <FormSection header='Greengrass deployment overview'>
+                <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }}>
+                    <Grid item xs={2} sm={4} md={4}>
+                        <KeyValuePair label='Target' value={targetArn}></KeyValuePair>
+                    </Grid>
+                    <Grid item xs={2} sm={4} md={4}>
+                        <KeyValuePair label='Deployment status' value={deploymentStatus}></KeyValuePair>
+                    </Grid>
+                    <Grid item xs={2} sm={4} md={4}>
+                        <KeyValuePair label='Deployment created' value={creationTimestamp}></KeyValuePair>
+                    </Grid>
+                    <Grid item xs={2} sm={4} md={4}>
+                        <KeyValuePair label='IoT job' value={iotJobId}></KeyValuePair>
+                    </Grid>
+                    <Grid item xs={2} sm={4} md={4}>
+                        <KeyValuePair label='Revision Id' value={revisionId}></KeyValuePair>
+                    </Grid>
+                </Grid>
+            </FormSection>
+        )
+    }
+
     const renderGreengrassComponentlList = () => {
         return (
             <Table
@@ -111,34 +146,9 @@ const GreengrassDeploymentProp: FunctionComponent = () => {
                     <Button variant='primary' onClick={onClose}>Close</Button>
                 </div>
             }>   
-            {   
-                loading && <Flashbar items={[{
-                    header: 'Loading Greengrass deployment information...',
-                    content: 'This may take up to an minute. Please wait a bit...',
-                    dismissible: true,
-                    loading: loading
-                }]} />
-            }
-            <FormSection header='Greengrass deployment overview'>
-                <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }}>
-                    <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label='Target' value={targetArn}></KeyValuePair>
-                    </Grid>
-                    <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label='Deployment status' value={deploymentStatus}></KeyValuePair>
-                    </Grid>
-                    <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label='Deployment created' value={creationTimestamp}></KeyValuePair>
-                    </Grid>
-                    <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label='IoT job' value={iotJobId}></KeyValuePair>
-                    </Grid>
-                    <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label='Revision Id' value={revisionId}></KeyValuePair>
-                    </Grid>
-                </Grid>
-            </FormSection>
-            {renderGreengrassComponentlList()}
+            { loading && renderFlashbar() }
+            { !loading && renderGreengrassDeploymentOverview() }
+            { !loading && renderGreengrassComponentlList() }
         </Form>
     )
 }

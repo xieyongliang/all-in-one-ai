@@ -28,7 +28,6 @@ const GreengrassComponentProp: FunctionComponent = () => {
         var component_name = 'com.example.yolov5'
         axios.get(`/greengrass/component/${component_name}/${id}`, {params: {'case': params.name}})
             .then((response) => {
-            console.log(response.data);
             setComponentName(response.data.componentName);
             setComponentVersion(response.data.componentVersion);
             setCreationTimestamp(response.data.creationTimestamp)
@@ -36,7 +35,6 @@ const GreengrassComponentProp: FunctionComponent = () => {
             setDescription(response.data.description);
             setComponentState(response.data.status.componentState);
             setMessages(response.data.status.messages);
-            console.log(typeof(response.data.status.errors));
             setPlatforms(`os : ${response.data.platforms[0]['attributes'].os}`);
             setLoading(false);
         }, (error) => {
@@ -48,23 +46,19 @@ const GreengrassComponentProp: FunctionComponent = () => {
         history.goBack()
     }
 
-    return (
-        <Form
-            header='Review Greengrass component'
-            description='When you finish your component, you can add it to AWS IoT Greengrass to deploy to core devices. Provide the component recipe and artifacts to create the component. This component is private and visible only to your AWS account.'
-            actions={
-                <div>
-                    <Button variant='primary' onClick={onClose}>Close</Button>
-                </div>
-            }>   
-            {   
-                loading && <Flashbar items={[{
-                    header: 'Loading Greengrass component information...',
-                    content: 'This may take up to an minute. Please wait a bit...',
-                    dismissible: true,
-                    loading: loading
-                }]} />
-            }
+    const renderFlashbar = () => {
+        return (
+            <Flashbar items={[{
+                header: 'Loading Greengrass component information...',
+                content: 'This may take up to an minute. Please wait a bit...',
+                dismissible: true,
+                loading: loading
+            }]} />
+        )
+    }
+
+    const renderGreengrassComponentSummary = () => {
+        return (
             <FormSection header='Greengrass component version summary'>
                 <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }}>
                     <Grid item xs={2} sm={4} md={4}>
@@ -87,6 +81,11 @@ const GreengrassComponentProp: FunctionComponent = () => {
                     </Grid>
                 </Grid>
             </FormSection>
+        )
+    }
+
+    const renderGreengrassComponentStatus = () => {
+        return (
             <FormSection header='Greengrass component status'>
                 <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }}>
                     <Grid item xs={2} sm={4} md={4}>
@@ -100,6 +99,21 @@ const GreengrassComponentProp: FunctionComponent = () => {
                     </Grid>
                 </Grid>
             </FormSection>
+        )
+    }
+
+    return (
+        <Form
+            header='Review Greengrass component'
+            description='When you finish your component, you can add it to AWS IoT Greengrass to deploy to core devices. Provide the component recipe and artifacts to create the component. This component is private and visible only to your AWS account.'
+            actions={
+                <div>
+                    <Button variant='primary' onClick={onClose}>Close</Button>
+                </div>
+            }>   
+            { loading && renderFlashbar() }
+            { !loading && renderGreengrassComponentSummary() }
+            { !loading && renderGreengrassComponentStatus() }
         </Form>
     )
 }
