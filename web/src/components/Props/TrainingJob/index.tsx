@@ -1,59 +1,53 @@
 import { FunctionComponent, useEffect, useState } from 'react';
 import { useHistory, useLocation, useParams } from 'react-router-dom';
-import { KeyValuePair, StatusIndicator, Button, Form, FormSection, Link, Flashbar, Text, Input } from 'aws-northstar';
+import { KeyValuePair, StatusIndicator, Button, Form, FormSection, Link, Flashbar } from 'aws-northstar';
 import axios from 'axios';
 import Grid from '@mui/material/Grid';
 import { PathParams } from '../../Interfaces/PathParams';
+import { getUtcDate } from '../../Utils/Helper';
 
 const TrainingJobProp: FunctionComponent = () => {
     const [ trainingJobName, setTrainingJobName ] = useState('')
     const [ creationTime, setCreationTime ] = useState('')
+    const [ lastModifiedTime, setLastModifiedTime ] = useState('')
+    const [ trainingTimeInSeconds, setTrainingTimeInSeconds ] = useState('')
+    const [ billableTimeInSeconds, setBillableTimeInSeconds ] = useState('')
     const [ trainingStartTime, setTrainingStartTime ] = useState('')
     const [ trainingEndTime, setTrainingEndTime ] = useState('')
-    const [ duration, setDuration ] = useState('')
-    const [ status, setStatus ] = useState('')
-    const [ instanceType, setInstanceType ] = useState('')
-    const [ instanceCount, setInstanceCount ] = useState('')
-    const [ volumeSizeInGB, setVolumeSizeInGB ] = useState('')
-    const [ imagesS3Uri, setImagesS3Uri ] = useState('')
-    const [ labelsS3Uri, setLabelsS3Uri ] = useState('')
-    const [ weightsS3Uri, setWeightsS3Uri ] = useState('')
-    const [ cfgS3Uri, setCfgS3Uri ] = useState('')
-    const [ outputS3Uri, setOutputS3Uri ] = useState('')
-    const [ modelArtifacts, setModelArtifacts] = useState('')
-    const [ tags, setTags ] = useState([])
+    const [ trainingJobStatus, setTrainingJobStatus ] = useState('')
+    const [ algorithmSpecification, setAlgorithmSpecificaton ] = useState({})
+    const [ resourceConfig, setResourceConfig ] = useState({})
+    const [ inputDataConfig, setInputDataConfig ] = useState([])
+    const [ outputDataConfig, setOutputDataConfig ] = useState({})
+    const [ modelArtifacts, setModelArtifacts ] = useState({})
+    const [ stoppingCondition, setStoppingCondition ] = useState({})
     const [ loading, setLoading ] = useState(true);
-    const [ forcedRefresh, setForcedRefresh ] = useState(false)
 
     const history = useHistory();
 
     var params : PathParams = useParams();
 
     var localtion = useLocation();
+
     var id = localtion.hash.substring(9);
 
     useEffect(() => {
-        axios.get('/trainingjob/' + id, {params: {'case': params.name}})
+        axios.get(`/trainingjob/${id}`, {params: {'case': params.name}})
             .then((response) => {
-            console.log(response)
-            setTrainingJobName(response.data.training_job_name)
-            setCreationTime(response.data.creation_time)
-            setTrainingStartTime(response.data.training_start_time)
-            setTrainingEndTime(response.data.training_end_time)
-            setStatus(response.data.training_job_status)
-            setInstanceType(response.data.instance_type)
-            setInstanceCount(response.data.instance_count)
-            setVolumeSizeInGB(`${response.data.volume_size_in_gb}GB`)
-            setDuration(response.data.duration)
-            setImagesS3Uri(response.data.images_s3uri)
-            setLabelsS3Uri(response.data.labels_s3uri)
-            setWeightsS3Uri(response.data.weights_s3uri)
-            setCfgS3Uri(response.data.cfg_s3uri)
-            setOutputS3Uri(response.data.output_s3uri)
-            if('model_artifacts' in response.data)
-                setModelArtifacts(response.data.model_artifacts.S3ModelArtifacts)
-            if('tags' in response.data)
-                setTags(response.data.tags)
+            setTrainingJobName(response.data.TrainingJobName)
+            setCreationTime(getUtcDate(response.data.CreationTime))
+            setLastModifiedTime(getUtcDate(response.data.LastModifiedTime))
+            setTrainingStartTime(getUtcDate(response.data.TrainingStartTime))
+            setTrainingEndTime(getUtcDate(response.data.TrainingEndTime))
+            setTrainingTimeInSeconds(response.data.TrainingTimeInSeconds)
+            setBillableTimeInSeconds(response.data.BillableTimeInSeconds)
+            setTrainingJobStatus(response.data.TrainingJobStatus)
+            setAlgorithmSpecificaton(response.data.AlgorithmSpecification)
+            setResourceConfig(response.data.ResourceConfig)
+            setInputDataConfig(response.data.InputDataConfig)
+            setOutputDataConfig(response.data.OutputDataConfig)
+            setModelArtifacts(response.data.ModelArtifacts)
+            setStoppingCondition(response.data.StoppingCondition)
             setLoading(false);
         }, (error) => {
             console.log(error);
@@ -77,21 +71,136 @@ const TrainingJobProp: FunctionComponent = () => {
     }
 
     const getLink = (link: string) => {
-        return <Link href={link}> {link} </Link>
+        if(link !== undefined)
+            return <Link href={link}> {link} </Link>
+        else
+            return ''
     }
 
     const onClose = () => {
-        history.push(`/case/${params.name}?tab=trainingjob`)
+        history.goBack()
     }
 
-    const onAddTag = () => {
-        tags.push({key:'', value:''});
-        setForcedRefresh(!forcedRefresh);
+    const renderFlashbar = () => {
+        return (
+            <Flashbar items={[{
+                header: 'Loading training job information...',
+                content: 'This may take up to an minute. Please wait a bit...',
+                dismissible: true,
+                loading: loading
+            }]} />
+        )
     }
 
-    const onRemoveTag = (index) => {
-        tags.splice(index, 1);
-        setForcedRefresh(!forcedRefresh);
+    const renderJobSummary = () => {
+        return (
+            <FormSection header='Job summary'>
+                <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }}>
+                    <Grid item xs={2} sm={4} md={4}>
+                        <KeyValuePair label='Job name' value={trainingJobName}></KeyValuePair>
+                    </Grid>
+                    <Grid item xs={2} sm={4} md={4}>
+                        <KeyValuePair label='Status' value={getStatus(trainingJobStatus)}></KeyValuePair>
+                    </Grid>
+                    <Grid item xs={2} sm={4} md={4}>
+                        <KeyValuePair label='Creation time' value={creationTime}></KeyValuePair>
+                    </Grid>
+                    <Grid item xs={2} sm={4} md={4}>
+                        <KeyValuePair label='Training start time' value={trainingStartTime}></KeyValuePair>
+                    </Grid>
+                    <Grid item xs={2} sm={4} md={4}>
+                        <KeyValuePair label='Training end time' value={trainingEndTime}></KeyValuePair>
+                    </Grid>
+                    <Grid item xs={2} sm={4} md={4}>
+                        <KeyValuePair label='Last modified time' value={lastModifiedTime}></KeyValuePair>
+                    </Grid>
+                    <Grid item xs={2} sm={4} md={4}>
+                        <KeyValuePair label='Training time (seconds)' value={trainingTimeInSeconds}></KeyValuePair>
+                    </Grid>
+                    <Grid item xs={2} sm={4} md={4}>
+                        <KeyValuePair label='Billable time (seconds)' value={billableTimeInSeconds}></KeyValuePair>
+                    </Grid>
+                </Grid>
+            </FormSection>
+        )
+    }
+
+    const renderAlgorithmSpecifications = () => {
+        return (
+            <FormSection header='Algorithm'>
+                <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }}>
+                    <Grid item xs={2} sm={4} md={4}>
+                        <KeyValuePair label='Instance type' value={resourceConfig['InstanceType']}></KeyValuePair>
+                    </Grid>
+                    <Grid item xs={2} sm={4} md={4}>
+                        <KeyValuePair label='Instance count' value={resourceConfig['InstanceCount']}></KeyValuePair>
+                    </Grid>
+                    <Grid item xs={2} sm={4} md={4}>
+                        <KeyValuePair label='Additional storage' value={resourceConfig['VolumeSizeInGB']}></KeyValuePair>
+                    </Grid>
+                    <Grid item xs={2} sm={4} md={4}>
+                        <KeyValuePair label='Training image' value={algorithmSpecification['TrainingImage']}></KeyValuePair>
+                    </Grid>
+                    <Grid item xs={2} sm={4} md={4}>
+                        <KeyValuePair label='Input mode' value={algorithmSpecification['TrainingInputMode']}></KeyValuePair>
+                    </Grid>
+                    <Grid item xs={2} sm={4} md={4}>
+                        <KeyValuePair label='Maximum runtime (s)' value={stoppingCondition['MaxRuntimeInSeconds']}></KeyValuePair>
+                    </Grid>
+                </Grid>
+            </FormSection>
+        )
+    }
+
+    const renderInputDataConfiguration = () => {
+        return (
+            <FormSection header='Input data configuration'>
+                {
+                    inputDataConfig.map((channelConfig) => {
+                        return (
+                            <Grid key={channelConfig['ChannelName']} container spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }}>
+                                <Grid item xs={2} sm={4} md={4}>
+                                    <KeyValuePair label='Channel name' value={channelConfig['ChannelName']}></KeyValuePair>
+                                </Grid>
+                                <Grid item xs={2} sm={4} md={4}>
+                                    <KeyValuePair label='S3 data type' value={channelConfig['DataSource']['S3DataSource']['S3DataType']}></KeyValuePair>
+                                </Grid>                    
+                                <Grid item xs={2} sm={4} md={4}>
+                                    <KeyValuePair label='S3 data distribution type' value={channelConfig['DataSource']['S3DataSource']['S3DataDistributionType']}></KeyValuePair>
+                                </Grid>                    
+                                <Grid item xs={6} sm={6} md={6}>
+                                    <KeyValuePair label='URI' value={getLink(channelConfig['DataSource']['S3DataSource']['S3Uri'])}></KeyValuePair>
+                                </Grid>                    
+                            </Grid>
+                        )
+                    })
+                }
+            </FormSection>
+        )
+    }
+
+    const renderOutputConfiguration = () => {
+        return (
+            <FormSection header='Output data configuration'>
+                <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }}>
+                    <Grid item xs={6} sm={6} md={6}>
+                        <KeyValuePair label='S3 output path' value={getLink(outputDataConfig['S3OutputPath'])}></KeyValuePair>
+                    </Grid>
+                </Grid>
+            </FormSection>
+        )
+    }
+
+    const renderOutput = () => {
+        return (
+            <FormSection header='Output'>
+                <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }}>
+                    <Grid item xs={6} sm={6} md={6}>
+                        <KeyValuePair label='S3 model artifact' value={getLink(modelArtifacts['S3ModelArtifacts'])}></KeyValuePair>
+                    </Grid>
+                </Grid>
+            </FormSection>
+        )
     }
 
     return (
@@ -103,107 +212,12 @@ const TrainingJobProp: FunctionComponent = () => {
                     <Button variant='primary' onClick={onClose}>Close</Button>
                 </div>
             }>   
-            {   
-                loading && <Flashbar items={[{
-                    header: 'Loading training job information...',
-                    content: 'This may take up to an minute. Please wait a bit...',
-                    dismissible: true,
-                    loading: loading
-                }]} />
-            }
-            <FormSection header='Job summary'>
-                <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }}>
-                    <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label='Job name' value={trainingJobName}></KeyValuePair>
-                    </Grid>
-                    <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label='Status' value={getStatus(status)}></KeyValuePair>
-                    </Grid>
-                    <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label='Approx. batch transform duration' value={duration}></KeyValuePair>
-                    </Grid>
-                    <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label='Creation time' value={creationTime}></KeyValuePair>
-                    </Grid>
-                    <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label='Transform start time' value={trainingStartTime}></KeyValuePair>
-                    </Grid>
-                    <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label='Transform end time' value={trainingEndTime}></KeyValuePair>
-                    </Grid>
-                    <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label='Model artifacts' value={modelArtifacts}></KeyValuePair>
-                    </Grid>
-                </Grid>
-            </FormSection>
-            <FormSection header='Resource configuration'>
-                <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }}>
-                    <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label='Instance type' value={instanceType}></KeyValuePair>
-                    </Grid>
-                    <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label='Instance count' value={instanceCount}></KeyValuePair>
-                    </Grid>
-                    <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label='Additional storage' value={volumeSizeInGB}></KeyValuePair>
-                    </Grid>
-                </Grid>
-            </FormSection>
-            <FormSection header='Input data configuration'>
-                <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }}>
-                    <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label='Images prefix' value={imagesS3Uri}></KeyValuePair>
-                    </Grid>
-                    <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label='Labels prefix' value={labelsS3Uri}></KeyValuePair>
-                    </Grid>
-                    <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label='Weights prefix' value={weightsS3Uri}></KeyValuePair>
-                    </Grid>
-                    <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label='Cfg prefix' value={cfgS3Uri}></KeyValuePair>
-                    </Grid>
-                </Grid>
-            </FormSection>
-            <FormSection header='Output data configuration'>
-                <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }}>
-                    <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label='S3 output path' value={getLink(outputS3Uri)}></KeyValuePair>
-                    </Grid>
-                </Grid>
-            </FormSection>
-            <FormSection header='Tags - optional'>
-                {
-                    tags.length>0 && 
-                        <Grid container spacing={{ xs: 1, md: 1 }} columns={{ xs: 4, sm: 8, md: 12 }}>
-                            <Grid item xs={2} sm={4} md={4}>
-                                <Text> Key </Text>
-                            </Grid>
-                            <Grid item xs={2} sm={4} md={4}>
-                                <Text> Value </Text> 
-                            </Grid>
-                            <Grid item xs={2} sm={4} md={4}>
-                                <Text>  </Text>
-                            </Grid>
-                        </Grid>
-                }
-                {
-                    tags.map((tag, index) => (
-                        <Grid container spacing={{ xs: 1, md: 1 }} columns={{ xs: 4, sm: 8, md: 12 }}>
-                            <Grid item xs={2} sm={4} md={4}>
-                                <Input type='text' value={tag.key}/>
-                            </Grid>
-                            <Grid item xs={2} sm={4} md={4}>
-                                <Input type='text' value={tag.value}/>
-                            </Grid>
-                            <Grid item xs={2} sm={4} md={4}>
-                                <Button onClick={() => onRemoveTag(index)}>Remove</Button>
-                            </Grid>
-                        </Grid>
-                    ))
-                }
-                <Button variant='link' size='large' onClick={onAddTag}>Add tag</Button>
-            </FormSection>
+            { loading && renderFlashbar() }
+            { !loading && renderJobSummary() }
+            { !loading && renderAlgorithmSpecifications() }
+            { !loading && renderInputDataConfiguration() }
+            { !loading && renderOutputConfiguration() }
+            { !loading && renderOutput() }
         </Form>
     )
 }

@@ -1,4 +1,4 @@
-import React, { FunctionComponent } from 'react';
+import { FunctionComponent, useCallback, useEffect, useRef, useState } from 'react';
 import Table from 'aws-northstar/components/Table';
 import StatusIndicator from 'aws-northstar/components/StatusIndicator';
 import Button from 'aws-northstar/components/Button';
@@ -7,211 +7,126 @@ import ButtonDropdown from 'aws-northstar/components/ButtonDropdown';
 import {Column} from 'react-table'
 import { useHistory, useParams } from 'react-router-dom';
 import { PathParams } from '../../Interfaces/PathParams';
+import axios from 'axios';
 
 interface DataType {
+    execution_arn: string;
     name: string;
-    training_job_status?: string;
-    model_status?: string;
-    endpoint_status?: string;
-    restapi_status?: string;
-    component_status?: string;
-    deployment_status?: string;    
+    status: string;
     creation_time: string;
     last_updated: string;
 }
 
-const columnDefinitions : Column<DataType>[]= [
-    {
-        id: 'name',
-        width: 100,
-        Header: 'Name',
-        accessor: 'name'
-    },
-    {
-        id: 'training_job_status',
-        width: 130,
-        Header: 'Training job',
-        accessor: 'training_job_status',
-        Cell: ({ row  }) => {
-            if (row && row.original) {
-                const status = row.original.training_job_status;
-                switch(status) {
-                    case 'completed':
-                        return <StatusIndicator  statusType='positive'>Completed</StatusIndicator>;
-                    case 'error':
-                        return <StatusIndicator  statusType='negative'>Error</StatusIndicator>;
-                    case 'info':
-                        return <StatusIndicator  statusType='info'>In progress</StatusIndicator>;
-                    default:
-                        return null;
-                }
-            }
-            return null;
-        }
-    },
-    {
-        id: 'model_status',
-        width: 80,
-        Header: 'Model',
-        accessor: 'model_status',
-        Cell: ({ row  }) => {
-            if (row && row.original) {
-                const status = row.original.model_status;
-                switch(status) {
-                    case 'active':
-                        return <StatusIndicator  statusType='positive'>Active</StatusIndicator>;
-                    case 'error':
-                        return <StatusIndicator  statusType='negative'>Error</StatusIndicator>;
-                    default:
-                        return null;
-                }
-            }
-            return null;
-        }
-    },
-    {
-        id: 'endpoint_status',
-        width: 100,
-        Header: 'Endpoint',
-        accessor: 'endpoint_status',
-        Cell: ({ row  }) => {
-            if (row && row.original) {
-                const status = row.original.endpoint_status;
-                switch(status) {
-                    case 'completed':
-                        return <StatusIndicator  statusType='positive'>Completed</StatusIndicator>;
-                    case 'error':
-                        return <StatusIndicator  statusType='negative'>Error</StatusIndicator>;
-                    case 'info':
-                        return <StatusIndicator  statusType='info'>In progress</StatusIndicator>;
-                    default:
-                        return null;
-                }
-            }
-            return null;
-        }
-    },
-    {
-        id: 'restapi_status',
-        width: 100,
-        Header: 'Rest api',
-        accessor: 'restapi_status',
-        Cell: ({ row  }) => {
-            if (row && row.original) {
-                const status = row.original.restapi_status;
-                switch(status) {
-                    case 'active':
-                        return <StatusIndicator  statusType='positive'>Active</StatusIndicator>;
-                    case 'error':
-                        return <StatusIndicator  statusType='negative'>Error</StatusIndicator>;
-                    default:
-                        return null;
-                }
-            }
-            return null;
-        }
-    },
-    {
-        id: 'component_status',
-        width: 100,
-        Header: 'Greengrass component',
-        accessor: 'component_status',
-        Cell: ({ row  }) => {
-            if (row && row.original) {
-                const status = row.original.component_status;
-                switch(status) {
-                    case 'active':
-                        return <StatusIndicator  statusType='positive'>Active</StatusIndicator>;
-                    case 'error':
-                        return <StatusIndicator  statusType='negative'>Error</StatusIndicator>;
-                    default:
-                        return null;
-                }
-            }
-            return null;
-        }
-    },
-    {
-        id: 'deployment_status',
-        width: 100,
-        Header: 'Greengrass deployment',
-        accessor: 'deployment_status',
-        Cell: ({ row  }) => {
-            if (row && row.original) {
-                const status = row.original.deployment_status;
-                switch(status) {
-                    case 'completed':
-                        return <StatusIndicator  statusType='positive'>Completed</StatusIndicator>;
-                    case 'error':
-                        return <StatusIndicator  statusType='negative'>Error</StatusIndicator>;
-                    case 'info':
-                        return <StatusIndicator  statusType='info'>In progress</StatusIndicator>;
-                    default:
-                        return null;
-                }
-            }
-            return null;
-        }
-    },
-    {
-        id: 'creation_time',
-        width: 150,
-        Header: 'Creation time',
-        accessor: 'creation_time'
-    },   
-    {
-        id: 'last_update',
-        width: 150,
-        Header: 'Last updated',
-        accessor: 'last_updated'
-    }   
-];
-
-const data = [
-    {
-        name: 'training-job-1',
-        'training_job_status': 'completed',
-        'model_status': 'active',
-        'endpoint_status': 'completed',
-        'restapi_status': 'active',
-        'component_status': 'active',
-        'deployment_status': 'completed',
-        creation_time: 'Aug 26, 2021 03:01 UTC',
-        last_updated: 'Aug 26, 2021 03:01 UTC'
-    }
-];
-
 const PipelineList: FunctionComponent = () => {
-    const getRowId = React.useCallback(data => data.name, []);
+    const [ items, setItems ] = useState([])
+    const [ loading, setLoading ] = useState(true)
+
+    const casename = useRef('');
 
     const history = useHistory();
 
     var params : PathParams = useParams();
 
+    useEffect(() => {
+        casename.current = params.name;
+        axios.get('/pipeline', {params : {'case': params.name}})
+            .then((response) => {
+            var items = []
+            for(let item of response.data) {
+                items.push({execution_arn : item.pipeline_execution_arn, name: item.pipeline_name, status: item.execution_status, creation_time: item.creation_time, last_updated: item.last_modified_time})
+            }
+            setItems(items)
+            setLoading(false);
+        }, (error) => {
+            console.log(error);
+        });
+    }, [params.name, items]);
+
     const onCreate = () => {
         history.push('/case/' + params.name + '?tab=pipeline#form')
     }
 
+    const getRowId = useCallback(data => data.execution_arn, []);
+
+    const columnDefinitions : Column<DataType>[]= [
+        {
+            id: 'execution_arn',
+            width: 700,
+            Header: 'Execution arn',
+            accessor: 'execution_arn',
+            Cell: ({ row  }) => {
+                if (row && row.original) {
+                    return <a href={`/case/${params.name}?tab=pipeline#prop:id=${row.original.execution_arn}`}> {row.original.execution_arn} </a>;
+                }
+                return null;
+            }        
+        },
+        {
+            id: 'name',
+            width: 200,
+            Header: 'Name',
+            accessor: 'name'
+        },
+        {
+            id: 'status',
+            width: 100,
+            Header: 'Status',
+            accessor: 'status',
+            Cell: ({ row  }) => {
+                if (row && row.original) {
+                    const status = row.original.status;
+                    switch(status) {
+                        case 'Succeeded':
+                            return <StatusIndicator  statusType='positive'>{status}</StatusIndicator>;
+                        case 'Failed':
+                            return <StatusIndicator  statusType='negative'>{status}</StatusIndicator>;
+                        case 'Executing':
+                            return <StatusIndicator  statusType='info'>{status}</StatusIndicator>;
+                        case 'Stopping':
+                        case 'Stopped':
+                            return <StatusIndicator  statusType='warning'>{status}</StatusIndicator>;
+                        default:
+                            return null;
+                    }
+                }
+                return null;
+            }
+        },
+        {
+            id: 'creation_time',
+            width: 150,
+            Header: 'Creation time',
+            accessor: 'creation_time'
+        },   
+        {
+            id: 'last_updated',
+            width: 150,
+            Header: 'Last updated',
+            accessor: 'last_updated'
+        }   
+    ];
+    
     const tableActions = (
         <Inline>
             <ButtonDropdown
                 content='Action'
-                    items={[{ text: 'Clone' }, { text: 'Create model' }, { text: 'Stop', disabled: true }, { text: 'Add/Edit tags' }]}
+                    items={[{ text: 'Clone' }, { text: 'Delete' }, { text: 'Add/Edit tags' }]}
             />        
             <Button variant='primary' onClick={onCreate}>
                 Create
             </Button>
         </Inline>
     );
-    
+
     return (
         <Table
             actionGroup={tableActions}
             tableTitle='Pipeline'
             multiSelect={false}
             columnDefinitions={columnDefinitions}
-            items={data}
+            items={items}
             onSelectionChange={console.log}
+            loading={loading}
             getRowId={getRowId}
         />
     )

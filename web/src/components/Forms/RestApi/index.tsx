@@ -1,4 +1,4 @@
-import { FunctionComponent, useEffect, useState } from 'react';
+import { FunctionComponent, useEffect, useRef, useState } from 'react';
 import { useHistory, useParams } from 'react-router-dom'; 
 import { Form, FormSection, FormField, Input, Button, Text, Stack, Select, RadioButton, RadioGroup } from 'aws-northstar';
 import { SelectOption } from 'aws-northstar/components/Select';
@@ -52,6 +52,35 @@ const RestApiForm: FunctionComponent<IProps> = (props) => {
 
     var params : PathParams = useParams();
 
+    const propsref = useRef(props)
+
+    propsref.current.updateApiFuntionAction(apiFunction)
+    propsref.current.updateApiMethodAction(apiMethod)
+
+    useEffect(() => {
+        axios.get(`/api?query=restapis`)
+            .then((response) => {
+            var items = []
+            for(let item of response.data) {
+                items.push({label: item.name, value: item.id})
+                if(propsref.current.wizard) {
+                    if(item.id === propsref.current.apiRestApiId) 
+                        setSelectedRestApis({label: item.name, value: item.id})
+                }
+            }
+            setOptionsRestApis(items);
+        }, (error) => {
+            console.log(error);
+        });
+        
+        var apis = [];
+
+        for(let api in APIS) {
+            apis.push({key: api, value: api})
+        }
+        setOptionsApis(apis);
+    }, [params.name])
+
     const onChange = (id: string, event: any) => {
         if(id === 'formFieldIdApiName') {
             setApiName(event)
@@ -86,32 +115,6 @@ const RestApiForm: FunctionComponent<IProps> = (props) => {
         props.updateApiTypeAction(value);
     }
 
-    useEffect(() => {
-        axios.get(`/api?query=restapis`)
-            .then((response) => {
-            var items = []
-            for(let item of response.data) {
-                items.push({label: item.name, value: item.id})
-                if(wizard) {
-                    if(item.id === props.apiRestApiId) 
-                        setSelectedRestApis({label: item.name, value: item.id})
-                }
-            }
-            setOptionsRestApis(items);
-            props.updateApiFuntionAction(apiFunction)
-            props.updateApiMethodAction(apiMethod)
-        }, (error) => {
-            console.log(error);
-        });
-        
-        var apis = [];
-
-        for(let api in APIS) {
-            apis.push({key: api, value: api})
-        }
-        setOptionsApis(apis);
-    }, [])
-
     const onSubmit = () => {
         if(apiName === '')
             setInvalidApiName(true)
@@ -140,7 +143,7 @@ const RestApiForm: FunctionComponent<IProps> = (props) => {
                 body['tags'] = tags
             axios.post('/api', body,  { headers: {'content-type': 'application/json' }}) 
             .then((response) => {
-                history.push(`/case/${params.name}?tab=restapi`)
+                history.goBack()
             }, (error) => {
                 alert('Error occured, please check and try it again');
                 console.log(error);
@@ -149,7 +152,7 @@ const RestApiForm: FunctionComponent<IProps> = (props) => {
     }
 
     const onCancel = () => {
-        history.push('/case/' + params.name + '?tab=restapi')
+        history.goBack()
     }
 
     const onAddTag = () => {

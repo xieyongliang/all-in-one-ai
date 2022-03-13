@@ -9,8 +9,8 @@ import axios from 'axios';
 import { PathParams } from '../../Interfaces/PathParams';
 
 interface ModelItem {
-    name: string;
-    creation_time: string;
+    modelName: string;
+    creationTime: string;
 }
 
 const ModelList: FunctionComponent = () => {
@@ -26,31 +26,43 @@ const ModelList: FunctionComponent = () => {
 
     var params : PathParams = useParams();
 
+    const getSourceCode = async (uri) => {
+        const response = await axios.get('/file/download', {params: {uri: encodeURIComponent(uri)}, responseType: 'blob'})
+        return response.data
+    }
+    
     useEffect(() => {
+        var cancel = false
         casename.current = params.name;
         const request1 = axios.get('/model', {params : {'case': params.name}})
         const request2 = axios.get('/function/all_in_one_ai_create_model?action=code');
         const request3 = axios.get('/function/all_in_one_ai_create_model?action=console');
         axios.all([request1, request2, request3])
         .then(axios.spread(function(response1, response2, response3) {
+            if(cancel) return;
             for(let item of response1.data) {
-                items.push({name: item.model_name, creation_time: item.creation_time})
+                items.push({modelName: item.ModelName, creationTime: item.CreationTime})
             }
             setLoading(false);
-            axios.get('/file/download', {params: {uri: encodeURIComponent(response2.data)}, responseType: 'blob'})
-            .then((response4) => {
+            getSourceCode(response2.data).then((data) => {
+                if(cancel) return;
                 var zip = new JSZip();
-                zip.loadAsync(response4.data).then(async function(zipped) {
+                zip.loadAsync(data).then(async function(zipped) {
                     zipped.file('lambda_function.py').async('string').then(function(data) {
+                        if(cancel) return;
                         setSampleCode(data)
                     })
                 })
             });
             setSampleConsole(response3.data)
         }));
+
+        return () => { 
+            cancel = true;
+        }
     },[params.name, items]);
 
-    const getRowId = React.useCallback(data => data.name, []);
+    const getRowId = React.useCallback(data => data.modelName, []);
 
     const onCreate = () => {
         history.push(`/case/${params.name}?tab=model#form`)
@@ -58,22 +70,22 @@ const ModelList: FunctionComponent = () => {
 
     const columnDefinitions : Column<ModelItem>[]= [
         {
-            id: 'name',
+            id: 'modelName',
             width: 400,
             Header: 'Name',
-            accessor: 'name',
+            accessor: 'modelName',
             Cell: ({ row  }) => {
                 if (row && row.original) {
-                    return <a href={`/case/${params.name}?tab=model#prop:id=${row.original.name}`}> {row.original.name} </a>;
+                    return <a href={`/case/${params.name}?tab=model#prop:id=${row.original.modelName}`}> {row.original.modelName} </a>;
                 }
                 return null;
             }
         },
         {
-            id: 'creation_time',
+            id: 'creationTime',
             width: 400,
             Header: 'Creation time',
-            accessor: 'creation_time'
+            accessor: 'creationTime'
         }
     ];
     

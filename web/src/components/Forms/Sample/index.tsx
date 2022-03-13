@@ -28,13 +28,20 @@ const SampleForm: FunctionComponent = () => {
 
     var params : PathParams = useParams();
 
+    const getSourceCode = async (uri) => {
+        const response = await axios.get('/file/download', {params: {uri: encodeURIComponent(uri)}, responseType: 'blob'})
+        return response.data
+    }
+
     useEffect(() => {
+        var cancel = false
         casename.current = params.name;
         const request1 = axios.get('/samples/' + params.name);
         const request2 = axios.get('/function/all_in_one_ai_invoke_endpoint?action=code');
         const request3 = axios.get('/function/all_in_one_ai_invoke_endpoint?action=console');
         axios.all([request1, request2, request3])
         .then(axios.spread(function(response1, response2, response3) {
+            if(cancel) return;
             var items : string[] = []
             for(let item of response1.data) {
                 items.push(item)
@@ -46,17 +53,22 @@ const SampleForm: FunctionComponent = () => {
                 else if(params.name === 'mask')
                     setLabels(LABELS[CaseType.FACE])    
             }
-            axios.get('/file/download', {params: {uri: encodeURIComponent(response2.data)}, responseType: 'blob'})
-            .then((response4) => {
+            getSourceCode(response2.data).then((data) => {
+                if(cancel) return;
                 var zip = new JSZip();
-                zip.loadAsync(response4.data).then(async function(zipped) {
-                        zipped.file('lambda_function.py').async('string').then(function(data) {
+                zip.loadAsync(data).then(async function(zipped) {
+                    zipped.file('lambda_function.py').async('string').then(function(data) {
+                        if(cancel) return;
                         setSampleCode(data)
                     })
                 })
             });
             setSampleConsole(response3.data)
         }));
+
+        return () => { 
+            cancel = true;
+        }
     },[params.name]);
 
     const onImageClick = (src) => {

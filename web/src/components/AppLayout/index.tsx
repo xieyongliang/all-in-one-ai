@@ -17,14 +17,12 @@ import { FunctionComponent, useMemo } from 'react';
 import AppLayoutBase from 'aws-northstar/layouts/AppLayout';
 import HeaderBase from 'aws-northstar/components/Header';
 import SideNavigationBase, { SideNavigationItemType } from 'aws-northstar/components/SideNavigation';
-import BreadcrumbGroup from 'aws-northstar/components/BreadcrumbGroup';
 
 const AppLayout: FunctionComponent = ({ children }) => {
     const Header = useMemo(
         () => <HeaderBase title='All-In-One AI' logoPath='/ml.jpg' />,
         []
     );
-    const Breadcrumbs = useMemo(() => <BreadcrumbGroup rootPath='Home' />, []);
     const SideNavigation = useMemo(() => {
         return (
             <SideNavigationBase
@@ -61,12 +59,12 @@ const AppLayout: FunctionComponent = ({ children }) => {
                         ]
                     }
                 ]}
-            ></SideNavigationBase>
+            />
         );
     }, []);
 
     return (
-        <AppLayoutBase header={Header} navigation={SideNavigation} breadcrumbs={Breadcrumbs}>
+        <AppLayoutBase header={Header} navigation={SideNavigation} >
             {children}
         </AppLayoutBase>
     );

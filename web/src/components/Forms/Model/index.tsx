@@ -129,7 +129,7 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
                     body['tags'] = tags
                 axios.post('/model', body,  { headers: {'content-type': 'application/json' }}) 
                 .then((response) => {
-                    history.push(`/case/${params.name}?tab=model`)
+                    history.goBack()
                 }, (error) => {
                     alert('Error occured, please check and try it again');
                     console.log(error);
@@ -154,7 +154,7 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
                     body['tags'] = tags
                 axios.post('/model', body,  { headers: {'content-type': 'application/json' }}) 
                 .then((response) => {
-                    history.push(`/case/${params.name}?tab=model`)
+                    history.goBack()
                 }, (error) => {
                     alert('Error occured, please check and try it again');
                     console.log(error);
@@ -164,7 +164,7 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
     }
  
     const onCancel = () => {
-        history.push(`/case/${params.name}?tab=model`)
+        history.goBack()
     }
 
     const onAddTag = () => {

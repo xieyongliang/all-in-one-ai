@@ -69,7 +69,7 @@ const GreengrassComponentForm: FunctionComponent<IProps> = (props) => {
             }
             axios.post(`/greengrass/component/${selectedComponent.value}`, body,  { headers: {'content-type': 'application/json' }}) 
             .then((response) => {
-                history.push(`/case/${params.name}?tab=greengrasscomponent`)
+                history.goBack()
             }, (error) => {
                 alert('Error occured, please check and try it again');
                 console.log(error);
@@ -79,7 +79,7 @@ const GreengrassComponentForm: FunctionComponent<IProps> = (props) => {
     }
 
     const onCancel = () => {
-        history.push('/case/' + params.name + '?tab=component')
+        history.goBack()
     }
 
     var wizard : boolean

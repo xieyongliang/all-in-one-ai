@@ -1,24 +1,19 @@
 import { FunctionComponent, useEffect, useState } from 'react';
 import { useHistory, useLocation, useParams } from 'react-router-dom';
-import { KeyValuePair, StatusIndicator, Button, Form, FormSection, Flashbar, Text, Input } from 'aws-northstar';
+import { KeyValuePair, StatusIndicator, Button, Form, FormSection, Flashbar, Stack } from 'aws-northstar';
 import axios from 'axios';
 import Grid from '@mui/material/Grid';
 import { PathParams } from '../../Interfaces/PathParams';
+import { getUtcDate } from '../../Utils/Helper';
 
 const EndpointProp: FunctionComponent = () => {
     const [ endpointName, setEndpointName ] = useState('')
-    const [ endpointConfigName, setEndpointConfigName ] = useState('')
     const [ creationTime, setCreationTime ] = useState('')
     const [ lastModifiedTime, setLastModifiedTime ] = useState('')
     const [ endpointStatus, setEndpointStatus ] = useState('')
-    const [ modelName, setModelName ] = useState('')
-    const [ instanceType, setInstanceType ] = useState('')
-    const [ acceleratorType, setAcceleratorType ] = useState('')
-    const [ initialInstanceCount, setInitialInstanceCount ] = useState('')
-    const [ initialVariantWeight, setInitialVariantWeight ] = useState('')
-    const [ tags, setTags ] = useState([])
+    const [ endpointConfig, setEndpointConfig ] = useState({})
+    const [ productionVariants, setProductionVariants] = useState([])
     const [ loading, setLoading ] = useState(true);
-    const [ forcedRefresh, setForcedRefresh ] = useState(false)
 
     const history = useHistory();
 
@@ -30,19 +25,12 @@ const EndpointProp: FunctionComponent = () => {
     useEffect(() => {
         axios.get('/endpoint/' + id, {params: {'case': params.name}})
             .then((response) => {
-            console.log(response)
-            setEndpointName(response.data.endpoint_name)
-            setEndpointConfigName(response.data.endpoint_config_name)
-            setCreationTime(response.data.creation_time)
-            setLastModifiedTime(response.data.last_modified_time)
-            setEndpointStatus(response.data.endpoint_status)
-            setModelName(response.data.model_name)
-            setInstanceType(response.data.instance_type)
-            setAcceleratorType(response.data.accelerator_type)
-            setInitialInstanceCount(response.data.initial_instance_count)
-            setInitialVariantWeight(response.data.initial_variant_weight)
-            if('tags' in response.data)
-                setTags(response.data.tags)
+            setEndpointName(response.data.EndpointName)
+            setCreationTime(getUtcDate(response.data.CreationTime))
+            setLastModifiedTime(getUtcDate(response.data.LastModifiedTime))
+            setEndpointStatus(response.data.EndpointStatus)
+            setEndpointConfig(response.data.EndpointConfig)
+            setProductionVariants(response.data.ProductionVariants)
             setLoading(false);
         }, (error) => {
             console.log(error);
@@ -69,17 +57,7 @@ const EndpointProp: FunctionComponent = () => {
     }
 
     const onClose = () => {
-        history.push(`/case/${params.name}?tab=endpoint`)
-    }
-
-    const onAddTag = () => {
-        tags.push({key:'', value:''});
-        setForcedRefresh(!forcedRefresh);
-    }
-
-    const onRemoveTag = (index) => {
-        tags.splice(index, 1);
-        setForcedRefresh(!forcedRefresh);
+        history.goBack()
     }
 
     return (
@@ -105,9 +83,6 @@ const EndpointProp: FunctionComponent = () => {
                         <KeyValuePair label='Endpoint name' value={endpointName}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label='Endpoint config name' value={endpointConfigName}></KeyValuePair>
-                    </Grid>
-                    <Grid item xs={2} sm={4} md={4}>
                         <KeyValuePair label='Status' value={getStatus(endpointStatus)}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
@@ -118,56 +93,56 @@ const EndpointProp: FunctionComponent = () => {
                     </Grid>
                 </Grid>
             </FormSection>
-            <FormSection header='Endpoint configuration'>
-                <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }}>
-                    <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label='Model name' value={modelName}></KeyValuePair>
+            <FormSection header='Endpoint runtime settings'> 
+                {
+                    productionVariants !== undefined && productionVariants.length > 0 &&
+                    <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }}>
+                        <Grid item xs={2} sm={4} md={4}>
+                            <KeyValuePair label='Variant name' value={productionVariants[0]['VariantName']}></KeyValuePair>
+                        </Grid>
+                        <Grid item xs={2} sm={4} md={4}>
+                            <KeyValuePair label='Current weight' value={productionVariants[0]['CurrentWeight']}></KeyValuePair>
+                        </Grid>
+                        <Grid item xs={2} sm={4} md={4}>
+                            <KeyValuePair label='Desired weight' value={productionVariants[0]['DesiredWeight']}></KeyValuePair>
+                        </Grid>
+                        <Grid item xs={2} sm={4} md={4}>
+                            <KeyValuePair label='Current instance count' value={productionVariants[0]['CurrentInstanceCount']}></KeyValuePair>
+                        </Grid>
+                        <Grid item xs={2} sm={4} md={4}>
+                            <KeyValuePair label='Desired instance count' value={productionVariants[0]['DesiredInstanceCount']}></KeyValuePair>
+                        </Grid>
                     </Grid>
-                    <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label='Instance type' value={instanceType}></KeyValuePair>
-                    </Grid>
-                    <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label='Accelerator type' value={acceleratorType}></KeyValuePair>
-                    </Grid>
-                    <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label='Initial instance count' value={initialInstanceCount}></KeyValuePair>
-                    </Grid>
-                    <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label='Initial variant weight' value={initialVariantWeight}></KeyValuePair>
-                    </Grid>
-                </Grid>
+                }
             </FormSection>
-            <FormSection header='Tags - optional'>
+            <FormSection header='Endpoint configuration settings'>
                 {
-                    tags.length>0 && 
-                        <Grid container spacing={{ xs: 1, md: 1 }} columns={{ xs: 4, sm: 8, md: 12 }}>
+                    endpointConfig['ProductionVariants'] !== undefined && endpointConfig['ProductionVariants'].length > 0 &&
+                    <Stack>
+                        <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }}>
                             <Grid item xs={2} sm={4} md={4}>
-                                <Text> Key </Text>
+                                <KeyValuePair label='Endpoint config name' value={endpointConfig['EndpointConfigName']}></KeyValuePair>
                             </Grid>
                             <Grid item xs={2} sm={4} md={4}>
-                                <Text> Value </Text> 
-                            </Grid>
-                            <Grid item xs={2} sm={4} md={4}>
-                                <Text>  </Text>
+                                <KeyValuePair label='Creation time' value={getUtcDate(endpointConfig['CreationTime'])}></KeyValuePair>
                             </Grid>
                         </Grid>
-                }
-                {
-                    tags.map((tag, index) => (
-                        <Grid container spacing={{ xs: 1, md: 1 }} columns={{ xs: 4, sm: 8, md: 12 }}>
+                        <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }}>
                             <Grid item xs={2} sm={4} md={4}>
-                                <Input type='text' value={tag.key}/>
+                                <KeyValuePair label='Model name' value={endpointConfig['ProductionVariants'][0]['ModelName']}></KeyValuePair>
                             </Grid>
                             <Grid item xs={2} sm={4} md={4}>
-                                <Input type='text' value={tag.value}/>
+                                <KeyValuePair label='Instance type' value={endpointConfig['ProductionVariants'][0]['InstanceType']}></KeyValuePair>
                             </Grid>
                             <Grid item xs={2} sm={4} md={4}>
-                                <Button onClick={() => onRemoveTag(index)}>Remove</Button>
+                                <KeyValuePair label='Initial instance count' value={endpointConfig['ProductionVariants'][0]['InitialInstanceCount']}></KeyValuePair>
+                            </Grid>
+                            <Grid item xs={2} sm={4} md={4}>
+                                <KeyValuePair label='Initial variant weight' value={endpointConfig['ProductionVariants'][0]['InitialVariantWeight']}></KeyValuePair>
                             </Grid>
                         </Grid>
-                    ))
+                    </Stack>
                 }
-                <Button variant='link' size='large' onClick={onAddTag}>Add tag</Button>
             </FormSection>
         </Form>
     )

@@ -168,7 +168,7 @@ const TrainingJobForm: FunctionComponent<IProps> = (props) => {
                 body['tags'] = tags
             axios.post('/trainingjob', body,  { headers: {'content-type': 'application/json' }}) 
             .then((response) => {
-                history.push(`/case/${params.name}?tab=trainingjob`)
+                history.goBack()
             }, (error) => {
                 alert('Error occured, please check and try it again');
                 console.log(error);
@@ -177,7 +177,7 @@ const TrainingJobForm: FunctionComponent<IProps> = (props) => {
     }
 
     const onCancel = () => {
-        history.push(`/case/${params.name}?tab=trainingjob`)
+        history.goBack()
     }
 
     const onAddTag = () => {

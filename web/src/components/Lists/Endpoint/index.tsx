@@ -9,13 +9,13 @@ import { github } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 import JSZip from 'jszip';
 import axios from 'axios';
 import { PathParams } from '../../Interfaces/PathParams';
+import { getUtcDate } from '../../Utils/Helper/index';
 
-interface DataType {
-    name: string;
-    model: string;
-    creation_time: string;
-    status: string;
-    last_updated: string;
+interface EndpointItem {
+    endpointName: string;
+    endpointStatus: string;
+    creationTime: string;
+    lastModifiedTime: string;
 }
 
 const EndpointList: FunctionComponent = () => {
@@ -31,7 +31,13 @@ const EndpointList: FunctionComponent = () => {
 
     var params : PathParams = useParams();
 
+    const getSourceCode = async (uri) => {
+        const response = await axios.get('/file/download', {params: {uri: encodeURIComponent(uri)}, responseType: 'blob'})
+        return response.data
+    }
+
     useEffect(() => {
+        var cancel = false
         casename.current = params.name;
         const request1 = axios.get('/endpoint', {params : {'case': params.name}})
         const request2 = axios.get('/function/all_in_one_ai_create_endpoint?action=code');
@@ -39,13 +45,13 @@ const EndpointList: FunctionComponent = () => {
         axios.all([request1, request2, request3])
         .then(axios.spread(function(response1, response2, response3) {
             for(let item of response1.data) {
-                items.push({name: item.endpoint_name, model: item.model_name, creation_time: item.creation_time, status : item.endpoint_status, last_updated: item.last_modified_time})
+                items.push({endpointName: item.EndpointName, endpointStatus: item.EndpointStatus, creationTime: getUtcDate(item.CreationTime), lastModifiedTime: getUtcDate(item.LastModifiedTime)})
             }
             setLoading(false);
-            axios.get('/file/download', {params: {uri: encodeURIComponent(response2.data)}, responseType: 'blob'})
-            .then((response4) => {
+            getSourceCode(response2.data).then((data) => {
+                if(cancel) return;
                 var zip = new JSZip();
-                zip.loadAsync(response4.data).then(async function(zipped) {
+                zip.loadAsync(data).then(async function(zipped) {
                     zipped.file('lambda_function.py').async('string').then(function(data) {
                         setSampleCode(data)
                     })
@@ -53,47 +59,39 @@ const EndpointList: FunctionComponent = () => {
             });
             setSampleConsole(response3.data)
         }));
+
+        return () => { 
+            cancel = true;
+        }
     },[params.name, items]);
 
     const onCreate = () => {
         history.push('/case/' + params.name + '?tab=endpoint#form')
     }
     
-    const getRowId = React.useCallback(data => data.name, []);
+    const getRowId = React.useCallback(data => data.endpointName, []);
 
-    const columnDefinitions : Column<DataType>[]= [
+    const columnDefinitions : Column<EndpointItem>[]= [
         {
-            id: 'name',
-            width: 200,
+            id: 'endpointName',
+            width: 400,
             Header: 'Name',
-            accessor: 'name',
+            accessor: 'endpointName',
             Cell: ({ row  }) => {
                 if (row && row.original) {
-                    return <a href={`/case/${params.name}?tab=endpoint#prop:id=${row.original.name}`}> {row.original.name} </a>;
+                    return <a href={`/case/${params.name}?tab=endpoint#prop:id=${row.original.endpointName}`}> {row.original.endpointName} </a>;
                 }
                 return null;
             }
         },
         {
-            id: 'model',
-            width: 200,
-            Header: 'Model',
-            accessor: 'model'
-        },
-        {
-            id: 'creation_time',
-            width: 200,
-            Header: 'Creation time',
-            accessor: 'creation_time'
-        },
-        {
-            id: 'status',
+            id: 'endpointStatus',
             width: 200,
             Header: 'Status',
-            accessor: 'status',
+            accessor: 'endpointStatus',
             Cell: ({ row  }) => {
                 if (row && row.original) {
-                    const status = row.original.status;
+                    const status = row.original.endpointStatus;
                     switch(status) {
                         case 'InService':
                             return <StatusIndicator  statusType='positive'>{status}</StatusIndicator>;
@@ -115,10 +113,16 @@ const EndpointList: FunctionComponent = () => {
             }
         },
         {
-            id: 'last_update',
-            width: 200,
+            id: 'creationTime',
+            width: 250,
+            Header: 'Creation time',
+            accessor: 'creationTime'
+        },
+        {
+            id: 'lastModifiedTime',
+            width: 250,
             Header: 'Last updated',
-            accessor: 'last_updated'
+            accessor: 'lastModifiedTime'
         }
     ];
     

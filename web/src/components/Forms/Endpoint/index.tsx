@@ -206,7 +206,7 @@ const EndpointForm: FunctionComponent<IProps> = (props) => {
                 body['tags'] = tags
             axios.post('/endpoint', body,  { headers: {'content-type': 'application/json' }}) 
             .then((response) => {
-                history.push(`/case/${params.name}?tab=endpoint`)
+                history.goBack()
             }, (error) => {
                 alert('Error occured, please check and try it again');
                 console.log(error);
@@ -215,7 +215,7 @@ const EndpointForm: FunctionComponent<IProps> = (props) => {
     }
 
     const onCancel = () => {
-        history.push('/case/' + params.name + '?tab=endpoint')
+        history.goBack()
     }
 
     const onAddTag = () => {

@@ -46,7 +46,7 @@ const RestApiProp: FunctionComponent = () => {
     }, [id, params.name])
 
     const onClose = () => {
-        history.push(`/case/${params.name}?tab=restapi`)
+        history.goBack()
     }
 
     const onAddTag = () => {

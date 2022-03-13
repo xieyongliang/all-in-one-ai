@@ -162,7 +162,7 @@ const GreengrassDeploymentForm: FunctionComponent<IProps> = (props) => {
 
             axios.post('/greengrass/deployment', body,  { headers: {'content-type': 'application/json' }}) 
             .then((response) => {
-                history.push(`/case/${params.name}?tab=greengrassdeployment`)
+                history.goBack()
             }, (error) => {
                 alert('Error occured, please check and try it again');
                 console.log(error);
@@ -172,7 +172,7 @@ const GreengrassDeploymentForm: FunctionComponent<IProps> = (props) => {
     }
 
     const onCancel = () => {
-        history.push('/case/' + params.name + '?tab=greengrassdeployment')
+        history.goBack()
     }
 
     const onChangeOptions = (event, value)=>{

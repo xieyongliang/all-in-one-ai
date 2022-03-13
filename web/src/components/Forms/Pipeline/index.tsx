@@ -1,10 +1,9 @@
-import Wizard from 'aws-northstar/components/Wizard';
-import { BrowserRouter, useHistory, useParams } from 'react-router-dom';
-import FormField from 'aws-northstar/components/FormField'
-import Input from 'aws-northstar/components/Input';
-import Container from 'aws-northstar/layouts/Container';
 import { FunctionComponent, useState } from 'react';
-import { Stack } from 'aws-northstar';
+import { BrowserRouter, useHistory, useParams } from 'react-router-dom';
+import { connect } from 'react-redux';
+import { Wizard, FormField, Input } from 'aws-northstar/components';
+import { Container, Stack } from 'aws-northstar/layouts';
+import axios from 'axios';
 import TrainingJobForm from '../TrainingJob';
 import ModelForm from '../Model';
 import EndpointForm from '../Endpoint';
@@ -14,12 +13,7 @@ import GreengrassDeploymentForm from '../GreengrassDeployment';
 import RadioButton from 'aws-northstar/components/RadioButton';
 import RadioGroup from 'aws-northstar/components/RadioGroup';
 import { AppState } from '../../../store';
-import { connect } from 'react-redux';
-import axios from 'axios';
-
-interface PathParams {
-    name: string;
-}
+import { PathParams } from '../../Interfaces/PathParams';
 
 interface IProps {
     trainingjobInstanceType : string;
@@ -99,7 +93,7 @@ const PipelineForm: FunctionComponent<IProps> = (props) => {
         console.log(JSON.stringify(body))
         axios.post('/pipeline', body,  { headers: {'content-type': 'application/json' }}) 
         .then((response) => {
-            history.push(`/case/${params.name}?tab=pipeline`)
+            history.goBack()
         }, (error) => {
             alert('Error occured, please check and try it again');
             console.log(error);
@@ -107,7 +101,7 @@ const PipelineForm: FunctionComponent<IProps> = (props) => {
     }
 
     const onCancel = () => {
-        history.push('/case/' + params.name + '?tab=pipeline')
+        history.goBack()
     }
 
     const renderPipelineOptions = () => {

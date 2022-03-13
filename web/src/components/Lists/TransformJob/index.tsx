@@ -14,12 +14,13 @@ import ImageAnnotate from '../../Utils/Annotate';
 import Image from '../../Utils/Image';
 import { PathParams } from '../../Interfaces/PathParams';
 import '../../Utils/Image/index.scss'
+import { getDurationByDates } from '../../Utils/Helper';
 
 interface TransformJobItem {
-    name: string;
-    creation_time: string;
-    duration: string;
-    status?: string;
+    transformJobName: string;
+    transformJobStatus: string;
+    creationTime: string;
+    duration?: string;
 }
 
 const TransformJobList: FunctionComponent = () => {
@@ -44,15 +45,22 @@ const TransformJobList: FunctionComponent = () => {
 
     var params : PathParams = useParams();
 
+    const getSourceCode = async (uri) => {
+        const response = await axios.get('/file/download', {params: {uri: encodeURIComponent(uri)}, responseType: 'blob'})
+        return response.data
+    }
+
     useEffect(() => {
+        var cancel = false
         casename.current = params.name;
         const request1 = axios.get('/transformjob', {params : {'case': params.name}});
         const request2 = axios.get('/function/all_in_one_ai_create_transform_job?action=code');
         const request3 = axios.get('/function/all_in_one_ai_create_transform_job?action=console');
         axios.all([request1, request2, request3])
         .then(axios.spread(function(response1, response2, response3) {
+            if(cancel) return;
             for(let item of response1.data) {
-                items.push({name: item.transform_job_name, status : item.transform_job_status, duration: item.duration, creation_time: item.creation_time})
+                items.push({transformJobName: item.TransformJobName, transformJobStatus : item.TransformJobStatus, duration: getDurationByDates(item.TransformStartTime, item.TransformEndTime), creationTime: item.CreationTime})
             }
             setLoadingTable(false);
             setVisibleAnnotate(false);
@@ -63,17 +71,22 @@ const TransformJobList: FunctionComponent = () => {
             else if(params.name === 'mask')
                 setLabels(LABELS[CaseType.FACE])
             
-            axios.get('/file/download', {params: {uri: encodeURIComponent(response2.data)}, responseType: 'blob'})
-            .then((response4) => {
+            getSourceCode(response2.data).then((data) => {
+                if(cancel) return;
                 var zip = new JSZip();
-                zip.loadAsync(response4.data).then(async function(zipped) {
+                zip.loadAsync(data).then(async function(zipped) {
                     zipped.file('lambda_function.py').async('string').then(function(data) {
+                        if(cancel) return;
                         setSampleCode(data)
                     })
                 })
             });
             setSampleConsole(response3.data)
         }));
+
+        return () => { 
+            cancel = true;
+        }
     },[params.name, items]);
         
     const onImageClick = (src) => {
@@ -134,26 +147,26 @@ const TransformJobList: FunctionComponent = () => {
         setVisibleAnnotate(true);
     }
     
-    const getRowId = React.useCallback(data => data.name, []);
+    const getRowId = React.useCallback(data => data.transformJobName, []);
 
     const columnDefinitions : Column<TransformJobItem>[]= [
         {
-            id: 'name',
+            id: 'transformJobName',
             width: 200,
             Header: 'Name',
-            accessor: 'name',
+            accessor: 'transformJobName',
             Cell: ({ row  }) => {
                 if (row && row.original) {
-                    return <a href={`/case/${params.name}?tab=demo#prop:id=${row.original.name}`}> {row.original.name} </a>;
+                    return <a href={`/case/${params.name}?tab=demo#prop:id=${row.original.transformJobName}`}> {row.original.transformJobName} </a>;
                 }
                 return null;
             }
         },
         {
-            id: 'creation_time',
+            id: 'creationTime',
             width: 200,
             Header: 'Creation time',
-            accessor: 'creation_time'
+            accessor: 'creationTime'
         },
         {
             id: 'duration',
@@ -162,13 +175,13 @@ const TransformJobList: FunctionComponent = () => {
             accessor: 'duration'
         },
         {
-            id: 'status',
+            id: 'transformJobStatus',
             width: 200,
             Header: 'Status',
-            accessor: 'status',
+            accessor: 'transformJobStatus',
             Cell: ({ row  }) => {
                 if (row && row.original) {
-                    const status = row.original.status;
+                    const status = row.original.transformJobStatus;
                     switch(status) {
                         case 'Completed':
                             return <StatusIndicator  statusType='positive'>{status}</StatusIndicator>;

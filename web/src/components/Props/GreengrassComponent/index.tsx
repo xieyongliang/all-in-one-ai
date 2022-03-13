@@ -38,7 +38,6 @@ const GreengrassComponentProp: FunctionComponent = () => {
             setMessages(response.data.status.messages);
             console.log(typeof(response.data.status.errors));
             setPlatforms(`os : ${response.data.platforms[0]['attributes'].os}`);
-
             setLoading(false);
         }, (error) => {
             console.log(error);
@@ -46,7 +45,7 @@ const GreengrassComponentProp: FunctionComponent = () => {
     }, [id, params.name])
 
     const onClose = () => {
-        history.push(`/case/${params.name}?tab=greengrasscomponent`)
+        history.goBack()
     }
 
     return (

@@ -47,13 +47,16 @@ app.get('/inference/image/:case/:filename', (req, res) => {
     var filename = req.params.filename;
     var buffer = fs.readFileSync('images/' + filename + '.jpg')
     options = { headers: {'content-type': 'image/jpg'}, params : {model: casename}}
-    var resuult = axios.post(baseUrl + '/inference', buffer, options)
+    axios.post(baseUrl + '/inference', buffer, options)
         .then((response) => {
             res.send(response.data)
         }, (error) => {
-            res.status(400);
-            res.send('client error');
-            console.log(error);
+                res.status(400);
+                res.send('client error');
+                console.log(error);
+            }
+        ).catch((e) => {
+            console.log(e)
         }
     );
 })
@@ -62,26 +65,30 @@ app.get('/inference/sample/:case/:filename', (req, res) => {
     var filename = req.params.filename;
     var buffer = fs.readFileSync('samples/' + casename + '/' + filename)
     options = {headers: {'content-type': 'image/png'}, params : {model: casename}}
-    var resuult = axios.post(baseUrl + '/inference', buffer, options)
+    axios.post(baseUrl + '/inference', buffer, options)
         .then((response) => {
             res.send(response.data)
         }, (error) => {
-            res.status(400);
-            res.send('client error');
-            console.log(error);
+                res.status(400);
+                res.send('client error');
+                console.log(error);
+            }
+        ).catch((e) => {
+            console.log(e)
         }
     );
 })
 app.get('/file/download', (req, res) => {
     var uri = decodeURIComponent(req.query['uri']);
-    axios({
-        url: uri,
-        method: 'GET',
-        responseType: 'arraybuffer', 
-    }).then((response) => {
-        res.setHeader('content-type', response.headers['content-type']);
-        res.send(response.data);
-    });
+    axios({ url: uri, method: 'GET', responseType: 'arraybuffer'})
+        .then((response) => {
+                res.setHeader('content-type', response.headers['content-type']);
+                res.send(response.data);
+            }
+        ).catch((e) => {
+            console.log(e)
+        }
+    );
 })
 app.use(createProxyMiddleware('/transformjob', {
     target: baseUrl + '/transformjob',

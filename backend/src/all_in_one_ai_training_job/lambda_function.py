@@ -7,13 +7,12 @@ from botocore.exceptions import ClientError
 from decimal import Decimal
 from datetime import datetime, timedelta
 
-training_images = {
-  "yolov5": "034068151705.dkr.ecr.ap-east-1.amazonaws.com/spot-bot-yolov5:latest"
-}
+model_name = 'yolov5'
 
 ssmh = helper.ssm_helper()
 training_job_table = ssmh.get_parameter('/all_in_one_ai/config/meta/training_job_table')
 role_arn = ssmh.get_parameter('/all_in_one_ai/config/meta/sagemaker_role_arn')
+training_image = ssmh.get_parameter('/all_in_one_ai/config/meta/models/{0}/sagemaker/image'.format(model_name))
 
 ddbh = helper.ddb_helper({'table_name': training_job_table})
 
@@ -26,20 +25,20 @@ def lambda_handler(event, context):
         model_name = 'yolov5'
         case_name = request['case_name']
 
-        weights_s3uri = ssmh.get_parameter('/all_in_one_ai/config/meta/models/{0}/{1}/training_job/weights_s3uri'.format(model_name, case_name))
-        cfg_s3uri = ssmh.get_parameter('/all_in_one_ai/config/meta/models/{0}/{1}/training_job/cfg_s3uri'.format(model_name, case_name))
+        weights_s3uri = ssmh.get_parameter('/all_in_one_ai/config/meta/models/{0}/cases/{1}/training_job/weights_s3uri'.format(model_name, case_name))
+        cfg_s3uri = ssmh.get_parameter('/all_in_one_ai/config/meta/models/{0}/cases/{1}/training_job/cfg_s3uri'.format(model_name, case_name))
 
         payload = {}
         payload['training_job_name'] = request['training_job_name']
-        payload['training_image'] = request['training_image'] if('training_image' in request and request['training_image'] != '') else training_images['yolov5']
+        payload['training_image'] = request['training_image'] if('training_image' in request and request['training_image'] != '') else training_image
         payload['role_arn'] = role_arn
         payload['instance_type'] = request['instance_type']
         payload['instance_count'] = request['instance_count']
         payload['volume_size_in_gb'] = request['volume_size_in_gb']
         payload['images_s3uri'] = request['images_s3uri']
         payload['labels_s3uri'] = request['labels_s3uri']
-        payload['weights_s3uri'] = request['weights_s3uri'] if('weights_s3uri' in request and ['weights_s3uri'] != '') else weights_s3uri
-        payload['cfg_s3uri'] = request['cfg_s3uri'] if('cfg_s3uri' in request and ['cfg_s3uri'] != '') else cfg_s3uri
+        payload['weights_s3uri'] = request['weights_s3uri'] if('weights_s3uri' in request and request['weights_s3uri'] != '') else weights_s3uri
+        payload['cfg_s3uri'] = request['cfg_s3uri'] if('cfg_s3uri' in request and request['cfg_s3uri'] != '') else cfg_s3uri
         payload['output_s3uri'] = request['output_s3uri']
         payload['tags'] = request['tags'] if('tags' in event) else []
 
@@ -52,7 +51,7 @@ def lambda_handler(event, context):
         if('FunctionError' not in response):
             params = payload
             params['case_name'] = case_name
-            ddbh.put_item(payload)
+            ddbh.put_item(params)
 
             return {
                 'statusCode': response['StatusCode'],
@@ -74,6 +73,8 @@ def lambda_handler(event, context):
             if 'case' in event['queryStringParameters']:
                 case_name = event['queryStringParameters']['case']
         
+        print(training_job_name)
+        print(case_name)
         if training_job_name == None:
             if case_name != None:
                 items = ddbh.scan(FilterExpression=Attr('case_name').eq(case_name))
@@ -100,6 +101,7 @@ def lambda_handler(event, context):
             }
 
 def process_item(item):
+    print(item)
     if 'training_job_status' not in item or item['training_job_status'] in ['InProgress', 'Stopping']:
         payload = {'training_job_name': item['training_job_name']}
         response = lambda_client.invoke(
@@ -113,21 +115,25 @@ def process_item(item):
             payload = json.loads(payload)
             payload = json.loads(payload)
 
+            params = {}
+
             creation_time = datetime.fromisoformat(payload['CreationTime']) + timedelta(hours=8)
-            training_start_time = datetime.fromisoformat(payload['TrainingStartTime']) + timedelta(hours=8)
-    
             item['training_job_status'] = payload['TrainingJobStatus']
             item['creation_time'] = creation_time.strftime("%Y-%m-%d %H:%M:%S")
-            item['training_start_time'] = training_start_time.strftime("%Y-%m-%d %H:%M:%S")
-            item['model_artifacts'] = payload['ModelArtifacts']
-    
-            params = {}
+
             params['training_job_status'] = item['training_job_status']
             params['creation_time'] = item['creation_time']
-            params['training_start_time'] = item['training_start_time']
-            params['model_artifacts'] = item['model_artifacts']
             params['duration'] = '-'
             params['training_end_time'] = '-'
+
+            if('TrainingStartTime' in payload):
+                training_start_time = datetime.fromisoformat(payload['TrainingStartTime']) + timedelta(hours=8)
+                item['training_start_time'] = training_start_time.strftime("%Y-%m-%d %H:%M:%S")
+                params['training_start_time'] = item['training_start_time']
+    
+            if('ModelArtifacts' in payload):
+                item['model_artifacts'] = payload['ModelArtifacts']
+                params['model_artifacts'] = item['model_artifacts']
         
             if('TrainingEndTime' in payload):
                 training_end_time = datetime.fromisoformat(payload['TrainingEndTime']) + timedelta(hours=8)

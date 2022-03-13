@@ -35,11 +35,11 @@ const App = () => {
         <NorthStarThemeProvider>
             <Router>
                 <Switch>
-                    <Route exact path="/scenario/:name">{withLayout(PPE)}</Route>
-                    <Route exact path="/algorithm/:name">{withLayout(Yolov5)}</Route>
-                    <Route exact path="/case/:name">{withLayout(Case)}</Route>
-                    <Route exact path="/case">{withLayout(Overview)}</Route>
-                    <Route exact path="/">{withLayout(Dashboard)}</Route>
+                    <Route sensitive={true} exact path="/scenario/:name">{withLayout(PPE)}</Route>
+                    <Route sensitive={true} exact path="/algorithm/:name">{withLayout(Yolov5)}</Route>
+                    <Route sensitive={true} exact path="/case/:name">{withLayout(Case)}</Route>
+                    <Route sensitive={true} exact path="/case">{withLayout(Overview)}</Route>
+                    <Route sensitive={true} exact path="/">{withLayout(Dashboard)}</Route>
                 </Switch>
             </Router>
         </NorthStarThemeProvider>

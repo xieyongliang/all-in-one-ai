@@ -62,7 +62,7 @@ const GreengrassDeploymentProp: FunctionComponent = () => {
     }, [id, params.name, items])
 
     const onClose = () => {
-        history.push(`/case/${params.name}?tab=greengrasscomponent`)
+        history.goBack()
     }
 
     const getRowId = useCallback(data => data.name, []);
