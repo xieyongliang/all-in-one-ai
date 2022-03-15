@@ -6,7 +6,7 @@ import Grid from '@mui/material/Grid';
 import axios from 'axios';
 import { AppState } from '../../../store';
 import { connect } from 'react-redux';
-import { UpdateModelModelPackageGroupName } from '../../../store/pipelines/actionCreators';
+import { UpdateModelModelPackageGroupName, UpdateModelModelPackageArn } from '../../../store/pipelines/actionCreators';
 
 interface PathParams {
     name: string;
@@ -20,7 +20,10 @@ interface ModelPackageItem {
 
 interface IProps {
     updateModelModelPackageGroupNameAction : (modelModelPackageGroupName: string) => any;
+    updateModelModelPackageArnAction : (modelModelPackageArn: string) => any;
+    pipelineType: string;
     modelModelPackageGroupName: string;
+    modelModelPackageArn: string;
     wizard?: boolean;
 }
 
@@ -30,7 +33,7 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
     const [ modelName, setModelName ] = useState('')
     const [ containerIamge, setContainerImage ] = useState('')
     const [ modelDataUrl, setModelDataUrl ] = useState('')
-    const [ containerInputType, setContainerInputType ] = useState('0')
+    const [ containerInputType, setContainerInputType ] = useState(props.wizard  ? '1' : '0')
     const [ containerModelType, setContainerModelType ] = useState('SingleModel')
     const [ selectedModelPackage, setSelectedModelPackage ] = useState({});
     const [ selectedModelPackageVersions ] = useState([]);
@@ -51,6 +54,12 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
         const response = await axios.get(`/modelpackage/${modelPackageGroupName}`)
         return response.data
     }
+
+    var wizard : boolean
+    if(props.wizard === undefined)
+        wizard = false
+    else
+        wizard = props.wizard
 
     useEffect(() => {
         axios.get('/modelpackage/group')
@@ -104,9 +113,16 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
     const onSelectionChange = (selectedItems: ModelPackageItem[]) => {
         selectedItems.forEach((selectedItem) => {
             setSelectedModelPackage(selectedItem)
-            if(props.wizard)
-                props.updateModelModelPackageGroupNameAction(selectedItem.name)
-            console.log(props.modelModelPackageGroupName)
+            if(wizard) {
+                var modelPackageGroupName = selectedItem.name
+                props.updateModelModelPackageGroupNameAction(modelPackageGroupName)
+                if(selectedModelPackageVersions[modelPackageGroupName] !==  undefined) {
+                    var modelPakcageVersion = selectedModelPackageVersions[modelPackageGroupName]['value']
+                    var index = itemsModelPackageVersions[selectedItem.name]['versions'].findIndex((version) => version === modelPakcageVersion)
+                    var model_package_arn = itemsModelPackageVersions[modelPackageGroupName]['arns'][index]
+                    props.updateModelModelPackageArnAction(selectedModelPackageVersions[model_package_arn])
+                }
+            }
         })
     }
 
@@ -176,12 +192,6 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
         tags.splice(index, 1);
         setForcedRefresh(!forcedRefresh);
     }
-
-    var wizard : boolean
-    if(props.wizard === undefined)
-        wizard = false
-    else
-        wizard = props.wizard
 
     const renderModelSetting = () => {
         if(!wizard) {
@@ -278,7 +288,7 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
         {
             id: 'version',
             width: 400,
-            Header: 'Component version',
+            Header: 'Version',
             accessor: 'versions',
             Cell: ({ row  }) => {
                 if (row && row.original) {
@@ -321,17 +331,17 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
                 />
             )
         else
-        return (
-            <Table
-                tableTitle='Model packages'
-                multiSelect={false}
-                columnDefinitions={columnDefinitions}
-                items={itemsModelPackageGroups}
-                loading={loading}
-                onSelectionChange={onSelectionChange}
-                getRowId={getRowId}
-            />
-        )
+            return (
+                <Table
+                    tableTitle='Model packages'
+                    multiSelect={false}
+                    columnDefinitions={columnDefinitions}
+                    items={itemsModelPackageGroups}
+                    loading={loading}
+                    onSelectionChange={onSelectionChange}
+                    getRowId={getRowId}
+                />
+            )
     }
 
     const onCreateModelPackageGroup = () => {
@@ -442,10 +452,16 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
         else
             return (
                 <FormSection header='Container definition'>
-                    <ExpandableSection header="Container input options" expanded={true}>{renderContainerInputOptions()}</ExpandableSection>  
+                    {
+                        !wizard && 
+                        <ExpandableSection header="Container input options" expanded={true}>{renderContainerInputOptions()}</ExpandableSection> 
+                    }
                     {renderModelPackageTable()}
                     <ExpandableSection header="Create a new model package group">{renderModelPackageGroupForm()}</ExpandableSection>
-                    <ExpandableSection header="Create a new model package">{renderModelPackageForm()}</ExpandableSection>
+                    {
+                        (props.pipelineType === '2' || props.pipelineType === '3') &&
+                        <ExpandableSection header="Create a new model package">{renderModelPackageForm()}</ExpandableSection>
+                    }
                 </FormSection>
             )
     }
@@ -454,8 +470,7 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
         return (
             <Stack>
                 {renderModelSetting()}
-                {renderModelPackageTable()}
-                {renderModelPackageGroupForm()}
+                {renderModelFormContent()}
                 {renderModelTag()}
             </Stack>
         )
@@ -481,10 +496,13 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
 
 const mapDispatchToProps = {
     updateModelModelPackageGroupNameAction: UpdateModelModelPackageGroupName,
+    updateModelModelPackageArnAction: UpdateModelModelPackageArn
 };
 
 const mapStateToProps = (state: AppState) => ({
-    modelModelPackageGroupName : state.pipeline.modelModelPackageGroupName
+    pipelineType: state.pipeline.pipelineType,
+    modelModelPackageGroupName : state.pipeline.modelModelPackageGroupName,
+    modelModelPackageArn: state.pipeline.modelModelPackageArn
 });
 
 export default connect(

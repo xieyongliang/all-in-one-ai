@@ -5,12 +5,13 @@ import axios from 'axios';
 import { PathParams } from '../../Interfaces/PathParams';
 
 const PipelineProp: FunctionComponent = () => {
+    const [ pipelineType, setPipelineType ] = useState('')
     const [ trainingJobName, setTraingJobName ] = useState('')
     const [ modelName, setModelName ] = useState('')
     const [ endpointName, setEndpointName ] = useState('')
     const [ apiName, setApiName ] = useState('')
-    const [ greengrassComponentVersionArn, setGreengrassComponentVersion ] = useState('')
-    const [ greengrassDeploymentName, setGreengrassDeploymentName ] = useState('')
+    const [ ComponentVersionArn, setComponentVersionArn ] = useState('')
+    const [ DeploymentId, setDeploymentId ] = useState('')
 
     const history = useHistory();
 
@@ -23,11 +24,13 @@ const PipelineProp: FunctionComponent = () => {
         axios.get(`/pipeline`, {params: {'case': params.name, 'pipeline_execution_arn': id}})
             .then((response) => {
             console.log(response.data)
-            if(response.data.training_job_name !== undefined)
-                setTraingJobName(response.data.training_job_name)
+            setPipelineType(response.data.pipeline_type)
+            setTraingJobName(response.data.training_job_name)
             setModelName(response.data.model_name)
             setEndpointName(response.data.endpoint_name)
             setApiName(response.data.api_name)
+            setComponentVersionArn(response.data.component_version_arn)
+            setDeploymentId(response.data.deployment_id)
         }, (error) => {
             console.log(error);
         });
@@ -57,7 +60,19 @@ const PipelineProp: FunctionComponent = () => {
 
     const getApiProps = (id) => {
         return (
-            <a href={`/case/${params.name}?tab=api#prop:id=${id}`}> {id} </a>
+            <a href={`/case/${params.name}?tab=restapi#prop:id=${id}`}> {id} </a>
+        )
+    }
+
+    const getGreengrassComponentVersionProps = (id) => {
+        return (
+            <a href={`/case/${params.name}?tab=greengrasscomponentversion#prop:id=${id}`}> {id} </a>
+        )
+    }
+
+    const getGreengrassDeploymentProps = (id) => {
+        return (
+            <a href={`/case/${params.name}?tab=greengrassdeployment#prop:id=${id}`}> {id} </a>
         )
     }
 
@@ -72,9 +87,12 @@ const PipelineProp: FunctionComponent = () => {
             <FormSection header='Pipeline'>
                 <KeyValuePair label='Pipeline name' value={id}></KeyValuePair>            
             </FormSection>
-            <FormSection header='Training job'>
-                <KeyValuePair label='Training job' value={getTrainingJobProps(trainingJobName)}></KeyValuePair>            
-            </FormSection>
+            {
+                ( pipelineType === '0' || pipelineType === '1') && 
+                <FormSection header='Training job'>
+                    <KeyValuePair label='Training job' value={getTrainingJobProps(trainingJobName)}></KeyValuePair>            
+                </FormSection>
+            }
             <FormSection header='Model'>
                 <KeyValuePair label='Model' value={getModelProps(modelName)}></KeyValuePair>            
             </FormSection>
@@ -84,6 +102,18 @@ const PipelineProp: FunctionComponent = () => {
             <FormSection header='Rest api'>
                 <KeyValuePair label='Rest api' value={getApiProps(apiName)}></KeyValuePair>            
             </FormSection>
+            {
+                ( pipelineType === '0' || pipelineType === '2') && 
+                <FormSection header='Greengrass component version'>
+                    <KeyValuePair label='Greengrass component version' value={getGreengrassComponentVersionProps(ComponentVersionArn)}></KeyValuePair>            
+                </FormSection>
+            }
+            {
+                ( pipelineType === '0' || pipelineType === '2') && 
+                <FormSection header='Greengrass deployment'>
+                    <KeyValuePair label='Greengrass deployment' value={getGreengrassDeploymentProps(DeploymentId)}></KeyValuePair>            
+                </FormSection>
+            }
         </Form>
     )
 }

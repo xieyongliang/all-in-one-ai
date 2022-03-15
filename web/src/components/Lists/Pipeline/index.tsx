@@ -8,13 +8,14 @@ import {Column} from 'react-table'
 import { useHistory, useParams } from 'react-router-dom';
 import { PathParams } from '../../Interfaces/PathParams';
 import axios from 'axios';
+import { getUtcDate } from '../../Utils/Helper';
 
 interface DataType {
-    execution_arn: string;
-    name: string;
-    status: string;
-    creation_time: string;
-    last_updated: string;
+    pipelineExecutionArn: string;
+    pipelineName: string;
+    pipelineExecutionStatus: string;
+    creationTime: string;
+    lastModifiedTime: string;
 }
 
 const PipelineList: FunctionComponent = () => {
@@ -32,8 +33,9 @@ const PipelineList: FunctionComponent = () => {
         axios.get('/pipeline', {params : {'case': params.name}})
             .then((response) => {
             var items = []
+            console.log(response.data)
             for(let item of response.data) {
-                items.push({execution_arn : item.pipeline_execution_arn, name: item.pipeline_name, status: item.execution_status, creation_time: item.creation_time, last_updated: item.last_modified_time})
+                items.push({pipelineExecutionArn : item.PipelineExecutionArn, pipelineName: item.PipelineExperimentConfig['ExperimentName'], pipelineExecutionStatus: item.PipelineExecutionStatus, creationTime: getUtcDate(item.CreationTime), lastModifiedTime: getUtcDate(item.LastModifiedTime)})
             }
             setItems(items)
             setLoading(false);
@@ -46,35 +48,35 @@ const PipelineList: FunctionComponent = () => {
         history.push('/case/' + params.name + '?tab=pipeline#form')
     }
 
-    const getRowId = useCallback(data => data.execution_arn, []);
+    const getRowId = useCallback(data => data.pipelineExecutionArn, []);
 
     const columnDefinitions : Column<DataType>[]= [
         {
-            id: 'execution_arn',
+            id: 'pipelineExecutionArn',
             width: 700,
             Header: 'Execution arn',
-            accessor: 'execution_arn',
+            accessor: 'pipelineExecutionArn',
             Cell: ({ row  }) => {
                 if (row && row.original) {
-                    return <a href={`/case/${params.name}?tab=pipeline#prop:id=${row.original.execution_arn}`}> {row.original.execution_arn} </a>;
+                    return <a href={`/case/${params.name}?tab=pipeline#prop:id=${row.original.pipelineExecutionArn}`}> {row.original.pipelineExecutionArn} </a>;
                 }
                 return null;
             }        
         },
         {
-            id: 'name',
-            width: 200,
+            id: 'pipelineName',
+            width: 150,
             Header: 'Name',
-            accessor: 'name'
+            accessor: 'pipelineName'
         },
         {
-            id: 'status',
-            width: 100,
+            id: 'pipelineExecutionStatus',
+            width: 150,
             Header: 'Status',
-            accessor: 'status',
+            accessor: 'pipelineExecutionStatus',
             Cell: ({ row  }) => {
                 if (row && row.original) {
-                    const status = row.original.status;
+                    const status = row.original.pipelineExecutionStatus;
                     switch(status) {
                         case 'Succeeded':
                             return <StatusIndicator  statusType='positive'>{status}</StatusIndicator>;
@@ -93,16 +95,16 @@ const PipelineList: FunctionComponent = () => {
             }
         },
         {
-            id: 'creation_time',
-            width: 150,
+            id: 'creationTime',
+            width: 250,
             Header: 'Creation time',
-            accessor: 'creation_time'
+            accessor: 'creationTime'
         },   
         {
-            id: 'last_updated',
-            width: 150,
+            id: 'lastModifiedTime',
+            width: 250,
             Header: 'Last updated',
-            accessor: 'last_updated'
+            accessor: 'lastModifiedTime'
         }   
     ];
     

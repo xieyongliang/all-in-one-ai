@@ -1,6 +1,15 @@
 import {Action} from '../Actions';
 import {PipelineActionTypes} from './types';
 
+export function UpdatePipelineType(pipelineType: string): PipelineActionTypes {
+    return {
+        type: Action.UPDATE_PIPELINE_TYPE,
+        payload: {
+            pipelineType,
+        },
+    };
+}
+
 export function UpdateTrainingjobInstanceType(trainingjobInstanceType: string): PipelineActionTypes {
     return {
         type: Action.UPDATE_PIPELINE_TRAINING_JOB_INSTANCE_TYPE,
@@ -78,6 +87,15 @@ export function UpdateModelModelPackageGroupName(modelModelPackageGroupName: str
         type: Action.UPDATE_PIPELINE_MODEL_MODELPACKAGE_GROUP_NAME,
         payload: {
             modelModelPackageGroupName,
+        },
+    };
+}
+
+export function UpdateModelModelPackageArn(modelModelPackageArn: string): PipelineActionTypes {
+    return {
+        type: Action.UPDATE_PIPELINE_MODEL_MODELPACKAGE_ARN,
+        payload: {
+            modelModelPackageArn,
         },
     };
 }
@@ -181,7 +199,16 @@ export function UpdateApiMethod(apiMethod: string): PipelineActionTypes {
     };
 }
 
-export function UpdateGreenGrassComponentVersion(greengrassComponentVersion: string): PipelineActionTypes {
+export function UpdateGreengrassComponentName(greengrassComponentName: string): PipelineActionTypes {
+    return {
+        type: Action.UPDATE_PIPELINE_GREENGRASS_COMPONENT_NAME,
+        payload: {
+            greengrassComponentName,
+        },
+    };
+}
+
+export function UpdateGreengrassComponentVersion(greengrassComponentVersion: string): PipelineActionTypes {
     return {
         type: Action.UPDATE_PIPELINE_GREENGRASS_COMPONENT_VERSION,
         payload: {
@@ -190,7 +217,16 @@ export function UpdateGreenGrassComponentVersion(greengrassComponentVersion: str
     };
 }
 
-export function UpdateGreenGrassDeploymentTargetType(greengrassDeploymentTargetType: string): PipelineActionTypes {
+export function UpdateGreengrassDeploymentName(greengrassDeploymentName: string): PipelineActionTypes {
+    return {
+        type: Action.UPDATE_PIPELINE_GREENGRASS_DEPLOYMENT_NAME,
+        payload: {
+            greengrassDeploymentName,
+        },
+    };
+}
+
+export function UpdateGreengrassDeploymentTargetType(greengrassDeploymentTargetType: string): PipelineActionTypes {
     return {
         type: Action.UPDATE_PIPELINE_GREENGRASS_DEPLOYMENT_TARGET_TYPE,
         payload: {
@@ -199,7 +235,7 @@ export function UpdateGreenGrassDeploymentTargetType(greengrassDeploymentTargetT
     };
 }
 
-export function UpdateGreenGrassDeploymentTargetArn(greengrassDeploymentTargetArn: string): PipelineActionTypes {
+export function UpdateGreengrassDeploymentTargetArn(greengrassDeploymentTargetArn: string): PipelineActionTypes {
     return {
         type: Action.UPDATE_PIPELINE_GREENGRASS_DEPLOYMENT_TARGET_ARN,
         payload: {
@@ -208,7 +244,7 @@ export function UpdateGreenGrassDeploymentTargetArn(greengrassDeploymentTargetAr
     };
 }
 
-export function UpdateGreenGrassDeploymentComponents(greengrassDeploymentComponents: string): PipelineActionTypes {
+export function UpdateGreengrassDeploymentComponents(greengrassDeploymentComponents: string): PipelineActionTypes {
     return {
         type: Action.UPDATE_PIPELINE_GREENGRASS_DEPLOYMENT_COMPONENTS,
         payload: {

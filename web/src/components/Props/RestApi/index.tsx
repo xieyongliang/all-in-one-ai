@@ -1,6 +1,6 @@
 import { FunctionComponent, useEffect, useState } from 'react';
 import { useHistory, useLocation, useParams } from 'react-router-dom';
-import { KeyValuePair, Button, Form, FormSection, Flashbar, Text, Input } from 'aws-northstar';
+import { KeyValuePair, Button, Form, FormSection, Flashbar } from 'aws-northstar';
 import axios from 'axios';
 import Grid from '@mui/material/Grid';
 import { PathParams } from '../../Interfaces/PathParams';

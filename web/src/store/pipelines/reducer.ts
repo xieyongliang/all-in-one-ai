@@ -2,6 +2,7 @@ import {PipelineActionTypes, PipelineState} from './types';
 import {Action} from '../Actions';
 
 const initialState: PipelineState = {
+    pipelineType: '',
     trainingjobInstanceType: '',
     trainingjobInstanceCount: 1,
     trainingjobVolumeSizeInGB: 30,
@@ -11,6 +12,7 @@ const initialState: PipelineState = {
     trainingjobCfgS3Uri: '',
     trainingjobOutputS3Uri: '',
     modelModelPackageGroupName: '',
+    modelModelPackageArn: '',
     endpointInstanceType: '',
     endpointAcceleratorType: '',
     endpointInitialInstanceCount: 1,
@@ -22,7 +24,9 @@ const initialState: PipelineState = {
     apiStage: '',
     apiFunction: '',
     apiMethod: '',
+    greengrassComponentName: '',
     greengrassComponentVersion: '',
+    greengrassDeploymentName: '',
     greengrassDeploymentTargetType: '1',
     greengrassDeploymentTargetArn: '',
     greengrassDeploymentComponents: '[]'
@@ -33,6 +37,12 @@ export function pipelineReducer(
     action: PipelineActionTypes
 ): PipelineState {
     switch (action.type) {
+        case Action.UPDATE_PIPELINE_TYPE: {
+            return {
+                ...state,
+                trainingjobInstanceType: action.payload.pipelineType
+            }
+        }
         case Action.UPDATE_PIPELINE_TRAINING_JOB_INSTANCE_TYPE: {
             return {
                 ...state,
@@ -85,6 +95,12 @@ export function pipelineReducer(
             return {
                 ...state,
                 modelModelPackageGroupName: action.payload.modelModelPackageGroupName
+            }
+        }
+        case Action.UPDATE_PIPELINE_MODEL_MODELPACKAGE_ARN: {
+            return {
+                ...state,
+                modelModelPackageGroupName: action.payload.modelModelPackageArn
             }
         }
         case Action.UPDATE_PIPELINE_ENDPOINT_INSTANCE_TYPE: {
@@ -153,10 +169,23 @@ export function pipelineReducer(
                 apiMethod: action.payload.apiMethod
             }
         }
+        case Action.UPDATE_PIPELINE_GREENGRASS_COMPONENT_NAME: {
+            console.log(action.payload.greengrassComponentName)
+            return {
+                ...state,
+                greengrassComponentName: action.payload.greengrassComponentName
+            }
+        }
         case Action.UPDATE_PIPELINE_GREENGRASS_COMPONENT_VERSION: {
             return {
                 ...state,
                 greengrassComponentVersion: action.payload.greengrassComponentVersion
+            }
+        }
+        case Action.UPDATE_PIPELINE_GREENGRASS_DEPLOYMENT_NAME: {
+            return {
+                ...state,
+                greengrassDeploymentName: action.payload.greengrassDeploymentName
             }
         }
         case Action.UPDATE_PIPELINE_GREENGRASS_DEPLOYMENT_TARGET_TYPE: {

@@ -1,6 +1,7 @@
 import {Action} from '../Actions';
 
 export type PipelineState = {
+    pipelineType: string;
     trainingjobInstanceType: string;
     trainingjobInstanceCount: number;
     trainingjobVolumeSizeInGB: number;
@@ -10,6 +11,7 @@ export type PipelineState = {
     trainingjobCfgS3Uri: string;
     trainingjobOutputS3Uri: string;
     modelModelPackageGroupName: string;
+    modelModelPackageArn: string;
     endpointInstanceType: string;
     endpointAcceleratorType: string;
     endpointInitialInstanceCount: number;
@@ -21,10 +23,19 @@ export type PipelineState = {
     apiStage: string;
     apiFunction: string;
     apiMethod: string;
+    greengrassComponentName: string;
     greengrassComponentVersion: string;
+    greengrassDeploymentName: string;
     greengrassDeploymentTargetType: string;
     greengrassDeploymentTargetArn: string;
     greengrassDeploymentComponents: string;
+}
+
+interface UpdatePipelineType {
+    type: typeof Action.UPDATE_PIPELINE_TYPE;
+    payload: {
+        pipelineType: string;
+    }
 }
 
 interface UpdateTrainingjobInstanceType {
@@ -87,6 +98,13 @@ interface UpdateModelModelPackageGroupName {
     type: typeof Action.UPDATE_PIPELINE_MODEL_MODELPACKAGE_GROUP_NAME;
     payload: {
         modelModelPackageGroupName: string;
+    }
+}
+
+interface UpdateModelModelPackageArn {
+    type: typeof Action.UPDATE_PIPELINE_MODEL_MODELPACKAGE_ARN;
+    payload: {
+        modelModelPackageArn: string;
     }
 }
 
@@ -167,35 +185,49 @@ interface UpdateApiMethod {
     }
 }
 
-interface UpdateGreenGrassComponentVersion {
+interface UpdateGreengrassComponentName {
+    type: typeof Action.UPDATE_PIPELINE_GREENGRASS_COMPONENT_NAME;
+    payload: {
+        greengrassComponentName: string;
+    }
+}
+
+interface UpdateGreengrassComponentVersion {
     type: typeof Action.UPDATE_PIPELINE_GREENGRASS_COMPONENT_VERSION;
     payload: {
         greengrassComponentVersion: string;
     }
 }
 
-interface UpdateGreenGrassDeploymentTargetType {
+interface UpdateGreengrassDeploymentName {
+    type: typeof Action.UPDATE_PIPELINE_GREENGRASS_DEPLOYMENT_NAME;
+    payload: {
+        greengrassDeploymentName: string;
+    }
+}
+
+interface UpdateGreengrassDeploymentTargetType {
     type: typeof Action.UPDATE_PIPELINE_GREENGRASS_DEPLOYMENT_TARGET_TYPE;
     payload: {
         greengrassDeploymentTargetType: string;
     }
 }
 
-interface UpdateGreenGrassDeploymentTargetArn {
+interface UpdateGreengrassDeploymentTargetArn {
     type: typeof Action.UPDATE_PIPELINE_GREENGRASS_DEPLOYMENT_TARGET_ARN;
     payload: {
         greengrassDeploymentTargetArn: string;
     }
 }
 
-interface UpdateGreenGrassDeploymentComponents {
+interface UpdateGreengrassDeploymentComponents {
     type: typeof Action.UPDATE_PIPELINE_GREENGRASS_DEPLOYMENT_COMPONENTS;
     payload: {
         greengrassDeploymentComponents: string;
     }
 }
 
-export type PipelineActionTypes = 
+export type PipelineActionTypes = UpdatePipelineType
     | UpdateTrainingjobInstanceType
     | UpdateTrainingjobInstanceCount
     | UpdateTrainingjobVolumeSizeInGB
@@ -205,6 +237,7 @@ export type PipelineActionTypes =
     | UpdateTrainingjobCfgS3Uri
     | UpdateTrainingjobOutputS3Uri
     | UpdateModelModelPackageGroupName
+    | UpdateModelModelPackageArn
     | UpdateEndpointInstanceType
     | UpdateEndpointAcceleratorType
     | UpdateEndpointInitialInstanceCount
@@ -216,7 +249,9 @@ export type PipelineActionTypes =
     | UpdateApiStage
     | UpdateApiFuntion
     | UpdateApiMethod
-    | UpdateGreenGrassComponentVersion
-    | UpdateGreenGrassDeploymentTargetType
-    | UpdateGreenGrassDeploymentTargetArn
-    | UpdateGreenGrassDeploymentComponents
+    | UpdateGreengrassComponentName
+    | UpdateGreengrassComponentVersion
+    | UpdateGreengrassDeploymentTargetType
+    | UpdateGreengrassDeploymentName
+    | UpdateGreengrassDeploymentTargetArn
+    | UpdateGreengrassDeploymentComponents

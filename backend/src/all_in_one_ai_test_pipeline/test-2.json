@@ -28,7 +28,3 @@
     "greengrassDeploymentTargetArn": "arn:aws:iot:ap-southeast-1:034068151705:thinggroup/GreengrassQuickStartGroup",
     "greengrassDeploymentComponents": "{\"com.example.yolov5\":{\"componentVersion\":\"1.0.7\"},\"com.example.stream\":{\"componentVersion\":\"1.0.0\"}}"
 }
-
-s3://all-in-one-ai-assets-ap-southeast-1/models/yolov5/cases/mask/data/images",
-s3://all-in-one-ai-assets-ap-southeast-1/models/yolov5/cases/mask/data/images
-s3://all-in-one-ai-assets-ap-southeast-1/models/yolov5/cases/mask/data/images

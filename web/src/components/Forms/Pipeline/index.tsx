@@ -14,8 +14,11 @@ import RadioButton from 'aws-northstar/components/RadioButton';
 import RadioGroup from 'aws-northstar/components/RadioGroup';
 import { AppState } from '../../../store';
 import { PathParams } from '../../Interfaces/PathParams';
+import { UpdatePipelineType } from '../../../store/pipelines/actionCreators';
 
 interface IProps {
+    updatePipelineTypeAction: (pipelineType : string) => any;
+    pipelineType: string;
     trainingjobInstanceType : string;
     trainingjobInstanceCount : number;
     trainingjobVolumeSizeInGB : number;
@@ -36,7 +39,9 @@ interface IProps {
     apiStage : string;
     apiFunction : string;
     apiMethod: string;
+    greengrassComponentName: string;
     greengrassComponentVersion: string;
+    greengrassDeploymentName: string;
     greengrassDeploymentTargetType: string;
     greengrassDeploymentTargetArn : string;
     greengrassDeploymentComponents: string; 
@@ -58,6 +63,7 @@ const PipelineForm: FunctionComponent<IProps> = (props) => {
 
     const onChangeOptions = (event, value) => {
         setPipelineType(value)
+        props.updatePipelineTypeAction(value)
     }
 
     const onSubmit = () => {
@@ -85,8 +91,10 @@ const PipelineForm: FunctionComponent<IProps> = (props) => {
         body['api_stage'] = props.apiStage
         body['api_function'] = props.apiFunction
         body['api_method'] = props.apiMethod
+        body['greengrass_component_name'] = props.greengrassComponentName
         body['greengrass_component_version'] = props.greengrassComponentVersion
-        body['greengrass_dDeployment_target_type'] = props.greengrassDeploymentTargetType
+        body['greengrass_deployment_name'] = props.greengrassDeploymentName
+        body['greengrass_deployment_target_type'] = props.greengrassDeploymentTargetType
         body['greengrass_deployment_target_arn'] = props.greengrassDeploymentTargetArn
         body['greengrass_deployment_components'] = props.greengrassDeploymentComponents
 
@@ -326,7 +334,12 @@ const PipelineForm: FunctionComponent<IProps> = (props) => {
     }
 }
 
+const mapDispatchToProps = {
+    updatePipelineTypeAction: UpdatePipelineType,
+};
+
 const mapStateToProps = (state: AppState) => ({
+    pipelineType: state.pipeline.pipelineType,
     trainingjobInstanceType : state.pipeline.trainingjobInstanceType,
     trainingjobInstanceCount : state.pipeline.trainingjobInstanceCount,
     trainingjobVolumeSizeInGB : state.pipeline.trainingjobVolumeSizeInGB,
@@ -347,12 +360,15 @@ const mapStateToProps = (state: AppState) => ({
     apiStage : state.pipeline.apiStage,
     apiFunction : state.pipeline.apiFunction,
     apiMethod: state.pipeline.apiMethod,
+    greengrassComponentName: state.pipeline.greengrassComponentName,
     greengrassComponentVersion : state.pipeline.greengrassComponentVersion,
+    greengrassDeploymentName: state.pipeline.greengrassDeploymentName,
     greengrassDeploymentTargetType: state.pipeline.greengrassDeploymentTargetType,
     greengrassDeploymentTargetArn : state.pipeline.greengrassDeploymentTargetArn,
     greengrassDeploymentComponents: state.pipeline.greengrassDeploymentComponents
 });
 
 export default connect(
-    mapStateToProps
+    mapStateToProps,
+    mapDispatchToProps
 )(PipelineForm);

@@ -64,7 +64,7 @@ const GreengrassDeploymentList: FunctionComponent = () => {
     const columnDefinitions : Column<DataType>[]= [
         {
             id: 'deployment_id',
-            width: 200,
+            width: 400,
             Header: 'Deployment id',
             accessor: 'deployment_id',
             Cell: ({ row  }) => {
@@ -76,7 +76,7 @@ const GreengrassDeploymentList: FunctionComponent = () => {
         },
         {
             id: 'target_arn',
-            width: 300,
+            width: 550,
             Header: 'Target arn',
             accessor: 'target_arn'
         },
@@ -113,7 +113,7 @@ const GreengrassDeploymentList: FunctionComponent = () => {
         },
         {
             id: 'deployment_created',
-            width: 200,
+            width: 250,
             Header: 'Deployment created',
             accessor: 'deployment_created'
         }

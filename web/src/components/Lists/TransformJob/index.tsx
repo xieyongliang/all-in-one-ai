@@ -120,10 +120,8 @@ const TransformJobList: FunctionComponent = () => {
 
     const onChange = ((id: string, event: any) => {
         if(event.length > 0) {
-            if(selectedTransformJob !== event[0].name) {
-                setSelectedTransformJob(event[0].name)
-                setEnabledReview(true)
-            }
+            setSelectedTransformJob(event[0].transformJobName)
+            setEnabledReview(true)
         }
     }
 )

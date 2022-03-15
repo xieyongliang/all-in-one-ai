@@ -4,53 +4,86 @@ import { Form, FormSection, FormField, Button, Stack, Select, Input } from 'aws-
 import { SelectOption } from 'aws-northstar/components/Select';
 import axios from 'axios';
 import { PathParams } from '../../Interfaces/PathParams';
-import { UpdateGreenGrassComponentVersion } from '../../../store/pipelines/actionCreators';
+import { UpdateGreengrassComponentName, UpdateGreengrassComponentVersion } from '../../../store/pipelines/actionCreators';
 import { AppState } from '../../../store';
 import { connect } from 'react-redux';
 
 interface IProps {
-    updateGreenGrassComponentVersionAction: (greengrassComponentVersion: string) => any;
+    updateGreengrassComponentNameAction: (greengrassComponentName: string) => any;
+    updateGreengrassComponentVersionAction: (greengrassComponentVersion: string) => any;
+    greengrassComponentName: string;
     greengrassComponentVersion: string;
     wizard?: boolean;
+}
+
+const getModel = async (modelName) => {
+    var response = await axios.get(`/model?case=${modelName}`)
+
+    return response.data
+}
+
+const getModelPackage = async (modelPackageName) => {
+    var response = await axios.get(`/modelpackage`, {params: {model_package_arn: modelPackageName}})
+
+    return response.data
 }
 
 const GreengrassComponentForm: FunctionComponent<IProps> = (props) => {
     const [ optionsModels, setOptionsModels ] = useState([]);
     const [ selectedModel, setSelectedModel ] = useState<SelectOption>({});
     const optionsComponents = [{label: 'com.example.yolov5', value: 'com.example.yolov5'}];
-    const [ selectedComponent, setSelectedComponent ] = useState<SelectOption>({})
+    const [ selectedComponent, setSelectedComponent ] = useState<SelectOption>(props.wizard ? {label: props.greengrassComponentName, value: props.greengrassComponentName}: {})
     const [ componentVersion, setComponentVersion ] = useState(props.wizard ? props.greengrassComponentVersion : '')
     const [ invalidModel, setInvalidModel ] = useState(false)
     const [ invalidComponent, setInvalidComponent ] = useState(false)
     const [ invalidComponentVersion, setInvalidComponentVersion ] = useState(false)
-    const [ modelDict ] = useState({})
+    const [ itemsModel ] = useState({})
 
     const history = useHistory();
     
     var params : PathParams = useParams();
 
     useEffect(() => {
-        axios.get(`/model?case=${params.name}`)
-            .then((response) => {
+       getModel(params.name).then((data) => {
             var items = []
-            for(let item of response.data) {
-                items.push({label: item.model_name, value: item.model_name})
-                modelDict[item.model_name] = item.model_data_url
+            for(let item of data) {
+                var modelName = item['ModelName']
+                if(item['Containers'] !== undefined) {
+                    var modelPackageName = item['Containers'][0]['ModelPackageName']
+                    getModelPackage(modelPackageName).then((data) => {
+                        var modelDataUrl = data['InferenceSpecification']['Containers'][0]['ModelDataUrl']
+                        itemsModel[modelName] = modelDataUrl
+                    })
+                }
+                else {
+                    var modelDataUrl = item['PrimaryContainer']['ModelDataUrl']
+                    itemsModel[modelName] = modelDataUrl
+                }
+                items.push({label: item.ModelName, value: item.ModelName})
             }
             setOptionsModels(items);
         }, (error) => {
             console.log(error);
         });
-    }, [params.name, modelDict])
+    }, [params.name, itemsModel])
 
     const onChange = (id: string, event: any) => {
         if(id === 'formFieldIdModels')
             setSelectedModel({ label: event.target.value, value: event.target.value });
-        if(id === 'formFieldIdComponents')
+        if(id === 'formFieldIdComponents') {
+            console.log(event.target.value)
             setSelectedComponent({ label: event.target.value, value: event.target.value });
+            if(wizard) {
+                props.updateGreengrassComponentNameAction(event.target.value)
+                console.log(props.greengrassComponentName)
+            }
+        }
         if(id === 'formFieldIdMComponentVersion') {
             setComponentVersion(event);
-            props.updateGreenGrassComponentVersionAction(event);
+            if(wizard) {
+                props.updateGreengrassComponentVersionAction(event);
+                console.log(props.greengrassComponentVersion)
+            }
         }
     }
 
@@ -65,7 +98,7 @@ const GreengrassComponentForm: FunctionComponent<IProps> = (props) => {
             var body = {
                 'component_version': componentVersion,
                 'case_name': params.name,
-                'model_data_url': modelDict[selectedModel.value]
+                'model_data_url': itemsModel[selectedModel.value]
             }
             axios.post(`/greengrass/component/${selectedComponent.value}`, body,  { headers: {'content-type': 'application/json' }}) 
             .then((response) => {
@@ -89,23 +122,19 @@ const GreengrassComponentForm: FunctionComponent<IProps> = (props) => {
         wizard = props.wizard
 
     const renderGreengrassComponentSetting = () => {
-        if(!wizard) {
-            return (
-                <FormSection header='Greengrass component setting'>
-                    <FormField label='Component name' controlId='formFieldIdComponents'>
-                        <Select
-                                placeholder='Choose an option'
-                                options={optionsComponents}
-                                selectedOption={selectedComponent}
-                                invalid={invalidComponent}
-                                onChange={(event) => onChange('formFieldIdComponents', event)}
-                            />
-                        </FormField>
+        return (
+            <FormSection header='Greengrass component setting'>
+                <FormField label='Component name' controlId='formFieldIdComponents'>
+                    <Select
+                            placeholder='Choose an option'
+                            options={optionsComponents}
+                            selectedOption={selectedComponent}
+                            invalid={invalidComponent}
+                            onChange={(event) => onChange('formFieldIdComponents', event)}
+                        />
+                    </FormField>
                 </FormSection>
             )
-        }
-        else
-            return ''
     }
 
     const renderGreengrassContent = () => {
@@ -162,10 +191,12 @@ const GreengrassComponentForm: FunctionComponent<IProps> = (props) => {
 }
 
 const mapDispatchToProps = {
-    updateGreenGrassComponentVersionAction: UpdateGreenGrassComponentVersion
+    updateGreengrassComponentNameAction : UpdateGreengrassComponentName,
+    updateGreengrassComponentVersionAction: UpdateGreengrassComponentVersion
 };
 
 const mapStateToProps = (state: AppState) => ({
+    greengrassComponentName: state.pipeline.greengrassComponentName,
     greengrassComponentVersion : state.pipeline.greengrassComponentVersion
 });
 

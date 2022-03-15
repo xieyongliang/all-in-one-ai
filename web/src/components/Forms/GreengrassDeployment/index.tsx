@@ -7,12 +7,13 @@ import Grid from '@mui/material/Grid';
 import axios from 'axios';
 import { connect } from 'react-redux';
 import { AppState } from '../../../store';
-import { UpdateGreenGrassDeploymentComponents, UpdateGreenGrassDeploymentTargetArn, UpdateGreenGrassDeploymentTargetType } from '../../../store/pipelines/actionCreators';
+import { UpdateGreengrassDeploymentComponents, UpdateGreengrassDeploymentName, UpdateGreengrassDeploymentTargetArn, UpdateGreengrassDeploymentTargetType } from '../../../store/pipelines/actionCreators';
 
 interface IProps {
-    updateGreenGrassDeploymentTargetTypeAction: (greengrassDeploymentTargetType: string) => any;
-    updateGreenGrassDeploymentTargetArnAction: (greengrassDeploymentTargetArn: string) => any;
-    updateGreenGrassDeploymentComponentsAction: (greengrassDeploymentComponents: string) => any;
+    updateGreengrassDeploymentNameAction: (greengrassDeploymentName: string) => any;
+    updateGreengrassDeploymentTargetTypeAction: (greengrassDeploymentTargetType: string) => any;
+    updateGreengrassDeploymentTargetArnAction: (greengrassDeploymentTargetArn: string) => any;
+    updateGreengrassDeploymentComponentsAction: (greengrassDeploymentComponents: string) => any;
     greengrassDeploymentTargetType: string;
     greengrassDeploymentTargetArn : string;
     greengrassDeploymentComponents: string;
@@ -58,6 +59,12 @@ const GreengrassDeploymentForm: FunctionComponent<IProps> = (props) => {
     const casenref= useRef(params.name);
 
     var selectedComponents = [];
+
+    var wizard : boolean
+    if(propsref.current.wizard === undefined)
+        wizard = false;
+    else
+        wizard = propsref.current.wizard;
 
     if(propsref.current.wizard) {
         var components = JSON.parse(propsref.current.greengrassDeploymentComponents)
@@ -107,50 +114,53 @@ const GreengrassDeploymentForm: FunctionComponent<IProps> = (props) => {
 
     const onChange = (id: string, event: any, option?: string) => {
         if(id === 'formFieldIdCoreDevices') {
-            setSelectedCoreDevice({label: event.target.value, value: event.target.value})
-            setInvalidCoreDevice(false)
+            setSelectedCoreDevice({label: event.target.value, value: event.target.value});
+            setInvalidCoreDevice(false);
             if(targetType === '0')
                 if(wizard)
-                    propsref.current.updateGreenGrassDeploymentTargetArnAction(event.target.value)
+                    propsref.current.updateGreengrassDeploymentTargetArnAction(event.target.value);
         }
         else if(id === 'formFieldIdThingGroups') {
-            setSelectedThingGroup({label: event.target.value, value: event.target.value})
-            setInvalidThingGroup(false)
+            setSelectedThingGroup({label: event.target.value, value: event.target.value});
+            setInvalidThingGroup(false);
             if(targetType === '1')
                 if(wizard)
-                    propsref.current.updateGreenGrassDeploymentTargetArnAction(itemsThingGroups[itemsThingGroups.findIndex((item) => item.name === event.target.value)]['arn'])
+                    propsref.current.updateGreengrassDeploymentTargetArnAction(itemsThingGroups[itemsThingGroups.findIndex((item) => item.name === event.target.value)]['arn']);
         }
-        else if(id === 'formFieldIdDeploymentName')
-            setDeploymentName(event)
+        else if(id === 'formFieldIdDeploymentName') {
+            setDeploymentName(event);
+            if(wizard)
+                propsref.current.updateGreengrassDeploymentNameAction(event);
+        }
         else if(option === 'versions') {
             selectedComponentVersions[id] = {label: event.target.value, value: event.target.value};
-            setForceRefreshed(!forceRefreshed)
+            setForceRefreshed(!forceRefreshed);
         } 
         else if(option === 'config') {
             var index = itemsComponents.findIndex((item)=> item.name === id )
             itemsComponents[index].config = event;
-            setForceRefreshed(!forceRefreshed)
+            setForceRefreshed(!forceRefreshed);
         }
     }
 
     const onSubmit = () => {
         if(targetType === '1' && selectedThingGroup.value === undefined)
-            setInvalidThingGroup(true)
+            setInvalidThingGroup(true);
         else if(targetType ==='0' && selectedCoreDevice.value === undefined)
-            setInvalidCoreDevice(true)
+            setInvalidCoreDevice(true);
         else {
-            var target_arn
+            var target_arn;
             if(targetType === '1')
-                target_arn = itemsThingGroups[itemsThingGroups.findIndex((item) => item.name === selectedThingGroup.value)]['arn']
+                target_arn = itemsThingGroups[itemsThingGroups.findIndex((item) => item.name === selectedThingGroup.value)]['arn'];
             else
-                target_arn = itemsCoreDevices[itemsCoreDevices.findIndex((item) => item.name === selectedCoreDevice.value)]['name']
-            var deployment_name = deploymentName
+                target_arn = itemsCoreDevices[itemsCoreDevices.findIndex((item) => item.name === selectedCoreDevice.value)]['name'];
+            var deployment_name = deploymentName;
             
-            var components = {}
+            var components = {};
             
             itemsComponents.forEach(itemComponent => {
                 if(itemComponent.selected)
-                    components[itemComponent.name] = {componentVersion: selectedComponentVersions[itemComponent.name].value}
+                    components[itemComponent.name] = {componentVersion: selectedComponentVersions[itemComponent.name].value};
             });
 
             var body = {
@@ -159,10 +169,10 @@ const GreengrassDeploymentForm: FunctionComponent<IProps> = (props) => {
                 'components': components,
                 'case_name': params.name
             }
-
+            console.log(body)
             axios.post('/greengrass/deployment', body,  { headers: {'content-type': 'application/json' }}) 
             .then((response) => {
-                history.goBack()
+                history.goBack();
             }, (error) => {
                 alert('Error occured, please check and try it again');
                 console.log(error);
@@ -172,30 +182,31 @@ const GreengrassDeploymentForm: FunctionComponent<IProps> = (props) => {
     }
 
     const onCancel = () => {
-        history.goBack()
+        history.goBack();
     }
 
     const onChangeOptions = (event, value)=>{
-        setTargetType(value)
-        propsref.current.updateGreenGrassDeploymentTargetTypeAction(value)
+        setTargetType(value);
+        if(wizard)
+            propsref.current.updateGreengrassDeploymentTargetTypeAction(value);
     }
 
     const onSelectionChange = (selectedItems: DataType[]) => {
-        var selected = {}
+        var selected = {};
         selectedItems.forEach((selectedItem) => {
-            selected[selectedItem.name] = ''    
+            selected[selectedItem.name] = '';
         })
         itemsComponents.forEach((itemComponent) => {
-            itemComponent.selected = (itemComponent.name in selected)
+            itemComponent.selected = (itemComponent.name in selected);
         })
-        var components = {}
-
+        
+        var components = {};
         itemsComponents.forEach(itemComponent => {
             if(itemComponent.selected)
-                components[itemComponent.name] = {componentVersion: selectedComponentVersions[itemComponent.name].value}
+                components[itemComponent.name] = {componentVersion: selectedComponentVersions[itemComponent.name].value};
         });
 
-        propsref.current.updateGreenGrassDeploymentComponentsAction(JSON.stringify(components))
+        propsref.current.updateGreengrassDeploymentComponentsAction(JSON.stringify(components));
     }
 
     const onAddTag = () => {
@@ -207,12 +218,6 @@ const GreengrassDeploymentForm: FunctionComponent<IProps> = (props) => {
         tags.splice(index, 1);
         setForcedRefresh(!forcedRefresh);
     }
-
-    var wizard : boolean
-    if(propsref.current.wizard === undefined)
-        wizard = false
-    else
-        wizard = propsref.current.wizard
     
     const getRowId = useCallback(data => data.name, []);
 
@@ -430,12 +435,14 @@ const GreengrassDeploymentForm: FunctionComponent<IProps> = (props) => {
 }
 
 const mapDispatchToProps = {
-    updateGreenGrassDeploymentTargetTypeAction: UpdateGreenGrassDeploymentTargetType,
-    updateGreenGrassDeploymentTargetArnAction: UpdateGreenGrassDeploymentTargetArn,
-    updateGreenGrassDeploymentComponentsAction: UpdateGreenGrassDeploymentComponents
+    updateGreengrassDeploymentNameAction: UpdateGreengrassDeploymentName,
+    updateGreengrassDeploymentTargetTypeAction: UpdateGreengrassDeploymentTargetType,
+    updateGreengrassDeploymentTargetArnAction: UpdateGreengrassDeploymentTargetArn,
+    updateGreengrassDeploymentComponentsAction: UpdateGreengrassDeploymentComponents
 };
 
 const mapStateToProps = (state: AppState) => ({
+    greengrassDeploymentName: state.pipeline.greengrassDeploymentName,
     greengrassDeploymentTargetType: state.pipeline.greengrassDeploymentTargetType,
     greengrassDeploymentTargetArn : state.pipeline.greengrassDeploymentTargetArn,
     greengrassDeploymentComponents: state.pipeline.greengrassDeploymentComponents

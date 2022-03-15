@@ -1,6 +1,8 @@
 import json
 import boto3
 import sagemaker
+from sagemaker.workflow.condition_step import ConditionStep
+from sagemaker.workflow.fail_step import FailStep
 from sagemaker.workflow.pipeline import Pipeline
 from sagemaker.workflow.parameters import (
     ParameterInteger,
@@ -19,6 +21,7 @@ from sagemaker.workflow.lambda_step import (
     LambdaOutputTypeEnum,
 )
 from sagemaker.lambda_helper import Lambda
+from sagemaker.workflow.conditions import ConditionEquals
 
 sagemaker_client = boto3.client("sagemaker")
 
@@ -128,13 +131,41 @@ def lambda_handler(event, context):
         model_package_group_name = param_model_package_group_name,
         approval_status = "Approved",
     )
-    
-    output_param_1 = LambdaOutput(output_name="statusCode", output_type=LambdaOutputTypeEnum.String)
+
+    output_param_1 = LambdaOutput(output_name="statusCode", output_type=LambdaOutputTypeEnum.Integer)
     output_param_2 = LambdaOutput(output_name="body", output_type=LambdaOutputTypeEnum.String)
-    output_param_3 = LambdaOutput(output_name="statusCode", output_type=LambdaOutputTypeEnum.String)
+    output_param_3 = LambdaOutput(output_name="statusCode", output_type=LambdaOutputTypeEnum.Integer)
     output_param_4 = LambdaOutput(output_name="body", output_type=LambdaOutputTypeEnum.String)
-    output_param_5 = LambdaOutput(output_name="statusCode", output_type=LambdaOutputTypeEnum.String)
+    output_param_5 = LambdaOutput(output_name="statusCode", output_type=LambdaOutputTypeEnum.Integer)
     output_param_6 = LambdaOutput(output_name="body", output_type=LambdaOutputTypeEnum.String)
+    output_param_7 = LambdaOutput(output_name="statusCode", output_type=LambdaOutputTypeEnum.Integer)
+    output_param_8 = LambdaOutput(output_name="body", output_type=LambdaOutputTypeEnum.String)
+
+    step_create_model_lambda = LambdaStep(
+        name='Yolov5CreateModelLambda',
+        lambda_func=Lambda(
+            function_arn = lambda_arn,
+            timeout = 900
+        ),
+        inputs = {
+            'action': 'create_model',
+            'case_name': param_case_name,
+            'model_name': param_model_name,
+            'role_arn': role,
+            'model_package_arn': step_register_model.steps[0].properties.ModelPackageArn,
+        },
+        outputs = [output_param_1, output_param_2]
+    )
+ 
+    inputs = {
+        'action': 'create_endpoint',
+        'case_name': param_case_name,
+        'model_name': param_model_name,
+        'endpoint_name': param_endpoint_name,
+        'instance_type': param_endpoint_instance_type,
+        'initial_instance_count': param_endpoint_initial_instance_count,
+        'initial_variant_weight': param_endpoint_initial_variant_weight
+    }
  
     step_create_endpoint_lambda = LambdaStep(
         name='Yolov5CreateEndpointLambda',
@@ -142,18 +173,8 @@ def lambda_handler(event, context):
             function_arn = lambda_arn,
             timeout = 900
         ),
-        inputs = {
-            'action': 'create_endpoint',
-            'case_name': param_case_name,
-            'model_name': param_model_name,
-            'role_arn': role,
-            'model_package_arn': step_register_model.steps[0].properties.ModelPackageArn,
-            'endpoint_name': param_endpoint_name,
-            'instance_type': param_endpoint_instance_type,
-            'initial_instance_count': param_endpoint_initial_instance_count,
-            'initial_variant_weight': param_endpoint_initial_variant_weight
-        },
-        outputs= [output_param_1, output_param_2]
+        inputs = inputs,
+        outputs = [output_param_3, output_param_4]
     )
 
     step_wait_endpoint_lambda = LambdaStep(
@@ -167,19 +188,18 @@ def lambda_handler(event, context):
             'endpoint_name': param_endpoint_name
         },
         outputs = [output_param_5, output_param_6],
-        depends_on = [step_create_endpoint_lambda]
     )
 
     inputs = {
-            'action': 'create_api',
-            'case_name': param_case_name,
-            'api_name': param_api_name,
-            'api_path': param_api_path,
-            'api_stage': param_api_stage,
-            'api_function': param_api_function,
-            'api_method': param_api_method,
-            'api_env': param_api_env
-        }
+        'action': 'create_api',
+        'case_name': param_case_name,
+        'api_name': param_api_name,
+        'api_path': param_api_path,
+        'api_stage': param_api_stage,
+        'api_function': param_api_function,
+        'api_method': param_api_method,
+        'api_env': param_api_env
+    }
 
     if(rest_api_name != ''):
         inputs['rest_api_name'] = param_rest_api_name
@@ -193,9 +213,76 @@ def lambda_handler(event, context):
             timeout = 900
         ),
         inputs = inputs,
-        outputs = [output_param_3, output_param_4],
-        depends_on = [step_wait_endpoint_lambda]
+        outputs = [output_param_7, output_param_8],
     )        
+
+    cond_eq_create_model = ConditionEquals(
+        left = output_param_1,
+        right = 200
+    )
+
+    step_fail_create_model = FailStep(
+        name="Yolov5CreateModelLambdaFail",
+        error_message = output_param_2 
+    )
+
+    cond_eq_create_endpoint = ConditionEquals(
+        left = output_param_3,
+        right = 200
+    )
+
+    step_fail_create_endpoint = FailStep(
+        name="Yolov5CreateEndpointLambdaFail",
+        error_message = output_param_4
+    )
+
+    cond_eq_wait_endpoint = ConditionEquals(
+        left = output_param_5,
+        right = 200
+    )
+
+    step_fail_wait_endpoint = FailStep(
+        name="Yolov5WaitEndpointLambdaFail",
+        error_message = output_param_6
+    )
+
+    cond_eq_create_api = ConditionEquals(
+        left = output_param_7,
+        right = 200
+    )
+
+    step_fail_create_api = FailStep(
+        name="Yolov5CreateApiLambdaFail",
+        error_message = output_param_8
+    )
+
+    step_cond_create_api = ConditionStep(
+        name ="Yolov5CreateApiLambdaCondition",
+        conditions = [cond_eq_create_api],
+        if_steps = [],
+        else_steps = [step_fail_create_api]
+    )
+
+    step_cond_wait_endpoint = ConditionStep(
+        name ="Yolov5WaitEndpointLambdaCondition",
+        conditions = [cond_eq_wait_endpoint],
+        if_steps = [step_create_api_lambda, step_cond_create_api],
+        else_steps = [step_fail_wait_endpoint]
+    )
+    
+    step_cond_create_endpoint = ConditionStep(
+        name ="Yolov5CreateEndpointLambdaCondition",
+        conditions = [cond_eq_create_endpoint],
+        if_steps = [step_wait_endpoint_lambda, step_cond_wait_endpoint],
+        else_steps = [step_fail_create_endpoint]
+    )
+
+    step_cond_create_model = ConditionStep(
+        name ="Yolov5CreateModelLambdaCondition",
+        conditions = [cond_eq_create_model],
+        if_steps = [step_create_endpoint_lambda, step_cond_create_endpoint],
+        else_steps = [step_fail_create_model]
+    )
 
     parameters = [
             param_case_name,
@@ -232,7 +319,7 @@ def lambda_handler(event, context):
     pipeline = Pipeline(
         name = pipeline_name,
         parameters = parameters,
-        steps = [step_train_model, step_register_model, step_create_endpoint_lambda, step_wait_endpoint_lambda, step_create_api_lambda]
+        steps = [step_train_model, step_register_model, step_create_model_lambda, step_cond_create_model]
     )
 
     print(pipeline.definition())
@@ -276,4 +363,6 @@ def lambda_handler(event, context):
         parameters['rest_api_id'] =  rest_api_id
     
     print(parameters)
-    pipeline.start(parameters =  parameters)
+    response = pipeline.start(parameters =  parameters)
+    
+    return response.arn
