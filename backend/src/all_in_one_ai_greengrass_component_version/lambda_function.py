@@ -16,15 +16,21 @@ lambda_client = boto3.client('lambda')
 greengrassv2_client = boto3.client('greengrassv2')
 
 def lambda_handler(event, context):
+    print(event)
     component_name = None
-    if event['pathParameters'] != None:
-        component_name = event['pathParameters']['component_name']
-        
+    if('pathParameters' in event):
+        if(event['pathParameters'] != None):
+            component_name = event['pathParameters']['component_name']
+
     if(component_name == None and event['httpMethod'] == 'POST'):
-        return {
-            'statusCode': 400,
-            'body': 'Parameter - component_name is missing'
-        }
+        if('component_name' in event['body']):
+            payload = json.loads(event['body'])
+            component_name = payload['component_name']
+        else:
+            return {
+                'statusCode': 400,
+                'body': 'Parameter - component_name is missing'
+            }
     elif(component_name == None and event['httpMethod'] == 'GET'):
         response = greengrassv2_client.list_components()
         
@@ -75,19 +81,20 @@ def lambda_handler(event, context):
         
         response = lambda_client.invoke(
             FunctionName='all_in_one_ai_greengrass_create_component_version',
-            InvocationType='Event',
+            InvocationType='RequestResponse',
             Payload=json.dumps({'body': payload})
         )
 
+        print(response)
         if('FunctionError' not in response):
             return {
                 'statusCode': 200,
-                'body': ''
+                'body': response["Payload"].read().decode("utf-8")
             }
         else:
             return {
                 'statusCode': 400,
-                'body': response['FunctionError']
+                'body': response['FunctionError'],
             }
     else:
         component_version_arn = None
@@ -140,4 +147,3 @@ def defaultencode(o):
     if isinstance(o, (datetime, date)):
         return o.isoformat()
     raise TypeError(repr(o) + " is not JSON serializable")
-

@@ -94,10 +94,11 @@ const TransformJobList: FunctionComponent<IProps> = (props) => {
 
             axios.get('/transformjob', {params : {'case': params.name}})
             .then((response) => {
-            for(let item of response.data) {
-                transformJobItems.push({transformJobName: item.TransformJobName, transformJobStatus : item.TransformJobStatus, duration: getDurationByDates(item.TransformStartTime, item.TransformEndTime), creationTime: item.CreationTime})
+                for(let item of response.data) {
+                    transformJobItems.push({transformJobName: item.TransformJobName, transformJobStatus : item.TransformJobStatus, duration: getDurationByDates(item.TransformStartTime, item.TransformEndTime), creationTime: item.CreationTime})
+                if(transformJobItems.length === response.data.length)
+                    setTransformJobItems(transformJobItems)
             }})
-            setTransformJobItems(transformJobItems)
         }
     }, [params.name, industrialModels]);
         
@@ -186,7 +187,7 @@ const TransformJobList: FunctionComponent<IProps> = (props) => {
         },
         {
             id: 'creationTime',
-            width: 200,
+            width: 400,
             Header: 'Creation time',
             accessor: 'creationTime'
         },

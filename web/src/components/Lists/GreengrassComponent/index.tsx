@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useState, useRef, useEffect } from 'react';
+import React, { FunctionComponent, useState, useEffect } from 'react';
 import { useHistory, useParams } from 'react-router-dom';
 import { Column } from 'react-table'
 import { Container, Stack, Inline } from 'aws-northstar';
@@ -16,42 +16,58 @@ interface DataType {
 }
 
 const GreengrassComponentList: FunctionComponent = () => {
-    const [ items ] = useState([])
+    const [ greengrassComponentItems, setGreengrassComponentItems ] = useState([])
     const [ loading, setLoading ] = useState(true);
     const [ sampleCode, setSampleCode ] = useState('')
     const [ sampleConsole, setSampleConsole ] = useState('')
     const [ visibleSampleCode, setVisibleSampleCode ] = useState(false)
 
-    const casename = useRef('');
-
     const history = useHistory();
 
     var params : PathParams = useParams();
 
+    const getSourceCode = async (uri) => {
+        const response = await axios.get('/file/download', {params: {uri: encodeURIComponent(uri)}, responseType: 'blob'})
+        return response.data
+    }
+
     useEffect(() => {
-        casename.current = params.name;
-        var component_name = 'com.example.yolov5'
-        const request1 = axios.get(`/greengrass/component/${component_name}`, {params : {'case': params.name}})
-        const request2 = axios.get('/function/all_in_one_ai_greengrass_create_component_version?action=code');
-        const request3 = axios.get('/function/all_in_one_ai_greengrass_create_component_version?action=console');
-        axios.all([request1, request2, request3])
-        .then(axios.spread(function(response1, response2, response3) {
-            for(let item of response1.data) {
-                items.push({name: item.component_name, version: item.component_version, arn : item.component_version_arn})
-            }
-            setLoading(false);
-            axios.get('/file/download', {params: {uri: encodeURIComponent(response2.data)}, responseType: 'blob'})
-            .then((response4) => {
+        var cancel = false
+        const requests = [ axios.get('/function/all_in_one_ai_create_component_version?action=code'), axios.get('/function/all_in_one_ai_create_component_version?action=console')];
+        axios.all(requests)
+        .then(axios.spread(function(response0, response1) {
+            getSourceCode(response0.data).then((data) => {
+                if(cancel) return;
                 var zip = new JSZip();
-                zip.loadAsync(response4.data).then(async function(zipped) {
+                zip.loadAsync(data).then(async function(zipped) {
                     zipped.file('lambda_function.py').async('string').then(function(data) {
+                        if(cancel) return;
                         setSampleCode(data)
                     })
                 })
             });
-            setSampleConsole(response3.data)
+            setSampleConsole(response1.data)           
         }));
-    },[params.name, items]);
+        return () => { 
+            cancel = true;
+        }
+    }, []);
+
+    useEffect(() => {
+        var component_name = 'com.example.yolov5'
+        axios.get(`/greengrass/component/${component_name}`, {params : {'case': params.name}})
+        .then((response) => {
+            var items = []
+            for(let item of response.data) {
+                items.push({name: item.component_name, version: item.component_version, arn : item.component_version_arn})
+                if(items.length === response.data.length)
+                    setGreengrassComponentItems(items)
+            }
+            setLoading(false);
+        }, (error) => {
+            console.log(error);
+        });
+    }, [params.name]);
 
     const onCreate = () => {
         history.push('/case/' + params.name + '?tab=greengrasscomponentversion#form')
@@ -105,7 +121,7 @@ const GreengrassComponentList: FunctionComponent = () => {
                 tableTitle='Greengrass components'
                 multiSelect={false}
                 columnDefinitions={columnDefinitions}
-                items={items}
+                items={greengrassComponentItems}
                 loading={loading}
                 onSelectionChange={console.log}
                 getRowId={getRowId}

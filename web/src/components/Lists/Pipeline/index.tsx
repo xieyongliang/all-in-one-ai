@@ -1,4 +1,4 @@
-import { FunctionComponent, useCallback, useEffect, useRef, useState } from 'react';
+import { FunctionComponent, useCallback, useEffect, useState } from 'react';
 import Table from 'aws-northstar/components/Table';
 import StatusIndicator from 'aws-northstar/components/StatusIndicator';
 import Button from 'aws-northstar/components/Button';
@@ -10,7 +10,7 @@ import { PathParams } from '../../Interfaces/PathParams';
 import axios from 'axios';
 import { getUtcDate } from '../../Utils/Helper';
 
-interface DataType {
+interface PipelineItem {
     pipelineExecutionArn: string;
     pipelineName: string;
     pipelineExecutionStatus: string;
@@ -19,29 +19,27 @@ interface DataType {
 }
 
 const PipelineList: FunctionComponent = () => {
-    const [ items, setItems ] = useState([])
+    const [ pipelineItems, setPipelineItems ] = useState([])
     const [ loading, setLoading ] = useState(true)
-
-    const casename = useRef('');
 
     const history = useHistory();
 
     var params : PathParams = useParams();
 
     useEffect(() => {
-        casename.current = params.name;
         axios.get('/pipeline', {params : {'case': params.name}})
             .then((response) => {
             var items = []
             for(let item of response.data) {
                 items.push({pipelineExecutionArn : item.PipelineExecutionArn, pipelineName: item.PipelineExperimentConfig['ExperimentName'], pipelineExecutionStatus: item.PipelineExecutionStatus, creationTime: getUtcDate(item.CreationTime), lastModifiedTime: getUtcDate(item.LastModifiedTime)})
+                if(items.length === response.data.length)
+                    setPipelineItems(items)
             }
-            setItems(items)
             setLoading(false);
         }, (error) => {
             console.log(error);
         });
-    }, [params.name, items]);
+    }, [params.name]);
 
     const onCreate = () => {
         history.push('/case/' + params.name + '?tab=pipeline#form')
@@ -49,7 +47,7 @@ const PipelineList: FunctionComponent = () => {
 
     const getRowId = useCallback(data => data.pipelineExecutionArn, []);
 
-    const columnDefinitions : Column<DataType>[]= [
+    const columnDefinitions : Column<PipelineItem>[]= [
         {
             id: 'pipelineExecutionArn',
             width: 700,
@@ -125,7 +123,7 @@ const PipelineList: FunctionComponent = () => {
             tableTitle='Pipeline'
             multiSelect={false}
             columnDefinitions={columnDefinitions}
-            items={items}
+            items={pipelineItems}
             onSelectionChange={console.log}
             loading={loading}
             getRowId={getRowId}

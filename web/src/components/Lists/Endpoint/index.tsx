@@ -1,5 +1,5 @@
 
-import React, { FunctionComponent, useEffect, useRef, useState } from 'react';
+import React, { FunctionComponent, useEffect, useState } from 'react';
 import { useHistory, useParams } from 'react-router-dom';
 import {Column} from 'react-table'
 import { Container, Link, Stack, Toggle, Button, ButtonDropdown, StatusIndicator, Table } from 'aws-northstar';
@@ -19,14 +19,12 @@ interface EndpointItem {
 }
 
 const EndpointList: FunctionComponent = () => {
-    const [ items ] = useState([])
+    const [ endpointItems, setEndpointItems ] = useState([])
     const [ loading, setLoading ] = useState(true);
     const [ sampleCode, setSampleCode ] = useState('')
     const [ sampleConsole, setSampleConsole ] = useState('')
     const [ visibleSampleCode, setVisibleSampleCode ] = useState(false)
 
-    const casename = useRef('');
-    
     const history = useHistory();
 
     var params : PathParams = useParams();
@@ -38,32 +36,40 @@ const EndpointList: FunctionComponent = () => {
 
     useEffect(() => {
         var cancel = false
-        casename.current = params.name;
-        const request1 = axios.get('/endpoint', {params : {'case': params.name}})
-        const request2 = axios.get('/function/all_in_one_ai_create_endpoint?action=code');
-        const request3 = axios.get('/function/all_in_one_ai_create_endpoint?action=console');
-        axios.all([request1, request2, request3])
-        .then(axios.spread(function(response1, response2, response3) {
-            for(let item of response1.data) {
-                items.push({endpointName: item.EndpointName, endpointStatus: item.EndpointStatus, creationTime: getUtcDate(item.CreationTime), lastModifiedTime: getUtcDate(item.LastModifiedTime)})
-            }
-            setLoading(false);
-            getSourceCode(response2.data).then((data) => {
+        const requests = [ axios.get('/function/all_in_one_ai_create_endpoint?action=code'), axios.get('/function/all_in_one_ai_create_endpoint?action=console')];
+        axios.all(requests)
+        .then(axios.spread(function(response0, response1) {
+            getSourceCode(response0.data).then((data) => {
                 if(cancel) return;
                 var zip = new JSZip();
                 zip.loadAsync(data).then(async function(zipped) {
                     zipped.file('lambda_function.py').async('string').then(function(data) {
+                        if(cancel) return;
                         setSampleCode(data)
                     })
                 })
             });
-            setSampleConsole(response3.data)
+            setSampleConsole(response1.data)           
         }));
-
         return () => { 
             cancel = true;
         }
-    },[params.name, items]);
+    }, []);
+
+    useEffect(() => {
+        axios.get('/endpoint', {params : {'case': params.name}})
+        .then((response) => {
+            var items = []
+            for(let item of response.data) {
+                items.push({endpointName: item.EndpointName, endpointStatus: item.EndpointStatus, creationTime: getUtcDate(item.CreationTime), lastModifiedTime: getUtcDate(item.LastModifiedTime)})
+                if(items.length ===  response.data.length)
+                    setEndpointItems(items)
+            }
+            setLoading(false);
+        }, (error) => {
+            console.log(error);
+        });
+    }, [params.name]);
 
     const onCreate = () => {
         history.push('/case/' + params.name + '?tab=endpoint#form')
@@ -145,7 +151,7 @@ const EndpointList: FunctionComponent = () => {
                 tableTitle='Endpoints'
                 multiSelect={false}
                 columnDefinitions={columnDefinitions}
-                items={items}
+                items={endpointItems}
                 loading={loading}
                 onSelectionChange={console.log}
                 getRowId={getRowId}

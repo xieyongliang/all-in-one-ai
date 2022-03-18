@@ -1,5 +1,5 @@
 
-import React, { FunctionComponent, useEffect, useRef, useState } from 'react';
+import React, { FunctionComponent, useEffect, useState } from 'react';
 import { useHistory, useParams } from 'react-router-dom';
 import {Column} from 'react-table'
 import { Container, Link, Stack, Toggle, Button, ButtonDropdown, StatusIndicator, Table} from 'aws-northstar';
@@ -19,41 +19,57 @@ interface DataType {
 }
 
 const GreengrassDeploymentList: FunctionComponent = () => {
-    const [ items ] = useState([])
+    const [ greengrassDeploymentItems, setGreengrassDeploymentItems ] = useState([])
     const [ loading, setLoading ] = useState(true);
     const [ sampleCode, setSampleCode ] = useState('')
     const [ sampleConsole, setSampleConsole ] = useState('')
     const [ visibleSampleCode, setVisibleSampleCode ] = useState(false)
-
-    const casename = useRef('');
     
     const history = useHistory();
 
     var params : PathParams = useParams();
 
+    const getSourceCode = async (uri) => {
+        const response = await axios.get('/file/download', {params: {uri: encodeURIComponent(uri)}, responseType: 'blob'})
+        return response.data
+    }
+
     useEffect(() => {
-        casename.current = params.name;
-        const request1 = axios.get(`/greengrass/deployment`, {params : {'case': params.name}})
-        const request2 = axios.get('/function/all_in_one_ai_greengrass_create_deployment?action=code');
-        const request3 = axios.get('/function/all_in_one_ai_greengrass_create_deployment?action=console');
-        axios.all([request1, request2, request3])
-        .then(axios.spread(function(response1, response2, response3) {
-            for(let item of response1.data) {
-                items.push({target_arn: item.targetArn, revision_id: item.revisionId, deployment_id : item.deploymentId, deployment_created: item.creationTimestamp, status: item.deploymentStatus})
-            }
-            setLoading(false);
-            axios.get('/file/download', {params: {uri: encodeURIComponent(response2.data)}, responseType: 'blob'})
-            .then((response4) => {
+        var cancel = false
+        const requests = [ axios.get('/function/all_in_one_ai_create_deployment?action=code'), axios.get('/function/all_in_one_ai_create_deployment?action=console')];
+        axios.all(requests)
+        .then(axios.spread(function(response0, response1) {
+            getSourceCode(response0.data).then((data) => {
+                if(cancel) return;
                 var zip = new JSZip();
-                zip.loadAsync(response4.data).then(async function(zipped) {
+                zip.loadAsync(data).then(async function(zipped) {
                     zipped.file('lambda_function.py').async('string').then(function(data) {
+                        if(cancel) return;
                         setSampleCode(data)
                     })
                 })
             });
-            setSampleConsole(response3.data)
+            setSampleConsole(response1.data)           
         }));
-    },[params.name, items]);
+        return () => { 
+            cancel = true;
+        }
+    }, []);
+
+    useEffect(() => {
+        axios.get(`/greengrass/deployment`, {params : {'case': params.name}})
+        .then((response) => {
+            var items = []
+            for(let item of response.data) {
+                items.push({target_arn: item.targetArn, revision_id: item.revisionId, deployment_id : item.deploymentId, deployment_created: item.creationTimestamp, status: item.deploymentStatus})
+                if(items.length === response.data.length)
+                    setGreengrassDeploymentItems(items)
+            }
+            setLoading(false);
+        }, (error) => {
+            console.log(error);
+        });
+    }, [params.name]);
 
     const onCreate = () => {
         history.push('/case/' + params.name + '?tab=greengrassdeployment#form')
@@ -138,7 +154,7 @@ const GreengrassDeploymentList: FunctionComponent = () => {
                 tableTitle='Greengrass deployments'
                 multiSelect={false}
                 columnDefinitions={columnDefinitions}
-                items={items}
+                items={greengrassDeploymentItems}
                 loading={loading}
                 onSelectionChange={console.log}
                 getRowId={getRowId}

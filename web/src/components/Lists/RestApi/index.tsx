@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useEffect, useRef, useState } from 'react';
+import React, { FunctionComponent, useEffect, useState } from 'react';
 import Table from 'aws-northstar/components/Table';
 import Button from 'aws-northstar/components/Button';
 import Inline from 'aws-northstar/layouts/Inline';
@@ -16,27 +16,27 @@ interface DataType {
 }
 
 const RestApiList: FunctionComponent = () => {
-    const [ items ] = useState([])
+    const [ apiItems, setApiItems ] = useState([])
     const [ loading, setLoading ] = useState(true);
-
-    const casename = useRef('');
 
     const history = useHistory();
 
     var params : PathParams = useParams();
 
     useEffect(() => {
-        casename.current = params.name;
         axios.get('/api', {params : {'case': params.name}})
             .then((response) => {
+            var items = []
             for(let item of response.data) {
                 items.push({name: item.api_name, function: item.api_function, created_date: item.created_date, url: item.api_url})
+                if(items.length === response.data.length)
+                    setApiItems(items)
             }
             setLoading(false);
         }, (error) => {
             console.log(error);
         });
-    }, [params.name, items]);
+    }, [params.name]);
 
     const onCreate = () => {
         history.push('/case/' + params.name + '?tab=restapi#form')
@@ -95,7 +95,7 @@ const RestApiList: FunctionComponent = () => {
             tableTitle='Rest apis'
             multiSelect={false}
             columnDefinitions={columnDefinitions}
-            items={items}
+            items={apiItems}
             onSelectionChange={console.log}
             loading={loading}
             getRowId={getRowId}

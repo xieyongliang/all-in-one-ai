@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useEffect, useRef, useState } from 'react';
+import React, { FunctionComponent, useEffect, useState } from 'react';
 import { useHistory, useParams } from 'react-router-dom';
 import {Column} from 'react-table'
 import { Container, Link, Stack, Toggle, Table, Button, Inline, ButtonDropdown } from 'aws-northstar';
@@ -14,13 +14,11 @@ interface ModelItem {
 }
 
 const ModelList: FunctionComponent = () => {
-    const [ items ] = useState([])
+    const [ modelItems, setModelItems ] = useState([])
     const [ loading, setLoading ] = useState(true);
     const [ sampleCode, setSampleCode ] = useState('')
     const [ sampleConsole, setSampleConsole ] = useState('')
     const [ visibleSampleCode, setVisibleSampleCode ] = useState(false)
-
-    const casename = useRef('');
 
     const history = useHistory();
 
@@ -30,21 +28,13 @@ const ModelList: FunctionComponent = () => {
         const response = await axios.get('/file/download', {params: {uri: encodeURIComponent(uri)}, responseType: 'blob'})
         return response.data
     }
-    
+
     useEffect(() => {
         var cancel = false
-        casename.current = params.name;
-        const request1 = axios.get('/model', {params : {'case': params.name}})
-        const request2 = axios.get('/function/all_in_one_ai_create_model?action=code');
-        const request3 = axios.get('/function/all_in_one_ai_create_model?action=console');
-        axios.all([request1, request2, request3])
-        .then(axios.spread(function(response1, response2, response3) {
-            if(cancel) return;
-            for(let item of response1.data) {
-                items.push({modelName: item.ModelName, creationTime: item.CreationTime})
-            }
-            setLoading(false);
-            getSourceCode(response2.data).then((data) => {
+        const requests = [ axios.get('/function/all_in_one_ai_create_model?action=code'), axios.get('/function/all_in_one_ai_create_model?action=console')];
+        axios.all(requests)
+        .then(axios.spread(function(response0, response1) {
+            getSourceCode(response0.data).then((data) => {
                 if(cancel) return;
                 var zip = new JSZip();
                 zip.loadAsync(data).then(async function(zipped) {
@@ -54,13 +44,27 @@ const ModelList: FunctionComponent = () => {
                     })
                 })
             });
-            setSampleConsole(response3.data)
+            setSampleConsole(response1.data)           
         }));
-
         return () => { 
             cancel = true;
         }
-    },[params.name, items]);
+    }, []);
+
+    useEffect(() => {
+        axios.get('/model', {params : {'case': params.name}})
+            .then((response) => {
+                var items = []
+                for(let item of response.data) {
+                    items.push({modelName: item.ModelName, creationTime: item.CreationTime})
+                    if(items.length === response.data.length)
+                        setModelItems(items)
+                }
+                setLoading(false);
+            }, (error) => {
+                console.log(error);
+            });
+        }, [params.name]);
 
     const getRowId = React.useCallback(data => data.modelName, []);
 
@@ -108,7 +112,7 @@ const ModelList: FunctionComponent = () => {
                 tableTitle='Models'
                 multiSelect={false}
                 columnDefinitions={columnDefinitions}
-                items={items}
+                items={modelItems}
                 loading={loading}
                 onSelectionChange={console.log}
                 getRowId={getRowId}
