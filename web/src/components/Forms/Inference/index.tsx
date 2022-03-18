@@ -1,4 +1,4 @@
-import { FunctionComponent, useEffect, useRef, useState } from 'react';
+import { FunctionComponent, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Container, FormField, Button, Inline, Stack, Toggle, Link } from 'aws-northstar';
 import FileUpload from 'aws-northstar/components/FileUpload';
@@ -8,8 +8,11 @@ import JSZip from 'jszip';
 import axios from 'axios';
 import URLImage from '../../Utils/URLImage';
 import ImageAnnotate from '../../Utils/Annotate';
-import {LABELS, COLORS, CaseType} from '../../Data/data';
+import { COLORS } from '../../Data/data';
 import { PathParams } from '../../Interfaces/PathParams';
+import { AppState } from '../../../store';
+import { connect } from 'react-redux';
+import { IIndustrialModel } from '../../../store/pipelines/reducer';
 
 interface FileMetadata {
     name: string;
@@ -18,60 +21,77 @@ interface FileMetadata {
     lastModified?: number;
 }
 
-const InferenceForm: FunctionComponent = () => {
-    const [filename, setFilename] = useState('')
-    const [id, setId] = useState<number[]>([])
-    const [bbox, setBbox] = useState<number[][]>([])
-    const [visibleAnnotate, setVisibleAnnotate] = useState(false);
-    const [labels, setLabels] = useState([]);
+interface IProps {
+    industrialModels: IIndustrialModel[];
+}
+
+const InferenceForm: FunctionComponent<IProps> = (props) => {
+    const [ curImageItem, setCurImageItem ] = useState('')
+    const [ imageIds, setImageIds ] = useState<number[]>([])
+    const [ imageBboxs, setImageBboxs ] = useState<number[][]>([])
+    const [ visibleAnnotate, setVisibleAnnotate ] = useState(false);
+    const [ imageLabels, setImageLabels ] = useState([]);
     const [ sampleCode, setSampleCode ] = useState('')
     const [ sampleConsole, setSampleConsole ] = useState('')
     const [ visibleSampleCode, setVisibleSampleCode ] = useState(false)
-    const casename = useRef('');
 
     var params : PathParams = useParams();
 
-    useEffect(() => {
-        casename.current = params.name;
-        setFilename('');
-        setVisibleAnnotate(false)
-        if(params.name === 'track')
-            setLabels(LABELS[CaseType.TRACK])
-        else if(params.name === 'mask')
-            setLabels(LABELS[CaseType.FACE])
+    const getSourceCode = async (uri) => {
+        const response = await axios.get('/file/download', {params: {uri: encodeURIComponent(uri)}, responseType: 'blob'})
+        return response.data
+    }
 
-        const request1 = axios.get('/function/all_in_one_ai_invoke_endpoint?action=code');
-        const request2 = axios.get('/function/all_in_one_ai_invoke_endpoint?action=console');
-        axios.all([request1, request2])
-        .then(axios.spread(function(response1, response2) {
-            axios.get('/file/download', {params: {uri: encodeURIComponent(response1.data)}, responseType: 'blob'})
-            .then((response4) => {
+    useEffect(() => {
+        var cancel = false
+        const requests = [ axios.get('/function/all_in_one_ai_invoke_endpoint?action=code'), axios.get('/function/all_in_one_ai_invoke_endpoint?action=console')];
+        axios.all(requests)
+        .then(axios.spread(function(response0, response1) {
+            getSourceCode(response0.data).then((data) => {
+                if(cancel) return;
                 var zip = new JSZip();
-                zip.loadAsync(response4.data).then(async function(zipped) {
-                        zipped.file('lambda_function.py').async('string').then(function(data) {
+                zip.loadAsync(data).then(async function(zipped) {
+                    zipped.file('lambda_function.py').async('string').then(function(data) {
+                        if(cancel) return;
                         setSampleCode(data)
                     })
                 })
             });
-            setSampleConsole(response2.data);
+            setSampleConsole(response1.data)           
         }));
-    }, [params.name]);
+        return () => { 
+            cancel = true;
+        }
+    }, []);
+
+    var industrialModels = props.industrialModels
+
+    useEffect(() => {
+        if(industrialModels.length > 0) {
+            var index = industrialModels.findIndex((item) => item.name === params.name)
+            setImageLabels(industrialModels[index].labels)
+            setCurImageItem('');
+            setVisibleAnnotate(false)
+        }
+    }, [params.name, industrialModels]);
 
     const onChange = (files: (File | FileMetadata)[]) => {
         axios.post('/image', files[0])
         .then((response) => {
             var filename : string = response.data;
-            setFilename(filename);
-            setId([]);
-            setBbox([]);
+            setCurImageItem(filename);
+            setImageIds([]);
+            setImageBboxs([]);
         }, (error) => {
             console.log(error);
         });
     }
 
     const onInference = () => {
-        axios.get('/inference/image/' + params.name + '/' + filename)
+        console.log(imageLabels)
+        axios.get('/inference/image/' + params.name + '/' + curImageItem)
         .then((response) => {
+            console.log(response.data)
             var tbbox : number[][] = [];
             var tid = [];
             for(let item of response.data) {
@@ -84,8 +104,8 @@ const InferenceForm: FunctionComponent = () => {
                 box.push(parseFloat(numbers[4]));
                 tbbox.push(box);
             }
-            setId(tid);
-            setBbox(tbbox);
+            setImageIds(tid);
+            setImageBboxs(tbbox);
         }, (error) => {
             console.log(error);
         });
@@ -98,19 +118,19 @@ const InferenceForm: FunctionComponent = () => {
     const renderAnnotate = () => {
         var annotationData : string[] = [];
         var index = 0;
-        bbox.forEach(item => {
-            var annotation : string = id[index] + ' ' + item[0] + ' ' + item[1] + ' ' + item[2] + ' ' + item[3] + '\r';
+        imageBboxs.forEach(item => {
+            var annotation : string = imageIds[index] + ' ' + item[0] + ' ' + item[1] + ' ' + item[2] + ' ' + item[3] + '\r';
             annotationData.push(annotation);
             index++;
         });
         var labelsData : string[] = [];
-        labels.forEach(label => {
+        imageLabels.forEach(label => {
             labelsData.push(label + '\r');
         })
             
         return (
             <Container title = 'Image annotation'>
-                <ImageAnnotate imageUri={`/image/${filename}`} labelsData={labelsData} annotationData={annotationData} colorData={COLORS}/>
+                <ImageAnnotate imageUri={`/image/${curImageItem}`} labelsData={labelsData} annotationData={annotationData} colorData={COLORS}/>
                 <FormField controlId='button'>
                     <Button variant='primary' onClick={()=>setVisibleAnnotate(false)}>Close</Button>
                 </FormField>
@@ -130,11 +150,11 @@ const InferenceForm: FunctionComponent = () => {
     }
 
     const renderPreview = () => {
-        if(filename === '') 
+        if(curImageItem === '') 
             return (
                 <Container title='Preview'>
                     <FormField controlId='button'>
-                        <Button variant='primary' onClick={onInference} disabled={filename === ''}>Inference</Button>
+                        <Button variant='primary' onClick={onInference} disabled={curImageItem === ''}>Inference</Button>
                     </FormField>
                 </Container>
             )
@@ -142,14 +162,14 @@ const InferenceForm: FunctionComponent = () => {
             return (
                 <Container title='Preview'>
                     <FormField controlId='button'>
-                        <URLImage src={'/image/' + filename} colors={COLORS} labels={labels} id={id} bbox={bbox}/>
+                        <URLImage src={'/image/' + curImageItem} colors={COLORS} labels={imageLabels} id={imageIds} bbox={imageBboxs}/>
                     </FormField>          
                     <Inline>      
                         <FormField controlId='button'>
-                            <Button variant='primary' onClick={onInference} disabled={filename === ''}>Inference</Button>
+                            <Button variant='primary' onClick={onInference} disabled={curImageItem === ''}>Inference</Button>
                         </FormField>
                         <FormField controlId='button'>
-                                <Button onClick={onAnnotate} disabled={bbox.length === 0}>Annotate</Button>
+                                <Button onClick={onAnnotate} disabled={imageBboxs.length === 0}>Annotate</Button>
                         </FormField>
                     </Inline>
                 </Container>
@@ -182,4 +202,10 @@ const InferenceForm: FunctionComponent = () => {
         )
 }
 
-export default InferenceForm;
+const mapStateToProps = (state: AppState) => ({
+    industrialModels : state.pipeline.industrialModels
+});
+
+export default connect(
+    mapStateToProps
+)(InferenceForm);

@@ -15,11 +15,6 @@ const Yolov5: FunctionComponent = () => {
                     Check out <Link href='https://github.com/ultralytics/yolov5'> Yolov5 </Link> for source code and full documentation on training, testing and deployment.
                 </Text>
             </Container>
-            <Container title = 'Yolov5 SageMaker'>
-                <Text>
-                    See the <Link href='https://github.com/whn09/yolov5_sagemaker'> Yolov5 SageMaker</Link> on Yolov5 training, testing and deployment on AWS SageMaker.
-                </Text>
-            </Container>
         </Stack>
     );
 }

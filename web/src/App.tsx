@@ -21,16 +21,46 @@ import Case from './components/Models'
 import Yolov5 from './components/Algorithms/Yolov5'
 import PPE from './components/Scenarios/PPE';
 import Overview from './components/Overview';
+import { FunctionComponent, useEffect } from 'react';
+import { IIndustrialModel } from './store/pipelines/reducer';
+import axios from 'axios'; 
+import { store } from '.';
+import { Action } from './store/Actions';
 
-const withLayout = (Component : any, props? : any) => {
-    return (
-        <AppLayout>
-            <Component {...props} />
-        </AppLayout>
-    )
-}
+const App : FunctionComponent = () => {
+    const withLayout = (Component : any, props? : any) => {
+        return (
+            <AppLayout>
+                <Component {...props} />
+            </AppLayout>
+        )
+    }
 
-const App = () => {
+    const getModels = async () => {
+        var response = await axios.get(`/models`)
+
+        return response.data
+    }
+
+    useEffect(() => {
+        getModels().then((data) => {
+            var industrialModels : IIndustrialModel[] = []
+            data.forEach((item) => {
+                var industrialModel : IIndustrialModel = {name: '', algorithm: '', description: '', icon : '', samples: '', labels: []}
+                industrialModel.name = item.model_name
+                industrialModel.algorithm = item.algorithm_name
+                industrialModel.description = item.model_description
+                industrialModel.icon = item.icon_s3uri
+                industrialModel.samples = item.sample_images_s3uri
+                industrialModel.labels = item.labels
+                industrialModels.push(industrialModel)
+            })
+            store.dispatch({ type: Action.UPDATE_INDUSTRIAL_MODELS, payload: {industrialModels : industrialModels}})
+         }, (error) => {
+             console.log(error);
+         });
+     }, [])
+
     return (
         <NorthStarThemeProvider>
             <Router>

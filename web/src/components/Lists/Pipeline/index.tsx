@@ -33,7 +33,6 @@ const PipelineList: FunctionComponent = () => {
         axios.get('/pipeline', {params : {'case': params.name}})
             .then((response) => {
             var items = []
-            console.log(response.data)
             for(let item of response.data) {
                 items.push({pipelineExecutionArn : item.PipelineExecutionArn, pipelineName: item.PipelineExperimentConfig['ExperimentName'], pipelineExecutionStatus: item.PipelineExecutionStatus, creationTime: getUtcDate(item.CreationTime), lastModifiedTime: getUtcDate(item.LastModifiedTime)})
             }

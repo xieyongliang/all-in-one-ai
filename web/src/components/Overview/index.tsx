@@ -1,58 +1,78 @@
 import { Box, Button, Card, Container, Stack } from 'aws-northstar';
-import { FunctionComponent } from 'react';
+import { FunctionComponent, useEffect, useState } from 'react';
 import Grid from '@mui/material/Grid';
 import { useHistory } from 'react-router-dom';
 import Image from '../Utils/Image'
+import CustomForm from '../Forms/Model/custom';
+import { connect } from 'react-redux';
+import { IIndustrialModel } from '../../store/pipelines/reducer';
+import { AppState } from '../../store';
+import axios from 'axios';
 
-const Overview: FunctionComponent = () => {
+interface IProps {
+    industrialModels: IIndustrialModel[];
+}
+
+const Overview: FunctionComponent<IProps> = (props) => {
+    const [ visibleCustom, setVisibleCustom ] = useState(false)
+    const [ itemsModels, setItemsModels ] = useState([])
     const history = useHistory();
 
+    const onCreate = () => {
+        setVisibleCustom(true);
+    }
+
+    const getHttpUri = async (s3uri) => {
+        var response = await axios.get('/s3', {params: {s3uri: s3uri}})
+        return response.data
+    }
+
+    useEffect(() => {
+            var items = []
+            props.industrialModels.forEach((item) => {
+                var s3uri = item.icon;
+                getHttpUri(s3uri).then((data) => {
+                    items.push({model: item.name, description: item.description, algorithm: item.algorithm, s3uri: s3uri, httpuri: data.payload, samples: item.samples});
+                    if(items.length === props.industrialModels.length)
+                        setItemsModels(items)
+                })
+            })
+     }, [props.industrialModels])
+
+    if(visibleCustom)
+        return <CustomForm/>
+    
+    console.log(itemsModels)
     return (
         <Stack>
-            <Container title='You can simply start from the existing use cases.'>
+            <Container title='You can simply start from the existing industrial models.'>
                 <Grid container spacing={{ xs: 1, md: 1 }} columns={{ xs: 4, sm: 8, md: 12 }}>
-                    <Grid item xs={2} sm={4} md={4}>
-                        <Box>
-                            <Card title='Track detection' subtitle='Yolov5' withHover onClick={()=>{history.push('/case/track?tab=demo#sample')}}>
-                                <Image width={128} height={128} src='track.png' current='' public={true} /> 
-                            </Card>
-                        </Box>
-                    </Grid>
-                    <Grid item xs={2} sm={4} md={4}>
-                        <Box>
-                            <Card title='Mask detection' subtitle='Yolov5' withHover onClick={()=>{history.push('/case/mask?tab=demo#sample')}}>
-                                <Image width={128} height={128} src='mask.jpeg' current='' public={true} /> 
-                            </Card>
-                        </Box>
-                    </Grid>
-                    <Grid item xs={2} sm={4} md={4}>
-                        <Box>
-                            <Card title='Helmet detection' subtitle='Yolov5' withHover>
-                                <Image width={128} height={128} src='helmet.png' current='' public={true} /> 
-                            </Card>
-                        </Box>
-                    </Grid>
-                    <Grid item xs={2} sm={4} md={4}>
-                        <Box>
-                            <Card title='Receipt recognition' subtitle='Paddle' withHover>
-                                <Image width={128} height={128} src='receipt.jpeg' current='' public={true} /> 
-                            </Card>
-                        </Box>
-                    </Grid>
-                    <Grid item xs={2} sm={4} md={4}>
-                        <Box>
-                            <Card title='Insurance resport recognition' subtitle='Paddle' withHover>
-                                <Image width={128} height={128} src='report.png' current='' public={true} /> 
-                            </Card>
-                        </Box>
-                    </Grid>
+                    {
+                        itemsModels.map((item) => {
+                            return (
+                                <Grid item xs={2} sm={4} md={4}>
+                                    <Box>
+                                        <Card title={item.description} subtitle={item.algorithm} withHover onClick={()=>{history.push(`/case/${item.model}?tab=demo#sample`)}}>
+                                            <Image width={128} height={128} src={item.httpuri} current='' public={true} /> 
+                                        </Card>
+                                    </Box>
+                                </Grid>
+                            )
+                        })       
+                    }
                 </Grid>
             </Container>
-            <Container title='You can also create your own use case based on the existing models.'>
-                <Button> Create your own use case </Button>
+            <Container title='You can also create your own industrial model based on the existing algorithms.'>
+                <Button onClick={onCreate}> Create your own industrial model </Button>
             </Container>
         </Stack>
     )
 }
 
-export default Overview;
+const mapStateToProps = (state: AppState) => ({
+    industrialModels : state.pipeline.industrialModels
+});
+
+export default connect(
+    mapStateToProps
+)(Overview);

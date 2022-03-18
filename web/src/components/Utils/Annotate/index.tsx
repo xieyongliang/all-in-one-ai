@@ -67,7 +67,6 @@ const ImageAnnotate: React.FC<IProps> = (props: PropsWithChildren<IProps>) => {
             props.annotationData.forEach(annotation => {
                 var number = annotation.split(' ');
                 var id = parseInt(number[0]);
-                console.log(id);
                 labelNames[id % props.colorData.length].color = props.colorData[id % props.colorData.length];
                 labelNames[id].name = props.labelsData[id];
             });

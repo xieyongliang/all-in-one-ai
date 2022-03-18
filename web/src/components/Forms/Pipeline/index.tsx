@@ -147,44 +147,32 @@ const PipelineForm: FunctionComponent<IProps> = (props) => {
         {
             title: 'Training job',
             content: 
-                <Stack>
-                    <TrainingJobForm wizard={true}/>
-                </Stack>            
+                <TrainingJobForm wizard={true}/>
         },
         {
             title: 'Model',
             content: 
-                <Stack>
-                    <ModelForm wizard={true}/>
-                </Stack>
+                <ModelForm wizard={true}/>
         },
         {
             title: 'Endpoint',
             content: 
-                <Stack>
-                    <EndpointForm wizard={true}/>
-                </Stack>
+                <EndpointForm wizard={true}/>
         },
         {
             title: 'Rest API',
             content: 
-                <Stack>
-                    <RestApiForm wizard={true}/>
-                </Stack>
+                <RestApiForm wizard={true}/>
         },
         {
             title: 'Greengrass component',
             content: 
-                <Stack>
-                    <GreengrassComponentForm wizard={true}/>
-                </Stack>
+                <GreengrassComponentForm wizard={true}/>
         },
         {
             title: 'Greengrass deployment',
             content: 
-                <Stack>
-                    <GreengrassDeploymentForm wizard={true}/>
-                </Stack>
+                <GreengrassDeploymentForm wizard={true}/>
         }
     ];
 
@@ -197,30 +185,22 @@ const PipelineForm: FunctionComponent<IProps> = (props) => {
         {
             title: 'Training job',
             content: 
-                <Stack>
-                    <TrainingJobForm wizard={true}/>
-                </Stack>            
+                <TrainingJobForm wizard={true}/>
         },
         {
             title: 'Model',
             content: 
-                <Stack>
-                    <ModelForm wizard={true}/>
-                </Stack>
+                <ModelForm wizard={true}/>
         },
         {
             title: 'Endpoint',
             content: 
-                <Stack>
-                    <EndpointForm wizard={true}/>
-                </Stack>
+                <EndpointForm wizard={true}/>
         },
         {
             title: 'Rest API',
             content: 
-                <Stack>
-                    <RestApiForm wizard={true}/>
-                </Stack>
+                <RestApiForm wizard={true}/>
         }    
     ]
 
@@ -233,37 +213,27 @@ const PipelineForm: FunctionComponent<IProps> = (props) => {
         {
             title: 'Model',
             content: 
-                <Stack>
-                    <ModelForm wizard={true}/>
-                </Stack>
+                <ModelForm wizard={true}/>
         },
         {
             title: 'Endpoint',
             content: 
-                <Stack>
-                    <EndpointForm wizard={true}/>
-                </Stack>
+                <EndpointForm wizard={true}/>
         },
         {
             title: 'Rest API',
             content: 
-                <Stack>
-                    <RestApiForm wizard={true}/>
-                </Stack>
+                <RestApiForm wizard={true}/>
         },
         {
             title: 'Greengrass component',
             content: 
-                <Stack>
-                    <GreengrassComponentForm wizard={true}/>
-                </Stack>
+                <GreengrassComponentForm wizard={true}/>
         },
         {
             title: 'Greengrass deployment',
             content: 
-                <Stack>
-                    <GreengrassDeploymentForm wizard={true}/>
-                </Stack>
+                <GreengrassDeploymentForm wizard={true}/>
         }    
     ]
     
@@ -276,23 +246,17 @@ const PipelineForm: FunctionComponent<IProps> = (props) => {
         {
             title: 'Model',
             content: 
-                <Stack>
-                    <ModelForm wizard={true}/>
-                </Stack>
+                <ModelForm wizard={true}/>
         },
         {
             title: 'Endpoint',
             content: 
-                <Stack>
-                    <EndpointForm wizard={true}/>
-                </Stack>
+                <EndpointForm wizard={true}/>
         },
         {
             title: 'Rest API',
             content: 
-                <Stack>
-                    <RestApiForm wizard={true}/>
-                </Stack>
+                <RestApiForm wizard={true}/>
         }    
     ]
 

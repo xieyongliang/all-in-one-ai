@@ -1,4 +1,5 @@
-import {Action} from '../Actions';
+import { Action } from '../Actions';
+import { IIndustrialModel } from './reducer';
 
 export type PipelineState = {
     pipelineType: string;
@@ -29,6 +30,7 @@ export type PipelineState = {
     greengrassDeploymentTargetType: string;
     greengrassDeploymentTargetArn: string;
     greengrassDeploymentComponents: string;
+    industrialModels: IIndustrialModel[]
 }
 
 interface UpdatePipelineType {
@@ -227,6 +229,13 @@ interface UpdateGreengrassDeploymentComponents {
     }
 }
 
+interface UpdateIndustrailModels {
+    type: typeof Action.UPDATE_INDUSTRIAL_MODELS;
+    payload: {
+        industrialModels: IIndustrialModel[];
+    }
+}
+
 export type PipelineActionTypes = UpdatePipelineType
     | UpdateTrainingjobInstanceType
     | UpdateTrainingjobInstanceCount
@@ -255,3 +264,4 @@ export type PipelineActionTypes = UpdatePipelineType
     | UpdateGreengrassDeploymentName
     | UpdateGreengrassDeploymentTargetArn
     | UpdateGreengrassDeploymentComponents
+    | UpdateIndustrailModels

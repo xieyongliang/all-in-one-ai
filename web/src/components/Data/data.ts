@@ -21,42 +21,6 @@ export const COLORS : string[] = [
     '#ff37c7'
 ]
 
-export type LabelMap = Record<CaseType, string[]>;
-
-const TrackLabels : string[] = [
-    'squat', 
-    'aluminothermic weld (atw)', 
-    'tri metal weld (tmw)', 
-    'fishplate joint (fj)', 
-    'grinding marks', 
-    'head check error', 
-    'insulated rail joint (irj)', 
-    'flash butt weld (fbw)', 
-    'corrugation', 
-    'rail head anomaly' 
-]
-
-const FaceLabels : string[] = [
-    'face mask',
-    'No face mask'
-]
-
-export enum CaseType {
-    TRACK = 'tarck',
-    FACE  = 'face',
-    HELMET = 'helmet',
-    RECEIPT = 'receipt',
-    INSURANCE = 'insurance'
-}
-
-export const LABELS : LabelMap = {
-    [CaseType.TRACK] :      TrackLabels,
-    [CaseType.FACE]  :      FaceLabels,
-    [CaseType.HELMET]:      [],
-    [CaseType.RECEIPT]:     [],
-    [CaseType.INSURANCE]:   []
-}
-
 export const APIS = {
     'create_training_job': {'function': 'all_in_one_ai_create_training_job_yolov5', 'method': 'POST'},
     'describe_training_job': {'function': 'all_in_one_ai_describe_training_job', 'method': 'GET'},

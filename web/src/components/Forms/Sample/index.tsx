@@ -1,4 +1,4 @@
-import { FunctionComponent, useEffect, useRef, useState } from 'react';
+import { FunctionComponent, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Button, Container, Link, FormField, Inline, Stack, Toggle } from 'aws-northstar';
 import ImageList from '@mui/material/ImageList';
@@ -9,22 +9,30 @@ import JSZip from 'jszip';import axios from 'axios';
 import URLImage from '../../Utils/URLImage';
 import ImageAnnotate from '../../Utils/Annotate';
 import Image from '../../Utils/Image';
-import {LABELS, COLORS, CaseType} from '../../Data/data';
+import { COLORS } from '../../Data/data';
 import { PathParams } from '../../Interfaces/PathParams';
+import Pagination from '@mui/material/Pagination';  
 import '../../Utils/Image/index.scss'
+import { AppState } from '../../../store';
+import { connect } from 'react-redux';
+import { IIndustrialModel } from '../../../store/pipelines/reducer';
 
-const SampleForm: FunctionComponent = () => {
-    const [ items, setItems ] = useState<string[]>([])
-    const [ current, setCurrent ] = useState('')
-    const [ filename, setFilename ] = useState('')
-    const [ id, setId ] = useState<number[]>([])
-    const [ bbox, setBbox ] = useState<number[][]>([])
+interface IProps {
+    industrialModels: IIndustrialModel[];
+}
+
+const SampleForm: FunctionComponent<IProps> = (props) => {
+    const [ imageItems, setImageItems ] = useState([])
+    const [ curImageItem, setCurImageItem ] = useState('')
+    const [ imageIds, setImageIds ] = useState<number[]>([])
+    const [ imageBboxs, setImageBboxs ] = useState<number[][]>([])
     const [ visibleAnnotate, setVisibleAnnotate ] = useState(false);
-    const [ labels, setLabels ] = useState([])
+    const [ imageLabels, setImageLabels ] = useState([])
     const [ sampleCode, setSampleCode ] = useState('')
     const [ sampleConsole, setSampleConsole ] = useState('')
     const [ visibleSampleCode, setVisibleSampleCode ] = useState(false)
-    const casename = useRef('');
+    const [ imagePage, setImagePage ] = useState(0)
+    const [ imageCount, setImageCount ] = useState(0)
 
     var params : PathParams = useParams();
 
@@ -35,25 +43,10 @@ const SampleForm: FunctionComponent = () => {
 
     useEffect(() => {
         var cancel = false
-        casename.current = params.name;
-        const request1 = axios.get('/samples/' + params.name);
-        const request2 = axios.get('/function/all_in_one_ai_invoke_endpoint?action=code');
-        const request3 = axios.get('/function/all_in_one_ai_invoke_endpoint?action=console');
-        axios.all([request1, request2, request3])
-        .then(axios.spread(function(response1, response2, response3) {
-            if(cancel) return;
-            var items : string[] = []
-            for(let item of response1.data) {
-                items.push(item)
-                setItems(items);
-                setFilename('');
-                setVisibleAnnotate(false);
-                if(params.name === 'track')
-                    setLabels(LABELS[CaseType.TRACK])
-                else if(params.name === 'mask')
-                    setLabels(LABELS[CaseType.FACE])    
-            }
-            getSourceCode(response2.data).then((data) => {
+        const requests = [ axios.get('/function/all_in_one_ai_invoke_endpoint?action=code'), axios.get('/function/all_in_one_ai_invoke_endpoint?action=console')];
+        axios.all(requests)
+        .then(axios.spread(function(response0, response1) {
+            getSourceCode(response0.data).then((data) => {
                 if(cancel) return;
                 var zip = new JSZip();
                 zip.loadAsync(data).then(async function(zipped) {
@@ -63,25 +56,41 @@ const SampleForm: FunctionComponent = () => {
                     })
                 })
             });
-            setSampleConsole(response3.data)
+            setSampleConsole(response1.data)           
         }));
-
         return () => { 
             cancel = true;
         }
-    },[params.name]);
+    }, []);
+
+    var industrialModels = props.industrialModels
+
+    useEffect(() => {
+        if(industrialModels.length > 0) {
+            var index = industrialModels.findIndex((item) => item.name === params.name)
+            var s3uri = industrialModels[index].samples
+            setImageLabels(industrialModels[index].labels)
+            axios.get('/s3', {params : { s3uri : s3uri, page_num: imagePage, page_size: 20 }}).then((response) => {
+                setImageItems(response.data.payload);
+                setImageCount(response.data.count)
+                setVisibleAnnotate(false);
+            })
+        }
+    },[params.name, imagePage, industrialModels]);
 
     const onImageClick = (src) => {
-        const filename = src.substring(src.lastIndexOf('/') + 1)
-        setCurrent(src)
-        setFilename(filename)
-        setId([]);
-        setBbox([]);
+        setCurImageItem(src)
+        setImageIds([]);
+        setImageBboxs([]);
     }
 
     const onInference = () => {
-        axios.get('/inference/sample/' + params.name + '/' + filename)
+        var index = imageItems.findIndex((item) => item.httpuri === curImageItem)
+        if(index === -1)
+            return;
+        axios.get('/inference/sample', { params : {case: params.name, bucket: imageItems[index].bucket, key: imageItems[index].key}})
         .then((response) => {
+            console.log(response.data)
             var tbbox : number[][] = [];
             var tid = [];
             for(let item of response.data) {
@@ -94,8 +103,8 @@ const SampleForm: FunctionComponent = () => {
                 box.push(parseFloat(numbers[4]));
                 tbbox.push(box);
             }
-            setId(tid);
-            setBbox(tbbox);
+            setImageIds(tid);
+            setImageBboxs(tbbox);
         }, (error) => {
             console.log(error);
         });
@@ -105,22 +114,25 @@ const SampleForm: FunctionComponent = () => {
         setVisibleAnnotate(true);
     }
 
+    const onChange = (value) => {
+        setImagePage(value)
+    }
+
     const renderAnnotate = () => {
         var annotationData : string[] = [];
         var index = 0;
-        bbox.forEach(item => {
-            var annotation : string = id[index] + ' ' + item[0] + ' ' + item[1] + ' ' + item[2] + ' ' + item[3] + '\r';
+        imageBboxs.forEach(item => {
+            var annotation : string = imageIds[index] + ' ' + item[0] + ' ' + item[1] + ' ' + item[2] + ' ' + item[3] + '\r';
             annotationData.push(annotation);
             index++;
         });
         var labelsData : string[] = [];
-        labels.forEach(label => {
+        imageLabels.forEach(label => {
             labelsData.push(label + '\r');
         })
-        console.log(current)
         return (
             <Container title = 'Image annotation'>
-                <ImageAnnotate imageUri={current} labelsData={labelsData} annotationData={annotationData} colorData={COLORS}/>
+                <ImageAnnotate imageUri={curImageItem} labelsData={labelsData} annotationData={annotationData} colorData={COLORS}/>
                 <FormField controlId='button'>
                     <Button variant='primary' onClick={()=>setVisibleAnnotate(false)}>Close</Button>
                 </FormField>
@@ -131,29 +143,32 @@ const SampleForm: FunctionComponent = () => {
     const renderImageList = () => {
         return (
             <Container title = 'Select image file from sample list'>
-                <ImageList cols={12} rowHeight={64} gap={10} variant={'quilted'} style={{'height':'550px'}}>
-                    {items.map((item, index) => (
-                        <ImageListItem key={item} rows={2}>
-                            <Image
-                                src={item}
-                                width={128}
-                                height={128}
-                                current={current}
-                                onClick={onImageClick}
-                            />
-                        </ImageListItem>
-                    ))}
+                <ImageList cols={10} rowHeight={64} gap={10} variant={'quilted'}>
+                    {
+                        imageItems.map((item) => (
+                            <ImageListItem key={item.httpuri} rows={2}>
+                                <Image
+                                    src={item.httpuri}
+                                    width={128}
+                                    height={128}
+                                    current={curImageItem}
+                                    onClick={onImageClick}
+                                />
+                            </ImageListItem>
+                        ))
+                    }
                 </ImageList>
+                <Pagination page={imagePage} onChange={(event, value) => onChange(value)} count={Math.floor(imageCount / 20)} />
             </Container>
         )
     }
 
     const renderPreview = () => {
-        if(filename === '')
+        if(curImageItem === '')
             return (
                 <Container title = 'Preview'>
                     <FormField controlId='button'>
-                        <Button variant='primary' onClick={onInference} disabled={filename === ''}>Inference</Button>
+                        <Button variant='primary' onClick={onInference} disabled={curImageItem === ''}>Inference</Button>
                     </FormField>
                 </Container>
             )
@@ -162,15 +177,15 @@ const SampleForm: FunctionComponent = () => {
                 <Container title = 'Preview'>
                     <FormField controlId='button'>
                         <div className='watermarked'>
-                            <URLImage src={current} colors={COLORS} labels={labels} id={id} bbox={bbox}/>
+                            <URLImage src={curImageItem} colors={COLORS} labels={imageLabels} id={imageIds} bbox={imageBboxs}/>
                         </div>
                     </FormField>
                     <Inline>
                         <FormField controlId='button'>
-                            <Button variant='primary' onClick={onInference} disabled={filename === ''}>Inference</Button>
+                            <Button variant='primary' onClick={onInference} disabled={curImageItem === ''}>Inference</Button>
                         </FormField>
                         <FormField controlId='button'>
-                            <Button onClick={onAnnotate} disabled={bbox.length === 0}>Annotate</Button>
+                            <Button onClick={onAnnotate} disabled={imageBboxs.length === 0}>Annotate</Button>
                         </FormField>
                     </Inline>
                 </Container>
@@ -203,4 +218,10 @@ const SampleForm: FunctionComponent = () => {
         )
 }
 
-export default SampleForm;
+const mapStateToProps = (state: AppState) => ({
+    industrialModels : state.pipeline.industrialModels
+});
+
+export default connect(
+    mapStateToProps
+)(SampleForm);

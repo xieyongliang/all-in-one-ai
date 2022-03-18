@@ -60,11 +60,15 @@ app.get('/inference/image/:case/:filename', (req, res) => {
         }
     );
 })
-app.get('/inference/sample/:case/:filename', (req, res) => {
-    var casename = req.params.case;
-    var filename = req.params.filename;
-    var buffer = fs.readFileSync('samples/' + casename + '/' + filename)
-    options = {headers: {'content-type': 'image/png'}, params : {model: casename}}
+app.get('/inference/sample', (req, res) => {
+    var casename = req.query['case'];
+    var bucket = req.query['bucket']
+    var key = req.query['key']
+    var buffer = {
+        'bucket': bucket,
+        'image_uri': key
+    }
+    options = {headers: {'content-type': 'application/json'}, params : {model: casename}}
     axios.post(baseUrl + '/inference', buffer, options)
         .then((response) => {
             res.send(response.data)
@@ -112,6 +116,15 @@ app.use(createProxyMiddleware('/modelpackage', {
     target: baseUrl + '/modelpackage',
     pathRewrite: {
         '^/modelpackage': ''
+    },
+    changeOrigin: true,
+    secure: false,
+    ws: false,
+}));
+app.use(createProxyMiddleware('/models', {
+    target: baseUrl + '/models',
+    pathRewrite: {
+        '^/models': ''
     },
     changeOrigin: true,
     secure: false,
@@ -166,6 +179,15 @@ app.use(createProxyMiddleware('/pipeline', {
     target: baseUrl + '/pipeline',
     pathRewrite: {
         '^/pipeline': ''
+    },
+    changeOrigin: true,
+    secure: false,
+    ws: false,
+}));
+app.use(createProxyMiddleware('/s3', {
+    target: baseUrl + '/s3',
+    pathRewrite: {
+        '^/s3': ''
     },
     changeOrigin: true,
     secure: false,

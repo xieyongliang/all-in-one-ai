@@ -47,17 +47,16 @@ const GreengrassComponentForm: FunctionComponent<IProps> = (props) => {
        getModel(params.name).then((data) => {
             var items = []
             for(let item of data) {
-                var modelName = item['ModelName']
                 if(item['Containers'] !== undefined) {
                     var modelPackageName = item['Containers'][0]['ModelPackageName']
                     getModelPackage(modelPackageName).then((data) => {
                         var modelDataUrl = data['InferenceSpecification']['Containers'][0]['ModelDataUrl']
-                        itemsModel[modelName] = modelDataUrl
+                        itemsModel[item['ModelName']] = modelDataUrl
                     })
                 }
                 else {
                     var modelDataUrl = item['PrimaryContainer']['ModelDataUrl']
-                    itemsModel[modelName] = modelDataUrl
+                    itemsModel[item['ModelName']] = modelDataUrl
                 }
                 items.push({label: item.ModelName, value: item.ModelName})
             }
@@ -71,18 +70,15 @@ const GreengrassComponentForm: FunctionComponent<IProps> = (props) => {
         if(id === 'formFieldIdModels')
             setSelectedModel({ label: event.target.value, value: event.target.value });
         if(id === 'formFieldIdComponents') {
-            console.log(event.target.value)
             setSelectedComponent({ label: event.target.value, value: event.target.value });
             if(wizard) {
                 props.updateGreengrassComponentNameAction(event.target.value)
-                console.log(props.greengrassComponentName)
             }
         }
         if(id === 'formFieldIdMComponentVersion') {
             setComponentVersion(event);
             if(wizard) {
                 props.updateGreengrassComponentVersionAction(event);
-                console.log(props.greengrassComponentVersion)
             }
         }
     }

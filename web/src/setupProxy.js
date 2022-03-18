@@ -24,6 +24,18 @@ module.exports = function(app) {
         var buffer = fs.readFileSync('images/' + filename + '.jpg')
         res.send(buffer)
     })
+    app.post('/ico', (req, res) => {
+        var data = [];
+        req.on('data', chunk => {
+            data.push(chunk);
+        })
+        req.on('end', () => {
+            var filename = uuid.v4();
+            var buffer = Buffer.concat(data);
+            fs.writeFileSync("public/" + filename + '.jpg', buffer);
+            res.send(filename);
+        })
+    })
     app.get('/sample/:case/:filename', (req, res) => {
         var casename = req.params.case;
         var filename = req.params.filename;
@@ -59,11 +71,15 @@ module.exports = function(app) {
             }
         );
     })
-    app.get('/inference/sample/:case/:filename', (req, res) => {
-        var casename = req.params.case;
-        var filename = req.params.filename;
-        var buffer = fs.readFileSync('samples/' + casename + '/' + filename)
-        options = {headers: {'content-type': 'image/png'}, params : {model: casename}}
+    app.get('/inference/sample', (req, res) => {
+        var casename = req.query['case'];
+        var bucket = req.query['bucket']
+        var key = req.query['key']
+        var buffer = {
+            'bucket': bucket,
+            'image_uri': key
+        }
+        options = {headers: {'content-type': 'application/json'}, params : {model: casename}}
         axios.post(baseUrl + '/inference', buffer, options)
             .then((response) => {
                 res.send(response.data)
@@ -111,6 +127,15 @@ module.exports = function(app) {
         target: baseUrl + '/modelpackage',
         pathRewrite: {
             '^/modelpackage': ''
+        },
+        changeOrigin: true,
+        secure: false,
+        ws: false,
+    }));
+    app.use(createProxyMiddleware('/models', {
+        target: baseUrl + '/models',
+        pathRewrite: {
+            '^/models': ''
         },
         changeOrigin: true,
         secure: false,
@@ -165,6 +190,15 @@ module.exports = function(app) {
         target: baseUrl + '/pipeline',
         pathRewrite: {
             '^/pipeline': ''
+        },
+        changeOrigin: true,
+        secure: false,
+        ws: false,
+    }));
+    app.use(createProxyMiddleware('/s3', {
+        target: baseUrl + '/s3',
+        pathRewrite: {
+            '^/s3': ''
         },
         changeOrigin: true,
         secure: false,

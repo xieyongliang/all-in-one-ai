@@ -1,5 +1,14 @@
-import {PipelineActionTypes, PipelineState} from './types';
-import {Action} from '../Actions';
+import { PipelineActionTypes, PipelineState } from './types';
+import { Action } from '../Actions';
+
+export interface IIndustrialModel {
+    name: string,
+    algorithm: string,
+    icon: string,
+    samples: string,
+    description: string,
+    labels: string[]
+}
 
 const initialState: PipelineState = {
     pipelineType: '',
@@ -29,7 +38,8 @@ const initialState: PipelineState = {
     greengrassDeploymentName: '',
     greengrassDeploymentTargetType: '1',
     greengrassDeploymentTargetArn: '',
-    greengrassDeploymentComponents: '[]'
+    greengrassDeploymentComponents: '[]',
+    industrialModels: []
 };
 
 export function pipelineReducer(
@@ -204,6 +214,12 @@ export function pipelineReducer(
             return {
                 ...state,
                 greengrassDeploymentComponents: action.payload.greengrassDeploymentComponents
+            }
+        }
+        case Action.UPDATE_INDUSTRIAL_MODELS: {
+            return {
+                ...state,
+                industrialModels: action.payload.industrialModels
             }
         }
         default:

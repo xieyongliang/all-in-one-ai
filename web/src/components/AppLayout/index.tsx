@@ -13,16 +13,32 @@
   See the License for the specific language governing permissions and
   limitations under the License.                                                                              *
  ******************************************************************************************************************** */
-import { FunctionComponent, useMemo } from 'react';
+import { FunctionComponent, useEffect, useMemo, useState } from 'react';
 import AppLayoutBase from 'aws-northstar/layouts/AppLayout';
 import HeaderBase from 'aws-northstar/components/Header';
-import SideNavigationBase, { SideNavigationItemType } from 'aws-northstar/components/SideNavigation';
+import SideNavigationBase, { SideNavigationItem, SideNavigationItemType } from 'aws-northstar/components/SideNavigation';
+import { connect } from 'react-redux';
+import { AppState } from '../../store';
+import { store } from '../..';
 
-const AppLayout: FunctionComponent = ({ children }) => {
+const AppLayout: FunctionComponent = ( {children} ) => {
+    const [ itemsModels, setItemsModels ] = useState<SideNavigationItem[]>([])
     const Header = useMemo(
         () => <HeaderBase title='All-In-One AI' logoPath='/ml.jpg' />,
         []
     );
+
+    var industrialModels = store.getState().pipeline.industrialModels
+
+    useEffect(() => {
+        var items = []
+        items.push({ text: 'Overview', type: SideNavigationItemType.LINK, href: '/case' })
+        store.getState().pipeline.industrialModels.forEach((item) => {
+            items.push({text: item.description, type: SideNavigationItemType.LINK, href: `/case/${item.name}?tab=demo#sample`})
+        })
+        setItemsModels(items)
+     }, [industrialModels])
+ 
     const SideNavigation = useMemo(() => {
         return (
             <SideNavigationBase
@@ -33,35 +49,25 @@ const AppLayout: FunctionComponent = ({ children }) => {
                         'text': 'Scenarios',
                         'items': [
                             { text: 'PPE Detector', type: SideNavigationItemType.LINK, href: '/scenario/ppe' },
-                            { text: 'Track maintenance', type: SideNavigationItemType.LINK, href: '/scenario/ppe' },
-                            { text: 'Intelligent steaming videos', type: SideNavigationItemType.LINK, href: '/scenario/ppe' },                                                        
-                            { text: 'Shelf recognition', type: SideNavigationItemType.LINK, href: '/scenario/ppe' }
+                            { text: 'Track maintenance', type: SideNavigationItemType.LINK, href: '/scenario/ppe' }
                         ]
                     },
                     {
                         'type': SideNavigationItemType.SECTION,
                         'text': 'Industrial models',
-                        'items': [
-                            { text: 'Overview', type: SideNavigationItemType.LINK, href: '/case' },
-                            { text: 'Track detection', type: SideNavigationItemType.LINK, href: '/case/track?tab=demo#sample' },
-                            { text: 'Mask detection', type: SideNavigationItemType.LINK, href: '/case/mask?tab=demo#sample' },
-                            { text: 'Helmet detection', type: SideNavigationItemType.LINK, href: '/case/helmet?tab=demo#sample' },                                                        
-                            { text: 'Receipt recognition', type: SideNavigationItemType.LINK, href: '/case/receipt?tab=demo#sample' },
-                            { text: 'Insurance report recogniton', type: SideNavigationItemType.LINK, href: '/case/insurance?tab=demo#sample' },
-                        ]
+                        'items': itemsModels
                     },
                     {
                         'type': SideNavigationItemType.SECTION,
                         'text': 'Algorithms',
                         'items': [
-                            { text: 'Yolov5', type: SideNavigationItemType.LINK, href: '/algorithm/yolov5' },
-                            { text: 'Paddle', type: SideNavigationItemType.LINK, href: '/algorithm/yolov5' }
+                            { text: 'Yolov5', type: SideNavigationItemType.LINK, href: '/algorithm/yolov5' }
                         ]
                     }
                 ]}
             />
         );
-    }, []);
+    }, [itemsModels]);
 
     return (
         <AppLayoutBase header={Header} navigation={SideNavigation} >
@@ -70,4 +76,10 @@ const AppLayout: FunctionComponent = ({ children }) => {
     );
 };
 
-export default AppLayout;
+const mapStateToProps = (state: AppState) => ({
+    industrialModels : state.pipeline.industrialModels
+});
+
+export default connect(
+    mapStateToProps
+)(AppLayout);

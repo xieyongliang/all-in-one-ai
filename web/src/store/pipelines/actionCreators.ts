@@ -1,5 +1,6 @@
-import {Action} from '../Actions';
-import {PipelineActionTypes} from './types';
+import { Action } from '../Actions';
+import { IIndustrialModel } from './reducer';
+import { PipelineActionTypes } from './types';
 
 export function UpdatePipelineType(pipelineType: string): PipelineActionTypes {
     return {
@@ -249,6 +250,15 @@ export function UpdateGreengrassDeploymentComponents(greengrassDeploymentCompone
         type: Action.UPDATE_PIPELINE_GREENGRASS_DEPLOYMENT_COMPONENTS,
         payload: {
             greengrassDeploymentComponents,
+        },
+    };
+}
+
+export function UpdateIndustrailModels(industrialModels: IIndustrialModel[]): PipelineActionTypes {
+    return {
+        type: Action.UPDATE_INDUSTRIAL_MODELS,
+        payload: {
+            industrialModels,
         },
     };
 }
