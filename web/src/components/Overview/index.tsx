@@ -3,7 +3,7 @@ import { FunctionComponent, useEffect, useState } from 'react';
 import Grid from '@mui/material/Grid';
 import { useHistory } from 'react-router-dom';
 import Image from '../Utils/Image'
-import CustomForm from '../Forms/Model/custom';
+import CustomForm from './custom';
 import { connect } from 'react-redux';
 import { IIndustrialModel } from '../../store/pipelines/reducer';
 import { AppState } from '../../store';

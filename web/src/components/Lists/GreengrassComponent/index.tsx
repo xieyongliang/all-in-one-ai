@@ -33,7 +33,7 @@ const GreengrassComponentList: FunctionComponent = () => {
 
     useEffect(() => {
         var cancel = false
-        const requests = [ axios.get('/function/all_in_one_ai_create_component_version?action=code'), axios.get('/function/all_in_one_ai_create_component_version?action=console')];
+        const requests = [ axios.get('/function/all_in_one_ai_greengrass_create_component_version?action=code'), axios.get('/function/all_in_one_ai_create_component_version?action=console')];
         axios.all(requests)
         .then(axios.spread(function(response0, response1) {
             getSourceCode(response0.data).then((data) => {
