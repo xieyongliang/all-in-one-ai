@@ -32,36 +32,36 @@ def lambda_handler(event, context):
                 'body': 'Parameter - component_name is missing'
             }
     elif(component_name == None and event['httpMethod'] == 'GET'):
-        response = greengrassv2_client.list_components()
-        
         payload = []
+        
+        paginator = greengrassv2_client.get_paginator("list_components")
+        pages = paginator.paginate()
+        for page in pages:
+            for component in page['components']:
+                component_arn = component['arn']
 
-        for component in response['components']:
-            component_arn = component['arn']
-
-            response = greengrassv2_client.list_component_versions(
-                arn = component_arn
-            )
-            
-            items = {}
-            for component_version in response['componentVersions']:
-                print(component_version)
-                name = component_version['componentName']
-                version = component_version['componentVersion']
-                arn = component_version['arn']
-                if(name in items):
-                    items[name]['component_versions'].append(version)
-                    items[name]['component_version_arns'].append(arn)
-                else:
-                    payload.append(items)
-                    items[name] = {}
-                    items[name]['component_versions'] = []
-                    items[name]['component_version_arns'] = []
-                    items[name]['component_versions'].append(version)
-                    items[name]['component_version_arns'].append(arn)
+                items = {}
+                paginator = greengrassv2_client.get_paginator("list_component_versions")
+                pages = paginator.paginate(arn = component_arn)
+                for page in pages:
+                    for component_version in page['componentVersions']:
+                        print(component_version)
+                        name = component_version['componentName']
+                        version = component_version['componentVersion']
+                        arn = component_version['arn']
+                        if(name in items):
+                            items[name]['component_versions'].append(version)
+                            items[name]['component_version_arns'].append(arn)
+                        else:
+                            payload.append(items)
+                            items[name] = {}
+                            items[name]['component_versions'] = []
+                            items[name]['component_version_arns'] = []
+                            items[name]['component_versions'].append(version)
+                            items[name]['component_version_arns'].append(arn)
             
         return {
-            'statusCode': response['ResponseMetadata']['HTTPStatusCode'],
+            'statusCode': 200,
             'body': json.dumps(payload, default = defaultencode)
         }
 
@@ -112,33 +112,33 @@ def lambda_handler(event, context):
             }
             
         else:
-            response = greengrassv2_client.list_components()
-
-            component_arn = None
-            
-            for component in response['components']:
-                if(component['componentName'] == component_name):
-                    component_arn = component['arn']
-                    break
-            
-            if(component_arn == None):
-                return {
-                        'statusCode': 200,
-                        'body': '[]'
-                }
+            paginator = greengrassv2_client.get_paginator("list_components")
+            pages = paginator.paginate()
+            for page in pages:
+                component_arn = None
                 
-            response = greengrassv2_client.list_component_versions(
-                arn = component_arn
-            )
+                for component in page['components']:
+                    if(component['componentName'] == component_name):
+                        component_arn = component['arn']
+                        break
+                
+                if(component_arn == None):
+                    return {
+                            'statusCode': 200,
+                            'body': '[]'
+                    }
+                
+                payload = []
+
+                paginator2 = greengrassv2_client.get_paginator("list_component_versions")
+                pages2 = paginator2.paginate(arn = component_arn)
+                for page2 in pages2:
+                    for component_version in page2['componentVersions']:
+                        payload.append({'component_name': component_version['componentName'], 'component_version': component_version['componentVersion'], 'component_version_arn':component_version['arn']})
             
-            payload = []
-            for component_version in response['componentVersions']:
-                payload.append({'component_name': component_version['componentName'], 'component_version': component_version['componentVersion'], 'component_version_arn':component_version['arn']})
-            
-            print(response)
             return {
-                    'statusCode': response['ResponseMetadata']['HTTPStatusCode'],
-                    'body': json.dumps(payload, default = defaultencode)
+                'statusCode': 200,
+                'body': json.dumps(payload, default = defaultencode)
             }
         
 def defaultencode(o):

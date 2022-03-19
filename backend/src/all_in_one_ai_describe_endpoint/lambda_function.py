@@ -11,6 +11,12 @@ def lambda_handler(event, context):
     response = sagemaker_client.describe_endpoint(
         EndpointName = endpoint_name
     )
+        
+    endpoint_config_name = response['EndpointConfigName']
+        
+    response['EndpointConfig'] = sagemaker_client.describe_endpoint_config(
+        EndpointConfigName = endpoint_config_name
+    )
     
     return json.dumps(response, default = defaultencode)
     

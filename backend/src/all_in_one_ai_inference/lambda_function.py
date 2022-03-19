@@ -1,6 +1,7 @@
 import json
 import boto3
 import base64
+import os
 
 endpoints = {
   "track": "all-in-one-ai-yolov5-track",
@@ -33,8 +34,10 @@ def lambda_handler(event, context):
                 'statusCode': 400,
                 'body': "Invalid parameter"
             }
-        
-        endpoint_name = endpoints[model_name]
+        if('endpoint_name' in event['body']):
+            endpoint_name = event['body']['endpoint_name']
+        else:
+            endpoint_name = endpoints[model_name]
 
         body = {
             "endpoint_name": endpoint_name,
@@ -64,3 +67,6 @@ def lambda_handler(event, context):
             'statusCode': 400,
             'body': "Unsupported HTTP method"
         }
+
+        
+    

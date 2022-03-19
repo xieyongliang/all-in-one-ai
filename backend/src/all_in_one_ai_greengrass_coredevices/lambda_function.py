@@ -6,11 +6,15 @@ from decimal import Decimal
 greengrassv2_client = boto3.client('greengrassv2')
 
 def lambda_handler(event, context):
-    response = greengrassv2_client.list_core_devices()
+    payload = []
+    paginator = greengrassv2_client.get_paginator("list_core_devices")
+    pages = paginator.paginate()
+    for page in pages:
+        payload += page['coreDevices']
     
     return {
         'statusCode': 200,
-        'body': json.dumps(response['coreDevices'], default = defaultencode)
+        'body': json.dumps(payload, default = defaultencode)
     }
 
 def defaultencode(o):

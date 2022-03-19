@@ -6,13 +6,20 @@ from datetime import date, datetime
 sagemaker_client = boto3.client('sagemaker')
 
 def lambda_handler(event, context):
-    transform_job_name = event['body']['transform_job_name']
+    print(event)
+    endpoint_name = event['body']['endpoint_name']
 
-    response = sagemaker_client.describe_transform_job(
-        TransformJobName = transform_job_name
-    )
+    waiter = sagemaker_client.get_waiter("endpoint_in_service")
+    waiter.wait(EndpointName = endpoint_name)
     
-    return json.dumps(response, default = defaultencode)
+    response = sagemaker_client.describe_endpoint(
+        EndpointName = endpoint_name
+    )
+
+    return { 
+        'statusCode': 200,
+        'body': json.dumps(response, default = defaultencode)
+    }
     
 def defaultencode(o):
     if isinstance(o, Decimal):

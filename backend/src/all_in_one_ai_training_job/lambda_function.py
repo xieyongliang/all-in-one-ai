@@ -72,100 +72,60 @@ def lambda_handler(event, context):
         if event['queryStringParameters'] != None:
             if 'case' in event['queryStringParameters']:
                 case_name = event['queryStringParameters']['case']
-        
-        print(training_job_name)
-        print(case_name)
-        if training_job_name == None:
-            if case_name != None:
-                items = ddbh.scan(FilterExpression=Attr('case_name').eq(case_name))
+        try:
+            if training_job_name == None:
+                if case_name != None:
+                    items = ddbh.scan(FilterExpression=Attr('case_name').eq(case_name))
+                else:
+                    items = ddbh.scan()
+                
+                list = []
+                for item in items:
+                    item = process_item(item)
+                    list.append(item)
+    
+                return {
+                    'statusCode': 200,
+                    'body': json.dumps(list, default = defaultencode)
+                }
             else:
-                items = ddbh.scan()
-            for item in items:
-                process_item(item)
-
+                params = {}
+                params['training_job_name'] = training_job_name
+                if case_name != None:
+                    params['case_name'] = case_name
+                item = ddbh.get_item(params)
+                item = process_item(item)
+    
+                return {
+                   'statusCode': 200,
+                    'body': json.dumps(item, default = defaultencode)
+                }
+        except Exception as e:
+            print(e)
             return {
-                'statusCode': 200,
-                'body': json.dumps(items, default = defaultencode)
+                   'statusCode': 400,
+                    'body': str(e)
             }
-        else:
-            params = {}
-            params['training_job_name'] = training_job_name
-            if case_name != None:
-                params['case_name'] = case_name
-            item = ddbh.get_item(params)
-            process_item(item)
-        
-            return {
-               'statusCode': 200,
-                'body': json.dumps(item, default = defaultencode)
-            }
-
+            
 def process_item(item):
-    print(item)
-    if 'training_job_status' not in item or item['training_job_status'] in ['InProgress', 'Stopping']:
+    if(item == None):
+        raise Exception('Training job item is None')
+    else:
         payload = {'training_job_name': item['training_job_name']}
         response = lambda_client.invoke(
             FunctionName = 'all_in_one_ai_describe_training_job',
             InvocationType = 'RequestResponse',
             Payload=json.dumps({'body' : payload})
         )
-
+    
         if('FunctionError' not in response):
             payload = response["Payload"].read().decode("utf-8")
             payload = json.loads(payload)
             payload = json.loads(payload)
-
-            params = {}
-
-            creation_time = datetime.fromisoformat(payload['CreationTime']) + timedelta(hours=8)
-            item['training_job_status'] = payload['TrainingJobStatus']
-            item['creation_time'] = creation_time.strftime("%Y-%m-%d %H:%M:%S")
-
-            params['training_job_status'] = item['training_job_status']
-            params['creation_time'] = item['creation_time']
-            params['duration'] = '-'
-            params['training_end_time'] = '-'
-
-            if('TrainingStartTime' in payload):
-                training_start_time = datetime.fromisoformat(payload['TrainingStartTime']) + timedelta(hours=8)
-                item['training_start_time'] = training_start_time.strftime("%Y-%m-%d %H:%M:%S")
-                params['training_start_time'] = item['training_start_time']
-    
-            if('ModelArtifacts' in payload):
-                item['model_artifacts'] = payload['ModelArtifacts']
-                params['model_artifacts'] = item['model_artifacts']
-        
-            if('TrainingEndTime' in payload):
-                training_end_time = datetime.fromisoformat(payload['TrainingEndTime']) + timedelta(hours=8)
-                duration_in_seconds = int((training_end_time - training_start_time).total_seconds())
-    
-                days    = divmod(duration_in_seconds, 86400)
-                hours   = divmod(days[1], 3600)
-                minutes = divmod(hours[1], 60)
-                seconds = divmod(minutes[1], 1)
-                if days[0] != 0:
-                    duration = '{0} days {1} hours {2} minutes {3} seconds'.format(int(days[0]), int(hours[0]), int(minutes[0]), int(seconds[0]))
-                elif hours[0] != 0:
-                    duration = '{0} hours {1} minutes {2} seconds'.format(int(hours[0]), int(minutes[0]), int(seconds[0]))
-                elif minutes[0] != 0:
-                    duration = '{0} minutes {1} seconds'.format(int(minutes[0]), int(seconds[0]))
-                else:
-                    duration = '{1} seconds'.format(int(seconds[0]))
-
-                item['training_end_time'] = training_end_time.strftime("%Y-%m-%d %H:%M:%S")
-                item['duration'] = duration
-                
-                params['training_end_time'] = item['training_end_time']
-                params['duration'] = item['duration']
             
-            key = {
-                'training_job_name': item['training_job_name'],
-                'case_name': item['case_name']
-            }
-                
-            ddbh.update_item(key, params)
-    
-    return item
+            return payload
+        else:
+            raise Exception(response["FunctionError"])
 
 def defaultencode(o):
     if isinstance(o, Decimal):

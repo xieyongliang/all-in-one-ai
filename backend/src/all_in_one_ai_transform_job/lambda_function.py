@@ -11,9 +11,13 @@ ssmh = helper.ssm_helper()
 transform_job_table = ssmh.get_parameter('/all_in_one_ai/config/meta/transform_job_table')
 ddbh = helper.ddb_helper({'table_name': transform_job_table})
 
+lambda_client = boto3.client('lambda')
+
 def lambda_handler(event, context):
     if event['httpMethod'] == 'POST':
-        request = event['body']
+        request = json.loads(event['body'])
+        
+        case_name = request['case_name']
     
         payload = {}
         payload['transform_job_name'] = request['transform_job_name']
@@ -36,7 +40,7 @@ def lambda_handler(event, context):
         if('FunctionError' not in response):
             params = payload
             params['case_name'] = case_name
-            ddbh.put_item(key, params)
+            ddbh.put_item(params)
             
             return {
                 'statusCode': response['StatusCode'],
@@ -58,36 +62,48 @@ def lambda_handler(event, context):
             if 'case' in event['queryStringParameters']:
                 case_name = event['queryStringParameters']['case']
 
-        if transform_job_name == None:
-            if case_name != None:
-                items = ddbh.scan(FilterExpression=Attr('case_name').eq(case_name))
+        try:
+            if transform_job_name == None:
+                if case_name != None:
+                    items = ddbh.scan(FilterExpression=Attr('case_name').eq(case_name))
+                else:
+                    items = ddbh.scan()
+                
+                list = []
+                for item in items:
+                    item = process_item(item)
+                    list.append(item)
+    
+                return {
+                    'statusCode': 200,
+                    'body': json.dumps(list, default = defaultencode)
+                }
             else:
-                items = ddbh.scan()
-            for item in items:
-                process_item(item)
-
+                params = {}
+                params['transform_job_name'] = transform_job_name
+                if case_name != None:
+                    params['case_name'] = case_name
+                item = ddbh.get_item(params)
+                item = process_item(item)
+            
+                return {
+                   'statusCode': 200,
+                    'body': json.dumps(item, default = defaultencode)
+                }
+        except Exception as e:
+            print(e)
             return {
-                'statusCode': 200,
-                'body': json.dumps(items, default = defaultencode)
-            }
-        else:
-            params = {}
-            params['transform_job_name'] = transform_job_name
-            if case_name != None:
-                params['case_name'] = case_name
-            item = ddbh.get_item(params)
-            process_item(item)
-        
-            return {
-               'statusCode': 200,
-                'body': json.dumps(item, default = defaultencode)
+                   'statusCode': 400,
+                    'body': str(e)
             }
 
 def process_item(item):
-    if 'transform_job_status' not in item or item['transform_job_status'] in ['InProgress', 'Stopping']:
+    if(item == None):
+        raise Exception('Transform job item is None')
+    else:
         payload = {'transform_job_name': item['transform_job_name']}
         response = lambda_client.invoke(
-            FunctionName = 'all_in_one_ai_describe_trasnform_job',
+            FunctionName = 'all_in_one_ai_describe_transform_job',
             InvocationType = 'RequestResponse',
             Payload=json.dumps({'body' : payload})
         )
@@ -97,51 +113,10 @@ def process_item(item):
             payload = json.loads(payload)
             payload = json.loads(payload)
         
-            creation_time = datetime.fromisoformat(payload['CreationTime']) + timedelta(hours=8)
-            training_start_time = datetime.fromisoformat(payload['TransformStartTime']) + timedelta(hours=8)
-    
-            item['transform_job_status'] = payload['TransformJobStatus']
-            item['creation_time'] = creation_time.strftime("%Y-%m-%d %H:%M:%S")
-            item['transform_start_time'] = transform_start_time.strftime("%Y-%m-%d %H:%M:%S")
-    
-            params = {}
-            params['transform_job_status'] = item['transform_job_status']
-            params['creation_time'] = item['creation_time']
-            params['duration'] = '-'
-            params['transform_end_time'] = '-'
-    
-            if('TransformEndTime' in response.keys()):
-                transform_end_time = datetime.fromisoformat(payload['TransformEndTime']) + timedelta(hours=8)
-    
-                duration_in_seconds = int((transform_end_time - transform_start_time).total_seconds())
-            
-                days    = divmod(duration_in_seconds, 86400)
-                hours   = divmod(days[1], 3600)
-                minutes = divmod(hours[1], 60)
-                seconds = divmod(minutes[1], 1)
-                if days[0] != 0:
-                    duration = '{0} days {1} hours {2} minutes {3} seconds'.format(int(days[0]), int(hours[0]), int(minutes[0]), int(seconds[0]))
-                elif hours[0] != 0:
-                    duration = '{0} hours {1} minutes {2} seconds'.format(int(hours[0]), int(minutes[0]), int(seconds[0]))
-                elif minutes[0] != 0:
-                    duration = '{0} minutes {1} seconds'.format(int(minutes[0]), int(seconds[0]))
-                else:
-                    duration = '{1} seconds'.format(int(seconds[0]))
-    
-    
-                item['transform_end_time'] = transform_end_time.strftime("%Y-%m-%d %H:%M:%S")
-                item['duration'] = duration
-    
-                params['duration'] = item['duration']
-                params['transform_end_time'] = item['transform_end_time']
-    
-            key = {
-                'transform_job_name': item['transform_job_name'],
-                'case_name': item['case_name']
-            }
-                
-            ddbh.update_item(key, params)
-    
+            return payload
+        else:
+            raise Exception(response["FunctionError"])
+
     return item
 
 def defaultencode(o):
@@ -150,4 +125,3 @@ def defaultencode(o):
     if isinstance(o, (datetime, date)):
         return o.isoformat()
     raise TypeError(repr(o) + " is not JSON serializable")
-

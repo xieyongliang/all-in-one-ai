@@ -10,12 +10,24 @@ sts_client = boto3.client('sts')
 session = boto3.session.Session()
 
 def lambda_handler(event, context):
-    rest_api_id = event['rest_api_id']
-    api_path = event['api_path']
-    api_stage = event['api_stage']
-    api_method = event['api_method']
-    api_function = event['api_function']
-  
+    print(event)
+    if('rest_api_id' not in event['body']):
+        rest_api_name = event['body']['rest_api_name']
+        response = api_client.create_rest_api(
+            name = rest_api_name,
+            endpointConfiguration={
+                'types': ['REGIONAL']
+            }
+        )
+        rest_api_id = response['id']
+    else:
+        rest_api_id = event['body']['rest_api_id']
+    
+    api_path = event['body']['api_path']
+    api_stage = event['body']['api_stage']
+    api_method = event['body']['api_method']
+    api_function = event['body']['api_function']
+
     patchOperations = [
         {"op": "add", "path": "/binaryMediaTypes/image~1png"},
         {"op": "add", "path": "/binaryMediaTypes/image~1jpg"},
@@ -33,20 +45,21 @@ def lambda_handler(event, context):
         patchOperations = patchOperations
     )
     
-    response = api_client.get_resources(
-        restApiId = rest_api_id
-    )
-
-    resource_dict = {}
-    
-    for item in response['items']:
-        if(item['path'] == '/'):
-            root_id = item['id']
-        else:
-            parent_id = item['parentId']
-            if(parent_id not in resource_dict):
-                resource_dict[parent_id] = []
-            resource_dict[parent_id].append(item)
+    paginator = api_client.get_paginator("get_resources")
+    pages = paginator.paginate(restApiId = rest_api_id)
+    for page in pages:
+        print(page)
+        resource_dict = {}
+        
+        for item in page['items']:
+            print(item)
+            if(item['path'] == '/'):
+                root_id = item['id']
+            else:
+                parent_id = item['parentId']
+                if(parent_id not in resource_dict):
+                    resource_dict[parent_id] = []
+                resource_dict[parent_id].append(item)
     
     parent_id = root_id
     
@@ -82,6 +95,8 @@ def lambda_handler(event, context):
             httpMethod = api_method
         )
     
+    print(response)
+    
     lambda_version = lambda_client.meta.service_model.api_version
     
     api_data = {
@@ -96,18 +111,26 @@ def lambda_handler(event, context):
     }
     
     uri = "arn:aws:apigateway:{REGION}:lambda:path/{API_VERSION}/functions/arn:aws:lambda:{REGION}:{ACCOUNT_ID}:function:{FUNCTION}/invocations".format(**api_data)
+    print(uri)
 
-    response = api_client.put_integration(
-        restApiId = rest_api_id,
-        resourceId = parent_id,
-        httpMethod = api_method,
-        type = "AWS_PROXY",
-        integrationHttpMethod = api_method,
-        uri = uri
-    )
+    try:
+        response = api_client.put_integration(
+            restApiId = rest_api_id,
+            resourceId = parent_id,
+            httpMethod = api_method,
+            type = "AWS_PROXY",
+            integrationHttpMethod = api_method,
+            uri = uri
+        )
+    except Exception as e:
+        print(e)
+    
+    print(response)
 
     source_arn = "arn:aws:execute-api:{REGION}:{ACCOUNT_ID}:{API_ID}/*/POST/{RESOURCE}".format(**api_data)
 
+    print(source_arn)
+    
     response = lambda_client.add_permission(
         FunctionName = api_function,
         StatementId = uuid.uuid4().hex,
@@ -116,10 +139,20 @@ def lambda_handler(event, context):
         SourceArn = source_arn
     )
 
+    if('api_env' in event['body']):
+        response = lambda_client.update_function_configuration(
+            FunctionName = api_function,
+            Environment = json.loads(event['body']['api_env'])
+        )
+
+    print(response)
+
     response = api_client.create_deployment(
         restApiId = rest_api_id,
         stageName = api_stage
     )
+
+    print(response)
     
     api_url = 'https://{API_ID}.execute-api.{REGION}.amazonaws.com/{STAGE}/{RESOURCE}'.format(**api_data)
     createdDate = response['createdDate']
@@ -129,6 +162,8 @@ def lambda_handler(event, context):
         'rest_api_name': rest_api_name,
         'created_date': createdDate
     }
+
+    print(response)
     
     return json.dumps(response, default = defaultencode)
     

@@ -13,10 +13,15 @@ module.exports = function(app) {
             data.push(chunk);
         })
         req.on('end', () => {
-            var filename = uuid.v4();
-            var buffer = Buffer.concat(data);
-            fs.writeFileSync("images/" + filename + '.jpg', buffer);
-            res.send(filename);
+            try {
+                var filename = uuid.v4();
+                var buffer = Buffer.concat(data);
+                fs.writeFileSync('images/' + filename + '.jpg', buffer);
+                res.send(filename);
+            }
+            catch (error) {
+                console.log(error)
+            }
         })
     })
     app.get('/image/:filename', (req, res) => {
@@ -30,80 +35,141 @@ module.exports = function(app) {
             data.push(chunk);
         })
         req.on('end', () => {
-            var filename = uuid.v4();
-            var buffer = Buffer.concat(data);
-            fs.writeFileSync("public/" + filename + '.jpg', buffer);
-            res.send(filename);
+            try {
+                var filename = uuid.v4();
+                var buffer = Buffer.concat(data);
+                fs.writeFileSync('public/' + filename + '.jpg', buffer);
+                res.send(filename);
+            }
+            catch (error) {
+                console.log(error)
+            }
         })
     })
     app.get('/sample/:case/:filename', (req, res) => {
-        var casename = req.params.case;
-        var filename = req.params.filename;
-        var buffer = fs.readFileSync('samples/' + casename + '/' + filename)
-        res.send(buffer)
+        try {
+            var casename = req.params.case;
+            var filename = req.params.filename;
+            var buffer = fs.readFileSync('samples/' + casename + '/' + filename)
+            res.send(buffer)
+        }
+        catch (error) {
+            console.log(error)
+        }
     })
     app.get('/samples/:case', (req, res) => {
-        var casename = req.params.case;
-        var items = [];
+        try {
+            var casename = req.params.case;
+            var items = [];
 
-        fs.readdir('samples/' + casename, function (err, files) {
-            files.forEach(function (file, index) {
-                items.push('/sample/'+ casename + '/' + file)
+            fs.readdir('samples/' + casename, function (err, files) {
+                files.forEach(function (file, index) {
+                    items.push('/sample/'+ casename + '/' + file)
+                });
+                res.send(JSON.stringify(items))
             });
-            res.send(JSON.stringify(items))
-        });
+        }
+        catch (error) {
+            console.log(error)
+        }
     })
     app.get('/inference/image/:case/:filename', (req, res) => {
-        var casename = req.params.case;
-        var filename = req.params.filename;
-        var buffer = fs.readFileSync('images/' + filename + '.jpg')
-        options = { headers: {'content-type': 'image/jpg'}, params : {model: casename}}
-        axios.post(baseUrl + '/inference', buffer, options)
-            .then((response) => {
-                res.send(response.data)
-            }, (error) => {
-                    res.status(400);
-                    res.send('client error');
-                    console.log(error);
+        try {
+            var casename = req.params.case;
+            var filename = req.params.filename;
+            var buffer = fs.readFileSync('images/' + filename + '.jpg')
+            options = { headers: {'content-type': 'image/jpg'}, params : {model: casename}}
+            axios.post(baseUrl + '/inference', buffer, options)
+                .then((response) => {
+                    res.send(response.data)
+                }, (error) => {
+                        res.status(400);
+                        res.send('client error');
+                        console.log(error);
+                    }
+                ).catch((e) => {
+                    console.log(e)
                 }
-            ).catch((e) => {
-                console.log(e)
-            }
-        );
+            );
+        }
+        catch (error) {
+            console.log(error)
+        }
     })
     app.get('/inference/sample', (req, res) => {
-        var casename = req.query['case'];
-        var bucket = req.query['bucket']
-        var key = req.query['key']
-        var buffer = {
-            'bucket': bucket,
-            'image_uri': key
-        }
-        options = {headers: {'content-type': 'application/json'}, params : {model: casename}}
-        axios.post(baseUrl + '/inference', buffer, options)
-            .then((response) => {
-                res.send(response.data)
-            }, (error) => {
-                    res.status(400);
-                    res.send('client error');
-                    console.log(error);
-                }
-            ).catch((e) => {
-                console.log(e)
+        try {
+            var casename = req.query['case'];
+            var bucket = req.query['bucket']
+            var key = req.query['key']
+            var buffer = {
+                'bucket': bucket,
+                'image_uri': key
             }
-        );
+            options = {headers: {'content-type': 'application/json'}, params : {model: casename}}
+            axios.post(baseUrl + '/inference', buffer, options)
+                .then((response) => {
+                    res.send(response.data)
+                }, (error) => {
+                        res.status(400);
+                        res.send('client error');
+                        console.log(error);
+                    }
+                ).catch((e) => {
+                    console.log(e)
+                }
+            );
+        }
+        catch (error) {
+            console.log(error)
+        }
     })
     app.get('/file/download', (req, res) => {
-        var uri = decodeURIComponent(req.query['uri']);
-        axios({ url: uri, method: 'GET', responseType: 'arraybuffer'})
-            .then((response) => {
-                    res.setHeader('content-type', response.headers['content-type']);
-                    res.send(response.data);
+        try {
+            var uri = decodeURIComponent(req.query['uri']);
+            axios({ url: uri, method: 'GET', responseType: 'arraybuffer'})
+                .then((response) => {
+                        res.setHeader('content-type', response.headers['content-type']);
+                        res.send(response.data);
+                    }
+                ).catch((e) => {
+                    console.log(e)
                 }
-            ).catch((e) => {
-                console.log(e)
+            );
+        }
+        catch (error) {
+            console.log(error)
+        }
+    })
+    app.post('/models', (req, res) => {
+        var body = [];
+        req.on('data', chunk => {
+            body += chunk
+        })
+        req.on('end', () => {
+            try {
+                data = JSON.parse(body)
+                var filename = data.file_name;
+                var buffer = fs.readFileSync('public/' + filename + '.jpg')
+                data['file_content'] = buffer
+
+                options = {headers: {'content-type': 'application/json'}}
+                axios.post(baseUrl + '/models', data, options)
+                    .then((response) => {
+                        res.send(response.data)
+                    }, (error) => {
+                            res.status(400);
+                            res.send('client error');
+                            console.log(error);
+                        }
+                    ).catch((e) => {
+                        console.log(e)
+                    }
+                );
             }
-        );
+            catch (error) {
+                console.log(error)
+            }
+        })
     })
     app.use(createProxyMiddleware('/transformjob', {
         target: baseUrl + '/transformjob',

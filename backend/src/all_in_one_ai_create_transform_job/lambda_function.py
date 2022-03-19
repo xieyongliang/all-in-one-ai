@@ -14,10 +14,10 @@ def lambda_handler(event, context):
     output_s3uri = event['body']['output_s3uri']
     tags = event['body']['tags'] if('tags' in event['body']) else []
     
-    response = sagemaker_runtime_client.create_transform_job(
+    response = sagemaker_client.create_transform_job(
         TransformJobName = transform_job_name,
         ModelName = model_name,
-        MaxConcurrentTransforms = max_concurrent_transform,
+        MaxConcurrentTransforms = max_concurrent_transforms,
         TransformInput={
             'DataSource': {
                 'S3DataSource': {

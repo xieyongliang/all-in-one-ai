@@ -16,6 +16,7 @@ lambda_client = boto3.client('lambda')
 api_client = boto3.client('apigateway')
 
 def lambda_handler(event, context):
+    print(event)
     if event['httpMethod'] == 'POST':
         request = json.loads(event['body'])
         print(request)
@@ -23,34 +24,24 @@ def lambda_handler(event, context):
         api_name = request['api_name']
         case_name = request['case_name']
         
-        if('rest_api_id' not in request):
-            if('rest_api_name' in request):
-                rest_api_name = request['rest_api_name']
-                response = create_rest_api(
-                    name = rest_api_name
-                )
-                rest_api_id = response['id']
-            else:
-                return {
-                    'statusCode': 400,
-                    'body': 'Parameter - rest_api_name and rest_api_id are missing'
-                }
-        else:
-            rest_api_id = request['rest_api_id']
-        
         payload = {}
-        payload['rest_api_id'] = rest_api_id
+        if('rest_api_id' in request):
+            payload['rest_api_id'] = request['rest_api_id']
+        if('rest_api_name' in request):
+            payload['rest_api_name'] = request['rest_api_name']
         payload['api_path'] = request['api_path']
         payload['api_stage'] = request['api_stage']
         payload['api_method'] = request['api_method']
         payload['api_function'] = request['api_function']
+        if('api_env' in request):
+            payload['api_env'] = request['api_env']
 
         response = lambda_client.invoke(
             FunctionName = 'all_in_one_ai_create_api',
             InvocationType = 'RequestResponse',
-            Payload=json.dumps(payload)
+            Payload=json.dumps({'body': payload})
         )
-        
+        print(response)
         if('FunctionError' not in response):
             params = payload
             
@@ -72,15 +63,18 @@ def lambda_handler(event, context):
         else:
             return {
                 'statusCode': 400,
-                'body': response['FunctionError']
+                'body': response['FunctionError'],
             }
     else:
         if event['queryStringParameters'] != None:
             if 'query' in event['queryStringParameters']:
                 item = event['queryStringParameters']['query']
                 if(item == 'restapis'):
-                    response = api_client.get_rest_apis()
-                    payload = response['items']
+                    payload = []
+                    paginator = api_client.get_paginator("get_rest_apis")
+                    pages = paginator.paginate()
+                    for page in pages:
+                        payload += page['items']
 
                     return {
                         'statusCode': 200,

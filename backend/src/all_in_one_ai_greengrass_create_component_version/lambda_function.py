@@ -18,16 +18,15 @@ def lambda_handler(event, context):
     component_data_url = payload['component_data_url']
     component_version = payload['component_version']
     
-    print('1')
     generate_component_artifact(model_data_url, component_template_artifact_url, component_data_url)
-    print('2')
     receipt = generate_component_receipt(component_template_receipt_url, component_version, component_data_url)
-    print('3')
+    
     response = greengrassv2_client.create_component_version(
         inlineRecipe=bytes(json.dumps(receipt), 'utf-8')
     )
-    return json.dumps(response, default = defaultencode)
-    
+    print(response)
+    return response['arn']
+
 def generate_component_receipt(component_template_receipt_url, component_version, component_data_url):
     first = component_template_receipt_url.find('/', 5)
     last = component_template_receipt_url.rfind('/') 
@@ -53,10 +52,8 @@ def generate_component_artifact(model_data_url, component_template_artifact_url,
     s3_tar_folder = model_data_url[first + 1 : last + 1]
     s3_untar_folder = s3_tar_folder
 
-    print('4')
     s3_object = s3_client.get_object(Bucket = s3_tar_bucket, Key = f"{s3_tar_folder}{s3_tar_file}") 
     bytes = s3_object["Body"].read()
-    print('5')
     first = component_template_artifact_url.find('/', 5)
     last = component_template_artifact_url.rfind('/') 
     s3_zip_bucket = component_template_artifact_url[5: first]

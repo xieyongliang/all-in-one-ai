@@ -1,8 +1,11 @@
 import boto3
+from botocore.exceptions import ClientError
+
 
 sagemaker_client = boto3.client('sagemaker')
 
 def lambda_handler(event, context):
+    print(event['body'])
     training_job_name = event['body']['training_job_name']
     training_image = event['body']['training_image']
     role_arn = event['body']['role_arn']
@@ -12,7 +15,7 @@ def lambda_handler(event, context):
     images_s3uri = event['body']['images_s3uri']
     labels_s3uri = event['body']['labels_s3uri']
     weights_s3uri = event['body']['weights_s3uri']
-    cfg_s3uri = event['cfg_s3uri']
+    cfg_s3uri = event['body']['cfg_s3uri']
     output_s3uri = event['body']['output_s3uri']
     tags = event['body']['tags'] if('tags' in event['body']) else []
 
@@ -86,4 +89,5 @@ def lambda_handler(event, context):
         Tags = tags
     )
 
+    print(response)
     return response

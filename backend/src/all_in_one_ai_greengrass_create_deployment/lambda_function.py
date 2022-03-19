@@ -11,10 +11,9 @@ greengrassv2_client = boto3.client('greengrassv2')
 def lambda_handler(event, context):
     payload = event['body']
     
-    print(json.dumps(payload))
     target_arn = payload['target_arn']
     deployment_name = payload['deployment_name']
-    components = payload['components']
+    components = json.loads(payload['components'])
     iot_job_configurations = payload['iot_job_configurations']
     deployment_policies = payload['deployment_policies']
     
@@ -34,7 +33,8 @@ def lambda_handler(event, context):
                         deploymentPolicies = deployment_policies
                 )
 
-    return json.dumps(response['Payload'].read(), default = defaultencode)
+    print(response)
+    return json.dumps(response, default = defaultencode)
 
 def defaultencode(o):
     if isinstance(o, Decimal):

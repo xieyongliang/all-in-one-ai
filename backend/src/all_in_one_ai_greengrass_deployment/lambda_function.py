@@ -13,6 +13,7 @@ lambda_client = boto3.client('lambda')
 greengrassv2_client = boto3.client('greengrassv2')
 
 def lambda_handler(event, context):
+    print(event)
     if event['httpMethod'] == 'POST':
         request = json.loads(event['body'])
 
@@ -22,9 +23,10 @@ def lambda_handler(event, context):
         deployment_policies = ssmh.get_parameter('/all_in_one_ai/config/meta/models/yolov5/greengrass/components/{0}/deployment/deployment_policy'.format(component_name))
         iot_job_configurations = ssmh.get_parameter('/all_in_one_ai/config/meta/models/yolov5/greengrass/components/{0}/deployment/iot_job_configurations'.format(component_name))
         
-
         payload = {}
-        payload['deployment_name'] = request['deployment_name']
+        payload['deployment_name'] = ''
+        if('deployment_name' in request):
+            payload['deployment_name'] = request['deployment_name']
         payload['target_arn'] = request['target_arn']
         payload['components'] = request['components']
         payload['iot_job_configurations'] = json.loads(iot_job_configurations)
@@ -63,11 +65,15 @@ def lambda_handler(event, context):
             }
             
         else:
-            response = greengrassv2_client.list_deployments()
-
+            payload = []
+            
+            paginator = greengrassv2_client.get_paginator("list_deployments")
+            pages = paginator.paginate()
+            for page in pages:
+                payload += page['deployments']
             return {
-                    'statusCode': response['ResponseMetadata']['HTTPStatusCode'],
-                    'body': json.dumps(response['deployments'], default = defaultencode)
+                'statusCode': 200,
+                'body': json.dumps(payload, default = defaultencode)
             }
         
 def defaultencode(o):
@@ -76,4 +82,3 @@ def defaultencode(o):
     if isinstance(o, (datetime, date)):
         return o.isoformat()
     raise TypeError(repr(o) + " is not JSON serializable")
-

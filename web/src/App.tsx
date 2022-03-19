@@ -50,9 +50,9 @@ const App : FunctionComponent = () => {
                 industrialModel.name = item.model_name
                 industrialModel.algorithm = item.algorithm_name
                 industrialModel.description = item.model_description
-                industrialModel.icon = item.icon_s3uri
-                industrialModel.samples = item.sample_images_s3uri
-                industrialModel.labels = item.labels
+                industrialModel.icon = item.model_icon
+                industrialModel.samples = item.model_samples
+                industrialModel.labels = item.model_labels
                 industrialModels.push(industrialModel)
             })
             store.dispatch({ type: Action.UPDATE_INDUSTRIAL_MODELS, payload: {industrialModels : industrialModels}})
