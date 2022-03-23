@@ -17,7 +17,7 @@ interface IProps {
 }
 
 const getModel = async (modelName) => {
-    var response = await axios.get(`/model?case=${modelName}`)
+    var response = await axios.get(`/model`, {params : { industrial_model: modelName}})
 
     return response.data
 }
@@ -93,7 +93,7 @@ const GreengrassComponentForm: FunctionComponent<IProps> = (props) => {
         else {
             var body = {
                 'component_version': componentVersion,
-                'case_name': params.name,
+                'industrial_model': params.name,
                 'model_data_url': itemsModel[selectedModel.value]
             }
             axios.post(`/greengrass/component/${selectedComponent.value}`, body,  { headers: {'content-type': 'application/json' }}) 

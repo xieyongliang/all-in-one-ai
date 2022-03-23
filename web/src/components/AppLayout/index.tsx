@@ -28,13 +28,13 @@ const AppLayout: FunctionComponent = ( {children} ) => {
         []
     );
 
-    var industrialModels = store.getState().pipeline.industrialModels
+    var industrialModels = store.getState().industrialmodel.industrialModels
 
     useEffect(() => {
         var items = []
-        items.push({ text: 'Overview', type: SideNavigationItemType.LINK, href: '/case' })
-        store.getState().pipeline.industrialModels.forEach((item) => {
-            items.push({text: item.description, type: SideNavigationItemType.LINK, href: `/case/${item.name}?tab=demo#sample`})
+        items.push({ text: 'Overview', type: SideNavigationItemType.LINK, href: '/imodels' })
+        store.getState().industrialmodel.industrialModels.forEach((item) => {
+            items.push({text: item.description, type: SideNavigationItemType.LINK, href: `/imodels/${item.name}?tab=demo#sample`})
         })
         setItemsModels(items)
      }, [industrialModels])
@@ -48,8 +48,8 @@ const AppLayout: FunctionComponent = ( {children} ) => {
                         'type': SideNavigationItemType.SECTION,
                         'text': 'Scenarios',
                         'items': [
-                            { text: 'PPE Detector', type: SideNavigationItemType.LINK, href: '/scenario/ppe' },
-                            { text: 'Track maintenance', type: SideNavigationItemType.LINK, href: '/scenario/ppe' }
+                            { text: 'PPE Detector', type: SideNavigationItemType.LINK, href: '/scenarios/ppe' },
+                            { text: 'Track maintenance', type: SideNavigationItemType.LINK, href: '/scenarios/ppe' }
                         ]
                     },
                     {
@@ -61,7 +61,7 @@ const AppLayout: FunctionComponent = ( {children} ) => {
                         'type': SideNavigationItemType.SECTION,
                         'text': 'Algorithms',
                         'items': [
-                            { text: 'Yolov5', type: SideNavigationItemType.LINK, href: '/algorithm/yolov5' }
+                            { text: 'Yolov5', type: SideNavigationItemType.LINK, href: '/algorithms/yolov5' }
                         ]
                     }
                 ]}
@@ -77,7 +77,7 @@ const AppLayout: FunctionComponent = ( {children} ) => {
 };
 
 const mapStateToProps = (state: AppState) => ({
-    industrialModels : state.pipeline.industrialModels
+    industrialModels : state.industrialmodel.industrialModels
 });
 
 export default connect(

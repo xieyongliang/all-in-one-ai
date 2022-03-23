@@ -7,6 +7,7 @@ import axios from 'axios';
 import {connect} from 'react-redux';
 import { AppState } from '../../../store';
 import { UpdateTrainingjobImageS3Uri, UpdateTrainingjobInstanceCount, UpdateTrainingjobInstanceType, UpdateTrainingjobLabelsS3Uri, UpdateTrainingjobVolumeSizeInGB, UpdateTrainingjobWeightsS3Uri, UpdateTrainingjobCfgS3Uri, UpdateTrainingjobOutputS3Uri } from '../../../store/pipelines/actionCreators';
+import { IIndustrialModel } from '../../../store/industrialmodels/reducer';
 
 interface IProps {
     updateTrainingjobInstanceTypeAction: (trainingjobInstanceType: string) => any;
@@ -26,6 +27,7 @@ interface IProps {
     trainingjobCfgS3Uri : string;
     trainingjobOutputS3Uri : string;
     wizard?: boolean;
+    industrialModels: IIndustrialModel[];
 }
 
 const optionsInstance : SelectOption[]= [
@@ -152,9 +154,13 @@ const TrainingJobForm: FunctionComponent<IProps> = (props) => {
         else if(outputS3Uri === '')
             setInvalidOutputS3Uri(true)
         else {
+            var index = props.industrialModels.findIndex((item) => item.name === params.name)
+            var algorithm = props.industrialModels[index].algorithm
+
             var body = {
                 'training_job_name' : trainingJobName,
-                'case_name': params.name,
+                'industrial_model': params.name,
+                'model_algorithm': algorithm,
                 'instance_type': selectedInstanceType.value,
                 'instance_count': instanceCount,
                 'volume_size_in_gb': volumeSizeInGB,
@@ -337,10 +343,11 @@ const mapStateToProps = (state: AppState) => ({
     trainingjobInstanceCount : state.pipeline.trainingjobInstanceCount,
     trainingjobVolumeSizeInGB : state.pipeline.trainingjobVolumeSizeInGB,
     trainingjobImagesS3Uri : state.pipeline.trainingjobImagesS3Uri,
-    trainingjobLabelsS3Uri : state.pipeline.trainingjobImagesS3Uri,
+    trainingjobLabelsS3Uri : state.pipeline.trainingjobLabelsS3Uri,
     trainingjobWeightsS3Uri : state.pipeline.trainingjobWeightsS3Uri,
     trainingjobCfgS3Uri : state.pipeline.trainingjobCfgS3Uri,
     trainingjobOutputS3Uri : state.pipeline.trainingjobOutputS3Uri,
+    industrialModels : state.industrialmodel.industrialModels
 });
 
 export default connect(

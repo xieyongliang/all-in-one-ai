@@ -141,7 +141,7 @@ app.get('/file/download', (req, res) => {
         console.log(error)
     }
 })
-app.post('/models', (req, res) => {
+app.post('/industrialmodel', (req, res) => {
     var body = [];
     req.on('data', chunk => {
         body += chunk
@@ -154,10 +154,7 @@ app.post('/models', (req, res) => {
             data['file_content'] = buffer
 
             options = {headers: {'content-type': 'application/json'}}
-
-            console.log(data)
-
-            axios.post(baseUrl + '/models', data, options)
+            axios.post(baseUrl + '/industrialmodel', data, options)
                 .then((response) => {
                     res.send(response.data)
                 }, (error) => {
@@ -202,10 +199,10 @@ app.use(createProxyMiddleware('/modelpackage', {
     secure: false,
     ws: false,
 }));
-app.use(createProxyMiddleware('/models', {
-    target: baseUrl + '/models',
+app.use(createProxyMiddleware('/industrialmodel', {
+    target: baseUrl + '/industrialmodel',
     pathRewrite: {
-        '^/models': ''
+        '^/industrialmodel': ''
     },
     changeOrigin: true,
     secure: false,

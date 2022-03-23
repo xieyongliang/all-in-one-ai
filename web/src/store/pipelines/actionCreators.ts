@@ -1,5 +1,4 @@
 import { Action } from '../Actions';
-import { IIndustrialModel } from './reducer';
 import { PipelineActionTypes } from './types';
 
 export function UpdatePipelineType(pipelineType: string): PipelineActionTypes {
@@ -137,69 +136,6 @@ export function UpdateEndpointInitialVariantWeight(endpointInitialVariantWeight:
     };
 }
 
-export function UpdateApiRestApiName(apiRestApiName: string): PipelineActionTypes {
-    return {
-        type: Action.UPDATE_PIPELINE_API_REST_API_NAME,
-        payload: {
-            apiRestApiName,
-        },
-    };
-}
-
-export function UpdateApiRestApiId(apiRestApiId: string): PipelineActionTypes {
-    return {
-        type: Action.UPDATE_PIPELINE_API_REST_API_ID,
-        payload: {
-            apiRestApiId,
-        },
-    };
-}
-
-export function UpdateApiType(apiType: string): PipelineActionTypes {
-    return {
-        type: Action.UPDATE_PIPELINE_API_TYPE,
-        payload: {
-            apiType,
-        },
-    };
-}
-
-export function UpdateApiPath(apiPath: string): PipelineActionTypes {
-    return {
-        type: Action.UPDATE_PIPELINE_API_PATH,
-        payload: {
-            apiPath,
-        },
-    };
-}
-
-export function UpdateApiStage(apiStage: string): PipelineActionTypes {
-    return {
-        type: Action.UPDATE_PIPELINE_API_STAGE,
-        payload: {
-            apiStage,
-        },
-    };
-}
-
-export function UpdateApiFuntion(apiFunction: string): PipelineActionTypes {
-    return {
-        type: Action.UPDATE_PIPELINE_API_FUNCTION,
-        payload: {
-            apiFunction,
-        },
-    };
-}
-
-export function UpdateApiMethod(apiMethod: string): PipelineActionTypes {
-    return {
-        type: Action.UPDATE_PIPELINE_API_METHOD,
-        payload: {
-            apiMethod,
-        },
-    };
-}
-
 export function UpdateGreengrassComponentName(greengrassComponentName: string): PipelineActionTypes {
     return {
         type: Action.UPDATE_PIPELINE_GREENGRASS_COMPONENT_NAME,
@@ -214,6 +150,15 @@ export function UpdateGreengrassComponentVersion(greengrassComponentVersion: str
         type: Action.UPDATE_PIPELINE_GREENGRASS_COMPONENT_VERSION,
         payload: {
             greengrassComponentVersion,
+        },
+    };
+}
+
+export function UpdateModelDataUrl(modelDataUrl: string): PipelineActionTypes {
+    return {
+        type: Action.UPDATE_PIPELINE_MODEL_DATA_URL,
+        payload: {
+            modelDataUrl,
         },
     };
 }
@@ -250,15 +195,6 @@ export function UpdateGreengrassDeploymentComponents(greengrassDeploymentCompone
         type: Action.UPDATE_PIPELINE_GREENGRASS_DEPLOYMENT_COMPONENTS,
         payload: {
             greengrassDeploymentComponents,
-        },
-    };
-}
-
-export function UpdateIndustrailModels(industrialModels: IIndustrialModel[]): PipelineActionTypes {
-    return {
-        type: Action.UPDATE_INDUSTRIAL_MODELS,
-        payload: {
-            industrialModels,
         },
     };
 }

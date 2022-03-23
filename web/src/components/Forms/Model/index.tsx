@@ -6,7 +6,8 @@ import Grid from '@mui/material/Grid';
 import axios from 'axios';
 import { AppState } from '../../../store';
 import { connect } from 'react-redux';
-import { UpdateModelModelPackageGroupName, UpdateModelModelPackageArn } from '../../../store/pipelines/actionCreators';
+import { UpdateModelModelPackageGroupName, UpdateModelModelPackageArn, UpdateModelDataUrl } from '../../../store/pipelines/actionCreators';
+import { IIndustrialModel } from '../../../store/industrialmodels/reducer';
 
 interface PathParams {
     name: string;
@@ -21,14 +22,19 @@ interface ModelPackageItem {
 interface IProps {
     updateModelModelPackageGroupNameAction : (modelModelPackageGroupName: string) => any;
     updateModelModelPackageArnAction : (modelModelPackageArn: string) => any;
+    updateModelDataUrlAction: (modelDataUrl: string) => any;
     pipelineType: string;
     modelModelPackageGroupName: string;
     modelModelPackageArn: string;
+    modelDataUrl: string;
+    industrialModels : IIndustrialModel[];
     wizard?: boolean;
 }
 
 const ModelForm: FunctionComponent<IProps> = (props) => {
-    const [ itemsModelPackageGroups ] = useState([])
+    const [ modelPackageGroupItems, setModelPackGroupItems ] = useState([])
+    const [ modelPackageVersionItems, setModelPackageVersionItems ] = useState({})
+    const [ modelPackageGroupName, setModelPackageGroupName ] = useState('')
     const [ loading, setLoading ] = useState(true);
     const [ modelName, setModelName ] = useState('')
     const [ containerIamge, setContainerImage ] = useState('')
@@ -37,8 +43,6 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
     const [ containerModelType, setContainerModelType ] = useState('SingleModel')
     const [ selectedModelPackage, setSelectedModelPackage ] = useState({});
     const [ selectedModelPackageVersions ] = useState([]);
-    const [ itemsModelPackageVersions ] = useState({})
-    const [ modelPackageGroupName, setModelPackageGroupName ] = useState('')
     const [ tags ] = useState([{key:'', value:''}])
     const [ forcedRefresh, setForcedRefresh ] = useState(false)
     const [ invalidModelName, setInvalidModelName ] = useState(false)
@@ -50,10 +54,20 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
 
     var params : PathParams = useParams();
 
+    async function getModelPackageGruop() {
+        const response = await axios.get(`/modelpackage/group`)
+        return response.data
+    }
+
     async function getModelPackageVersions(modelPackageGroupName) {
         const response = await axios.get(`/modelpackage/${modelPackageGroupName}`)
         return response.data
     }
+
+    async function getModelPackage(modelPackageGroupName, modelPackageArn) {
+        const response = await axios.get(`/modelpackage/${modelPackageGroupName}`, {params: {model_package_arn: modelPackageArn}})
+        return response.data
+    }    
 
     var wizard : boolean
     if(props.wizard === undefined)
@@ -62,9 +76,10 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
         wizard = props.wizard
 
     useEffect(() => {
-        axios.get('/modelpackage/group')
-            .then((response) => {
-            for(let item of response.data) {
+        getModelPackageGruop().then((data) => {
+            var modelPackageGroupItems = []
+            var modelPackageVersionItems = {}
+            for(let item of data) {
                 getModelPackageVersions(item.ModelPackageGroupName).then(value => {
                     var versions = []
                     var arns = []
@@ -72,19 +87,25 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
                         versions.push(modelPackage['ModelPackageVersion'])
                         arns.push(modelPackage['ModelPackageArn'])
                     })
-                    itemsModelPackageGroups.find(({name}) => name === item.ModelPackageGroupName)['versions'] = versions
-                    itemsModelPackageVersions[item.ModelPackageGroupName] = {
+                    modelPackageGroupItems.find(({name}) => name === item.ModelPackageGroupName)['versions'] = versions
+                    modelPackageVersionItems[item.ModelPackageGroupName] = {
                         versions: versions,
                         arns: arns
                     }
+                    if(Object.keys(modelPackageVersionItems).length === data.length) {
+                        setModelPackageVersionItems(modelPackageVersionItems)
+                        setLoading(false)
+                    }
                 })
-                itemsModelPackageGroups.push({name: item.ModelPackageGroupName, creation_time: item.CreationTime, versions: []})
+                modelPackageGroupItems.push({name: item.ModelPackageGroupName, creation_time: item.CreationTime, versions: []})
+                if(Object.keys(modelPackageGroupItems).length === data.length) {
+                    setModelPackGroupItems(modelPackageGroupItems)
+                }
             }
-            setLoading(false)
         }, (error) => {
             console.log(error);
         });
-    }, [itemsModelPackageGroups, itemsModelPackageVersions, props])
+    }, [])
 
     const onChange = (id: string, event: any, option?: string) => {
         if(id === 'formFieldIdModelName')
@@ -118,9 +139,12 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
                 props.updateModelModelPackageGroupNameAction(modelPackageGroupName)
                 if(selectedModelPackageVersions[modelPackageGroupName] !==  undefined) {
                     var modelPakcageVersion = selectedModelPackageVersions[modelPackageGroupName]['value']
-                    var index = itemsModelPackageVersions[selectedItem.name]['versions'].findIndex((version) => version === modelPakcageVersion)
-                    var model_package_arn = itemsModelPackageVersions[modelPackageGroupName]['arns'][index]
-                    props.updateModelModelPackageArnAction(selectedModelPackageVersions[model_package_arn])
+                    var index = modelPackageVersionItems[selectedItem.name]['versions'].findIndex((version) => version === modelPakcageVersion)
+                    var modelPackageArn = modelPackageVersionItems[modelPackageGroupName]['arns'][index]
+                    props.updateModelModelPackageArnAction(modelPackageArn)
+                    getModelPackage(modelPackageGroupName, modelPackageArn).then((data) => {
+                        props.updateModelDataUrlAction(data.InferenceSpecification.Containers[0].ModelDataUrl)
+                    })
                 }
             }
         })
@@ -128,15 +152,20 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
 
     const onSubmit = () => {
         var body = {}
+        var index = props.industrialModels.findIndex((item) => item.name === params.name)
+        var algorithm = props.industrialModels[index].algorithm
+
         if(containerInputType === '0'){
             if(modelName === '')
                 setInvalidModelName(true)
             else if(modelDataUrl === '')
                 setInvalidModelDataUrl(true)
             else {
+    
                 body = {
                     'model_name' : modelName,
-                    'case_name': params.name,
+                    'industrial_model': params.name,
+                    'model_algorithm': algorithm,
                     'container_image': containerIamge,
                     'model_data_url': modelDataUrl,
                     'mode': containerModelType
@@ -158,14 +187,14 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
             else {
                 var model_package_group_name = selectedModelPackage['name']
                 var model_package_version = selectedModelPackageVersions[model_package_group_name]['value']
-                var index = itemsModelPackageVersions[model_package_group_name]['versions'].findIndex((version) => version === model_package_version)
-                var model_package_arn = itemsModelPackageVersions[model_package_group_name]['arns'][index]
+                index = modelPackageVersionItems[model_package_group_name]['versions'].findIndex((version) => version === model_package_version)
+                var model_package_arn = modelPackageVersionItems[model_package_group_name]['arns'][index]
                 body = {
                     'model_name' : modelName,
-                    'case_name': params.name,
+                    'industrial_model': params.name,
+                    'model_algorithm': algorithm,
                     'model_package_arn': model_package_arn
                 }
-                console.log(body)         
                 if(tags.length > 1 || (tags.length === 1 && tags[0].key !== '' && tags[0].value !== ''))
                     body['tags'] = tags
                 axios.post('/model', body,  { headers: {'content-type': 'application/json' }}) 
@@ -280,7 +309,7 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
             accessor: 'name',
             Cell: ({ row  }) => {
                 if (row && row.original) {
-                    return <a href={`/case/${params.name}?tab=modelpackage#prop:id=${row.original.name}`}> {row.original.name} </a>;
+                    return <a href={`/industrialmodel/${params.name}?tab=modelpackage#prop:id=${row.original.name}`}> {row.original.name} </a>;
                 }
                 return null;
             }
@@ -323,7 +352,7 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
                     tableTitle='Model packages'
                     multiSelect={false}
                     columnDefinitions={columnDefinitions}
-                    items={itemsModelPackageGroups}
+                    items={modelPackageGroupItems}
                     loading={loading}
                     selectedRowIds={[props.modelModelPackageGroupName]}
                     onSelectionChange={onSelectionChange}
@@ -336,7 +365,7 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
                     tableTitle='Model packages'
                     multiSelect={false}
                     columnDefinitions={columnDefinitions}
-                    items={itemsModelPackageGroups}
+                    items={modelPackageGroupItems}
                     loading={loading}
                     onSelectionChange={onSelectionChange}
                     getRowId={getRowId}
@@ -353,8 +382,8 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
             }
             axios.post('/modelpackage/group', body,  { headers: {'content-type': 'application/json' }}) 
             .then((response) => {
-                itemsModelPackageGroups.push({name: modelPackageGroupName, creation_time: response.data.creation_time, versions: []})
-                itemsModelPackageVersions[modelPackageGroupName] = {
+                modelPackageGroupItems.push({name: modelPackageGroupName, creation_time: response.data.creation_time, versions: []})
+                modelPackageVersionItems[modelPackageGroupName] = {
                     versions: [],
                     arns: []
                 }
@@ -391,7 +420,6 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
             }
             axios.post(`/modelpackage/${selectedModelPackage['name']}`, body,  { headers: {'content-type': 'application/json' }}) 
             .then((response) => {
-                console.log(response.data)
                 getModelPackageVersions(selectedModelPackage['name']).then(value => {
                     var versions = []
                     var arns = []
@@ -399,8 +427,8 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
                         versions.push(modelPackage['ModelPackageVersion'])
                         arns.push(modelPackage['ModelPackageArn'])
                     })
-                    itemsModelPackageGroups.find(({name}) => name === selectedModelPackage['name'])['versions'] = versions
-                    itemsModelPackageVersions[selectedModelPackage['name']] = {
+                    modelPackageGroupItems.find(({name}) => name === selectedModelPackage['name'])['versions'] = versions
+                    modelPackageVersionItems[selectedModelPackage['name']] = {
                         versions: versions,
                         arns: arns
                     }
@@ -496,13 +524,16 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
 
 const mapDispatchToProps = {
     updateModelModelPackageGroupNameAction: UpdateModelModelPackageGroupName,
-    updateModelModelPackageArnAction: UpdateModelModelPackageArn
+    updateModelModelPackageArnAction: UpdateModelModelPackageArn,
+    updateModelDataUrlAction: UpdateModelDataUrl
 };
 
 const mapStateToProps = (state: AppState) => ({
     pipelineType: state.pipeline.pipelineType,
     modelModelPackageGroupName : state.pipeline.modelModelPackageGroupName,
-    modelModelPackageArn: state.pipeline.modelModelPackageArn
+    modelModelPackageArn: state.pipeline.modelModelPackageArn,
+    modelDataUrl: state.pipeline.modelDataUrl,
+    industrialModels : state.industrialmodel.industrialModels
 });
 
 export default connect(

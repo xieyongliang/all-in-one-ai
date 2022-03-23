@@ -1,20 +1,21 @@
-import { Button, Container, Form, FormField, FormSection, Input, Select, Stack, Textarea, Wizard } from "aws-northstar";
+import { Button, Container, Form, FormField, FormSection, Input, Select, Stack, Textarea } from "aws-northstar";
 import { FunctionComponent, useState } from "react";
 import axios from "axios";
 import FileUpload from 'aws-northstar/components/FileUpload';
 import { FileMetadata } from "aws-northstar/components/FileUpload/types";
 import Image from "../Utils/Image"
-import { IIndustrialModel } from "../../store/pipelines/reducer";
+import { IIndustrialModel } from "../../store/industrialmodels/reducer";
 import { AppState } from "../../store";
 import { connect } from "react-redux";
-import { UpdateIndustrailModels } from "../../store/pipelines/actionCreators";
+import { Updateindustrialmodels } from "../../store/industrialmodels/actionCreators";
+import { useHistory } from "react-router-dom";
 
 interface IProps {
-    updateIndustrailModelsAction : (industrialModels : IIndustrialModel[]) => any
+    updateindustrialmodelsAction : (industrialModels : IIndustrialModel[]) => any
     industrialModels: IIndustrialModel[];
 }
 
-const CustomForm: FunctionComponent<IProps> = (props) => {
+const InustrialModelForm: FunctionComponent<IProps> = (props) => {
     const optionsAlgorithm = [{label: 'Yolov5', value: 'yolov5'}]
     const selectedAlgorithm = {label: 'Yolov5', value: 'yolov5'}
     const [ modelName, setModelName ] = useState('')
@@ -22,8 +23,9 @@ const CustomForm: FunctionComponent<IProps> = (props) => {
     const [ modelSamples, setModelSamples ] = useState('')
     const [ modelLables, setModelLabels ] = useState('')
     const [ fileName, setFileName ] = useState('')
-    const [ fileContent, setFileContent ] = useState(undefined)
     
+    const history = useHistory();
+
     const onChange = (id, event) => {
         if(id === 'formFieldIdModelName')
             setModelName(event)
@@ -40,7 +42,6 @@ const CustomForm: FunctionComponent<IProps> = (props) => {
         .then((response) => {
             var filename : string = response.data;
             setFileName(filename);
-            setFileContent(files[0])
         }, (error) => {
             console.log(error);
         });
@@ -106,7 +107,7 @@ const CustomForm: FunctionComponent<IProps> = (props) => {
     }
 
     const onCancel = () => {
-        history.back()
+        history.goBack();
     }
 
     const renderCustom = () => {
@@ -130,24 +131,21 @@ const CustomForm: FunctionComponent<IProps> = (props) => {
     const onSubmit = () => {
         var buffer = {
             'model_name': modelName,
-            'algorithm_name': selectedAlgorithm.value,
+            'model_algorithm': selectedAlgorithm.value,
             'model_description': modelDescription,
             'model_labels': modelLables,
             'model_samples': modelSamples,
             'file_name': fileName
         }
-        axios.post('/models', buffer)
+        axios.post('/industrialmodel', buffer)
         .then((response) => {
             var modelIcon = response.data
             var industrialModels = props.industrialModels.map((x) => x)
             industrialModels.push({name: modelName, algorithm : selectedAlgorithm.value, description: modelDescription, labels: modelLables.split('\n'), samples: modelSamples, icon: modelIcon})
-            props.updateIndustrailModelsAction(industrialModels)
-            history.back()
-        }, (error) => {
-                console.log(error);
-            }
-        ).catch((e) => {
-            console.log(e)
+            props.updateindustrialmodelsAction(industrialModels)
+            history.goBack()
+        }).catch((error) => {
+            console.log(error)
         })
     };
     
@@ -157,14 +155,14 @@ const CustomForm: FunctionComponent<IProps> = (props) => {
 }
 
 const mapDispatchToProps = {
-    updateIndustrailModelsAction: UpdateIndustrailModels,
+    updateindustrialmodelsAction: Updateindustrialmodels,
 };
 
 const mapStateToProps = (state: AppState) => ({
-    industrialModels : state.pipeline.industrialModels
+    industrialModels : state.industrialmodel.industrialModels
 });
 
 export default connect(
     mapStateToProps,
     mapDispatchToProps
-)(CustomForm);
+)(InustrialModelForm);

@@ -1,4 +1,4 @@
-import { FunctionComponent, useEffect, useRef, useState, useCallback } from 'react';
+import { FunctionComponent, useEffect, useState, useCallback } from 'react';
 import { useHistory, useParams } from 'react-router-dom'; 
 import { Column } from 'react-table'
 import { Form, Button, RadioGroup, RadioButton, Stack, Select, Table, Text, FormSection, FormField, Input } from 'aws-northstar';
@@ -55,8 +55,6 @@ const GreengrassDeploymentForm: FunctionComponent<IProps> = (props) => {
 
     var params : PathParams = useParams();
 
-    const casenref= useRef(params.name);
-
     var selectedComponents = [];
 
     var wizard : boolean = props.wizard
@@ -74,9 +72,9 @@ const GreengrassDeploymentForm: FunctionComponent<IProps> = (props) => {
     var greengrassDeploymentTargetArn = props.greengrassDeploymentTargetArn
 
     useEffect(() => {
-        const request1 = axios.get(`/greengrass/component`, {params : {'case': casenref.current}})
-        const request2 = axios.get(`/greengrass/coredevices`, {params : {'case': casenref.current}})
-        const request3 = axios.get(`/greengrass/thinggroups`, {params : {'case': casenref.current}})
+        const request1 = axios.get(`/greengrass/component`)
+        const request2 = axios.get(`/greengrass/coredevices`)
+        const request3 = axios.get(`/greengrass/thinggroups`)
         axios.all([request1, request2, request3])
         .then(axios.spread(function(response1, response2, response3) {
             for(let item of response1.data) {
@@ -168,9 +166,8 @@ const GreengrassDeploymentForm: FunctionComponent<IProps> = (props) => {
                 'deployment_name': deployment_name,
                 'target_arn': target_arn,
                 'components': components,
-                'case_name': params.name
+                'industrial_model': params.name
             }
-            console.log(JSON.stringify(body))
             axios.post('/greengrass/deployment', body,  { headers: {'content-type': 'application/json' }}) 
             .then((response) => {
                 history.goBack();

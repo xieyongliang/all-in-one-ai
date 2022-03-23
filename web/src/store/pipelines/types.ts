@@ -1,5 +1,4 @@
 import { Action } from '../Actions';
-import { IIndustrialModel } from './reducer';
 
 export type PipelineState = {
     pipelineType: string;
@@ -17,20 +16,13 @@ export type PipelineState = {
     endpointAcceleratorType: string;
     endpointInitialInstanceCount: number;
     endpointInitialVariantWeight: number;
-    apiRestApiName: string;
-    apiRestApiId: string;
-    apiType: string;
-    apiPath: string;
-    apiStage: string;
-    apiFunction: string;
-    apiMethod: string;
     greengrassComponentName: string;
     greengrassComponentVersion: string;
+    modelDataUrl: string;
     greengrassDeploymentName: string;
     greengrassDeploymentTargetType: string;
     greengrassDeploymentTargetArn: string;
-    greengrassDeploymentComponents: string;
-    industrialModels: IIndustrialModel[]
+    greengrassDeploymentComponents: string
 }
 
 interface UpdatePipelineType {
@@ -138,55 +130,6 @@ interface UpdateEndpointInitialVariantWeight {
     }
 }
 
-interface UpdateApiRestApiName {
-    type: typeof Action.UPDATE_PIPELINE_API_REST_API_NAME;
-    payload: {
-        apiRestApiName: string;
-    }
-}
-
-interface UpdateApiRestApiId {
-    type: typeof Action.UPDATE_PIPELINE_API_REST_API_ID;
-    payload: {
-        apiRestApiId: string;
-    }
-}
-
-interface UpdateApiType {
-    type: typeof Action.UPDATE_PIPELINE_API_TYPE;
-    payload: {
-        apiType: string;
-    }
-}
-
-interface UpdateApiPath {
-    type: typeof Action.UPDATE_PIPELINE_API_PATH;
-    payload: {
-        apiPath: string;
-    }
-}
-
-interface UpdateApiStage {
-    type: typeof Action.UPDATE_PIPELINE_API_STAGE;
-    payload: {
-        apiStage: string;
-    }
-}
-
-interface UpdateApiFuntion {
-    type: typeof Action.UPDATE_PIPELINE_API_FUNCTION;
-    payload: {
-        apiFunction: string;
-    }
-}
-
-interface UpdateApiMethod {
-    type: typeof Action.UPDATE_PIPELINE_API_METHOD;
-    payload: {
-        apiMethod: string;
-    }
-}
-
 interface UpdateGreengrassComponentName {
     type: typeof Action.UPDATE_PIPELINE_GREENGRASS_COMPONENT_NAME;
     payload: {
@@ -198,6 +141,13 @@ interface UpdateGreengrassComponentVersion {
     type: typeof Action.UPDATE_PIPELINE_GREENGRASS_COMPONENT_VERSION;
     payload: {
         greengrassComponentVersion: string;
+    }
+}
+
+interface UpdateModelDataUrl {
+    type: typeof Action.UPDATE_PIPELINE_MODEL_DATA_URL;
+    payload: {
+        modelDataUrl: string;
     }
 }
 
@@ -229,13 +179,6 @@ interface UpdateGreengrassDeploymentComponents {
     }
 }
 
-interface UpdateIndustrailModels {
-    type: typeof Action.UPDATE_INDUSTRIAL_MODELS;
-    payload: {
-        industrialModels: IIndustrialModel[];
-    }
-}
-
 export type PipelineActionTypes = UpdatePipelineType
     | UpdateTrainingjobInstanceType
     | UpdateTrainingjobInstanceCount
@@ -251,17 +194,10 @@ export type PipelineActionTypes = UpdatePipelineType
     | UpdateEndpointAcceleratorType
     | UpdateEndpointInitialInstanceCount
     | UpdateEndpointInitialVariantWeight
-    | UpdateApiRestApiName
-    | UpdateApiRestApiId
-    | UpdateApiType
-    | UpdateApiPath
-    | UpdateApiStage
-    | UpdateApiFuntion
-    | UpdateApiMethod
     | UpdateGreengrassComponentName
     | UpdateGreengrassComponentVersion
-    | UpdateGreengrassDeploymentTargetType
+    | UpdateModelDataUrl
     | UpdateGreengrassDeploymentName
+    | UpdateGreengrassDeploymentTargetType
     | UpdateGreengrassDeploymentTargetArn
     | UpdateGreengrassDeploymentComponents
-    | UpdateIndustrailModels

@@ -7,6 +7,20 @@ import axios from 'axios';
 import { AppState } from '../../../store';
 import { connect } from 'react-redux';
 import { UpdateEndpointAcceleratorType, UpdateEndpointInitialInstanceCount, UpdateEndpointInitialVariantWeight, UpdateEndpointInstanceType } from '../../../store/pipelines/actionCreators';
+import { IIndustrialModel } from '../../../store/industrialmodels/reducer';
+
+interface IProps {
+    updateEndpointInstanceTypeAction: (endpointInstanceType: string) => any;
+    updateEndpointAcceleratorTypeAction: (endpointAcceleratorType: string) => any;
+    updateEndpointInitialInstanceCountAction: (endpointInitialInstanceCount: number) => any,
+    updateEndpointInitialVariantWeightAction: (endpointInitialVariantWeight: number) => any
+    endpointInstanceType : string;
+    endpointAcceleratorType: string;
+    endpointInitialInstanceCount: number;
+    endpointInitialVariantWeight: number;
+    industrialModels : IIndustrialModel[];
+    wizard?: boolean;
+}
 
 const optionsInstance : SelectOption[]= [
     {
@@ -105,20 +119,8 @@ interface PathParams {
     name: string;
 }
 
-interface IProps {
-    updateEndpointInstanceTypeAction: (endpointInstanceType: string) => any;
-    updateEndpointAcceleratorTypeAction: (endpointAcceleratorType: string) => any;
-    updateEndpointInitialInstanceCountAction: (endpointInitialInstanceCount: number) => any,
-    updateEndpointInitialVariantWeightAction: (endpointInitialVariantWeight: number) => any
-    endpointInstanceType : string;
-    endpointAcceleratorType: string;
-    endpointInitialInstanceCount: number;
-    endpointInitialVariantWeight: number;
-    wizard?: boolean;
-}
-
 const EndpointForm: FunctionComponent<IProps> = (props) => {
-    const [ optionsModelName, setOptionsModelName ] = useState([])
+    const [ modelOptions, setModelOptions ] = useState([])
     const [ endpointName, setEndpointName ] = useState(''); 
     const [ selectedModelName, setSelectedModelName ] = useState<SelectOption>({});
     const [ selectedInstanceType, setSelectedInstanceType ] = useState<SelectOption>(props.wizard ? {label: props.endpointInstanceType, value: props.endpointInstanceType} : {});
@@ -139,18 +141,18 @@ const EndpointForm: FunctionComponent<IProps> = (props) => {
     var params : PathParams = useParams();
 
     useEffect(() => {
-        axios.get('/model')
+        axios.get('/model', {params : {industrial_model: params.name}})
             .then((response) => {
-            var items = []
-            for(let item of response.data) {
-                items.push({label: item.model_name, value: item.model_name})
-            }
-            setOptionsModelName(items);
-            console.log(items);
-        }, (error) => {
-            console.log(error);
-        });
-    }, [])
+                var items = []
+                for(let item of response.data) {
+                    items.push({label: item.ModelName, value: item.ModelName})
+                    if(items.length === response.data.length)
+                        setModelOptions(items);
+                }
+            }, (error) => {
+                console.log(error);
+            });
+    }, [params.name])
 
     const onChange = (id: string, event: any) => {
         if(id === 'formFieldIdEndpointName')
@@ -193,10 +195,14 @@ const EndpointForm: FunctionComponent<IProps> = (props) => {
         else if(initialVariantWeight <= 0)
             setInvalidInitialVariantWeight(true)
         else {
+            var index = props.industrialModels.findIndex((item) => item.name === params.name)
+            var algorithm = props.industrialModels[index].algorithm
+
             var body = {
                 'endpoint_name': endpointName,
                 'model_name' : selectedModelName.value,
-                'case_name': params.name,
+                'industrial_model': params.name,
+                'model_algorithm': algorithm,
                 'instance_type': selectedInstanceType.value,
                 'accelerator_type': selectedAcceleratorTypeType.value === 'none' ? '': selectedAcceleratorTypeType.value,
                 'initial_instance_count': initialInstanceCount,
@@ -296,7 +302,7 @@ const EndpointForm: FunctionComponent<IProps> = (props) => {
                     <FormField label='Model name' controlId='formFieldIdModel'>
                         <Select
                                 placeholder='Choose an option'
-                                options={optionsModelName}
+                                options={modelOptions}
                                 selectedOption={selectedModelName}
                                 invalid={invalidModelName}
                                 onChange={(event) => onChange('formFieldIdModelName', event)}
@@ -370,7 +376,8 @@ const mapStateToProps = (state: AppState) => ({
     endpointInstanceType : state.pipeline.endpointInstanceType,
     endpointAcceleratorType: state.pipeline.endpointAcceleratorType,
     endpointInitialInstanceCount: state.pipeline.endpointInitialInstanceCount,
-    endpointInitialVariantWeight: state.pipeline.endpointInitialVariantWeight
+    endpointInitialVariantWeight: state.pipeline.endpointInitialVariantWeight,
+    industrialModels : state.industrialmodel.industrialModels
 });
 
 export default connect(

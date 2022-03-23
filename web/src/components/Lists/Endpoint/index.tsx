@@ -57,7 +57,7 @@ const EndpointList: FunctionComponent = () => {
     }, []);
 
     useEffect(() => {
-        axios.get('/endpoint', {params : {'case': params.name}})
+        axios.get('/endpoint', {params : {'industrial_model': params.name}})
         .then((response) => {
             var items = []
             for(let item of response.data) {
@@ -72,7 +72,7 @@ const EndpointList: FunctionComponent = () => {
     }, [params.name]);
 
     const onCreate = () => {
-        history.push('/case/' + params.name + '?tab=endpoint#form')
+        history.push('/imodels/' + params.name + '?tab=endpoint#form')
     }
     
     const getRowId = React.useCallback(data => data.endpointName, []);
@@ -85,7 +85,7 @@ const EndpointList: FunctionComponent = () => {
             accessor: 'endpointName',
             Cell: ({ row  }) => {
                 if (row && row.original) {
-                    return <a href={`/case/${params.name}?tab=endpoint#prop:id=${row.original.endpointName}`}> {row.original.endpointName} </a>;
+                    return <a href={`/imodels/${params.name}?tab=endpoint#prop:id=${row.original.endpointName}`}> {row.original.endpointName} </a>;
                 }
                 return null;
             }

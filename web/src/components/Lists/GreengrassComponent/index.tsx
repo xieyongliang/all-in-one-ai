@@ -55,7 +55,7 @@ const GreengrassComponentList: FunctionComponent = () => {
 
     useEffect(() => {
         var component_name = 'com.example.yolov5'
-        axios.get(`/greengrass/component/${component_name}`, {params : {'case': params.name}})
+        axios.get(`/greengrass/component/${component_name}`, {params : {'industrial_model': params.name}})
         .then((response) => {
             var items = []
             for(let item of response.data) {
@@ -70,7 +70,7 @@ const GreengrassComponentList: FunctionComponent = () => {
     }, [params.name]);
 
     const onCreate = () => {
-        history.push('/case/' + params.name + '?tab=greengrasscomponentversion#form')
+        history.push('/imodels/' + params.name + '?tab=greengrasscomponentversion#form')
     }
 
     const getRowId = React.useCallback(data => data.arn, []);
@@ -83,7 +83,7 @@ const GreengrassComponentList: FunctionComponent = () => {
             accessor: 'name',
             Cell: ({ row  }) => {
                 if (row && row.original) {
-                    return <a href={`/case/${params.name}?tab=greengrasscomponent#prop:id=${row.original.arn}`}> {row.original.name} </a>;
+                    return <a href={`/imodels/${params.name}?tab=greengrasscomponent#prop:id=${row.original.arn}`}> {row.original.name} </a>;
                 }
                 return null;
             }

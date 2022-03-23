@@ -1,6 +1,6 @@
 import { FunctionComponent, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Button, Container, Link, FormField, Inline, Stack, Toggle } from 'aws-northstar';
+import { Button, Container, Link, FormField, Inline, Toggle, Flashbar, FormSection, Select, Stack } from 'aws-northstar';
 import ImageList from '@mui/material/ImageList';
 import ImageListItem from '@mui/material/ImageListItem';
 import SyntaxHighlighter from 'react-syntax-highlighter';
@@ -15,7 +15,8 @@ import Pagination from '@mui/material/Pagination';
 import '../../Utils/Image/index.scss'
 import { AppState } from '../../../store';
 import { connect } from 'react-redux';
-import { IIndustrialModel } from '../../../store/pipelines/reducer';
+import { IIndustrialModel } from '../../../store/industrialmodels/reducer';
+import { SelectOption } from 'aws-northstar/components/Select';
 
 interface IProps {
     industrialModels: IIndustrialModel[];
@@ -28,11 +29,14 @@ const SampleForm: FunctionComponent<IProps> = (props) => {
     const [ imageBboxs, setImageBboxs ] = useState<number[][]>([])
     const [ visibleAnnotate, setVisibleAnnotate ] = useState(false);
     const [ imageLabels, setImageLabels ] = useState([])
+    const [ endpointOptions, setEndpointOptions ] = useState([])
+    const [ selectedEndpoint, setSelectedEndpoint ] = useState<SelectOption>({})
     const [ sampleCode, setSampleCode ] = useState('')
     const [ sampleConsole, setSampleConsole ] = useState('')
     const [ visibleSampleCode, setVisibleSampleCode ] = useState(false)
     const [ imagePage, setImagePage ] = useState(0)
     const [ imageCount, setImageCount ] = useState(0)
+    const [ loading, setLoading ] = useState(true);
 
     var params : PathParams = useParams();
 
@@ -67,14 +71,30 @@ const SampleForm: FunctionComponent<IProps> = (props) => {
 
     useEffect(() => {
         if(industrialModels.length > 0) {
+            setLoading(true)
             var index = industrialModels.findIndex((item) => item.name === params.name)
             var s3uri = industrialModels[index].samples
             setImageLabels(industrialModels[index].labels)
-            axios.get('/s3', {params : { s3uri : s3uri, page_num: imagePage, page_size: 20 }}).then((response) => {
-                setImageItems(response.data.payload);
-                setImageCount(response.data.count)
-                setVisibleAnnotate(false);
-            })
+            axios.get('/s3', {params : { s3uri : s3uri, page_num: imagePage, page_size: 20 }})
+                .then((response) => {
+                    setImageItems(response.data.payload);
+                    setImageCount(response.data.count);
+                    setVisibleAnnotate(false);
+                    setLoading(false);
+                }
+            )
+            axios.get('/endpoint', {params: { industrial_model: params.name}})
+                .then((response) => {
+                    var items = []
+                    response.data.forEach((item) => {
+                        items.push({label: item.EndpointName, value: item.EndpointName})
+                        if(items.length === response.data.length) {
+                            setEndpointOptions(items)
+                            setSelectedEndpoint(items[0])
+                        }
+                    })
+                }
+            )
         }
     },[params.name, imagePage, industrialModels]);
 
@@ -88,9 +108,8 @@ const SampleForm: FunctionComponent<IProps> = (props) => {
         var index = imageItems.findIndex((item) => item.httpuri === curImageItem)
         if(index === -1)
             return;
-        axios.get('/inference/sample', { params : {case: params.name, bucket: imageItems[index].bucket, key: imageItems[index].key}})
+        axios.get('/inference/sample', { params : {industrial_model: params.name, endpoint_name: selectedEndpoint.value, bucket: imageItems[index].bucket, key: imageItems[index].key}})
         .then((response) => {
-            console.log(response.data)
             var tbbox : number[][] = [];
             var tid = [];
             for(let item of response.data) {
@@ -114,8 +133,22 @@ const SampleForm: FunctionComponent<IProps> = (props) => {
         setVisibleAnnotate(true);
     }
 
-    const onChange = (value) => {
-        setImagePage(value)
+    const onChange = (id, event) => {
+        if(id === 'formFieldIdPage')
+            setImagePage(event)
+        else if(id === 'formFieldIdEndpoint')
+            setSelectedEndpoint({label: event.target.value, value: event.target.value})
+    }
+
+    const renderFlashbar = () => {
+        return (
+            <Flashbar items={[{
+                header: 'Loading sample images...',
+                content: 'This may take up to an minute. Please wait a bit...',
+                dismissible: true,
+                loading: loading
+            }]} />
+        )
     }
 
     const renderAnnotate = () => {
@@ -158,8 +191,21 @@ const SampleForm: FunctionComponent<IProps> = (props) => {
                         ))
                     }
                 </ImageList>
-                <Pagination page={imagePage} onChange={(event, value) => onChange(value)} count={Math.floor(imageCount / 20)} />
+                <Pagination page={imagePage} onChange={(event, value) => onChange('formFieldIdPage', value)} count={Math.floor(imageCount / 20)} />
             </Container>
+        )
+    }
+
+    const renderEndpointOptions = () => {
+        return (
+            <FormSection header='Endpoint configuration'>
+                <Select
+                    placeholder='Choose an option'
+                    options={endpointOptions}
+                    selectedOption={selectedEndpoint}
+                    onChange={(event) => onChange('formFieldIdEndpoint', event)}
+                />
+            </FormSection>
         )
     }
 
@@ -211,15 +257,17 @@ const SampleForm: FunctionComponent<IProps> = (props) => {
     else
         return (
             <Stack>
-                {renderImageList()}
-                {renderPreview()}
-                {renderSampleCode()}
+                { loading && renderFlashbar() }
+                { renderImageList() }
+                { renderEndpointOptions() }
+                { renderPreview() }
+                { renderSampleCode() }
             </Stack>
         )
 }
 
 const mapStateToProps = (state: AppState) => ({
-    industrialModels : state.pipeline.industrialModels
+    industrialModels : state.industrialmodel.industrialModels
 });
 
 export default connect(

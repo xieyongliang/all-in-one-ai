@@ -17,12 +17,12 @@ import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
 import NorthStarThemeProvider from 'aws-northstar/components/NorthStarThemeProvider';
 import AppLayout from './components/AppLayout';
 import Dashboard from './components/Dashboard/index'
-import Case from './components/Models'
 import Yolov5 from './components/Algorithms/Yolov5'
 import PPE from './components/Scenarios/PPE';
-import Overview from './components/Overview';
+import IndustrialModelOverview from './components/IndustrialModels/overview';
+import IndustraiModels from './components/IndustrialModels';
 import { FunctionComponent, useEffect } from 'react';
-import { IIndustrialModel } from './store/pipelines/reducer';
+import { IIndustrialModel } from './store/industrialmodels/reducer';
 import axios from 'axios'; 
 import { store } from '.';
 import { Action } from './store/Actions';
@@ -37,7 +37,7 @@ const App : FunctionComponent = () => {
     }
 
     const getModels = async () => {
-        var response = await axios.get(`/models`)
+        var response = await axios.get(`/industrialmodel`)
 
         return response.data
     }
@@ -48,7 +48,7 @@ const App : FunctionComponent = () => {
             data.forEach((item) => {
                 var industrialModel : IIndustrialModel = {name: '', algorithm: '', description: '', icon : '', samples: '', labels: []}
                 industrialModel.name = item.model_name
-                industrialModel.algorithm = item.algorithm_name
+                industrialModel.algorithm = item.model_algorithm
                 industrialModel.description = item.model_description
                 industrialModel.icon = item.model_icon
                 industrialModel.samples = item.model_samples
@@ -65,10 +65,10 @@ const App : FunctionComponent = () => {
         <NorthStarThemeProvider>
             <Router>
                 <Switch>
-                    <Route sensitive={true} exact path="/scenario/:name">{withLayout(PPE)}</Route>
-                    <Route sensitive={true} exact path="/algorithm/:name">{withLayout(Yolov5)}</Route>
-                    <Route sensitive={true} exact path="/case/:name">{withLayout(Case)}</Route>
-                    <Route sensitive={true} exact path="/case">{withLayout(Overview)}</Route>
+                    <Route sensitive={true} exact path="/scenarios/:name">{withLayout(PPE)}</Route>
+                    <Route sensitive={true} exact path="/algorithms/:name">{withLayout(Yolov5)}</Route>
+                    <Route sensitive={true} exact path="/imodels/:name">{withLayout(IndustraiModels)}</Route>
+                    <Route sensitive={true} exact path="/imodels">{withLayout(IndustrialModelOverview)}</Route>
                     <Route sensitive={true} exact path="/">{withLayout(Dashboard)}</Route>
                 </Switch>
             </Router>

@@ -24,7 +24,7 @@ const RestApiList: FunctionComponent = () => {
     var params : PathParams = useParams();
 
     useEffect(() => {
-        axios.get('/api', {params : {'case': params.name}})
+        axios.get('/api', {params : {'industrial_model': params.name}})
             .then((response) => {
             var items = []
             for(let item of response.data) {
@@ -39,7 +39,7 @@ const RestApiList: FunctionComponent = () => {
     }, [params.name]);
 
     const onCreate = () => {
-        history.push('/case/' + params.name + '?tab=restapi#form')
+        history.push(`/imodels/${params.name}?tab=restapi#form`)
     }
 
     const getRowId = React.useCallback(data => data.name, []);
@@ -52,7 +52,7 @@ const RestApiList: FunctionComponent = () => {
             accessor: 'name',
             Cell: ({ row  }) => {
                 if (row && row.original) {
-                    return <a href={`/case/${params.name}?tab=restapi#prop:id=${row.original.name}`}> {row.original.name} </a>;
+                    return <a href={`/imodels/${params.name}?tab=restapi#prop:id=${row.original.name}`}> {row.original.name} </a>;
                 }
                 return null;
             }        

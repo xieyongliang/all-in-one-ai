@@ -27,7 +27,7 @@ const PipelineList: FunctionComponent = () => {
     var params : PathParams = useParams();
 
     useEffect(() => {
-        axios.get('/pipeline', {params : {'case': params.name}})
+        axios.get('/pipeline', {params : {'industrial_model': params.name}})
             .then((response) => {
             var items = []
             for(let item of response.data) {
@@ -42,7 +42,7 @@ const PipelineList: FunctionComponent = () => {
     }, [params.name]);
 
     const onCreate = () => {
-        history.push('/case/' + params.name + '?tab=pipeline#form')
+        history.push(`/imodels/${params.name}?tab=pipeline#form`)
     }
 
     const getRowId = useCallback(data => data.pipelineExecutionArn, []);
@@ -55,7 +55,7 @@ const PipelineList: FunctionComponent = () => {
             accessor: 'pipelineExecutionArn',
             Cell: ({ row  }) => {
                 if (row && row.original) {
-                    return <a href={`/case/${params.name}?tab=pipeline#prop:id=${row.original.pipelineExecutionArn}`}> {row.original.pipelineExecutionArn} </a>;
+                    return <a href={`/imodels/${params.name}?tab=pipeline#prop:id=${row.original.pipelineExecutionArn}`}> {row.original.pipelineExecutionArn} </a>;
                 }
                 return null;
             }        

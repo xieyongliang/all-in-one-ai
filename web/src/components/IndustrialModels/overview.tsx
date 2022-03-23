@@ -3,9 +3,9 @@ import { FunctionComponent, useEffect, useState } from 'react';
 import Grid from '@mui/material/Grid';
 import { useHistory } from 'react-router-dom';
 import Image from '../Utils/Image'
-import CustomForm from './custom';
+import CustomForm from './create';
 import { connect } from 'react-redux';
-import { IIndustrialModel } from '../../store/pipelines/reducer';
+import { IIndustrialModel } from '../../store/industrialmodels/reducer';
 import { AppState } from '../../store';
 import axios from 'axios';
 
@@ -13,7 +13,7 @@ interface IProps {
     industrialModels: IIndustrialModel[];
 }
 
-const Overview: FunctionComponent<IProps> = (props) => {
+const IndustrialModelOverview: FunctionComponent<IProps> = (props) => {
     const [ visibleCustom, setVisibleCustom ] = useState(false)
     const [ itemsModels, setItemsModels ] = useState([])
     const history = useHistory();
@@ -27,32 +27,33 @@ const Overview: FunctionComponent<IProps> = (props) => {
         return response.data
     }
 
+    var industrialModels = props.industrialModels
+
     useEffect(() => {
             var items = []
-            props.industrialModels.forEach((item) => {
+            industrialModels.forEach((item) => {
                 var s3uri = item.icon;
                 getHttpUri(s3uri).then((data) => {
                     items.push({model: item.name, description: item.description, algorithm: item.algorithm, s3uri: s3uri, httpuri: data.payload, samples: item.samples});
-                    if(items.length === props.industrialModels.length)
+                    if(items.length === industrialModels.length)
                         setItemsModels(items)
                 })
             })
-     }, [props.industrialModels])
+     }, [industrialModels])
 
     if(visibleCustom)
         return <CustomForm/>
     
-    console.log(itemsModels)
     return (
         <Stack>
             <Container title='You can simply start from the existing industrial models.'>
                 <Grid container spacing={{ xs: 1, md: 1 }} columns={{ xs: 4, sm: 8, md: 12 }}>
                     {
-                        itemsModels.map((item) => {
+                        itemsModels.map((item) => { 
                             return (
                                 <Grid item xs={2} sm={4} md={4}>
                                     <Box>
-                                        <Card title={item.description} subtitle={item.algorithm} withHover onClick={()=>{history.push(`/case/${item.model}?tab=demo#sample`)}}>
+                                        <Card title={item.description} subtitle={item.algorithm} withHover onClick={()=>{history.push(`/imodels/${item.model}?tab=demo#sample`)}}>
                                             <Image width={128} height={128} src={item.httpuri} current='' public={true} /> 
                                         </Card>
                                     </Box>
@@ -70,9 +71,9 @@ const Overview: FunctionComponent<IProps> = (props) => {
 }
 
 const mapStateToProps = (state: AppState) => ({
-    industrialModels : state.pipeline.industrialModels
+    industrialModels : state.industrialmodel.industrialModels
 });
 
 export default connect(
     mapStateToProps
-)(Overview);
+)(IndustrialModelOverview);

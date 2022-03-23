@@ -4,19 +4,26 @@ import { Form, FormSection, FormField, Input, Button, Select } from 'aws-northst
 import axios from 'axios';
 import { PathParams } from '../../Interfaces/PathParams';
 import { SelectOption } from 'aws-northstar/components/Select';
+import { AppState } from '../../../store';
+import { connect } from 'react-redux';
+import { IIndustrialModel } from '../../../store/industrialmodels/reducer';
 
-const optionsS3DataType : SelectOption[]= [
+interface IProps {
+    industrialModels : IIndustrialModel[];
+}
+
+const s3DateTypeOptions : SelectOption[]= [
     { label: 'S3Prefix', value: 'S3Prefix' },
     { label: 'ManifestFile', value: 'ManifestFile' }
 ];
 
-const optionsContentType : SelectOption[]= [
+const contentTypeOptions : SelectOption[]= [
     { label: 'image/png', value: 'image/png' },
     { label: 'image/jpg', value: 'image/jpg' },
     { label: 'image/jpeg', value: 'image/jpeg' }
 ];
 
-const optionsInstanceType : SelectOption[]= [
+const instanceTypeOptions : SelectOption[]= [
     {
         label: 'Standard', 
         options: [ 
@@ -60,7 +67,7 @@ const optionsInstanceType : SelectOption[]= [
     }
 ];
 
-const TransformJobForm: FunctionComponent = () => {
+const TransformJobForm: FunctionComponent<IProps> = (props) => {
     const [ optionsModel, setOptionsModel ] = useState([]);
     const [ selectedS3DataType, setSelectedS3DataType ] = useState<SelectOption>({ label: 'S3Prefix', value: 'S3Prefix' });
     const [ selectedContentType, setSelectedContentType ] = useState<SelectOption>({ label: 'image/png', value: 'image/png' });
@@ -84,18 +91,17 @@ const TransformJobForm: FunctionComponent = () => {
     var params : PathParams = useParams();
 
     useEffect(() => {
-        axios.get('/model')
+        axios.get('/model', {params: {industrial_model: params.name}})
             .then((response) => {
             var items = []
             for(let item of response.data) {
-                items.push({label: item.model_name, value: item.model_name})
+                items.push({label: item.ModellName, value: item.ModelName})
             }
             setOptionsModel(items);
-            console.log(items);
         }, (error) => {
             console.log(error);
         });
-    }, [])
+    }, [params.name])
 
     const onChange = ((id: string, event: any) => {
         if(id === 'formFieldIdTransformJobName') {
@@ -153,11 +159,11 @@ const TransformJobForm: FunctionComponent = () => {
                 'max_concurrent_transforms': maxConcurrentTransforms,
                 'input_s3uri': inputS3Uri,
                 'output_s3uri': outputS3Uri,
-                'case_name': params.name
+                'industrial_model': params.name
             }
             axios.post('/transformjob', body) 
             .then((response) => {
-                history.push(`/case/${params.name}?tab=demo#transformjob`)
+                history.goBack()
             }, (error) => {
                 alert('Error occured, please check and try it again');
                 console.log(error);
@@ -166,7 +172,7 @@ const TransformJobForm: FunctionComponent = () => {
     }
 
     const onCancel = () => {
-        history.push(`/case/${params.name}?tab=demo#transformjob`)
+        history.goBack()
     }
     
     return (
@@ -195,7 +201,7 @@ const TransformJobForm: FunctionComponent = () => {
                 <FormField label='Instance Type' controlId='formFieldIdInstanceType'>
                     <Select
                         placeholder='Choose an option'
-                        options={optionsInstanceType}
+                        options={instanceTypeOptions}
                         selectedOption={selectedInstanceType}
                         invalid={invalidInstanceType}
                         onChange={(event) => onChange('formFieldIdInstanceType', event)}
@@ -212,7 +218,7 @@ const TransformJobForm: FunctionComponent = () => {
                 <FormField label='Data type' controlId='formFieldIdS3DataType'>
                     <Select
                         placeholder='Choose an option'
-                        options={optionsS3DataType}
+                        options={s3DateTypeOptions}
                         selectedOption={selectedS3DataType}
                         onChange={(event) => onChange('formFieldIdS3DataType', event)}
                     />
@@ -224,7 +230,7 @@ const TransformJobForm: FunctionComponent = () => {
                 <FormField label='Content type' controlId='formFieldIdContentType'>
                     <Select
                         placeholder='Choose an option'
-                        options={optionsContentType}
+                        options={contentTypeOptions}
                         selectedOption={selectedContentType}
                         onChange={(event) => onChange('formFieldIdContentType', event)}
                     />
@@ -239,4 +245,10 @@ const TransformJobForm: FunctionComponent = () => {
     );
 }
 
-export default TransformJobForm;
+const mapStateToProps = (state: AppState) => ({
+    industrialModels : state.industrialmodel.industrialModels
+});
+
+export default connect(
+    mapStateToProps,
+)(TransformJobForm);

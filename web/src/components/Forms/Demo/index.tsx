@@ -17,9 +17,9 @@ const DemoForm: FunctionComponent = () => {
     var demoType = hash === 'sample' || hash === 'uploaded' || hash === 'transformjob' ? hash : 'sample'
 
     const onChangeOptions = (event, value) => {
-        history.push(`/case/${params.name}?tab=demo#${value}`);
+        history.push(`/imodels/${params.name}?tab=demo#${value}`);
     }
-    
+
     const renderDemoOptions = () => {
         return (
             <RadioGroup onChange={onChangeOptions}

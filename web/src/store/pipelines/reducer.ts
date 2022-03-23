@@ -1,15 +1,6 @@
 import { PipelineActionTypes, PipelineState } from './types';
 import { Action } from '../Actions';
 
-export interface IIndustrialModel {
-    name: string,
-    algorithm: string,
-    icon: string,
-    samples: string,
-    description: string,
-    labels: string[]
-}
-
 const initialState: PipelineState = {
     pipelineType: '',
     trainingjobInstanceType: '',
@@ -26,20 +17,13 @@ const initialState: PipelineState = {
     endpointAcceleratorType: '',
     endpointInitialInstanceCount: 1,
     endpointInitialVariantWeight: 1,
-    apiRestApiName: '',
-    apiRestApiId: '',
-    apiType: '1',
-    apiPath: '',
-    apiStage: '',
-    apiFunction: '',
-    apiMethod: '',
     greengrassComponentName: '',
     greengrassComponentVersion: '',
+    modelDataUrl: '',
     greengrassDeploymentName: '',
     greengrassDeploymentTargetType: '1',
     greengrassDeploymentTargetArn: '',
     greengrassDeploymentComponents: '[]',
-    industrialModels: []
 };
 
 export function pipelineReducer(
@@ -50,7 +34,7 @@ export function pipelineReducer(
         case Action.UPDATE_PIPELINE_TYPE: {
             return {
                 ...state,
-                trainingjobInstanceType: action.payload.pipelineType
+                pipelineType: action.payload.pipelineType
             }
         }
         case Action.UPDATE_PIPELINE_TRAINING_JOB_INSTANCE_TYPE: {
@@ -110,7 +94,7 @@ export function pipelineReducer(
         case Action.UPDATE_PIPELINE_MODEL_MODELPACKAGE_ARN: {
             return {
                 ...state,
-                modelModelPackageGroupName: action.payload.modelModelPackageArn
+                modelModelPackageArn: action.payload.modelModelPackageArn
             }
         }
         case Action.UPDATE_PIPELINE_ENDPOINT_INSTANCE_TYPE: {
@@ -137,48 +121,6 @@ export function pipelineReducer(
                 endpointInitialVariantWeight: action.payload.endpointInitialVariantWeight
             }
         }
-        case Action.UPDATE_PIPELINE_API_REST_API_NAME: {
-            return {
-                ...state,
-                apiRestApiName: action.payload.apiRestApiName
-            }
-        }
-        case Action.UPDATE_PIPELINE_API_REST_API_ID: {
-            return {
-                ...state,
-                apiRestApiId: action.payload.apiRestApiId
-            }
-        }
-        case Action.UPDATE_PIPELINE_API_TYPE: {
-            return {
-                ...state,
-                apiType: action.payload.apiType
-            }
-        }
-        case Action.UPDATE_PIPELINE_API_PATH: {
-            return {
-                ...state,
-                apiPath: action.payload.apiPath
-            }
-        }
-        case Action.UPDATE_PIPELINE_API_STAGE: {
-            return {
-                ...state,
-                apiStage: action.payload.apiStage
-            }
-        }
-        case Action.UPDATE_PIPELINE_API_FUNCTION: {
-            return {
-                ...state,
-                apiFunction: action.payload.apiFunction
-            }
-        }
-        case Action.UPDATE_PIPELINE_API_METHOD: {
-            return {
-                ...state,
-                apiMethod: action.payload.apiMethod
-            }
-        }
         case Action.UPDATE_PIPELINE_GREENGRASS_COMPONENT_NAME: {
             console.log(action.payload.greengrassComponentName)
             return {
@@ -190,6 +132,12 @@ export function pipelineReducer(
             return {
                 ...state,
                 greengrassComponentVersion: action.payload.greengrassComponentVersion
+            }
+        }
+        case Action.UPDATE_PIPELINE_MODEL_DATA_URL: {
+            return {
+                ...state,
+                modelDataUrl: action.payload.modelDataUrl
             }
         }
         case Action.UPDATE_PIPELINE_GREENGRASS_DEPLOYMENT_NAME: {
@@ -214,12 +162,6 @@ export function pipelineReducer(
             return {
                 ...state,
                 greengrassDeploymentComponents: action.payload.greengrassDeploymentComponents
-            }
-        }
-        case Action.UPDATE_INDUSTRIAL_MODELS: {
-            return {
-                ...state,
-                industrialModels: action.payload.industrialModels
             }
         }
         default:

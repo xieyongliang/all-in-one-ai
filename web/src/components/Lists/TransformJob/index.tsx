@@ -18,7 +18,7 @@ import { getDurationByDates } from '../../Utils/Helper';
 import Pagination from '@mui/material/Pagination';  
 import { AppState } from '../../../store';
 import { connect } from 'react-redux';
-import { IIndustrialModel } from '../../../store/pipelines/reducer';
+import { IIndustrialModel } from '../../../store/industrialmodels/reducer';
 
 interface TransformJobItem {
     transformJobName: string;
@@ -92,7 +92,7 @@ const TransformJobList: FunctionComponent<IProps> = (props) => {
             setVisibleAnnotate(false);
             setVisibleReview(false);
 
-            axios.get('/transformjob', {params : {'case': params.name}})
+            axios.get('/transformjob', {params : {'industrial_model': params.name}})
             .then((response) => {
                 for(let item of response.data) {
                     transformJobItems.push({transformJobName: item.TransformJobName, transformJobStatus : item.TransformJobStatus, duration: getDurationByDates(item.TransformStartTime, item.TransformEndTime), creationTime: item.CreationTime})
@@ -135,9 +135,8 @@ const TransformJobList: FunctionComponent<IProps> = (props) => {
         if(id === '') {
             setLoadingReview(true)
             setImagePage(event)
-            axios.get(`/transformjob/${selectedTransformJob}/review`, {params: {'case': params.name, 'page_num': event, 'page_size': 20}})
+            axios.get(`/transformjob/${selectedTransformJob}/review`, {params: {'industrial_model': params.name, 'page_num': event, 'page_size': 20}})
                 .then((response) => {
-                    console.log(response.data)
                     setTransformJobResult(response.data)
                     setLoadingReview(false)
                 }, (error) => {
@@ -152,12 +151,12 @@ const TransformJobList: FunctionComponent<IProps> = (props) => {
     })
 
     const onCreate = () => {
-        history.push(`/case/${params.name}?tab=demo#review`)
+        history.push(`/imodels/${params.name}?tab=demo#review`)
     }
 
     const onReview = () => {
         setVisibleReview(true)
-        axios.get(`/transformjob/${selectedTransformJob}/review`, {params: {'case': params.name, 'page_num': 1, 'page_size': 20}})
+        axios.get(`/transformjob/${selectedTransformJob}/review`, {params: {'industrial_model': params.name, 'page_num': 1, 'page_size': 20}})
             .then((response) => {
             setTransformJobResult(response.data)
             setLoadingReview(false)
@@ -180,7 +179,7 @@ const TransformJobList: FunctionComponent<IProps> = (props) => {
             accessor: 'transformJobName',
             Cell: ({ row  }) => {
                 if (row && row.original) {
-                    return <a href={`/case/${params.name}?tab=demo#prop:id=${row.original.transformJobName}`}> {row.original.transformJobName} </a>;
+                    return <a href={`/imodels/${params.name}?tab=demo#prop:id=${row.original.transformJobName}`}> {row.original.transformJobName} </a>;
                 }
                 return null;
             }
@@ -351,7 +350,7 @@ const TransformJobList: FunctionComponent<IProps> = (props) => {
 }
 
 const mapStateToProps = (state: AppState) => ({
-    industrialModels : state.pipeline.industrialModels
+    industrialModels : state.industrialmodel.industrialModels
 });
 
 export default connect(

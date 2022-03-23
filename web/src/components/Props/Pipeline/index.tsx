@@ -9,7 +9,6 @@ const PipelineProp: FunctionComponent = () => {
     const [ trainingJobName, setTraingJobName ] = useState('')
     const [ modelName, setModelName ] = useState('')
     const [ endpointName, setEndpointName ] = useState('')
-    const [ apiName, setApiName ] = useState('')
     const [ ComponentVersionArn, setComponentVersionArn ] = useState('')
     const [ DeploymentId, setDeploymentId ] = useState('')
 
@@ -21,14 +20,13 @@ const PipelineProp: FunctionComponent = () => {
     var id = localtion.hash.substring(9);
 
     useEffect(() => {
-        axios.get(`/pipeline`, {params: {'case': params.name, 'pipeline_execution_arn': id}})
+        axios.get(`/pipeline`, {params: {'industrial_model': params.name, 'pipeline_execution_arn': id}})
             .then((response) => {
             console.log(response.data)
             setPipelineType(response.data.pipeline_type)
             setTraingJobName(response.data.training_job_name)
             setModelName(response.data.model_name)
             setEndpointName(response.data.endpoint_name)
-            setApiName(response.data.api_name)
             setComponentVersionArn(response.data.component_version_arn)
             setDeploymentId(response.data.deployment_id)
         }, (error) => {
@@ -42,37 +40,31 @@ const PipelineProp: FunctionComponent = () => {
 
     const getTrainingJobProps = (id) => {
         return (
-            <a href={`/case/${params.name}?tab=trainingjob#prop:id=${id}`}> {id} </a>
+            <a href={`/imodels/${params.name}?tab=trainingjob#prop:id=${id}`}> {id} </a>
         )
     }
 
     const getModelProps = (id) => {
         return (
-            <a href={`/case/${params.name}?tab=model#prop:id=${id}`}> {id} </a>
+            <a href={`/imodels/${params.name}?tab=model#prop:id=${id}`}> {id} </a>
         )
     }
 
     const getEndpointProps = (id) => {
         return (
-            <a href={`/case/${params.name}?tab=endpoint#prop:id=${id}`}> {id} </a>
-        )
-    }
-
-    const getApiProps = (id) => {
-        return (
-            <a href={`/case/${params.name}?tab=restapi#prop:id=${id}`}> {id} </a>
+            <a href={`/imodels/${params.name}?tab=endpoint#prop:id=${id}`}> {id} </a>
         )
     }
 
     const getGreengrassComponentVersionProps = (id) => {
         return (
-            <a href={`/case/${params.name}?tab=greengrasscomponentversion#prop:id=${id}`}> {id} </a>
+            <a href={`/imodels/${params.name}?tab=greengrasscomponentversion#prop:id=${id}`}> {id} </a>
         )
     }
 
     const getGreengrassDeploymentProps = (id) => {
         return (
-            <a href={`/case/${params.name}?tab=greengrassdeployment#prop:id=${id}`}> {id} </a>
+            <a href={`/imodels/${params.name}?tab=greengrassdeployment#prop:id=${id}`}> {id} </a>
         )
     }
 
@@ -98,9 +90,6 @@ const PipelineProp: FunctionComponent = () => {
             </FormSection>
             <FormSection header='Endpoint'>
                 <KeyValuePair label='Endpoint' value={getEndpointProps(endpointName)}></KeyValuePair>            
-            </FormSection>
-            <FormSection header='Rest api'>
-                <KeyValuePair label='Rest api' value={getApiProps(apiName)}></KeyValuePair>            
             </FormSection>
             {
                 ( pipelineType === '0' || pipelineType === '2') && 

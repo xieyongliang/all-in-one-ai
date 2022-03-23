@@ -98,14 +98,14 @@ module.exports = function(app) {
     })
     app.get('/inference/sample', (req, res) => {
         try {
-            var casename = req.query['case'];
+            var endpoint_name = req.query['endpoint_name'];
             var bucket = req.query['bucket']
             var key = req.query['key']
             var buffer = {
                 'bucket': bucket,
                 'image_uri': key
             }
-            options = {headers: {'content-type': 'application/json'}, params : {model: casename}}
+            options = {headers: {'content-type': 'application/json'}, params : {endpoint_name: endpoint_name}}
             axios.post(baseUrl + '/inference', buffer, options)
                 .then((response) => {
                     res.send(response.data)
@@ -140,7 +140,7 @@ module.exports = function(app) {
             console.log(error)
         }
     })
-    app.post('/models', (req, res) => {
+    app.post('/industrialmodel', (req, res) => {
         var body = [];
         req.on('data', chunk => {
             body += chunk
@@ -153,7 +153,7 @@ module.exports = function(app) {
                 data['file_content'] = buffer
 
                 options = {headers: {'content-type': 'application/json'}}
-                axios.post(baseUrl + '/models', data, options)
+                axios.post(baseUrl + '/industrialmodel', data, options)
                     .then((response) => {
                         res.send(response.data)
                     }, (error) => {
@@ -198,10 +198,10 @@ module.exports = function(app) {
         secure: false,
         ws: false,
     }));
-    app.use(createProxyMiddleware('/models', {
-        target: baseUrl + '/models',
+    app.use(createProxyMiddleware('/industrialmodel', {
+        target: baseUrl + '/industrialmodel',
         pathRewrite: {
-            '^/models': ''
+            '^/industrialmodel': ''
         },
         changeOrigin: true,
         secure: false,

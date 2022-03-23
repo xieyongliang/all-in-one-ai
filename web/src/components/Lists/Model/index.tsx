@@ -1,7 +1,7 @@
 import React, { FunctionComponent, useEffect, useState } from 'react';
 import { useHistory, useParams } from 'react-router-dom';
 import {Column} from 'react-table'
-import { Container, Link, Stack, Toggle, Table, Button, Inline, ButtonDropdown } from 'aws-northstar';
+import { Container, Link, Stack, Toggle, Table, Button, Inline, ButtonDropdown, Text, DeleteConfirmationDialog } from 'aws-northstar';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { github } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 import JSZip from 'jszip';
@@ -19,6 +19,10 @@ const ModelList: FunctionComponent = () => {
     const [ sampleCode, setSampleCode ] = useState('')
     const [ sampleConsole, setSampleConsole ] = useState('')
     const [ visibleSampleCode, setVisibleSampleCode ] = useState(false)
+    const [ deleteConfirmationDialogVisible, setDeleteConfirmationDialogVisiable ] = useState(false);
+    const [ isDeleteProcessing, setIsDeleteProcessing ] = useState(false);
+    const [ selectedModel, setSelectedModel ] = useState<ModelItem>()
+    const [ deleteDisabled, setDeleteDisabled ] = useState(true)
 
     const history = useHistory();
 
@@ -52,7 +56,7 @@ const ModelList: FunctionComponent = () => {
     }, []);
 
     useEffect(() => {
-        axios.get('/model', {params : {'case': params.name}})
+        axios.get('/model', {params : {'industrial_model': params.name}})
             .then((response) => {
                 var items = []
                 for(let item of response.data) {
@@ -69,7 +73,7 @@ const ModelList: FunctionComponent = () => {
     const getRowId = React.useCallback(data => data.modelName, []);
 
     const onCreate = () => {
-        history.push(`/case/${params.name}?tab=model#form`)
+        history.push(`/imodels/${params.name}?tab=model#form`)
     }
 
     const columnDefinitions : Column<ModelItem>[]= [
@@ -80,7 +84,7 @@ const ModelList: FunctionComponent = () => {
             accessor: 'modelName',
             Cell: ({ row  }) => {
                 if (row && row.original) {
-                    return <a href={`/case/${params.name}?tab=model#prop:id=${row.original.modelName}`}> {row.original.modelName} </a>;
+                    return <a href={`/imodels/${params.name}?tab=model#prop:id=${row.original.modelName}`}> {row.original.modelName} </a>;
                 }
                 return null;
             }
@@ -92,12 +96,16 @@ const ModelList: FunctionComponent = () => {
             accessor: 'creationTime'
         }
     ];
-    
+
+    const onDelete = () => {
+        setDeleteConfirmationDialogVisiable(true)
+    }
+
     const tableActions = (
         <Inline>
             <ButtonDropdown
                 content='Action'
-                    items={[{ text: 'Clone' }, { text: 'Create endpoint' }, { text: 'Add/Edit tags' }]}
+                    items={[{ text: 'Delete', onClick: onDelete, disabled: deleteDisabled }, { text: 'Add/Edit tags' }]}
             />        
             <Button variant='primary' onClick={onCreate}>
                 Create
@@ -105,6 +113,37 @@ const ModelList: FunctionComponent = () => {
         </Inline>
     );
     
+    const renderDeleteConfirmationDialog = () => {
+        return (
+            <DeleteConfirmationDialog
+                variant="confirmation"
+                visible={deleteConfirmationDialogVisible}
+                title={`Delete ${selectedModel.modelName}`}
+                onCancelClicked={() => setDeleteConfirmationDialogVisiable(false)}
+                onDeleteClicked={deleteModel}
+                loading={isDeleteProcessing}
+            >
+                <Text>This will permanently delete your model and cannot be undone. This may affect other resources.</Text>
+            </DeleteConfirmationDialog>
+        )
+    }
+
+    const deleteModel = () => {
+        setIsDeleteProcessing(true)
+        axios.delete(`/model/${selectedModel.modelName}`, {params: {industrial_model: params.name}}).then((data) => {
+            setModelItems(modelItems.filter((item) => item.modelName !== selectedModel.modelName))
+            setDeleteConfirmationDialogVisiable(false)
+            setIsDeleteProcessing(false)
+        })
+    }
+
+    const onSelectionChange = (selectedItems: ModelItem[]) => {
+        if(selectedItems.length > 0) {
+            setSelectedModel(selectedItems[0])
+            setDeleteDisabled(false)
+        }
+    }
+
     const renderModelList = () => {
         return (
             <Table
@@ -114,7 +153,7 @@ const ModelList: FunctionComponent = () => {
                 columnDefinitions={columnDefinitions}
                 items={modelItems}
                 loading={loading}
-                onSelectionChange={console.log}
+                onSelectionChange={onSelectionChange}
                 getRowId={getRowId}
             />
         )
@@ -136,8 +175,9 @@ const ModelList: FunctionComponent = () => {
 
     return (
         <Stack>
-            {renderModelList()}
-            {renderSampleCode()}
+            { renderDeleteConfirmationDialog() }
+            { renderModelList() }
+            { renderSampleCode() }
         </Stack>
     )
 }

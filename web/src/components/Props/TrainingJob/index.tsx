@@ -32,23 +32,25 @@ const TrainingJobProp: FunctionComponent = () => {
     var id = localtion.hash.substring(9);
 
     useEffect(() => {
-        axios.get(`/trainingjob/${id}`, {params: {'case': params.name}})
+        axios.get(`/trainingjob/${id}`, {params: {'industrial_model': params.name}})
             .then((response) => {
-            setTrainingJobName(response.data.TrainingJobName)
-            setCreationTime(getUtcDate(response.data.CreationTime))
-            setLastModifiedTime(getUtcDate(response.data.LastModifiedTime))
-            setTrainingStartTime(getUtcDate(response.data.TrainingStartTime))
-            setTrainingEndTime(getUtcDate(response.data.TrainingEndTime))
-            setTrainingTimeInSeconds(response.data.TrainingTimeInSeconds)
-            setBillableTimeInSeconds(response.data.BillableTimeInSeconds)
-            setTrainingJobStatus(response.data.TrainingJobStatus)
-            setAlgorithmSpecificaton(response.data.AlgorithmSpecification)
-            setResourceConfig(response.data.ResourceConfig)
-            setInputDataConfig(response.data.InputDataConfig)
-            setOutputDataConfig(response.data.OutputDataConfig)
-            setModelArtifacts(response.data.ModelArtifacts)
-            setStoppingCondition(response.data.StoppingCondition)
-            setLoading(false);
+            if(response.data.length > 0) {
+                setTrainingJobName(response.data[0].TrainingJobName)
+                setCreationTime(getUtcDate(response.data[0].CreationTime))
+                setLastModifiedTime(getUtcDate(response.data[0].LastModifiedTime))
+                setTrainingStartTime(getUtcDate(response.data[0].TrainingStartTime))
+                setTrainingEndTime(getUtcDate(response.data[0].TrainingEndTime))
+                setTrainingTimeInSeconds(response.data[0].TrainingTimeInSeconds)
+                setBillableTimeInSeconds(response.data[0].BillableTimeInSeconds)
+                setTrainingJobStatus(response.data[0].TrainingJobStatus)
+                setAlgorithmSpecificaton(response.data[0].AlgorithmSpecification)
+                setResourceConfig(response.data[0].ResourceConfig)
+                setInputDataConfig(response.data[0].InputDataConfig)
+                setOutputDataConfig(response.data[0].OutputDataConfig)
+                setModelArtifacts(response.data[0].ModelArtifacts)
+                setStoppingCondition(response.data[0].StoppingCondition)
+                setLoading(false);
+            }
         }, (error) => {
             console.log(error);
         });
@@ -196,7 +198,10 @@ const TrainingJobProp: FunctionComponent = () => {
             <FormSection header='Output'>
                 <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }}>
                     <Grid item xs={6} sm={6} md={6}>
-                        <KeyValuePair label='S3 model artifact' value={getLink(modelArtifacts['S3ModelArtifacts'])}></KeyValuePair>
+                        { 
+                            modelArtifacts !== undefined &&
+                            <KeyValuePair label='S3 model artifact' value={getLink(modelArtifacts['S3ModelArtifacts'])}></KeyValuePair> 
+                        }
                     </Grid>
                 </Grid>
             </FormSection>

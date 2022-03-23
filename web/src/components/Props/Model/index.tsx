@@ -20,14 +20,15 @@ const ModelProp: FunctionComponent = () => {
     var id = localtion.hash.substring(9);
 
     useEffect(() => {
-        axios.get(`/model/${id}`, {params: {'case': params.name}})
+        axios.get(`/model/${id}`, {params: {'industrial_model': params.name}})
             .then((response) => {
-            console.log(response.data);
-            setModelName(response.data.ModelName);
-            setCreationTime(response.data.CreationTime);
-            setPrimaryContainer(response.data.PrimaryContainer);
-            setContainers(response.data.Containers);
-            setLoading(false);
+            if(response.data.length > 0) {
+                setModelName(response.data[0].ModelName);
+                setCreationTime(response.data[0].CreationTime);
+                setPrimaryContainer(response.data[0].PrimaryContainer);
+                setContainers(response.data[0].Containers);
+                setLoading(false);
+            }
         }, (error) => {
             console.log(error);
         });

@@ -27,19 +27,21 @@ const TransformJobProp: FunctionComponent = () => {
     var id = localtion.hash.substring(9);
 
     useEffect(() => {
-        axios.get(`/transformjob/${id}`, {params: {'case': params.name}})
+        axios.get(`/transformjob/${id}`, {params: {'industrial_model': params.name}})
             .then((response) => {
-            setTransformJobName(response.data.TransformJobName);
-            setCreationTime(response.data.CreationTime);
-            setTransformStartTime(response.data.TransformStartTime);
-            setTransformEndTime(response.data.TransformEndTime);
-            setTransformJobStatus(response.data.TransformJobStatus);
-            setModelName(response.data.ModelName);
-            setMaxConncurrentTransforms(response.data.MaxConcurrentTransforms);
-            setTransformInput(response.data.TransformInput);
-            setTransformOutput(response.data.TransformOutput);
-            setTransformResources(response.data.TransformResources);
-            setLoading(false);
+            if(response.data.length > 0) {
+                setTransformJobName(response.data[0].TransformJobName);
+                setCreationTime(response.data[0].CreationTime);
+                setTransformStartTime(response.data[0].TransformStartTime);
+                setTransformEndTime(response.data[0].TransformEndTime);
+                setTransformJobStatus(response.data[0].TransformJobStatus);
+                setModelName(response.data[0].ModelName);
+                setMaxConncurrentTransforms(response.data[0].MaxConcurrentTransforms);
+                setTransformInput(response.data[0].TransformInput);
+                setTransformOutput(response.data[0].TransformOutput);
+                setTransformResources(response.data[0].TransformResources);
+                setLoading(false);
+            }
         }, (error) => {
             console.log(error);
         });
@@ -68,7 +70,7 @@ const TransformJobProp: FunctionComponent = () => {
     }
 
     const onClose = () => {
-        history.push(`/case/${params.name}?tab=demo#transformjob`)
+        history.goBack()
     }
 
     const renderFlashbar = () => {

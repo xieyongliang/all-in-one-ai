@@ -7,7 +7,6 @@ import axios from 'axios';
 import TrainingJobForm from '../TrainingJob';
 import ModelForm from '../Model';
 import EndpointForm from '../Endpoint';
-import RestApiForm from '../RestApi';
 import GreengrassComponentForm from '../GreengrassComponent';
 import GreengrassDeploymentForm from '../GreengrassDeployment';
 import RadioButton from 'aws-northstar/components/RadioButton';
@@ -15,6 +14,7 @@ import RadioGroup from 'aws-northstar/components/RadioGroup';
 import { AppState } from '../../../store';
 import { PathParams } from '../../Interfaces/PathParams';
 import { UpdatePipelineType } from '../../../store/pipelines/actionCreators';
+import { IIndustrialModel } from '../../../store/industrialmodels/reducer';
 
 interface IProps {
     updatePipelineTypeAction: (pipelineType : string) => any;
@@ -28,23 +28,19 @@ interface IProps {
     trainingjobCfgS3Uri : string;
     trainingjobOutputS3Uri : string;
     modelModelPackageGroupName: string;
+    modelModelPackageArn: string;
     endpointInstanceType : string;
     endpointAcceleratorType: string;
     endpointInitialInstanceCount: number;
     endpointInitialVariantWeight: number;
-    apiRestApiName : string;
-    apiRestApiId : string;
-    apiType: string;
-    apiPath : string;
-    apiStage : string;
-    apiFunction : string;
-    apiMethod: string;
     greengrassComponentName: string;
     greengrassComponentVersion: string;
+    modelDataUrl: string;
     greengrassDeploymentName: string;
     greengrassDeploymentTargetType: string;
     greengrassDeploymentTargetArn : string;
-    greengrassDeploymentComponents: string; 
+    greengrassDeploymentComponents: string;
+    industrialModels: IIndustrialModel[];
     wizard?: boolean;
 }
 
@@ -67,36 +63,44 @@ const PipelineForm: FunctionComponent<IProps> = (props) => {
     }
 
     const onSubmit = () => {
+        var index = props.industrialModels.findIndex((item) => item.name === params.name)
+        var algorithm = props.industrialModels[index].algorithm
+        
         var body = {}
         body['pipeline_name'] = pipelineName
         body['pipeline_type'] = pipelineType
-        body['case_name'] = params.name
-        body['training_job_instance_type'] = props.trainingjobInstanceType
-        body['training_job_instance_count'] = props.trainingjobInstanceCount
-        body['training_job_volume_size_in_gb'] = props.trainingjobVolumeSizeInGB
-        body['training_job_images_s3uri'] = props.trainingjobImagesS3Uri
-        body['training_job_labels_s3uri'] = props.trainingjobLabelsS3Uri
-        body['training_job_weights_s3uri'] = props.trainingjobWeightsS3Uri
-        body['training_job_cfg_s3uri'] = props.trainingjobCfgS3Uri
-        body['training_job_output_s3uri'] = props.trainingjobOutputS3Uri
-        body['model_package_group_name'] = props.modelModelPackageGroupName
+        body['industrial_model'] = params.name
+        body['model_algorithm'] = algorithm
+        if(pipelineType === '0' || pipelineType === '1') {
+            body['training_job_instance_type'] = props.trainingjobInstanceType
+            body['training_job_instance_count'] = props.trainingjobInstanceCount
+            body['training_job_volume_size_in_gb'] = props.trainingjobVolumeSizeInGB
+            body['training_job_images_s3uri'] = props.trainingjobImagesS3Uri
+            body['training_job_labels_s3uri'] = props.trainingjobLabelsS3Uri
+            body['training_job_weights_s3uri'] = props.trainingjobWeightsS3Uri
+            body['training_job_cfg_s3uri'] = props.trainingjobCfgS3Uri
+            body['training_job_output_s3uri'] = props.trainingjobOutputS3Uri
+            body['model_package_group_name'] = props.modelModelPackageGroupName
+        }
+        else
+            body['model_package_arn'] = props.modelModelPackageArn
+        
         body['endpoint_instance_type'] = props.endpointInstanceType
         body['endpoint_accelerator_type'] = props.endpointAcceleratorType
         body['endpoint_initial_instance_count'] = props.endpointInitialInstanceCount
         body['endpoint_initial_variant_weight'] = props.endpointInitialVariantWeight
-        body['rest_api_name'] = props.apiRestApiName
-        body['rest_api_id'] = props.apiRestApiId
-        body['api_type'] = props.apiType
-        body['api_path'] = props.apiPath
-        body['api_stage'] = props.apiStage
-        body['api_function'] = props.apiFunction
-        body['api_method'] = props.apiMethod
-        body['greengrass_component_name'] = props.greengrassComponentName
-        body['greengrass_component_version'] = props.greengrassComponentVersion
-        body['greengrass_deployment_name'] = props.greengrassDeploymentName
-        body['greengrass_deployment_target_type'] = props.greengrassDeploymentTargetType
-        body['greengrass_deployment_target_arn'] = props.greengrassDeploymentTargetArn
-        body['greengrass_deployment_components'] = props.greengrassDeploymentComponents
+
+        if(pipelineType === '0' || pipelineType === '2') {
+            body['greengrass_component_name'] = props.greengrassComponentName
+            body['greengrass_component_version'] = props.greengrassComponentVersion
+            body['greengrass_deployment_name'] = props.greengrassDeploymentName
+            body['greengrass_deployment_target_type'] = props.greengrassDeploymentTargetType
+            body['greengrass_deployment_target_arn'] = props.greengrassDeploymentTargetArn
+            body['greengrass_deployment_components'] = props.greengrassDeploymentComponents
+        }
+
+        if(pipelineType === '2')
+            body['model_data_url'] = props.modelDataUrl
 
         console.log(JSON.stringify(body))
         axios.post('/pipeline', body,  { headers: {'content-type': 'application/json' }}) 
@@ -160,11 +164,6 @@ const PipelineForm: FunctionComponent<IProps> = (props) => {
                 <EndpointForm wizard={true}/>
         },
         {
-            title: 'Rest API',
-            content: 
-                <RestApiForm wizard={true}/>
-        },
-        {
             title: 'Greengrass component',
             content: 
                 <GreengrassComponentForm wizard={true}/>
@@ -196,12 +195,7 @@ const PipelineForm: FunctionComponent<IProps> = (props) => {
             title: 'Endpoint',
             content: 
                 <EndpointForm wizard={true}/>
-        },
-        {
-            title: 'Rest API',
-            content: 
-                <RestApiForm wizard={true}/>
-        }    
+        }  
     ]
 
     const steps2 = [
@@ -219,11 +213,6 @@ const PipelineForm: FunctionComponent<IProps> = (props) => {
             title: 'Endpoint',
             content: 
                 <EndpointForm wizard={true}/>
-        },
-        {
-            title: 'Rest API',
-            content: 
-                <RestApiForm wizard={true}/>
         },
         {
             title: 'Greengrass component',
@@ -252,12 +241,7 @@ const PipelineForm: FunctionComponent<IProps> = (props) => {
             title: 'Endpoint',
             content: 
                 <EndpointForm wizard={true}/>
-        },
-        {
-            title: 'Rest API',
-            content: 
-                <RestApiForm wizard={true}/>
-        }    
+        } 
     ]
 
     if(pipelineType === '0') {
@@ -313,23 +297,19 @@ const mapStateToProps = (state: AppState) => ({
     trainingjobCfgS3Uri : state.pipeline.trainingjobCfgS3Uri,
     trainingjobOutputS3Uri : state.pipeline.trainingjobOutputS3Uri,
     modelModelPackageGroupName : state.pipeline.modelModelPackageGroupName,
+    modelModelPackageArn: state.pipeline.modelModelPackageArn,
     endpointInstanceType : state.pipeline.endpointInstanceType,
     endpointAcceleratorType: state.pipeline.endpointAcceleratorType,
     endpointInitialInstanceCount: state.pipeline.endpointInitialInstanceCount,
     endpointInitialVariantWeight: state.pipeline.endpointInitialVariantWeight,
-    apiRestApiName : state.pipeline.apiRestApiName,
-    apiRestApiId : state.pipeline.apiRestApiId,
-    apiType: state.pipeline.apiType,
-    apiPath : state.pipeline.apiPath,
-    apiStage : state.pipeline.apiStage,
-    apiFunction : state.pipeline.apiFunction,
-    apiMethod: state.pipeline.apiMethod,
     greengrassComponentName: state.pipeline.greengrassComponentName,
     greengrassComponentVersion : state.pipeline.greengrassComponentVersion,
+    modelDataUrl: state.pipeline.modelDataUrl,
     greengrassDeploymentName: state.pipeline.greengrassDeploymentName,
     greengrassDeploymentTargetType: state.pipeline.greengrassDeploymentTargetType,
     greengrassDeploymentTargetArn : state.pipeline.greengrassDeploymentTargetArn,
-    greengrassDeploymentComponents: state.pipeline.greengrassDeploymentComponents
+    greengrassDeploymentComponents: state.pipeline.greengrassDeploymentComponents,
+    industrialModels: state.industrialmodel.industrialModels
 });
 
 export default connect(

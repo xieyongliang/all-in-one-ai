@@ -12,7 +12,7 @@ import { COLORS } from '../../Data/data';
 import { PathParams } from '../../Interfaces/PathParams';
 import { AppState } from '../../../store';
 import { connect } from 'react-redux';
-import { IIndustrialModel } from '../../../store/pipelines/reducer';
+import { IIndustrialModel } from '../../../store/industrialmodels/reducer';
 
 interface FileMetadata {
     name: string;
@@ -88,10 +88,8 @@ const InferenceForm: FunctionComponent<IProps> = (props) => {
     }
 
     const onInference = () => {
-        console.log(imageLabels)
         axios.get('/inference/image/' + params.name + '/' + curImageItem)
         .then((response) => {
-            console.log(response.data)
             var tbbox : number[][] = [];
             var tid = [];
             for(let item of response.data) {
@@ -203,7 +201,7 @@ const InferenceForm: FunctionComponent<IProps> = (props) => {
 }
 
 const mapStateToProps = (state: AppState) => ({
-    industrialModels : state.pipeline.industrialModels
+    industrialModels : state.industrialmodel.industrialModels
 });
 
 export default connect(

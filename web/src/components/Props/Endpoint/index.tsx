@@ -23,15 +23,17 @@ const EndpointProp: FunctionComponent = () => {
     var id = localtion.hash.substring(9);
 
     useEffect(() => {
-        axios.get('/endpoint/' + id, {params: {'case': params.name}})
+        axios.get('/endpoint/' + id, {params: {'industrial_model': params.name}})
             .then((response) => {
-            setEndpointName(response.data.EndpointName)
-            setCreationTime(getUtcDate(response.data.CreationTime))
-            setLastModifiedTime(getUtcDate(response.data.LastModifiedTime))
-            setEndpointStatus(response.data.EndpointStatus)
-            setEndpointConfig(response.data.EndpointConfig)
-            setProductionVariants(response.data.ProductionVariants)
-            setLoading(false);
+            if(response.data.length > 0) {
+                setEndpointName(response.data[0].EndpointName)
+                setCreationTime(getUtcDate(response.data[0].CreationTime))
+                setLastModifiedTime(getUtcDate(response.data[0].LastModifiedTime))
+                setEndpointStatus(response.data[0].EndpointStatus)
+                setEndpointConfig(response.data[0].EndpointConfig)
+                setProductionVariants(response.data[0].ProductionVariants)
+                setLoading(false);
+            }
         }, (error) => {
             console.log(error);
         });
@@ -94,25 +96,28 @@ const EndpointProp: FunctionComponent = () => {
 
     const renderEndpointRuntimeSettings = () => {
         return (
-            <FormSection header='Endpoint runtime settings'> 
-                <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }}>
-                    <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label='Variant name' value={productionVariants[0]['VariantName']}></KeyValuePair>
-                    </Grid>
-                    <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label='Current weight' value={productionVariants[0]['CurrentWeight']}></KeyValuePair>
-                    </Grid>
-                    <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label='Desired weight' value={productionVariants[0]['DesiredWeight']}></KeyValuePair>
-                    </Grid>
-                    <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label='Current instance count' value={productionVariants[0]['CurrentInstanceCount']}></KeyValuePair>
-                    </Grid>
-                    <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label='Desired instance count' value={productionVariants[0]['DesiredInstanceCount']}></KeyValuePair>
-                    </Grid>
-                </Grid>
-            </FormSection>
+                <FormSection header='Endpoint runtime settings'> 
+                    {
+                        productionVariants !== undefined && productionVariants.length > 0 && 
+                        <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }}>
+                            <Grid item xs={2} sm={4} md={4}>
+                                <KeyValuePair label='Variant name' value={productionVariants[0]['VariantName']}></KeyValuePair>
+                            </Grid>
+                            <Grid item xs={2} sm={4} md={4}>
+                                <KeyValuePair label='Current weight' value={productionVariants[0]['CurrentWeight']}></KeyValuePair>
+                            </Grid>
+                            <Grid item xs={2} sm={4} md={4}>
+                                <KeyValuePair label='Desired weight' value={productionVariants[0]['DesiredWeight']}></KeyValuePair>
+                            </Grid>
+                            <Grid item xs={2} sm={4} md={4}>
+                                <KeyValuePair label='Current instance count' value={productionVariants[0]['CurrentInstanceCount']}></KeyValuePair>
+                            </Grid>
+                            <Grid item xs={2} sm={4} md={4}>
+                                <KeyValuePair label='Desired instance count' value={productionVariants[0]['DesiredInstanceCount']}></KeyValuePair>
+                            </Grid>
+                        </Grid>
+                    }
+                </FormSection>
         )
     }
 
