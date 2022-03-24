@@ -61,7 +61,8 @@ const AppLayout: FunctionComponent = ( {children} ) => {
                         'type': SideNavigationItemType.SECTION,
                         'text': 'Algorithms',
                         'items': [
-                            { text: 'Yolov5', type: SideNavigationItemType.LINK, href: '/algorithms/yolov5' }
+                            { text: 'Yolov5', type: SideNavigationItemType.LINK, href: '/algorithms/yolov5' }, 
+                            { text: 'GluonCV', type: SideNavigationItemType.LINK, href: '/algorithms/gluoncv' }
                         ]
                     }
                 ]}

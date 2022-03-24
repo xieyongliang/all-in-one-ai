@@ -7,6 +7,7 @@ import { github } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 import JSZip from 'jszip';
 import axios from 'axios';
 import { PathParams } from '../../Interfaces/PathParams';
+import { getUtcDate } from '../../Utils/Helper';
 
 interface ModelItem {
     modelName: string;
@@ -60,7 +61,7 @@ const ModelList: FunctionComponent = () => {
             .then((response) => {
                 var items = []
                 for(let item of response.data) {
-                    items.push({modelName: item.ModelName, creationTime: item.CreationTime})
+                    items.push({modelName: item.ModelName, creationTime: getUtcDate(item.CreationTime)})
                     if(items.length === response.data.length)
                         setModelItems(items)
                 }

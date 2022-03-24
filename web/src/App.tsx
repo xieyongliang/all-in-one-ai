@@ -26,6 +26,7 @@ import { IIndustrialModel } from './store/industrialmodels/reducer';
 import axios from 'axios'; 
 import { store } from '.';
 import { Action } from './store/Actions';
+import GluonCV from './components/Algorithms/GluonCV';
 
 const App : FunctionComponent = () => {
     const withLayout = (Component : any, props? : any) => {
@@ -65,8 +66,9 @@ const App : FunctionComponent = () => {
         <NorthStarThemeProvider>
             <Router>
                 <Switch>
-                    <Route sensitive={true} exact path="/scenarios/:name">{withLayout(PPE)}</Route>
-                    <Route sensitive={true} exact path="/algorithms/:name">{withLayout(Yolov5)}</Route>
+                    <Route sensitive={true} exact path="/scenarios">{withLayout(PPE)}</Route>
+                    <Route sensitive={true} exact path="/algorithms/yolov5">{withLayout(Yolov5)}</Route>
+                    <Route sensitive={true} exact path="/algorithms/gluoncv">{withLayout(GluonCV)}</Route>
                     <Route sensitive={true} exact path="/imodels/:name">{withLayout(IndustraiModels)}</Route>
                     <Route sensitive={true} exact path="/imodels">{withLayout(IndustrialModelOverview)}</Route>
                     <Route sensitive={true} exact path="/">{withLayout(Dashboard)}</Route>

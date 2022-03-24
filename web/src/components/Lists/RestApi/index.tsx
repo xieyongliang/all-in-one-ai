@@ -7,6 +7,7 @@ import {Column} from 'react-table'
 import { useHistory, useParams } from 'react-router-dom';
 import { PathParams } from '../../Interfaces/PathParams';
 import axios from 'axios';
+import { getUtcDate } from '../../Utils/Helper';
 
 interface DataType {
     name: string;
@@ -28,7 +29,7 @@ const RestApiList: FunctionComponent = () => {
             .then((response) => {
             var items = []
             for(let item of response.data) {
-                items.push({name: item.api_name, function: item.api_function, created_date: item.created_date, url: item.api_url})
+                items.push({name: item.api_name, function: item.api_function, created_date: getUtcDate(item.created_date), url: item.api_url})
                 if(items.length === response.data.length)
                     setApiItems(items)
             }
