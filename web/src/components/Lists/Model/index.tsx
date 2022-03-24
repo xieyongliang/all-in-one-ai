@@ -76,6 +76,10 @@ const ModelList: FunctionComponent = () => {
         history.push(`/imodels/${params.name}?tab=model#form`)
     }
 
+    const onDelete = () => {
+        setDeleteConfirmationDialogVisiable(true)
+    }
+
     const columnDefinitions : Column<ModelItem>[]= [
         {
             id: 'modelName',
@@ -97,15 +101,11 @@ const ModelList: FunctionComponent = () => {
         }
     ];
 
-    const onDelete = () => {
-        setDeleteConfirmationDialogVisiable(true)
-    }
-
     const tableActions = (
         <Inline>
             <ButtonDropdown
                 content='Action'
-                    items={[{ text: 'Delete', onClick: onDelete, disabled: deleteDisabled }, { text: 'Add/Edit tags' }]}
+                    items={[{ text: 'Delete', onClick: onDelete, disabled: deleteDisabled }, { text: 'Add/Edit tags', disabled: true }]}
             />        
             <Button variant='primary' onClick={onCreate}>
                 Create
@@ -175,7 +175,7 @@ const ModelList: FunctionComponent = () => {
 
     return (
         <Stack>
-            { renderDeleteConfirmationDialog() }
+            { selectedModel  !== undefined && renderDeleteConfirmationDialog() }
             { renderModelList() }
             { renderSampleCode() }
         </Stack>

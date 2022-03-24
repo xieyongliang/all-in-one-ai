@@ -2,7 +2,7 @@
 import React, { FunctionComponent, useEffect, useState } from 'react';
 import { useHistory, useParams } from 'react-router-dom';
 import {Column} from 'react-table'
-import { Container, Link, Stack, Toggle, Button, ButtonDropdown, StatusIndicator, Table } from 'aws-northstar';
+import { Container, Link, Stack, Toggle, Button, ButtonDropdown, StatusIndicator, Table, Text, DeleteConfirmationDialog } from 'aws-northstar';
 import Inline from 'aws-northstar/layouts/Inline';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { github } from 'react-syntax-highlighter/dist/esm/styles/hljs';
@@ -24,6 +24,10 @@ const EndpointList: FunctionComponent = () => {
     const [ sampleCode, setSampleCode ] = useState('')
     const [ sampleConsole, setSampleConsole ] = useState('')
     const [ visibleSampleCode, setVisibleSampleCode ] = useState(false)
+    const [ deleteConfirmationDialogVisible, setDeleteConfirmationDialogVisiable ] = useState(false);
+    const [ isDeleteProcessing, setIsDeleteProcessing ] = useState(false);
+    const [ selectedEndpoint, setSelectedEndpoint ] = useState<EndpointItem>()
+    const [ deleteDisabled, setDeleteDisabled ] = useState(true)
 
     const history = useHistory();
 
@@ -73,6 +77,10 @@ const EndpointList: FunctionComponent = () => {
 
     const onCreate = () => {
         history.push('/imodels/' + params.name + '?tab=endpoint#form')
+    }
+
+    const onDelete = () => {
+        setDeleteConfirmationDialogVisiable(true)
     }
     
     const getRowId = React.useCallback(data => data.endpointName, []);
@@ -136,13 +144,44 @@ const EndpointList: FunctionComponent = () => {
         <Inline>
             <ButtonDropdown
                 content='Action'
-                    items={[{ text: 'Clone' }, { text: 'Create rest api' }, { text: 'Stop', disabled: true }, { text: 'Add/Edit tags' }]}
+                    items={[{ text: 'Delete', onClick: onDelete, disabled: deleteDisabled }, { text: 'Add/Edit tags', disabled: true }]}
             />        
             <Button variant='primary' onClick={onCreate}>
                 Create
             </Button>
         </Inline>
     );
+
+    const renderDeleteConfirmationDialog = () => {
+        return (
+            <DeleteConfirmationDialog
+                variant="confirmation"
+                visible={deleteConfirmationDialogVisible}
+                title={`Delete ${selectedEndpoint.endpointName}`}
+                onCancelClicked={() => setDeleteConfirmationDialogVisiable(false)}
+                onDeleteClicked={deleteEndpoint}
+                loading={isDeleteProcessing}
+            >
+                <Text>This will permanently delete your model and cannot be undone. This may affect other resources.</Text>
+            </DeleteConfirmationDialog>
+        )
+    }
+
+    const deleteEndpoint = () => {
+        setIsDeleteProcessing(true)
+        axios.delete(`/endpoint/${selectedEndpoint.endpointName}`, {params: {industrial_model: params.name}}).then((data) => {
+            setEndpointItems(endpointItems.filter((item) => item.modelName !== selectedEndpoint.endpointName))
+            setDeleteConfirmationDialogVisiable(false)
+            setIsDeleteProcessing(false)
+        })
+    }
+
+    const onSelectionChange = (selectedItems: EndpointItem[]) => {
+        if(selectedItems.length > 0) {
+            setSelectedEndpoint(selectedItems[0])
+            setDeleteDisabled(false)
+        }
+    }
 
     const renderEndpointList = () => {
         return (
@@ -153,7 +192,7 @@ const EndpointList: FunctionComponent = () => {
                 columnDefinitions={columnDefinitions}
                 items={endpointItems}
                 loading={loading}
-                onSelectionChange={console.log}
+                onSelectionChange={onSelectionChange}
                 getRowId={getRowId}
             />
         )
@@ -175,8 +214,9 @@ const EndpointList: FunctionComponent = () => {
 
     return (
         <Stack>
-            {renderEndpointList()}
-            {renderSampleCode()}
+            { selectedEndpoint !== undefined && renderDeleteConfirmationDialog() }
+            { renderEndpointList() }
+            { renderSampleCode() }
         </Stack>
     )
 }
