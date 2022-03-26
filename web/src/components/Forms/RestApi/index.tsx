@@ -51,7 +51,7 @@ const RestApiForm: FunctionComponent = () => {
             apis.push({key: api, value: api})
         }
         setOptionsApis(apis);
-    }, [params.name])
+    }, [params.id])
 
     const onChange = (id: string, event: any) => {
         if(id === 'formFieldIdApiName') {
@@ -96,7 +96,7 @@ const RestApiForm: FunctionComponent = () => {
         else {
             var body = {
                 'api_name': apiName,
-                'industrial_model': params.name,
+                'industrial_model': params.id,
                 'rest_api_name' : restApiName,
                 'rest_api_id': selectedRestApis.value,
                 'api_path': apiPath,

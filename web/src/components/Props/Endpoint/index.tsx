@@ -23,7 +23,7 @@ const EndpointProp: FunctionComponent = () => {
     var id = localtion.hash.substring(9);
 
     useEffect(() => {
-        axios.get('/endpoint/' + id, {params: {'industrial_model': params.name}})
+        axios.get('/endpoint/' + id, {params: {'industrial_model': params.id}})
             .then((response) => {
             if(response.data.length > 0) {
                 setEndpointName(response.data[0].EndpointName)
@@ -37,7 +37,7 @@ const EndpointProp: FunctionComponent = () => {
         }, (error) => {
             console.log(error);
         });
-    }, [id, params.name])
+    }, [id, params.id])
 
     const getStatus = (status: string) => {
         switch(status) {

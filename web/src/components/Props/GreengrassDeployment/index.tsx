@@ -29,7 +29,7 @@ const GreengrassDeploymentProp: FunctionComponent = () => {
     }
     
     useEffect(() => {
-        axios.get(`/greengrass/deployment/${id}`, {params: {'industrial_model': params.name}})
+        axios.get(`/greengrass/deployment/${id}`, {params: {'industrial_model': params.id}})
             .then((response) => {
             console.log(response.data);
             setTargetArn(response.data.targetArn);
@@ -59,7 +59,7 @@ const GreengrassDeploymentProp: FunctionComponent = () => {
         }, (error) => {
             console.log(error);
         });
-    }, [id, params.name, items])
+    }, [id, params.id, items])
 
     const onClose = () => {
         history.goBack()
@@ -75,7 +75,7 @@ const GreengrassDeploymentProp: FunctionComponent = () => {
             accessor: 'name',
             Cell: ({ row  }) => {
                 if (row && row.original) {
-                    return <a href={`/industrialmodel/${params.name}?tab=greengrasscomponent#prop:id=${row.original.arn}`}> {row.original.name} </a>;
+                    return <a href={`/industrialmodel/${params.id}?tab=greengrasscomponent#prop:id=${row.original.arn}`}> {row.original.name} </a>;
                 }
                 return null;
             }

@@ -34,7 +34,7 @@ const AppLayout: FunctionComponent = ( {children} ) => {
         var items = []
         items.push({ text: 'Overview', type: SideNavigationItemType.LINK, href: '/imodels' })
         store.getState().industrialmodel.industrialModels.forEach((item) => {
-            items.push({text: item.description, type: SideNavigationItemType.LINK, href: `/imodels/${item.name}?tab=demo#sample`})
+            items.push({text: item.name, type: SideNavigationItemType.LINK, href: `/imodels/${item.id}?tab=demo#sample`})
         })
         setItemsModels(items)
      }, [industrialModels])

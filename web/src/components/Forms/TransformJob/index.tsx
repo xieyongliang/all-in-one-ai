@@ -91,7 +91,7 @@ const TransformJobForm: FunctionComponent<IProps> = (props) => {
     var params : PathParams = useParams();
 
     useEffect(() => {
-        axios.get('/model', {params: {industrial_model: params.name}})
+        axios.get('/model', {params: {industrial_model: params.id}})
             .then((response) => {
             var items = []
             for(let item of response.data) {
@@ -101,7 +101,7 @@ const TransformJobForm: FunctionComponent<IProps> = (props) => {
         }, (error) => {
             console.log(error);
         });
-    }, [params.name])
+    }, [params.id])
 
     const onChange = ((id: string, event: any) => {
         if(id === 'formFieldIdTransformJobName') {
@@ -159,7 +159,7 @@ const TransformJobForm: FunctionComponent<IProps> = (props) => {
                 'max_concurrent_transforms': maxConcurrentTransforms,
                 'input_s3uri': inputS3Uri,
                 'output_s3uri': outputS3Uri,
-                'industrial_model': params.name
+                'industrial_model': params.id
             }
             axios.post('/transformjob', body) 
             .then((response) => {

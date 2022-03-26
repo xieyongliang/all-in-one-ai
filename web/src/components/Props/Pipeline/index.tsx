@@ -20,7 +20,7 @@ const PipelineProp: FunctionComponent = () => {
     var id = localtion.hash.substring(9);
 
     useEffect(() => {
-        axios.get(`/pipeline`, {params: {'industrial_model': params.name, 'pipeline_execution_arn': id}})
+        axios.get(`/pipeline`, {params: {'industrial_model': params.id, 'pipeline_execution_arn': id}})
             .then((response) => {
             console.log(response.data)
             setPipelineType(response.data.pipeline_type)
@@ -32,7 +32,7 @@ const PipelineProp: FunctionComponent = () => {
         }, (error) => {
             console.log(error);
         });
-    }, [id, params.name])
+    }, [id, params.id])
 
     const onClose = () => {
         history.goBack()
@@ -40,31 +40,31 @@ const PipelineProp: FunctionComponent = () => {
 
     const getTrainingJobProps = (id) => {
         return (
-            <a href={`/imodels/${params.name}?tab=trainingjob#prop:id=${id}`}> {id} </a>
+            <a href={`/imodels/${params.id}?tab=trainingjob#prop:id=${id}`}> {id} </a>
         )
     }
 
     const getModelProps = (id) => {
         return (
-            <a href={`/imodels/${params.name}?tab=model#prop:id=${id}`}> {id} </a>
+            <a href={`/imodels/${params.id}?tab=model#prop:id=${id}`}> {id} </a>
         )
     }
 
     const getEndpointProps = (id) => {
         return (
-            <a href={`/imodels/${params.name}?tab=endpoint#prop:id=${id}`}> {id} </a>
+            <a href={`/imodels/${params.id}?tab=endpoint#prop:id=${id}`}> {id} </a>
         )
     }
 
     const getGreengrassComponentVersionProps = (id) => {
         return (
-            <a href={`/imodels/${params.name}?tab=greengrasscomponentversion#prop:id=${id}`}> {id} </a>
+            <a href={`/imodels/${params.id}?tab=greengrasscomponentversion#prop:id=${id}`}> {id} </a>
         )
     }
 
     const getGreengrassDeploymentProps = (id) => {
         return (
-            <a href={`/imodels/${params.name}?tab=greengrassdeployment#prop:id=${id}`}> {id} </a>
+            <a href={`/imodels/${params.id}?tab=greengrassdeployment#prop:id=${id}`}> {id} </a>
         )
     }
 

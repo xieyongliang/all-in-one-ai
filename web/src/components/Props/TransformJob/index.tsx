@@ -27,7 +27,7 @@ const TransformJobProp: FunctionComponent = () => {
     var id = localtion.hash.substring(9);
 
     useEffect(() => {
-        axios.get(`/transformjob/${id}`, {params: {'industrial_model': params.name}})
+        axios.get(`/transformjob/${id}`, {params: {'industrial_model': params.id}})
             .then((response) => {
             if(response.data.length > 0) {
                 setTransformJobName(response.data[0].TransformJobName);
@@ -45,7 +45,7 @@ const TransformJobProp: FunctionComponent = () => {
         }, (error) => {
             console.log(error);
         });
-    }, [id, params.name])
+    }, [id, params.id])
 
     const getStatus = (status: string) => {
         switch(status) {

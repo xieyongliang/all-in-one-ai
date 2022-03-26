@@ -61,7 +61,7 @@ const EndpointList: FunctionComponent = () => {
     }, []);
 
     useEffect(() => {
-        axios.get('/endpoint', {params : {'industrial_model': params.name}})
+        axios.get('/endpoint', {params : {'industrial_model': params.id}})
         .then((response) => {
             var items = []
             for(let item of response.data) {
@@ -73,10 +73,10 @@ const EndpointList: FunctionComponent = () => {
         }, (error) => {
             console.log(error);
         });
-    }, [params.name]);
+    }, [params.id]);
 
     const onCreate = () => {
-        history.push(`/imodels/${params.name}?tab=endpoint#form`)
+        history.push(`/imodels/${params.id}?tab=endpoint#form`)
     }
 
     const onDelete = () => {
@@ -93,7 +93,7 @@ const EndpointList: FunctionComponent = () => {
             accessor: 'endpointName',
             Cell: ({ row  }) => {
                 if (row && row.original) {
-                    return <a href={`/imodels/${params.name}?tab=endpoint#prop:id=${row.original.endpointName}`}> {row.original.endpointName} </a>;
+                    return <a href={`/imodels/${params.id}?tab=endpoint#prop:id=${row.original.endpointName}`}> {row.original.endpointName} </a>;
                 }
                 return null;
             }
@@ -169,7 +169,7 @@ const EndpointList: FunctionComponent = () => {
 
     const deleteEndpoint = () => {
         setIsDeleteProcessing(true)
-        axios.delete(`/endpoint/${selectedEndpoint.endpointName}`, {params: {industrial_model: params.name}}).then((data) => {
+        axios.delete(`/endpoint/${selectedEndpoint.endpointName}`, {params: {industrial_model: params.id}}).then((data) => {
             setEndpointItems(endpointItems.filter((item) => item.modelName !== selectedEndpoint.endpointName))
             setDeleteConfirmationDialogVisiable(false)
             setIsDeleteProcessing(false)

@@ -36,7 +36,6 @@ interface IProps {
     industrialModels : IIndustrialModel[];
 }
 
-
 const IndustrialModels: FunctionComponent<IProps> = (props) => {
     var params : PathParams = useParams();
 
@@ -49,10 +48,11 @@ const IndustrialModels: FunctionComponent<IProps> = (props) => {
     const history = useHistory();
 
     const onChange = (tab: string) => {
-        history.push(`/imodels/${params.name}?tab=${tab}`);
+        history.push(`/imodels/${params.id}?tab=${tab}`);
     }
 
-    var index = props.industrialModels.findIndex((item) => item.name === params.name)
+    var index = props.industrialModels.findIndex((item) => item.id === params.id)
+
     if(index === -1)
         return (
             <Tabs tabs={[]} variant='container' activeId={tab} onChange={onChange}/>

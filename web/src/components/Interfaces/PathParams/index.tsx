@@ -1,3 +1,3 @@
 export interface PathParams {
-    name: string;
+    id: string;
 }

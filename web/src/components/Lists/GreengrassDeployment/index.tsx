@@ -57,7 +57,7 @@ const GreengrassDeploymentList: FunctionComponent = () => {
     }, []);
 
     useEffect(() => {
-        axios.get(`/greengrass/deployment`, {params : {'industrial_model': params.name}})
+        axios.get(`/greengrass/deployment`, {params : {'industrial_model': params.id}})
         .then((response) => {
             var items = []
             for(let item of response.data) {
@@ -69,10 +69,10 @@ const GreengrassDeploymentList: FunctionComponent = () => {
         }, (error) => {
             console.log(error);
         });
-    }, [params.name]);
+    }, [params.id]);
 
     const onCreate = () => {
-        history.push(`/imodels/${params.name}?tab=greengrassdeployment#form`)
+        history.push(`/imodels/${params.id}?tab=greengrassdeployment#form`)
     }
 
     const getRowId = React.useCallback(data => data.name, []);
@@ -85,7 +85,7 @@ const GreengrassDeploymentList: FunctionComponent = () => {
             accessor: 'deployment_id',
             Cell: ({ row  }) => {
                 if (row && row.original) {
-                    return <a href={`/imodes/${params.name}?tab=greengrassdeployment#prop:id=${row.original.deployment_id}`}> {row.original.deployment_id} </a>;
+                    return <a href={`/imodes/${params.id}?tab=greengrassdeployment#prop:id=${row.original.deployment_id}`}> {row.original.deployment_id} </a>;
                 }
                 return null;
             }

@@ -72,7 +72,7 @@ const SampleForm: FunctionComponent<IProps> = (props) => {
     useEffect(() => {
         if(industrialModels.length > 0) {
             setLoading(true)
-            var index = industrialModels.findIndex((item) => item.name === params.name)
+            var index = industrialModels.findIndex((item) => item.id === params.id)
             var s3uri = industrialModels[index].samples
             setImageLabels(industrialModels[index].labels)
             axios.get('/s3', {params : { s3uri : s3uri, page_num: imagePage, page_size: 20 }})
@@ -83,7 +83,7 @@ const SampleForm: FunctionComponent<IProps> = (props) => {
                     setLoading(false);
                 }
             )
-            axios.get('/endpoint', {params: { industrial_model: params.name}})
+            axios.get('/endpoint', {params: { industrial_model: params.id}})
                 .then((response) => {
                     var items = []
                     response.data.forEach((item) => {
@@ -96,7 +96,7 @@ const SampleForm: FunctionComponent<IProps> = (props) => {
                 }
             )
         }
-    },[params.name, imagePage, industrialModels]);
+    },[params.id, imagePage, industrialModels]);
 
     const onImageClick = (src) => {
         setCurImageItem(src)
@@ -108,7 +108,7 @@ const SampleForm: FunctionComponent<IProps> = (props) => {
         var index = imageItems.findIndex((item) => item.httpuri === curImageItem)
         if(index === -1)
             return;
-        axios.get('/inference/sample', { params : {industrial_model: params.name, endpoint_name: selectedEndpoint.value, bucket: imageItems[index].bucket, key: imageItems[index].key}})
+        axios.get('/inference/sample', { params : {industrial_model: params.id, endpoint_name: selectedEndpoint.value, bucket: imageItems[index].bucket, key: imageItems[index].key}})
         .then((response) => {
             var tbbox : number[][] = [];
             var tid = [];

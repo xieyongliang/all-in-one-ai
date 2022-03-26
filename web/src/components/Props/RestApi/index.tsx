@@ -24,7 +24,7 @@ const RestApiProp: FunctionComponent = () => {
     var id = localtion.hash.substring(9);
 
     useEffect(() => {
-        axios.get(`/api/${id}`, {params: {'industrial_model': params.name}})
+        axios.get(`/api/${id}`, {params: {'industrial_model': params.id}})
             .then((response) => {
             setApilName(response.data.api_name);
             setRestApiName(response.data.rest_api_name);
@@ -38,7 +38,7 @@ const RestApiProp: FunctionComponent = () => {
         }, (error) => {
             console.log(error);
         });
-    }, [id, params.name])
+    }, [id, params.id])
 
     const onClose = () => {
         history.goBack()

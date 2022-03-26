@@ -57,7 +57,7 @@ const ModelList: FunctionComponent = () => {
     }, []);
 
     useEffect(() => {
-        axios.get('/model', {params : {'industrial_model': params.name}})
+        axios.get('/model', {params : {'industrial_model': params.id}})
             .then((response) => {
                 var items = []
                 for(let item of response.data) {
@@ -69,12 +69,12 @@ const ModelList: FunctionComponent = () => {
             }, (error) => {
                 console.log(error);
             });
-        }, [params.name]);
+        }, [params.id]);
 
     const getRowId = React.useCallback(data => data.modelName, []);
 
     const onCreate = () => {
-        history.push(`/imodels/${params.name}?tab=model#form`)
+        history.push(`/imodels/${params.id}?tab=model#form`)
     }
 
     const onDelete = () => {
@@ -89,7 +89,7 @@ const ModelList: FunctionComponent = () => {
             accessor: 'modelName',
             Cell: ({ row  }) => {
                 if (row && row.original) {
-                    return <a href={`/imodels/${params.name}?tab=model#prop:id=${row.original.modelName}`}> {row.original.modelName} </a>;
+                    return <a href={`/imodels/${params.id}?tab=model#prop:id=${row.original.modelName}`}> {row.original.modelName} </a>;
                 }
                 return null;
             }
@@ -131,7 +131,7 @@ const ModelList: FunctionComponent = () => {
 
     const deleteModel = () => {
         setIsDeleteProcessing(true)
-        axios.delete(`/model/${selectedModel.modelName}`, {params: {industrial_model: params.name}}).then((data) => {
+        axios.delete(`/model/${selectedModel.modelName}`, {params: {industrial_model: params.id}}).then((data) => {
             setModelItems(modelItems.filter((item) => item.modelName !== selectedModel.modelName))
             setDeleteConfirmationDialogVisiable(false)
             setIsDeleteProcessing(false)

@@ -251,6 +251,15 @@ app.use(createProxyMiddleware('/s3', {
     secure: false,
     ws: false,
 }));
+app.use(createProxyMiddleware('/search/import', {
+    target: baseUrl + '/search/import',
+    pathRewrite: {
+        '^/search/import': ''
+    },
+    changeOrigin: true,
+    secure: false,
+    ws: false,
+}));
 
 app.use(express.static(path.join(__dirname, 'build')));
 

@@ -17,7 +17,7 @@ const DemoForm: FunctionComponent = () => {
     var demoType = hash === 'sample' || hash === 'uploaded' || hash === 'transformjob' ? hash : 'sample'
 
     const onChangeOptions = (event, value) => {
-        history.push(`/imodels/${params.name}?tab=demo#${value}`);
+        history.push(`/imodels/${params.id}?tab=demo#${value}`);
     }
 
     const renderDemoOptions = () => {
@@ -34,7 +34,7 @@ const DemoForm: FunctionComponent = () => {
 
     return (
         <Stack>
-            <Heading variant='h1'>{params.name}</Heading>
+            <Heading variant='h1'>{params.id}</Heading>
             <Container title = 'Demo type'>
                 {renderDemoOptions()}
             </Container>

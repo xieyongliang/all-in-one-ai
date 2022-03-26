@@ -1,4 +1,4 @@
-import { Box, Button, Card, Container, Stack } from 'aws-northstar';
+import { Badge, Box, Button, Card, Container, Stack } from 'aws-northstar';
 import { FunctionComponent, useEffect, useState } from 'react';
 import Grid from '@mui/material/Grid';
 import { useHistory } from 'react-router-dom';
@@ -34,7 +34,7 @@ const IndustrialModelOverview: FunctionComponent<IProps> = (props) => {
             industrialModels.forEach((item) => {
                 var s3uri = item.icon;
                 getHttpUri(s3uri).then((data) => {
-                    items.push({model: item.name, description: item.description, algorithm: item.algorithm, s3uri: s3uri, httpuri: data.payload, samples: item.samples});
+                    items.push({id: item.id, name: item.name, description: item.description, algorithm: item.algorithm, s3uri: s3uri, httpuri: data.payload, samples: item.samples});
                     if(items.length === industrialModels.length)
                         setItemsModels(items)
                 })
@@ -53,7 +53,8 @@ const IndustrialModelOverview: FunctionComponent<IProps> = (props) => {
                             return (
                                 <Grid item xs={2} sm={4} md={4}>
                                     <Box>
-                                        <Card title={item.description} subtitle={item.algorithm} withHover onClick={()=>{history.push(`/imodels/${item.model}?tab=demo#sample`)}}>
+                                        <Card title={item.name} subtitle={item.description} withHover onClick={()=>{history.push(`/imodels/${item.id}?tab=demo#sample`)}}>
+                                            <Badge content={item.algorithm} color="blue" />
                                             <Image width={128} height={128} src={item.httpuri} current='' public={true} /> 
                                         </Card>
                                     </Box>

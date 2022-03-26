@@ -32,7 +32,7 @@ const TrainingJobProp: FunctionComponent = () => {
     var id = localtion.hash.substring(9);
 
     useEffect(() => {
-        axios.get(`/trainingjob/${id}`, {params: {'industrial_model': params.name}})
+        axios.get(`/trainingjob/${id}`, {params: {'industrial_model': params.id}})
             .then((response) => {
             if(response.data.length > 0) {
                 setTrainingJobName(response.data[0].TrainingJobName)
@@ -54,7 +54,7 @@ const TrainingJobProp: FunctionComponent = () => {
         }, (error) => {
             console.log(error);
         });
-    }, [id, params.name])
+    }, [id, params.id])
 
     const getStatus = (status: string) => {
         switch(status) {

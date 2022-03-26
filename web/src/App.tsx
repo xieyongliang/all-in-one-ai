@@ -47,13 +47,15 @@ const App : FunctionComponent = () => {
         getModels().then((data) => {
             var industrialModels : IIndustrialModel[] = []
             data.forEach((item) => {
-                var industrialModel : IIndustrialModel = {name: '', algorithm: '', description: '', icon : '', samples: '', labels: []}
-                industrialModel.name = item.model_name
-                industrialModel.algorithm = item.model_algorithm
-                industrialModel.description = item.model_description
-                industrialModel.icon = item.model_icon
-                industrialModel.samples = item.model_samples
-                industrialModel.labels = item.model_labels
+                var industrialModel : IIndustrialModel = {
+                    id: item.model_id, 
+                    name: item.model_name, 
+                    algorithm: item.model_algorithm, 
+                    description: item.model_description, 
+                    icon : item.model_icon, 
+                    samples: item.model_samples, 
+                    labels: item.model_labels
+                }
                 industrialModels.push(industrialModel)
             })
             store.dispatch({ type: Action.UPDATE_INDUSTRIAL_MODELS, payload: {industrialModels : industrialModels}})
@@ -69,7 +71,7 @@ const App : FunctionComponent = () => {
                     <Route sensitive={true} exact path="/scenarios">{withLayout(PPE)}</Route>
                     <Route sensitive={true} exact path="/algorithms/yolov5">{withLayout(Yolov5)}</Route>
                     <Route sensitive={true} exact path="/algorithms/gluoncv">{withLayout(GluonCV)}</Route>
-                    <Route sensitive={true} exact path="/imodels/:name">{withLayout(IndustrialModels)}</Route>
+                    <Route sensitive={true} exact path="/imodels/:id">{withLayout(IndustrialModels)}</Route>
                     <Route sensitive={true} exact path="/imodels">{withLayout(IndustrialModelOverview)}</Route>
                     <Route sensitive={true} exact path="/">{withLayout(Dashboard)}</Route>
                 </Switch>

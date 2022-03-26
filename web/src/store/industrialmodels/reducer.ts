@@ -2,6 +2,7 @@ import { PipelineActionTypes, IndustrialModelState } from './types';
 import { Action } from '../Actions';
 
 export interface IIndustrialModel {
+    id: string,
     name: string,
     algorithm: string,
     icon: string,

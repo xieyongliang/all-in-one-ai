@@ -20,7 +20,7 @@ const ModelProp: FunctionComponent = () => {
     var id = localtion.hash.substring(9);
 
     useEffect(() => {
-        axios.get(`/model/${id}`, {params: {'industrial_model': params.name}})
+        axios.get(`/model/${id}`, {params: {'industrial_model': params.id}})
             .then((response) => {
             if(response.data.length > 0) {
                 setModelName(response.data[0].ModelName);
@@ -32,7 +32,7 @@ const ModelProp: FunctionComponent = () => {
         }, (error) => {
             console.log(error);
         });
-    }, [id, params.name])
+    }, [id, params.id])
 
     const onClose = () => {
         history.goBack()

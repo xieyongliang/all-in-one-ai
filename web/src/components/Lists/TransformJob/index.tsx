@@ -85,14 +85,14 @@ const TransformJobList: FunctionComponent<IProps> = (props) => {
     useEffect(() => {
         if(industrialModels.length > 0) {
             var transformJobItems = []
-            var index = industrialModels.findIndex((item) => item.name === params.name)
+            var index = industrialModels.findIndex((item) => item.id === params.id)
             setImageLabels(industrialModels[index].labels)
             setCurImageItem('');
             setLoadingTable(false);
             setVisibleAnnotate(false);
             setVisibleReview(false);
 
-            axios.get('/transformjob', {params : {'industrial_model': params.name}})
+            axios.get('/transformjob', {params : {'industrial_model': params.id}})
             .then((response) => {
                 for(let item of response.data) {
                     transformJobItems.push({transformJobName: item.TransformJobName, transformJobStatus : item.TransformJobStatus, duration: getDurationByDates(item.TransformStartTime, item.TransformEndTime), creationTime: item.CreationTime})
@@ -100,7 +100,7 @@ const TransformJobList: FunctionComponent<IProps> = (props) => {
                     setTransformJobItems(transformJobItems)
             }})
         }
-    }, [params.name, industrialModels]);
+    }, [params.id, industrialModels]);
         
     const onImageClick = (src) => {
         setImageIds([]);
@@ -135,7 +135,7 @@ const TransformJobList: FunctionComponent<IProps> = (props) => {
         if(id === '') {
             setLoadingReview(true)
             setImagePage(event)
-            axios.get(`/transformjob/${selectedTransformJob}/review`, {params: {'industrial_model': params.name, 'page_num': event, 'page_size': 20}})
+            axios.get(`/transformjob/${selectedTransformJob}/review`, {params: {'industrial_model': params.id, 'page_num': event, 'page_size': 20}})
                 .then((response) => {
                     setTransformJobResult(response.data)
                     setLoadingReview(false)
@@ -151,12 +151,12 @@ const TransformJobList: FunctionComponent<IProps> = (props) => {
     })
 
     const onCreate = () => {
-        history.push(`/imodels/${params.name}?tab=demo#review`)
+        history.push(`/imodels/${params.id}?tab=demo#review`)
     }
 
     const onReview = () => {
         setVisibleReview(true)
-        axios.get(`/transformjob/${selectedTransformJob}/review`, {params: {'industrial_model': params.name, 'page_num': 1, 'page_size': 20}})
+        axios.get(`/transformjob/${selectedTransformJob}/review`, {params: {'industrial_model': params.id, 'page_num': 1, 'page_size': 20}})
             .then((response) => {
             setTransformJobResult(response.data)
             setLoadingReview(false)
@@ -179,7 +179,7 @@ const TransformJobList: FunctionComponent<IProps> = (props) => {
             accessor: 'transformJobName',
             Cell: ({ row  }) => {
                 if (row && row.original) {
-                    return <a href={`/imodels/${params.name}?tab=demo#prop:id=${row.original.transformJobName}`}> {row.original.transformJobName} </a>;
+                    return <a href={`/imodels/${params.id}?tab=demo#prop:id=${row.original.transformJobName}`}> {row.original.transformJobName} </a>;
                 }
                 return null;
             }

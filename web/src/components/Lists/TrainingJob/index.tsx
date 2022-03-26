@@ -56,7 +56,7 @@ const TrainingJobList: FunctionComponent = () => {
     }, []);
 
     useEffect(() => {
-        axios.get('/trainingjob', {params : {'industrial_model': params.name}})
+        axios.get('/trainingjob', {params : {'industrial_model': params.id}})
         .then((response) => {
             var items = []
             for(let item of response.data) {
@@ -68,11 +68,11 @@ const TrainingJobList: FunctionComponent = () => {
         }, (error) => {
             console.log(error);
         });
-    }, [params.name]);
+    }, [params.id]);
 
 
     const onCreate = () => {
-        history.push(`/imodels/${params.name}?tab=trainingjob#form`)
+        history.push(`/imodels/${params.id}?tab=trainingjob#form`)
     }
     
     const getRowId = React.useCallback(data => data.trainingJobName, []);
@@ -85,7 +85,7 @@ const TrainingJobList: FunctionComponent = () => {
             accessor: 'trainingJobName',
             Cell: ({ row  }) => {
                 if (row && row.original) {
-                    return <a href={`/imodels/${params.name}?tab=trainingjob#prop:id=${row.original.trainingJobName}`}> {row.original.trainingJobName} </a>;
+                    return <a href={`/imodels/${params.id}?tab=trainingjob#prop:id=${row.original.trainingJobName}`}> {row.original.trainingJobName} </a>;
                 }
                 return null;
             }

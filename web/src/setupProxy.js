@@ -99,10 +99,11 @@ module.exports = function(app) {
     app.get('/search/image', (req, res) => {
         try {
                 var endpoint_name = req.query['endpoint_name'];
+                var industrial_model = req.query['industrial_model']
                 var file_name = req.query['file_name'];
                 var data = fs.readFileSync('images/' + file_name + '.jpg');
         
-                options = {headers: {'content-type': 'image/jpg'}, params: {endpoint_name: endpoint_name}};
+                options = {headers: {'content-type': 'image/jpg'}, params: {endpoint_name: endpoint_name, industrial_model: industrial_model}};
                 axios.post(baseUrl + '/search/image', data, options)
                 .then((response) => {
                     res.send(response.data);
@@ -245,6 +246,15 @@ module.exports = function(app) {
         target: baseUrl + '/s3',
         pathRewrite: {
             '^/s3': ''
+        },
+        changeOrigin: true,
+        secure: false,
+        ws: false,
+    }));
+    app.use(createProxyMiddleware('/search/import', {
+        target: baseUrl + '/search/import',
+        pathRewrite: {
+            '^/search/import': ''
         },
         changeOrigin: true,
         secure: false,

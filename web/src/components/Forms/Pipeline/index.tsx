@@ -63,13 +63,13 @@ const PipelineForm: FunctionComponent<IProps> = (props) => {
     }
 
     const onSubmit = () => {
-        var index = props.industrialModels.findIndex((item) => item.name === params.name)
+        var index = props.industrialModels.findIndex((item) => item.id === params.id)
         var algorithm = props.industrialModels[index].algorithm
         
         var body = {}
         body['pipeline_name'] = pipelineName
         body['pipeline_type'] = pipelineType
-        body['industrial_model'] = params.name
+        body['industrial_model'] = params.id
         body['model_algorithm'] = algorithm
         if(pipelineType === '0' || pipelineType === '1') {
             body['training_job_instance_type'] = props.trainingjobInstanceType

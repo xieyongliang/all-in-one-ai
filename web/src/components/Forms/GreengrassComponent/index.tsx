@@ -44,7 +44,7 @@ const GreengrassComponentForm: FunctionComponent<IProps> = (props) => {
     var params : PathParams = useParams();
 
     useEffect(() => {
-       getModel(params.name).then((data) => {
+       getModel(params.id).then((data) => {
             var items = []
             for(let item of data) {
                 if(item['Containers'] !== undefined) {
@@ -64,7 +64,7 @@ const GreengrassComponentForm: FunctionComponent<IProps> = (props) => {
         }, (error) => {
             console.log(error);
         });
-    }, [params.name, itemsModel])
+    }, [params.id, itemsModel])
 
     const onChange = (id: string, event: any) => {
         if(id === 'formFieldIdModels')
@@ -93,7 +93,7 @@ const GreengrassComponentForm: FunctionComponent<IProps> = (props) => {
         else {
             var body = {
                 'component_version': componentVersion,
-                'industrial_model': params.name,
+                'industrial_model': params.id,
                 'model_data_url': itemsModel[selectedModel.value]
             }
             axios.post(`/greengrass/component/${selectedComponent.value}`, body,  { headers: {'content-type': 'application/json' }}) 

@@ -1,6 +1,6 @@
 import { FunctionComponent, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Container, Link, Toggle, Flashbar, Select, Stack, FormField, Button, Grid } from 'aws-northstar';
+import { Container, Link, Toggle, Flashbar, Select, Stack, FormField, Button, Grid, ProgressBar } from 'aws-northstar';
 import ImageList from '@mui/material/ImageList';
 import ImageListItem from '@mui/material/ImageListItem';
 import SyntaxHighlighter from 'react-syntax-highlighter';
@@ -39,8 +39,12 @@ const GluonCVDemoForm: FunctionComponent<IProps> = (props) => {
     const [ srcImagePreview, setSrcImagePreview ] = useState('')
     const [ visibleImagePreview, setVisibleImagePreview ] = useState(false)
     const [ loading, setLoading ] = useState(true);
+    const [ importedCount, setImportedCount ] = useState(0)
 
     var params : PathParams = useParams();
+
+    var industrialModels = props.industrialModels
+    var industrialModel = industrialModels.find((item) => item.id === params.id)
 
     const getSourceCode = async (uri) => {
         const response = await axios.get('/file/download', {params: {uri: encodeURIComponent(uri)}, responseType: 'blob'})
@@ -69,13 +73,11 @@ const GluonCVDemoForm: FunctionComponent<IProps> = (props) => {
         }
     }, []);
 
-    var industrialModels = props.industrialModels
 
     useEffect(() => {
-        if(industrialModels.length > 0) {
+        if(industrialModel !== undefined) {
             setLoading(true)
-            var index = industrialModels.findIndex((item) => item.name === params.name)
-            var s3uri = industrialModels[index].samples
+            var s3uri = industrialModel.samples
             axios.get('/s3', {params : { s3uri : s3uri, page_num: imagePage, page_size: 20 }})
                 .then((response) => {
                     setOriginImageItems(response.data.payload);
@@ -83,7 +85,7 @@ const GluonCVDemoForm: FunctionComponent<IProps> = (props) => {
                     setLoading(false);
                 }
             )
-            axios.get('/endpoint', {params: { industrial_model: params.name}})
+            axios.get('/endpoint', {params: { industrial_model: industrialModel.id}})
                 .then((response) => {
                     var items = []
                     response.data.forEach((item) => {
@@ -96,7 +98,7 @@ const GluonCVDemoForm: FunctionComponent<IProps> = (props) => {
                 }
             )
         }
-    },[params.name, imagePage, industrialModels]);
+    },[imagePage, industrialModel]);
 
     const onImageClick = (src) => {
         setSrcImagePreview(src)
@@ -125,6 +127,33 @@ const GluonCVDemoForm: FunctionComponent<IProps> = (props) => {
             }]} />
         )
     }
+
+    const onImportSamples = () => {
+        return (
+            axios.get('/search/import', {params : {industrial_model : params.id, endpoint_name: selectedEndpoint.value, model_samples: industrialModel.samples}})
+                .then((response) => {
+                    console.log(response.data)
+                }, (error) => {
+                    console.log(error);
+                })
+        )
+    }
+
+    useEffect(() => {
+
+        const interval = setInterval(() => {
+            if(imageCount === 0) return
+            axios.get('/search/import', {params : {industrial_model : industrialModel.id, model_samples: industrialModel.samples, action: 'query'}})
+            .then((response) => {
+                var current = response.data.current;
+                setImportedCount(Math.floor((current * 100) / imageCount));
+            }, (error) => {
+                console.log(error);
+            })
+        }, 1000);
+        return () => clearInterval(interval);
+      }, [industrialModel, imageCount]);
+      
     
     const renderOriginImageList = () => {
         return (
@@ -145,9 +174,18 @@ const GluonCVDemoForm: FunctionComponent<IProps> = (props) => {
                     }
                 </ImageList>
                 <Pagination page={imagePage} onChange={(event, value) => onChange('formFieldIdPage', value)} count={Math.floor(imageCount / 20) + 1} />
-                <FormField controlId='formFieldIdImport'>
-                    <Button> Import into Opensearch Index</Button>
-                </FormField>
+                    <Grid container spacing={3}>
+                        <Grid item xs={4}>
+                            <FormField controlId='formFieldIdImportSamples'>
+                                <Button onClick={onImportSamples}> Import into Opensearch</Button>
+                            </FormField>
+                        </Grid>
+                        <Grid item xs={8}>
+                            <FormField controlId='formFieldIdImportProgress'>
+                                <ProgressBar value={importedCount} label="Import progress"/>
+                           </FormField>
+                        </Grid>
+                </Grid>
             </Container>
         )
     }
@@ -166,7 +204,7 @@ const GluonCVDemoForm: FunctionComponent<IProps> = (props) => {
     }
 
     const onSearch = () => {
-        axios.get('/search/image', { params: {endpoint_name: selectedEndpoint.value, file_name: curImagePreviewItem}})
+        axios.get('/search/image', { params: {industrial_model: industrialModel.id, endpoint_name: selectedEndpoint.value, file_name: curImagePreviewItem}})
             .then((response) => {
                 setSearchSearchItems(response.data);
                 setVisibleSearchImage(true);

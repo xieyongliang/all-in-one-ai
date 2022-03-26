@@ -139,9 +139,10 @@ const InustrialModelForm: FunctionComponent<IProps> = (props) => {
         }
         axios.post('/industrialmodel', buffer)
         .then((response) => {
-            var modelIcon = response.data
+            var modelId = response.data.modelId;
+            var modelIcon = response.data.modelIcon;
             var industrialModels = props.industrialModels.map((x) => x)
-            industrialModels.push({name: modelName, algorithm : selectedAlgorithm.value, description: modelDescription, labels: modelLables.split('\n'), samples: modelSamples, icon: modelIcon})
+            industrialModels.push({id: modelId, name: modelName, algorithm : selectedAlgorithm.value, description: modelDescription, labels: modelLables.split('\n'), samples: modelSamples, icon: modelIcon})
             props.updateindustrialmodelsAction(industrialModels)
             history.goBack()
         }).catch((error) => {

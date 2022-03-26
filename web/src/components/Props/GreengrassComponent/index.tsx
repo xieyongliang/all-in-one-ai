@@ -26,7 +26,7 @@ const GreengrassComponentProp: FunctionComponent = () => {
 
     useEffect(() => {
         var component_name = 'com.example.yolov5'
-        axios.get(`/greengrass/component/${component_name}/${id}`, {params: {'industrial_model': params.name}})
+        axios.get(`/greengrass/component/${component_name}/${id}`, {params: {'industrial_model': params.id}})
             .then((response) => {
             setComponentName(response.data.componentName);
             setComponentVersion(response.data.componentVersion);
@@ -40,7 +40,7 @@ const GreengrassComponentProp: FunctionComponent = () => {
         }, (error) => {
             console.log(error);
         });
-    }, [id, params.name])
+    }, [id, params.id])
 
     const onClose = () => {
         history.goBack()

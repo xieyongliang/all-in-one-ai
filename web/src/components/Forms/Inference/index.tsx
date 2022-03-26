@@ -68,12 +68,12 @@ const InferenceForm: FunctionComponent<IProps> = (props) => {
 
     useEffect(() => {
         if(industrialModels.length > 0) {
-            var index = industrialModels.findIndex((item) => item.name === params.name)
+            var index = industrialModels.findIndex((item) => item.id === params.id)
             setImageLabels(industrialModels[index].labels)
             setCurImageItem('');
             setVisibleAnnotate(false)
         }
-    }, [params.name, industrialModels]);
+    }, [params.id, industrialModels]);
 
     const onFileChange = (files: (File | FileMetadata)[]) => {
         axios.post('/image', files[0])
