@@ -70,7 +70,7 @@ const GreengrassComponentList: FunctionComponent = () => {
     }, [params.name]);
 
     const onCreate = () => {
-        history.push('/imodels/' + params.name + '?tab=greengrasscomponentversion#form')
+        history.push(`/imodels/${params.name}?tab=greengrasscomponentversion#form`)
     }
 
     const getRowId = React.useCallback(data => data.arn, []);

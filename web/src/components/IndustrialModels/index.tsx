@@ -26,8 +26,18 @@ import RestApiProp from '../Props/RestApi'
 import GreengrassComponentProp from '../Props/GreengrassComponent';
 import GreengrassDeploymentProp from '../Props/GreengrassDeployment';
 import PipelineProp from '../Props/Pipeline';
+import { AppState } from '../../store';
+import { connect } from 'react-redux';
+import { IIndustrialModel } from '../../store/industrialmodels/reducer';
+import GluonCVModelForm from '../Forms/Model/gluoncv'
+import GluonCVDemoForm from '../Forms/Demo/gluoncv'
 
-const IndustraiModels: FunctionComponent = () => {
+interface IProps {
+    industrialModels : IIndustrialModel[];
+}
+
+
+const IndustrialModels: FunctionComponent<IProps> = (props) => {
     var params : PathParams = useParams();
 
     var localtion = useLocation();
@@ -42,92 +52,150 @@ const IndustraiModels: FunctionComponent = () => {
         history.push(`/imodels/${params.name}?tab=${tab}`);
     }
 
-    if(hash === 'form' || hash === 'review') {
-        switch(tab) {
-            case 'demo':
-                return <TransformJobForm/>;
-            case 'pipeline':
-                return <PipelineForm/>;
-            case 'trainingjob':
-                return <TrainingJobForm/>;
-            case 'model':
-                return <ModelForm/>;
-            case 'endpoint':
-                return <EndpointForm/>;
-            case 'restapi':
-                return <RestApiForm/>;
-            case 'greengrasscomponentversion':
-                return <GreengrassComponentForm/>;
-            case 'greengrassdeployment':
-                return <GreengrassDeploymentForm/>;
-        }
-    }
+    var index = props.industrialModels.findIndex((item) => item.name === params.name)
+    if(index === -1)
+        return (
+            <Tabs tabs={[]} variant='container' activeId={tab} onChange={onChange}/>
+        )
+    
+    var algorithm = props.industrialModels[index].algorithm
 
-    if(hash.startsWith('prop')) {
-        switch(tab) {
-            case 'demo':
-                return <TransformJobProp />;
-            case 'trainingjob':
-                return <TrainingJobProp />;
-            case 'model':
-                return <ModelProp />;
-            case 'endpoint':
-                return <EndpointProp />;
-            case 'restapi':
-                return <RestApiProp />;
-            case 'greengrasscomponent':
-                return <GreengrassComponentProp/>;
-            case 'greengrassdeployment':
-                return <GreengrassDeploymentProp/>;
-            case 'pipeline':
-                return <PipelineProp/>;
+    if(algorithm === 'yolov5') {
+        if(hash === 'form' || hash === 'review') {
+            switch(tab) {
+                case 'demo':
+                    return <TransformJobForm/>;
+                case 'pipeline':
+                    return <PipelineForm/>;
+                case 'trainingjob':
+                    return <TrainingJobForm/>;
+                case 'model':
+                    return <ModelForm/>;
+                case 'endpoint':
+                    return <EndpointForm/>;
+                case 'restapi':
+                    return <RestApiForm/>;
+                case 'greengrasscomponentversion':
+                    return <GreengrassComponentForm/>;
+                case 'greengrassdeployment':
+                    return <GreengrassDeploymentForm/>;
+            }
         }
-    }
 
-    const tabs = [
-        {
-            label: 'Demo',
-            id: 'demo',
-            content: <DemoForm/>
-        },
-        {
-            label: 'ML pipelines',
-            id: 'pipeline',
-            content: <PipelineList />
-        },
-        {
-            label: 'Training jobs',
-            id: 'trainingjob',
-            content: <TrainingJobList />
-        },
-        {
-            label: 'Models',
-            id: 'model',
-            content: <ModelList/>
-        },
-        {
-            label: 'Endpoints',
-            id: 'endpoint',
-            content: <EndpointList/>
-        },
-        {
-            label: 'Rest apis',
-            id: 'restapi',
-            content: <RestApiList/>
-        },
-        {
-            label: 'Greengrass components',
-            id: 'greengrasscomponent',
-            content: <GreengrassComponentList/>
-        },
-        {
-            label: 'Greengrass deployments',
-            id: 'greengrassdeployment',
-            content: <GreengrassDeploymentList/>
+        if(hash.startsWith('prop')) {
+            switch(tab) {
+                case 'demo':
+                    return <TransformJobProp />;
+                case 'trainingjob':
+                    return <TrainingJobProp />;
+                case 'model':
+                    return <ModelProp />;
+                case 'endpoint':
+                    return <EndpointProp />;
+                case 'restapi':
+                    return <RestApiProp />;
+                case 'greengrasscomponent':
+                    return <GreengrassComponentProp/>;
+                case 'greengrassdeployment':
+                    return <GreengrassDeploymentProp/>;
+                case 'pipeline':
+                    return <PipelineProp/>;
+            }
         }
-    ];
-    return (
-        <Tabs tabs={tabs} variant='container' activeId={tab} onChange={onChange}/>
-    )
+
+        const tabs = [
+            {
+                label: 'Demo',
+                id: 'demo',
+                content: <DemoForm/>
+            },
+            {
+                label: 'ML pipelines',
+                id: 'pipeline',
+                content: <PipelineList />
+            },
+            {
+                label: 'Training jobs',
+                id: 'trainingjob',
+                content: <TrainingJobList />
+            },
+            {
+                label: 'Models',
+                id: 'model',
+                content: <ModelList/>
+            },
+            {
+                label: 'Endpoints',
+                id: 'endpoint',
+                content: <EndpointList/>
+            },
+            {
+                label: 'Rest apis',
+                id: 'restapi',
+                content: <RestApiList/>
+            },
+            {
+                label: 'Greengrass components',
+                id: 'greengrasscomponent',
+                content: <GreengrassComponentList/>
+            },
+            {
+                label: 'Greengrass deployments',
+                id: 'greengrassdeployment',
+                content: <GreengrassDeploymentList/>
+            }
+        ];
+        return (
+            <Tabs tabs={tabs} variant='container' activeId={tab} onChange={onChange}/>
+        )
+    } else {
+        if(hash === 'form') {
+            switch(tab) {
+                case 'demo':
+                    return <GluonCVDemoForm/>;
+                case 'model':
+                    return <GluonCVModelForm/>;
+                case 'endpoint':
+                    return <EndpointForm/>;
+            }
+        }
+
+        if(hash.startsWith('prop')) {
+            switch(tab) {
+                case 'model':
+                    return <ModelProp />;
+                case 'endpoint':
+                    return <EndpointProp />;
+            }
+        }
+
+        const tabs = [
+            {
+                label: 'Demo',
+                id: 'demo',
+                content: <GluonCVDemoForm/>
+            },
+            {
+                label: 'Models',
+                id: 'model',
+                content: <ModelList/>
+            },
+            {
+                label: 'Endpoints',
+                id: 'endpoint',
+                content: <EndpointList/>
+            }
+        ];
+        return (
+            <Tabs tabs={tabs} variant='container' activeId={tab} onChange={onChange}/>
+        )
+    }
 }
-export default IndustraiModels;
+
+const mapStateToProps = (state: AppState) => ({
+    industrialModels : state.industrialmodel.industrialModels
+});
+
+export default connect(
+    mapStateToProps
+)(IndustrialModels);

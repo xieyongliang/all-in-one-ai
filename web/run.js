@@ -15,81 +15,37 @@ app.post('/image', (req, res) => {
     })
     req.on('end', () => {
         try {
-            var filename = uuid.v4();
+            var file_name = uuid.v4();
             var buffer = Buffer.concat(data);
-            fs.writeFileSync('images/' + filename + '.jpg', buffer);
-            res.send(filename);
+            fs.writeFileSync('images/' + file_name + '.jpg', buffer);
+            res.send(file_name);
         }
         catch (error) {
-            console.log(error)
+            console.log(error);
         }
     })
 })
-app.get('/image/:filename', (req, res) => {
-    var filename = req.params.filename;
-    var buffer = fs.readFileSync('images/' + filename + '.jpg')
-    res.send(buffer)
+app.get('/image/:file_name', (req, res) => {
+    var file_name = req.params.file_name;
+    var buffer = fs.readFileSync('images/' + file_name + '.jpg');
+    res.send(buffer);
 })
-app.post('/ico', (req, res) => {
-    var data = [];
-    req.on('data', chunk => {
-        data.push(chunk);
-    })
-    req.on('end', () => {
-        try {
-            var filename = uuid.v4();
-            var buffer = Buffer.concat(data);
-            fs.writeFileSync('public/' + filename + '.jpg', buffer);
-            res.send(filename);
-        }
-        catch (error) {
-            console.log(error)
-        }
-    })
-})
-app.get('/sample/:case/:filename', (req, res) => {
+app.get('/inference/image/:file_name', (req, res) => {
     try {
-        var casename = req.params.case;
-        var filename = req.params.filename;
-        var buffer = fs.readFileSync('samples/' + casename + '/' + filename)
-        res.send(buffer)
-    }
-    catch (error) {
-        console.log(error)
-    }
-})
-app.get('/samples/:case', (req, res) => {
-    try {
-        var casename = req.params.case;
-        var items = [];
-
-        fs.readdir('samples/' + casename, function (err, files) {
-            files.forEach(function (file, index) {
-                items.push('/sample/'+ casename + '/' + file)
-            });
-            res.send(JSON.stringify(items))
-        });
-    }
-    catch (error) {
-        console.log(error)
-    }
-})
-app.get('/inference/image/:case/:filename', (req, res) => {
-    try {
-        var casename = req.params.case;
-        var filename = req.params.filename;
-        var buffer = fs.readFileSync('images/' + filename + '.jpg')
-        options = { headers: {'content-type': 'image/jpg'}, params : {model: casename}}
+        var endpoint_name = req.query['endpoint_name'];
+        var file_name = req.params.file_name;
+        var buffer = fs.readFileSync('images/' + file_name + '.jpg');
+        options = { headers: {'content-type': 'image/jpg'}, params : {endpoint_name: endpoint_name}};
         axios.post(baseUrl + '/inference', buffer, options)
             .then((response) => {
-                res.send(response.data)
+                res.send(response.data);
             }, (error) => {
                     res.status(400);
                     res.send('client error');
                     console.log(error);
                 }
             ).catch((e) => {
-                console.log(e)
+                console.log(e);
             }
         );
     }
@@ -99,14 +55,14 @@ app.get('/inference/image/:case/:filename', (req, res) => {
 })
 app.get('/inference/sample', (req, res) => {
     try {
-        var casename = req.query['case'];
-        var bucket = req.query['bucket']
-        var key = req.query['key']
+        var endpoint_name = req.query['endpoint_name'];
+        var bucket = req.query['bucket'];
+        var key = req.query['key'];
         var buffer = {
             'bucket': bucket,
             'image_uri': key
         }
-        options = {headers: {'content-type': 'application/json'}, params : {model: casename}}
+        options = {headers: {'content-type': 'application/json'}, params : {endpoint_name: endpoint_name}};
         axios.post(baseUrl + '/inference', buffer, options)
             .then((response) => {
                 res.send(response.data)
@@ -116,7 +72,7 @@ app.get('/inference/sample', (req, res) => {
                     console.log(error);
                 }
             ).catch((e) => {
-                console.log(e)
+                console.log(e);
             }
         );
     }
@@ -133,7 +89,31 @@ app.get('/file/download', (req, res) => {
                     res.send(response.data);
                 }
             ).catch((e) => {
-                console.log(e)
+                console.log(e);
+            }
+        );
+    }
+    catch (error) {
+        console.log(error)
+    }
+})
+app.get('/search/image', (req, res) => {
+    try {
+            var endpoint_name = req.query['endpoint_name'];
+            var file_name = req.query['file_name'];
+            var data = fs.readFileSync('images/' + file_name + '.jpg');
+    
+            options = {headers: {'content-type': 'image/jpg'}, params: {endpoint_name: endpoint_name}};
+            axios.post(baseUrl + '/search/image', data, options)
+            .then((response) => {
+                res.send(response.data);
+            }, (error) => {
+                    res.status(400);
+                    res.send('client error');
+                    console.log(error);
+                }
+            ).catch((e) => {
+                console.log(e);
             }
         );
     }
@@ -148,22 +128,22 @@ app.post('/industrialmodel', (req, res) => {
     })
     req.on('end', () => {
         try {
-            data = JSON.parse(body)
-            var filename = data.file_name;
-            var buffer = fs.readFileSync('public/' + filename + '.jpg')
-            data['file_content'] = buffer
+            data = JSON.parse(body);
+            var file_name = data.file_name;
+            var buffer = fs.readFileSync('images/' + file_name + '.jpg');
+            data['file_content'] = buffer;
 
-            options = {headers: {'content-type': 'application/json'}}
-            axios.post(baseUrl + '/industrialmodel', data, options)
+            options = {headers: {'content-type': 'application/json'}};
+            axios.post(baseUrl + '/industrialmodel', body, options)
                 .then((response) => {
-                    res.send(response.data)
+                    res.send(response.data);
                 }, (error) => {
                         res.status(400);
                         res.send('client error');
                         console.log(error);
                     }
                 ).catch((e) => {
-                    console.log(e)
+                    console.log(e);
                 }
             );
         }

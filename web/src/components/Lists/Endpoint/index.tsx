@@ -76,7 +76,7 @@ const EndpointList: FunctionComponent = () => {
     }, [params.name]);
 
     const onCreate = () => {
-        history.push('/imodels/' + params.name + '?tab=endpoint#form')
+        history.push(`/imodels/${params.name}?tab=endpoint#form`)
     }
 
     const onDelete = () => {

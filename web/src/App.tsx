@@ -20,7 +20,7 @@ import Dashboard from './components/Dashboard/index'
 import Yolov5 from './components/Algorithms/Yolov5'
 import PPE from './components/Scenarios/PPE';
 import IndustrialModelOverview from './components/IndustrialModels/overview';
-import IndustraiModels from './components/IndustrialModels';
+import IndustrialModels from './components/IndustrialModels';
 import { FunctionComponent, useEffect } from 'react';
 import { IIndustrialModel } from './store/industrialmodels/reducer';
 import axios from 'axios'; 
@@ -69,7 +69,7 @@ const App : FunctionComponent = () => {
                     <Route sensitive={true} exact path="/scenarios">{withLayout(PPE)}</Route>
                     <Route sensitive={true} exact path="/algorithms/yolov5">{withLayout(Yolov5)}</Route>
                     <Route sensitive={true} exact path="/algorithms/gluoncv">{withLayout(GluonCV)}</Route>
-                    <Route sensitive={true} exact path="/imodels/:name">{withLayout(IndustraiModels)}</Route>
+                    <Route sensitive={true} exact path="/imodels/:name">{withLayout(IndustrialModels)}</Route>
                     <Route sensitive={true} exact path="/imodels">{withLayout(IndustrialModelOverview)}</Route>
                     <Route sensitive={true} exact path="/">{withLayout(Dashboard)}</Route>
                 </Switch>

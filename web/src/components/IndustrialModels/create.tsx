@@ -38,7 +38,7 @@ const InustrialModelForm: FunctionComponent<IProps> = (props) => {
     }
 
     const onFileChange = (files: (File | FileMetadata)[]) => {
-        axios.post('/ico', files[0])
+        axios.post('/image', files[0])
         .then((response) => {
             var filename : string = response.data;
             setFileName(filename);
@@ -66,7 +66,7 @@ const InustrialModelForm: FunctionComponent<IProps> = (props) => {
                             onChange={onFileChange}
                         />
                         <FormField controlId='button'>
-                            <Image src={`/${fileName}.jpg`} width={128} height={128} current={""} public={true}/>
+                            <Image src={`/image/${fileName}`} width={128} height={128} current={""} public={true}/>
                         </FormField>          
                     </Container>
                 </Stack> 

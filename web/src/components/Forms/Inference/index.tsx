@@ -75,7 +75,7 @@ const InferenceForm: FunctionComponent<IProps> = (props) => {
         }
     }, [params.name, industrialModels]);
 
-    const onChange = (files: (File | FileMetadata)[]) => {
+    const onFileChange = (files: (File | FileMetadata)[]) => {
         axios.post('/image', files[0])
         .then((response) => {
             var filename : string = response.data;
@@ -88,7 +88,7 @@ const InferenceForm: FunctionComponent<IProps> = (props) => {
     }
 
     const onInference = () => {
-        axios.get('/inference/image/' + params.name + '/' + curImageItem)
+        axios.get('/inference/image/' + curImageItem)
         .then((response) => {
             var tbbox : number[][] = [];
             var tid = [];
@@ -136,18 +136,18 @@ const InferenceForm: FunctionComponent<IProps> = (props) => {
         )
     }
 
-    const renderImageDownload = () => {
+    const renderImageUpload = () => {
         return (
             <Container title='Select image file from local disk'>
                 <FileUpload
                     controlId='fileImage'
-                    onChange={onChange}
+                    onChange={onFileChange}
                 ></FileUpload>
             </Container>
         )
     }
 
-    const renderPreview = () => {
+    const renderImagePreview = () => {
         if(curImageItem === '') 
             return (
                 <Container title='Preview'>
@@ -193,8 +193,8 @@ const InferenceForm: FunctionComponent<IProps> = (props) => {
     else
         return (
             <Stack>
-                {renderImageDownload()}
-                {renderPreview()}
+                {renderImageUpload()}
+                {renderImagePreview()}
                 {renderSampleCode()}
             </Stack>
         )
