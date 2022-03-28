@@ -1,4 +1,4 @@
-import React, { PropsWithChildren, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import EditorView from '../../../views/EditorView/EditorView';
 import {ProjectType} from '../../../data/enums/ProjectType';
 import {AppState} from '../../../store';
@@ -49,41 +49,62 @@ interface IProps {
     onClose?: () => any;
 }
 
-const ImageAnnotate: React.FC<IProps> = (props: PropsWithChildren<IProps>) => {
+const ImageAnnotate: React.FC<IProps> = (
+    {
+        imageUri,
+        projectData,
+        visible,
+        imageColors,
+        imageLabels,
+        imageAnnotations,
+        imageBucket,
+        imageId,
+        imageKey,
+        onClose,
+        updateActiveLabelNameId,
+        updateLabelNames,
+        updateProjectData,
+        updateActiveImageIndex,
+        updateImageData,
+        updateFirstLabelCreatedFlag,
+        updatePerClassColorationStatusAction,
+        updateProjectDataAction,
+        updateActiveImageIndexAction,
+        addImageDataAction
+    }) => {
     const [imageReady, setImageReady] = useState(false)
 
-    var imageUri = props.imageUri
     if(imageUri.startsWith('/'))
-        imageUri = `${window.location.protocol}//${window.location.host}${props.imageUri}`
+        imageUri = `${window.location.protocol}//${window.location.host}${imageUri}`    
 
     useEffect(() => {
         var imageFile : File;
-        props.updateActiveLabelNameId(null);
-        props.updateLabelNames([]);
-        props.updateProjectData({type: null, name: 'my-project-name'});
-        props.updateActiveImageIndex(null);
-        props.updateImageData([]);
-        props.updateFirstLabelCreatedFlag(false);
-        props.updatePerClassColorationStatusAction(true)
+        updateActiveLabelNameId(null);
+        updateLabelNames([]);
+        updateProjectData({type: null, name: 'my-project-name'});
+        updateActiveImageIndex(null);
+        updateImageData([]);
+        updateFirstLabelCreatedFlag(false);
+        updatePerClassColorationStatusAction(true)
 
         axios.get('/file/download', {params : {'uri' : encodeURIComponent(imageUri)} , responseType: 'blob'})
             .then((response) => {
                 var data = response.data;
                 imageFile = new File([data], 'image.png');
                             
-                props.updateProjectDataAction({
-                    ...props.projectData,
+                updateProjectDataAction({
+                    ...projectData,
                     type: ProjectType.OBJECT_DETECTION
-                });    
-                props.updateActiveImageIndexAction(0);
-                props.addImageDataAction([ImageDataUtil.createImageDataFromFileData(imageFile)]);
+                });
+                updateActiveImageIndexAction(0);
+                addImageDataAction([ImageDataUtil.createImageDataFromFileData(imageFile)]);
     
                 setImageReady(true);    
             })
-    }, [imageUri]);
-
-    return (
-        <Modal title="Image preview" visible={props.visible} onClose={()=>{setImageReady(false); props.onClose()}} width={"100"}>
+      }, [imageUri]); // eslint-disable-line react-hooks/exhaustive-deps
+    
+      return (
+        <Modal title="Image preview" visible={visible} onClose={()=>{setImageReady(false); onClose()}} width={"100"}>
             {
                 !imageReady && 
                 <LoadingIndicator 
@@ -93,12 +114,12 @@ const ImageAnnotate: React.FC<IProps> = (props: PropsWithChildren<IProps>) => {
             { 
                 imageReady && 
                 <EditorView 
-                    imageColors={props.imageColors} 
-                    imageLabels={props.imageLabels} 
-                    imageAnnotations={props.imageAnnotations}
-                    imageBucket={props.imageBucket} 
-                    imageKey={props.imageKey} 
-                    imageId={props.imageId}
+                    imageColors={imageColors} 
+                    imageLabels={imageLabels} 
+                    imageAnnotations={imageAnnotations}
+                    imageBucket={imageBucket} 
+                    imageKey={imageKey} 
+                    imageId={imageId}
                 /> 
             }
             { 
