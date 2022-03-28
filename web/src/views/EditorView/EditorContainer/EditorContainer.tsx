@@ -25,7 +25,7 @@ interface IProps {
     projectType: ProjectType;
     imageBucket?: string;
     imageKey?: string;
-    imageFile?: string;
+    imageId?: string;
     imageLabels: string[];
     imageColors: string[];
     imageAnnotations?: string[];
@@ -40,7 +40,7 @@ const EditorContainer: React.FC<IProps> = (
         projectType,
         imageBucket,
         imageKey,
-        imageFile,
+        imageId,
         imageLabels,
         imageColors,
         imageAnnotations
@@ -131,7 +131,7 @@ const EditorContainer: React.FC<IProps> = (
                     <EditorTopNavigationBar 
                         imageBucket={imageBucket} 
                         imageKey={imageKey} 
-                        imageFile={imageFile} 
+                        imageId={imageId} 
                         imageColors={imageColors} 
                         imageLabels={imageLabels}
                         imageAnnotations={imageAnnotations}

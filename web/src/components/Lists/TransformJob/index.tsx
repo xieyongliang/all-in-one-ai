@@ -93,11 +93,11 @@ const TransformJobList: FunctionComponent<IProps> = (props) => {
                 .then((response) => {
                     for(let item of response.data) {
                         transformJobItems.push({transformJobName: item.TransformJobName, transformJobStatus : item.TransformJobStatus, duration: getDurationByDates(item.TransformStartTime, item.TransformEndTime), creationTime: item.CreationTime})
-                    if(transformJobItems.length === response.data.length) {
-                        setTransformJobItems(transformJobItems);
-                        setLoadingTable(false);
+                        if(transformJobItems.length === response.data.length)
+                            setTransformJobItems(transformJobItems);
                     }
-                }}
+                    setLoadingTable(false);
+                }
             )
         }
     }, [params.id, industrialModels]);

@@ -41,7 +41,7 @@ interface IProps {
     imageUri: string;
     imageBucket?: string;
     imageKey?: string;
-    imageFile?: string;
+    imageId?: string;
     imageAnnotations?: string[];
     imageColors: string[];
     imageLabels: string[];
@@ -98,7 +98,7 @@ const ImageAnnotate: React.FC<IProps> = (props: PropsWithChildren<IProps>) => {
                     imageAnnotations={props.imageAnnotations}
                     imageBucket={props.imageBucket} 
                     imageKey={props.imageKey} 
-                    imageFile={props.imageFile}
+                    imageId={props.imageId}
                 /> 
             }
             { 

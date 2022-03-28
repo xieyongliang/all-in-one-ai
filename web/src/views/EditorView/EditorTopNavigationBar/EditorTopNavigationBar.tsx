@@ -98,7 +98,7 @@ interface IProps {
     activeLabelType: LabelType;
     imageBucket?: string;
     imageKey?: string;
-    imageFile?: string;
+    imageId?: string;
     imageLabels: string[];
     imageColors: string[];
     imageAnnotations?: string[];
@@ -118,7 +118,7 @@ const EditorTopNavigationBar: React.FC<IProps> = (
         activeLabelType,
         imageBucket,
         imageKey,
-        imageFile,
+        imageId,
         imageLabels,
         imageColors,
         imageAnnotations
@@ -166,7 +166,7 @@ const EditorTopNavigationBar: React.FC<IProps> = (
         updateCrossHairVisibleStatusAction(!crossHairVisible);
     }
 
-    const onAnnotationLoadSuccess = (imagesData: ImageData[], labelNames: LabelName[]) => {
+    const onAnnotationLoadSuccess = useCallback((imagesData: ImageData[], labelNames: LabelName[]) => {
         updateImageDataAction(imagesData);
         updateLabelNamesAction(labelNames);
         updateActiveLabelTypeAction(LabelType.RECT);
@@ -179,7 +179,7 @@ const EditorTopNavigationBar: React.FC<IProps> = (
         });
 
         updateLabels(labelNames);
-    }
+    }, [ computedAnnotations, imageColors, imageLabels, updateActiveLabelTypeAction, updateImageDataAction, updateLabelNamesAction, updateLabels]);
 
     const onAnnotationsLoadFailure = (error?:Error) => {    
         console.log(error)
@@ -189,14 +189,15 @@ const EditorTopNavigationBar: React.FC<IProps> = (
         var response = undefined
         if(imageBucket !== undefined && imageKey!== undefined)
             response = await axios.get('/inference/sample', { params : { endpoint_name: selectedEndpoint.value, bucket: imageBucket, key: imageKey } })
-        else if(imageFile !== undefined)
-            response = await axios.get(`/inference/image/${imageFile}`, { params : { endpoint_name: selectedEndpoint.value, bucket: imageBucket, key: imageKey } })
+        else if(imageId !== undefined)
+            response = await axios.get(`/inference/image/${imageId}`, { params : { endpoint_name: selectedEndpoint.value, bucket: imageBucket, key: imageKey } })
         if(response === undefined)
             return response
         else
             return response.data
     }
-    const importAnnotations = () => {
+
+    const importAnnotations = useCallback(() => {
         console.log(imageLabels)
         console.log(computedAnnotations)
         var labelsFile = new File(imageLabels, 'labels.txt');
@@ -207,7 +208,7 @@ const EditorTopNavigationBar: React.FC<IProps> = (
                 
         const importer = new (ImporterSpecData[formatType])([labelType])
         importer.import([labelsFile, annotationFile], onAnnotationLoadSuccess, onAnnotationsLoadFailure);         
-    }
+    }, [ computedAnnotations, imageLabels, onAnnotationLoadSuccess ]);
 
     useEffect(() => {
         const timeout = setTimeout(() => {
@@ -320,7 +321,7 @@ const EditorTopNavigationBar: React.FC<IProps> = (
                     )
                 }
                 {
-                    (imageFile !== undefined || (imageBucket !== undefined && imageKey !== undefined)) &&
+                    (imageId !== undefined || (imageBucket !== undefined && imageKey !== undefined)) &&
                     <Select 
                         placeholder='Choose an endpoint'
                         selectedOption={selectedEndpoint}
@@ -329,7 +330,7 @@ const EditorTopNavigationBar: React.FC<IProps> = (
                     </Select>}
 
                 {
-                    (imageFile !== undefined || (imageBucket !== undefined && imageKey !== undefined)) &&
+                    (imageId !== undefined || (imageBucket !== undefined && imageKey !== undefined)) &&
                     getButtonWithTooltip(
                         'prediction',
                         'inference image to get prediction',

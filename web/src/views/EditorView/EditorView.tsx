@@ -10,7 +10,7 @@ interface IProps {
     activePopupType: PopupWindowType;
     imageBucket?: string;
     imageKey?: string;
-    imageFile?: string;
+    imageId?: string;
     imageColors: string[];
     imageLabels: string[];
     imageAnnotations?: string[];
@@ -21,7 +21,7 @@ const EditorView: React.FC<IProps> = (
         activePopupType,
         imageBucket,
         imageKey,
-        imageFile,
+        imageId,
         imageColors,
         imageLabels,
         imageAnnotations
@@ -43,7 +43,7 @@ const EditorView: React.FC<IProps> = (
             <EditorContainer 
                 imageBucket={imageBucket} 
                 imageKey={imageKey} 
-                imageFile={imageFile} 
+                imageId={imageId} 
                 imageColors={imageColors} 
                 imageLabels={imageLabels} 
                 imageAnnotations={imageAnnotations}

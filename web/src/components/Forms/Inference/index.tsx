@@ -97,7 +97,7 @@ const InferenceForm: FunctionComponent<IProps> = (props) => {
 
         console.log(imageUri)
         return (
-            <ImageAnnotate imageUri={imageUri} imageLabels={labelsData} imageColors={COLORS} imageFile={curImageItem} visible={visibleImagePreview} onClose={onImageClose}/>
+            <ImageAnnotate imageUri={imageUri} imageLabels={labelsData} imageColors={COLORS} imageId={curImageItem} visible={visibleImagePreview} onClose={onImageClose}/>
         )
     }
 
