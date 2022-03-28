@@ -1,13 +1,12 @@
 import { FunctionComponent, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Button, Container, Link, FormField, Inline, Toggle, Flashbar, FormSection, Select, Stack } from 'aws-northstar';
+import { Container, Link, Toggle, Flashbar, Stack } from 'aws-northstar';
 import ImageList from '@mui/material/ImageList';
 import ImageListItem from '@mui/material/ImageListItem';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { github } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 import JSZip from 'jszip';import axios from 'axios';
-import URLImage from '../../Utils/URLImage';
-import ImageAnnotate from '../../Utils/Annotate';
+import ImageAnnotate from '../../Utils/ImageAnnotate';
 import Image from '../../Utils/Image';
 import { COLORS } from '../../Data/data';
 import { PathParams } from '../../Interfaces/PathParams';
@@ -16,7 +15,6 @@ import '../../Utils/Image/index.scss'
 import { AppState } from '../../../store';
 import { connect } from 'react-redux';
 import { IIndustrialModel } from '../../../store/industrialmodels/reducer';
-import { SelectOption } from 'aws-northstar/components/Select';
 
 interface IProps {
     industrialModels: IIndustrialModel[];
@@ -25,18 +23,14 @@ interface IProps {
 const SampleForm: FunctionComponent<IProps> = (props) => {
     const [ imageItems, setImageItems ] = useState([])
     const [ curImageItem, setCurImageItem ] = useState('')
-    const [ imageIds, setImageIds ] = useState<number[]>([])
-    const [ imageBboxs, setImageBboxs ] = useState<number[][]>([])
-    const [ visibleAnnotate, setVisibleAnnotate ] = useState(false);
     const [ imageLabels, setImageLabels ] = useState([])
-    const [ endpointOptions, setEndpointOptions ] = useState([])
-    const [ selectedEndpoint, setSelectedEndpoint ] = useState<SelectOption>({})
     const [ sampleCode, setSampleCode ] = useState('')
     const [ sampleConsole, setSampleConsole ] = useState('')
     const [ visibleSampleCode, setVisibleSampleCode ] = useState(false)
     const [ imagePage, setImagePage ] = useState(0)
     const [ imageCount, setImageCount ] = useState(0)
     const [ loading, setLoading ] = useState(true);
+    const [ visibleImagePreview, setVisibleImagePreview ] = useState(false)
 
     var params : PathParams = useParams();
 
@@ -79,20 +73,7 @@ const SampleForm: FunctionComponent<IProps> = (props) => {
                 .then((response) => {
                     setImageItems(response.data.payload);
                     setImageCount(response.data.count);
-                    setVisibleAnnotate(false);
                     setLoading(false);
-                }
-            )
-            axios.get('/endpoint', {params: { industrial_model: params.id}})
-                .then((response) => {
-                    var items = []
-                    response.data.forEach((item) => {
-                        items.push({label: item.EndpointName, value: item.EndpointName})
-                        if(items.length === response.data.length) {
-                            setEndpointOptions(items)
-                            setSelectedEndpoint(items[0])
-                        }
-                    })
                 }
             )
         }
@@ -100,44 +81,16 @@ const SampleForm: FunctionComponent<IProps> = (props) => {
 
     const onImageClick = (src) => {
         setCurImageItem(src)
-        setImageIds([]);
-        setImageBboxs([]);
+        setVisibleImagePreview(true)
     }
 
-    const onInference = () => {
-        var index = imageItems.findIndex((item) => item.httpuri === curImageItem)
-        if(index === -1)
-            return;
-        axios.get('/inference/sample', { params : {industrial_model: params.id, endpoint_name: selectedEndpoint.value, bucket: imageItems[index].bucket, key: imageItems[index].key}})
-        .then((response) => {
-            var tbbox : number[][] = [];
-            var tid = [];
-            for(let item of response.data) {
-                var numbers = item.split(' ');
-                tid.push(parseInt(item[0]));
-                var box : number[] = [];
-                box.push(parseFloat(numbers[1]));
-                box.push(parseFloat(numbers[2]));
-                box.push(parseFloat(numbers[3]));
-                box.push(parseFloat(numbers[4]));
-                tbbox.push(box);
-            }
-            setImageIds(tid);
-            setImageBboxs(tbbox);
-        }, (error) => {
-            console.log(error);
-        });
-    }
-    
-    const onAnnotate = () => {
-        setVisibleAnnotate(true);
+    const onImageClose = () => {
+        setVisibleImagePreview(false);
     }
 
     const onChange = (id, event) => {
         if(id === 'formFieldIdPage')
             setImagePage(event)
-        else if(id === 'formFieldIdEndpoint')
-            setSelectedEndpoint({label: event.target.value, value: event.target.value})
     }
 
     const renderFlashbar = () => {
@@ -151,25 +104,20 @@ const SampleForm: FunctionComponent<IProps> = (props) => {
         )
     }
 
-    const renderAnnotate = () => {
-        var annotationData : string[] = [];
-        var index = 0;
-        imageBboxs.forEach(item => {
-            var annotation : string = imageIds[index] + ' ' + item[0] + ' ' + item[1] + ' ' + item[2] + ' ' + item[3] + '\r';
-            annotationData.push(annotation);
-            index++;
-        });
+    const renderImagePreview = () => {
+        
+        var imageItem = imageItems.find((item) => item.httpuri === curImageItem)
+
+        var imageBucket = imageItem.bucket
+        var imageKey = imageItem.key
+
         var labelsData : string[] = [];
         imageLabels.forEach(label => {
             labelsData.push(label + '\r');
         })
+
         return (
-            <Container title = 'Image annotation'>
-                <ImageAnnotate imageUri={curImageItem} labelsData={labelsData} annotationData={annotationData} colorData={COLORS}/>
-                <FormField controlId='button'>
-                    <Button variant='primary' onClick={()=>setVisibleAnnotate(false)}>Close</Button>
-                </FormField>
-            </Container>
+            <ImageAnnotate imageUri={curImageItem} imageLabels={labelsData} imageColors={COLORS} imageBucket={imageBucket} imageKey={imageKey} visible={visibleImagePreview} onClose={onImageClose}/>
         )
     }
     
@@ -196,48 +144,6 @@ const SampleForm: FunctionComponent<IProps> = (props) => {
         )
     }
 
-    const renderEndpointOptions = () => {
-        return (
-            <FormSection header='Endpoint configuration'>
-                <Select
-                    placeholder='Choose an option'
-                    options={endpointOptions}
-                    selectedOption={selectedEndpoint}
-                    onChange={(event) => onChange('formFieldIdEndpoint', event)}
-                />
-            </FormSection>
-        )
-    }
-
-    const renderPreview = () => {
-        if(curImageItem === '')
-            return (
-                <Container title = 'Preview'>
-                    <FormField controlId='button'>
-                        <Button variant='primary' onClick={onInference} disabled={curImageItem === ''}>Inference</Button>
-                    </FormField>
-                </Container>
-            )
-        else
-            return (
-                <Container title = 'Preview'>
-                    <FormField controlId='button'>
-                        <div className='watermarked'>
-                            <URLImage src={curImageItem} colors={COLORS} labels={imageLabels} id={imageIds} bbox={imageBboxs}/>
-                        </div>
-                    </FormField>
-                    <Inline>
-                        <FormField controlId='button'>
-                            <Button variant='primary' onClick={onInference} disabled={curImageItem === ''}>Inference</Button>
-                        </FormField>
-                        <FormField controlId='button'>
-                            <Button onClick={onAnnotate} disabled={imageBboxs.length === 0}>Annotate</Button>
-                        </FormField>
-                    </Inline>
-                </Container>
-            )
-    }
-
     const renderSampleCode = () => {
         return (
             <Container title = 'Sample code'>
@@ -252,15 +158,11 @@ const SampleForm: FunctionComponent<IProps> = (props) => {
         )
     }
 
-    if(visibleAnnotate)
-        return renderAnnotate();
-    else
         return (
             <Stack>
+                { visibleImagePreview && renderImagePreview() }
                 { loading && renderFlashbar() }
                 { renderImageList() }
-                { renderEndpointOptions() }
-                { renderPreview() }
                 { renderSampleCode() }
             </Stack>
         )

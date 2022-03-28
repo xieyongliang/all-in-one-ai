@@ -1,10 +1,10 @@
 import {ContextType} from '../../../data/enums/ContextType';
 import './EditorTopNavigationBar.scss';
-import React from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import classNames from 'classnames';
 import {AppState} from '../../../store';
 import {connect} from 'react-redux';
-import {updateCrossHairVisibleStatus, updateImageDragModeStatus} from '../../../store/general/actionCreators';
+import {updateActivePopupType, updateCrossHairVisibleStatus, updateImageDragModeStatus, updatePerClassColorationStatus, updateProjectData} from '../../../store/general/actionCreators';
 import {GeneralSelector} from '../../../store/selectors/GeneralSelector';
 import {ViewPointSettings} from '../../../settings/ViewPointSettings';
 import {ImageButton} from '../../Common/ImageButton/ImageButton';
@@ -17,6 +17,17 @@ import {AIActions} from '../../../logic/actions/AIActions';
 import withStyles from '@material-ui/core/styles/withStyles';
 import {Tooltip} from '@material-ui/core';
 import Fade from '@material-ui/core/Fade';
+import { Select } from 'aws-northstar';
+import axios from 'axios';
+import { useParams } from 'react-router-dom';
+import { PathParams } from '../../../components/Interfaces/PathParams';
+import { SelectOption } from 'aws-northstar/components/Select';
+import { ImageData, LabelName } from '../../../store/labels/types';
+import { addImageData, updateActiveImageIndex, updateActiveLabelNameId, updateActiveLabelType, updateFirstLabelCreatedFlag, updateImageData, updateLabelNames } from '../../../store/labels/actionCreators';
+import { ProjectData } from '../../../store/general/types';
+import { PopupWindowType } from '../../../data/enums/PopupWindowType';
+import { ImporterSpecData } from '../../../data/ImporterSpecData';
+import { AnnotationFormatType } from '../../../data/enums/AnnotationFormatType';
 
 const BUTTON_SIZE: ISize = {width: 30, height: 30};
 const BUTTON_PADDING: number = 10;
@@ -67,9 +78,30 @@ interface IProps {
     activeContext: ContextType;
     updateImageDragModeStatusAction: (imageDragMode: boolean) => any;
     updateCrossHairVisibleStatusAction: (crossHairVisible: boolean) => any;
+    updateActiveImageIndexAction: (activeImageIndex: number) => any;
+    addImageDataAction: (imageData: ImageData[]) => any;
+    updateProjectDataAction: (projectData: ProjectData) => any;
+    updateActivePopupTypeAction: (activePopupType: PopupWindowType) => any;
+    updateImageDataAction: (imageData: ImageData[]) => any;
+    updateLabelNamesAction: (labels: LabelName[]) => any;
+    updateActiveLabelTypeAction: (activeLabelType: LabelType) => any;
+    updatePerClassColorationStatusAction: (updatePerClassColoration: boolean) => any;
+    updateActiveImageIndex: (activeImageIndex: number) => any;
+    updateActiveLabelNameId: (activeLabelId: string) => any;
+    updateLabelNames: (labelNames: LabelName[]) => any;
+    updateImageData: (imageData: ImageData[]) => any;
+    updateFirstLabelCreatedFlag: (firstLabelCreatedFlag: boolean) => any;
+    updateProjectData: (projectData: ProjectData) => any;
+    updateLabels: (labels: LabelName[]) => any;
     imageDragMode: boolean;
     crossHairVisible: boolean;
     activeLabelType: LabelType;
+    imageBucket?: string;
+    imageKey?: string;
+    imageFile?: string;
+    imageLabels: string[];
+    imageColors: string[];
+    imageAnnotations?: string[];
 }
 
 const EditorTopNavigationBar: React.FC<IProps> = (
@@ -77,10 +109,26 @@ const EditorTopNavigationBar: React.FC<IProps> = (
         activeContext,
         updateImageDragModeStatusAction,
         updateCrossHairVisibleStatusAction,
+        updateImageDataAction,
+        updateLabelNamesAction,
+        updateActiveLabelTypeAction,
+        updateLabels,
         imageDragMode,
         crossHairVisible,
-        activeLabelType
+        activeLabelType,
+        imageBucket,
+        imageKey,
+        imageFile,
+        imageLabels,
+        imageColors,
+        imageAnnotations
     }) => {
+    const [ endpointOptions, setEndpointOptions ] = useState([])
+    const [ selectedEndpoint, setSelectedEndpoint ] = useState<SelectOption>({})
+    const [ computedAnnotations ] = useState<string[]>(imageAnnotations !== undefined ? imageAnnotations :[])
+
+    var params : PathParams = useParams();
+    
     const getClassName = () => {
         return classNames(
             'EditorTopNavigationBar',
@@ -89,6 +137,21 @@ const EditorTopNavigationBar: React.FC<IProps> = (
             }
         );
     };
+
+    useEffect(() => {
+        axios.get('/endpoint', {params: { industrial_model: params.id}})
+            .then((response) => {
+                var items = []
+                response.data.forEach((item) => {
+                    items.push({label: item.EndpointName, value: item.EndpointName})
+                    if(items.length === response.data.length) {
+                        setEndpointOptions(items)
+                        setSelectedEndpoint(items[0])
+                    }
+                })
+            }
+        )
+    }, [params.id]);
 
     const imageDragOnClick = () => {
         if (imageDragMode) {
@@ -101,6 +164,88 @@ const EditorTopNavigationBar: React.FC<IProps> = (
 
     const crossHairOnClick = () => {
         updateCrossHairVisibleStatusAction(!crossHairVisible);
+    }
+
+    const onAnnotationLoadSuccess = (imagesData: ImageData[], labelNames: LabelName[]) => {
+        updateImageDataAction(imagesData);
+        updateLabelNamesAction(labelNames);
+        updateActiveLabelTypeAction(LabelType.RECT);
+    
+        computedAnnotations.forEach(annotation => {
+            var number = annotation.split(' ');
+            var id = parseInt(number[0]);
+            labelNames[id % imageColors.length].color = imageColors[id % imageColors.length];
+            labelNames[id].name = imageLabels[id];
+        });
+
+        updateLabels(labelNames);
+    }
+
+    const onAnnotationsLoadFailure = (error?:Error) => {    
+        console.log(error)
+    };
+
+    const getInference = async () => {
+        var response = undefined
+        if(imageBucket !== undefined && imageKey!== undefined)
+            response = await axios.get('/inference/sample', { params : { endpoint_name: selectedEndpoint.value, bucket: imageBucket, key: imageKey } })
+        else if(imageFile !== undefined)
+            response = await axios.get(`/inference/image/${imageFile}`, { params : { endpoint_name: selectedEndpoint.value, bucket: imageBucket, key: imageKey } })
+        if(response === undefined)
+            return response
+        else
+            return response.data
+    }
+    const importAnnotations = () => {
+        console.log(imageLabels)
+        console.log(computedAnnotations)
+        var labelsFile = new File(imageLabels, 'labels.txt');
+        var annotationFile = new File(computedAnnotations, 'image.txt');
+                    
+        const formatType = AnnotationFormatType.YOLO
+        const labelType = LabelType.RECT
+                
+        const importer = new (ImporterSpecData[formatType])([labelType])
+        importer.import([labelsFile, annotationFile], onAnnotationLoadSuccess, onAnnotationsLoadFailure);         
+    }
+
+    useEffect(() => {
+        const timeout = setTimeout(() => {
+        if(computedAnnotations !== undefined)
+            importAnnotations();
+        }, 1000);
+        return () => clearTimeout(timeout);
+    }, [ computedAnnotations, importAnnotations ]);
+
+    const inferenceOnClick = () => {
+        var promise = getInference()
+        if(promise !== undefined)
+            promise.then(data => {
+                var imageBboxs : number[][] = [];
+                var imageIds : number[] = [];
+                for(let item of data) {
+                    var numbers = item.split(' ');
+                    imageIds.push(parseInt(item[0]));
+                    var box : number[] = [];
+                    box.push(parseFloat(numbers[1]));
+                    box.push(parseFloat(numbers[2]));
+                    box.push(parseFloat(numbers[3]));
+                    box.push(parseFloat(numbers[4]));
+                    imageBboxs.push(box);
+                }
+                var index = 0;
+                computedAnnotations.slice(0, computedAnnotations.length)
+                imageBboxs.forEach(item => {
+                    var annotation : string = imageIds[index] + ' ' + item[0] + ' ' + item[1] + ' ' + item[2] + ' ' + item[3] + '\r';
+                    computedAnnotations.push(annotation);
+                    index++;
+                });
+    
+                importAnnotations();
+
+            }, (error) => {
+                console.log(error);
+            });
     }
 
     return (
@@ -174,6 +319,27 @@ const EditorTopNavigationBar: React.FC<IProps> = (
                         crossHairOnClick
                     )
                 }
+                {
+                    (imageFile !== undefined || (imageBucket !== undefined && imageKey !== undefined)) &&
+                    <Select 
+                        placeholder='Choose an endpoint'
+                        selectedOption={selectedEndpoint}
+                        options={endpointOptions}
+                    >
+                    </Select>}
+
+                {
+                    (imageFile !== undefined || (imageBucket !== undefined && imageKey !== undefined)) &&
+                    getButtonWithTooltip(
+                        'prediction',
+                        'inference image to get prediction',
+                        '/ico/prediction.png',
+                        'prediction',
+                        true,
+                        undefined,
+                        inferenceOnClick
+                    )
+                }
             </div>
             {((activeLabelType === LabelType.RECT && AISelector.isAIObjectDetectorModelLoaded()) ||
                 (activeLabelType === LabelType.POINT && AISelector.isAIPoseDetectorModelLoaded())) && <div className='ButtonWrapper'>
@@ -206,7 +372,22 @@ const EditorTopNavigationBar: React.FC<IProps> = (
 
 const mapDispatchToProps = {
     updateImageDragModeStatusAction: updateImageDragModeStatus,
-    updateCrossHairVisibleStatusAction: updateCrossHairVisibleStatus
+    updateCrossHairVisibleStatusAction: updateCrossHairVisibleStatus,
+    updateActiveImageIndexAction: updateActiveImageIndex,
+    addImageDataAction: addImageData,
+    updateProjectDataAction: updateProjectData,
+    updateActivePopupTypeAction: updateActivePopupType,
+    updateImageDataAction: updateImageData,
+    updateLabelNamesAction: updateLabelNames,
+    updateActiveLabelTypeAction: updateActiveLabelType,
+    updatePerClassColorationStatusAction: updatePerClassColorationStatus,
+    updateActiveLabelNameId,
+    updateLabelNames,
+    updateProjectData,
+    updateActiveImageIndex,
+    updateImageData,
+    updateFirstLabelCreatedFlag,
+    updateLabels: updateLabelNames
 };
 
 const mapStateToProps = (state: AppState) => ({

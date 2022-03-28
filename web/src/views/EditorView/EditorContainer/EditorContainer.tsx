@@ -23,6 +23,12 @@ interface IProps {
     imagesData: ImageData[];
     activeContext: ContextType;
     projectType: ProjectType;
+    imageBucket?: string;
+    imageKey?: string;
+    imageFile?: string;
+    imageLabels: string[];
+    imageColors: string[];
+    imageAnnotations?: string[];
 }
 
 const EditorContainer: React.FC<IProps> = (
@@ -31,7 +37,13 @@ const EditorContainer: React.FC<IProps> = (
         activeImageIndex,
         imagesData,
         activeContext,
-        projectType
+        projectType,
+        imageBucket,
+        imageKey,
+        imageFile,
+        imageLabels,
+        imageColors,
+        imageAnnotations
     }) => {
     const [leftTabStatus, setLeftTabStatus] = useState(true);
     const [rightTabStatus, setRightTabStatus] = useState(true);
@@ -114,9 +126,18 @@ const EditorContainer: React.FC<IProps> = (
                 onMouseDown={() => ContextManager.switchCtx(ContextType.EDITOR)}
                  key="editor-wrapper"
             >
-                {projectType === ProjectType.OBJECT_DETECTION && <EditorTopNavigationBar
-                    key="editor-top-navigation-bar"
-                />}
+                {
+                    projectType === ProjectType.OBJECT_DETECTION && 
+                    <EditorTopNavigationBar 
+                        imageBucket={imageBucket} 
+                        imageKey={imageKey} 
+                        imageFile={imageFile} 
+                        imageColors={imageColors} 
+                        imageLabels={imageLabels}
+                        imageAnnotations={imageAnnotations}
+                        key="editor-top-navigation-bar"
+                    />
+                }
                 <Editor
                     size={calculateEditorSize()}
                     imageData={imagesData[activeImageIndex]}

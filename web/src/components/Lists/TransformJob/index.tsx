@@ -1,6 +1,6 @@
 import React, { FunctionComponent, useEffect, useState } from 'react';
 import { useHistory, useParams } from 'react-router-dom'; 
-import { Container, FormField, Stack, Table, Button, Inline, ButtonDropdown, StatusIndicator, Flashbar, Toggle, Link } from 'aws-northstar'
+import { Container, Stack, Table, Button, Inline, ButtonDropdown, StatusIndicator, Flashbar, Toggle, Link } from 'aws-northstar'
 import { Column } from 'react-table'
 import ImageList from '@mui/material/ImageList';
 import ImageListItem from '@mui/material/ImageListItem';
@@ -8,9 +8,8 @@ import SyntaxHighlighter from 'react-syntax-highlighter';
 import { github } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 import JSZip from 'jszip';
 import axios from 'axios';
-import URLImage from '../../Utils/URLImage';
 import { COLORS } from '../../Data/data';
-import ImageAnnotate from '../../Utils/Annotate';
+import ImageAnnotate from '../../Utils/ImageAnnotate';
 import Image from '../../Utils/Image';
 import { PathParams } from '../../Interfaces/PathParams';
 import '../../Utils/Image/index.scss'
@@ -40,13 +39,12 @@ const TransformJobList: FunctionComponent<IProps> = (props) => {
     const [ loadingReview, setLoadingReview ] = useState(true)
     const [ curImageItem, setCurImageItem ] = useState('')
     const [ transformJobResult, setTransformJobResult ] = useState<any>({})
-    const [ visibleAnnotate, setVisibleAnnotate ] = useState(false);
-    const [ imageIds, setImageIds ] = useState<number[]>([])
-    const [ imageBboxs, setImageBboxs ] = useState<number[][]>([])
     const [ imageLabels,  setImageLabels ] = useState([])
+    const [ imageAnnotations, setImageAnnotations ] = useState([])
     const [ sampleCode, setSampleCode ] = useState('')
     const [ sampleConsole, setSampleConsole ] = useState('')
     const [ visibleSampleCode, setVisibleSampleCode ] = useState(false)
+    const [ visibleImagePreview, setVisibleImagePreview ] = useState(false)
     const [ imagePage, setImagePage ] = useState(0)
 
     const history = useHistory();
@@ -88,43 +86,59 @@ const TransformJobList: FunctionComponent<IProps> = (props) => {
             var index = industrialModels.findIndex((item) => item.id === params.id)
             setImageLabels(industrialModels[index].labels)
             setCurImageItem('');
-            setLoadingTable(false);
-            setVisibleAnnotate(false);
+            setVisibleImagePreview(false);
             setVisibleReview(false);
 
             axios.get('/transformjob', {params : {'industrial_model': params.id}})
-            .then((response) => {
-                for(let item of response.data) {
-                    transformJobItems.push({transformJobName: item.TransformJobName, transformJobStatus : item.TransformJobStatus, duration: getDurationByDates(item.TransformStartTime, item.TransformEndTime), creationTime: item.CreationTime})
-                if(transformJobItems.length === response.data.length)
-                    setTransformJobItems(transformJobItems)
-            }})
+                .then((response) => {
+                    for(let item of response.data) {
+                        transformJobItems.push({transformJobName: item.TransformJobName, transformJobStatus : item.TransformJobStatus, duration: getDurationByDates(item.TransformStartTime, item.TransformEndTime), creationTime: item.CreationTime})
+                    if(transformJobItems.length === response.data.length) {
+                        setTransformJobItems(transformJobItems);
+                        setLoadingTable(false);
+                    }
+                }}
+            )
         }
     }, [params.id, industrialModels]);
-        
+
+    const onImageClose = () => {
+        setVisibleImagePreview(false);
+    }
+
     const onImageClick = (src) => {
-        setImageIds([]);
-        setImageBboxs([]);
         setCurImageItem(src);
         
         var annotationUri = transformJobResult.output[transformJobResult.input.indexOf(src)];
     
         axios.get('/file/download', {params : {'uri' : encodeURIComponent(annotationUri)}})
         .then((response) => {
-            var tbbox : number[][] = [];
-            var tid = [];
+            var imageBboxs : number[][] = [];
+            var imageIds = [];
             for(let item of response.data) {
                 var numbers = item.split(' ');
-                tid.push(parseInt(item[0]));
+                imageIds.push(parseInt(item[0]));
                 var box : number[] = [];
                 box.push(parseFloat(numbers[1]));
                 box.push(parseFloat(numbers[2]));
                 box.push(parseFloat(numbers[3]));
                 box.push(parseFloat(numbers[4]));
-                tbbox.push(box);
+                imageBboxs.push(box);
             }
-            setImageIds(tid);
-            setImageBboxs(tbbox);
+            var annotationData : string[] = [];
+            var index = 0;
+            imageBboxs.forEach(item => {
+                var annotation : string = imageIds[index] + ' ' + item[0] + ' ' + item[1] + ' ' + item[2] + ' ' + item[3] + '\r';
+                annotationData.push(annotation);
+                index++;
+            });
+            var labelsData : string[] = [];
+            imageLabels.forEach(label => {
+                labelsData.push(label + '\r');
+            })
+            setImageAnnotations(annotationData)
+            setImageLabels(labelsData)
+            setVisibleImagePreview(true)
         }, (error) => {
             console.log(error);
         });
@@ -163,10 +177,6 @@ const TransformJobList: FunctionComponent<IProps> = (props) => {
         }, (error) => {
             console.log(error);
         });
-    }
-
-    const onAnnotate = () => {
-        setVisibleAnnotate(true);
     }
 
     const getRowId = React.useCallback(data => data.transformJobName, []);
@@ -237,29 +247,6 @@ const TransformJobList: FunctionComponent<IProps> = (props) => {
         </Inline>
     );
 
-    const renderAnnotate = () => {
-        var annotationData : string[] = [];
-        var index = 0;
-        imageBboxs.forEach(item => {
-            var annotation : string = imageIds[index] + ' ' + item[0] + ' ' + item[1] + ' ' + item[2] + ' ' + item[3] + '\r';
-            annotationData.push(annotation);
-            index++;
-        });
-        var labelsData : string[] = [];
-        imageLabels.forEach(label => {
-            labelsData.push(label + '\r');
-        })
-            
-        return (
-            <Container title = 'Image annotation'>
-                <ImageAnnotate imageUri={curImageItem} labelsData={labelsData} annotationData={annotationData} colorData={COLORS}/>
-                <FormField controlId='button'>
-                    <Button variant='primary' onClick={()=>setVisibleAnnotate(false)}>Close</Button>
-                </FormField>
-            </Container>
-        )
-    }
-
     const renderReview = () => {
         return (
             <Stack>
@@ -288,18 +275,6 @@ const TransformJobList: FunctionComponent<IProps> = (props) => {
                             ))}
                         </ImageList>
                         <Pagination page={imagePage} onChange={(event, value) => onChange('', value)} count={Math.floor(transformJobResult.count / 20)} />
-                    </Container>
-                }
-                {
-                    !loadingReview && <Container title = 'Preview'>
-                        <FormField controlId='button'>
-                            <div className='watermarked'>
-                                <URLImage src={curImageItem} colors={COLORS} labels={imageLabels} id={imageIds} bbox={imageBboxs}/>
-                            </div>
-                        </FormField>
-                        <FormField controlId='button'>
-                            <Button onClick={onAnnotate} disabled={imageBboxs.length === 0}>Annotate</Button>
-                        </FormField>
                     </Container>
                 }
             </Stack>            
@@ -336,10 +311,24 @@ const TransformJobList: FunctionComponent<IProps> = (props) => {
         )
     }
 
-    if(visibleAnnotate) 
-        return renderAnnotate()
-    else if(visibleReview) 
-        return renderReview()
+    const renderImagePreview = () => {
+        return (
+            <ImageAnnotate 
+                imageUri={curImageItem} 
+                imageLabels={imageLabels} 
+                imageColors={COLORS}
+                imageAnnotations={imageAnnotations}
+                visible={visibleImagePreview} 
+                onClose={onImageClose}
+            />
+        )
+    }
+
+    if(visibleReview)
+        if(visibleImagePreview)
+            return renderImagePreview()
+        else
+            return renderReview()
     else 
         return (
             <Stack>

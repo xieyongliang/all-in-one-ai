@@ -8,10 +8,24 @@ import classNames from 'classnames';
 
 interface IProps {
     activePopupType: PopupWindowType;
+    imageBucket?: string;
+    imageKey?: string;
+    imageFile?: string;
+    imageColors: string[];
+    imageLabels: string[];
+    imageAnnotations?: string[];
 }
 
-const EditorView: React.FC<IProps> = ({activePopupType}) => {
-
+const EditorView: React.FC<IProps> = (
+    {
+        activePopupType,
+        imageBucket,
+        imageKey,
+        imageFile,
+        imageColors,
+        imageLabels,
+        imageAnnotations
+    }) => {
     const getClassName = () => {
         return classNames(
             'EditorView',
@@ -26,7 +40,14 @@ const EditorView: React.FC<IProps> = ({activePopupType}) => {
             className={getClassName()}
             draggable={false}
         >
-            <EditorContainer/>
+            <EditorContainer 
+                imageBucket={imageBucket} 
+                imageKey={imageKey} 
+                imageFile={imageFile} 
+                imageColors={imageColors} 
+                imageLabels={imageLabels} 
+                imageAnnotations={imageAnnotations}
+            />
         </div>
     );
 };

@@ -1,11 +1,10 @@
-import React, { PropsWithChildren, useEffect, useRef, useState } from 'react';
+import React, { PropsWithChildren, useEffect, useState } from 'react';
 import EditorView from '../../../views/EditorView/EditorView';
 import {ProjectType} from '../../../data/enums/ProjectType';
 import {AppState} from '../../../store';
 import {connect} from 'react-redux';
 import PopupView from '../../../views/PopupView/PopupView';
 import {ISize} from '../../../interfaces/ISize';
-import classNames from 'classnames';
 import { ProjectData } from '../../../store/general/types';
 import { PopupWindowType } from '../../../data/enums/PopupWindowType';
 import { addImageData, updateActiveImageIndex, updateActiveLabelType, updateImageData, updateLabelNames, updateActiveLabelNameId, updateFirstLabelCreatedFlag } from '../../../store/labels/actionCreators';
@@ -15,8 +14,7 @@ import {ImageData, LabelName} from '../../../store/labels/types';
 import { ImageDataUtil } from '../../../utils/ImageDataUtil';
 import axios from 'axios';
 import { LabelType } from '../../../data/enums/LabelType';
-import { AnnotationFormatType } from '../../../data/enums/AnnotationFormatType';
-import { ImporterSpecData } from '../../../data/ImporterSpecData';
+import { LoadingIndicator, Modal } from 'aws-northstar';
 
 interface IProps {
     updateActiveImageIndexAction: (activeImageIndex: number) => any;
@@ -41,90 +39,73 @@ interface IProps {
     projectData: ProjectData;
     activeLabelType: LabelType;
     imageUri: string;
-    labelsData: string[];
-    annotationData: string[];
-    colorData: string[];
+    imageBucket?: string;
+    imageKey?: string;
+    imageFile?: string;
+    imageAnnotations?: string[];
+    imageColors: string[];
+    imageLabels: string[];
+    visible?: boolean;
+    onClose?: () => any;
 }
 
 const ImageAnnotate: React.FC<IProps> = (props: PropsWithChildren<IProps>) => {
-    const [importReady, setImportReady] = useState(false)
     const [imageReady, setImageReady] = useState(false)
-    const formatType = AnnotationFormatType.YOLO
-    const labelType = LabelType.RECT
-    const hasFetchedData = useRef(false);
+
+    var imageUri = props.imageUri
+    if(imageUri.startsWith('/'))
+        imageUri = `${window.location.protocol}//${window.location.host}${props.imageUri}`
 
     useEffect(() => {
-        if(hasFetchedData.current) return;
-        hasFetchedData.current = true;
-
         var imageFile : File;
+        props.updateActiveLabelNameId(null);
+        props.updateLabelNames([]);
+        props.updateProjectData({type: null, name: 'my-project-name'});
+        props.updateActiveImageIndex(null);
+        props.updateImageData([]);
+        props.updateFirstLabelCreatedFlag(false);
+        props.updatePerClassColorationStatusAction(true)
 
-        const onAnnotationLoadSuccess = (imagesData: ImageData[], labelNames: LabelName[]) => {
-            props.updateImageDataAction(imagesData);
-            props.updateLabelNamesAction(labelNames);
-            props.updateActiveLabelTypeAction(labelType);
-        
-            props.annotationData.forEach(annotation => {
-                var number = annotation.split(' ');
-                var id = parseInt(number[0]);
-                labelNames[id % props.colorData.length].color = props.colorData[id % props.colorData.length];
-                labelNames[id].name = props.labelsData[id];
-            });
-
-            props.updateLabels(labelNames);
-            
-            setImportReady(true);
-        }
+        axios.get('/file/download', {params : {'uri' : encodeURIComponent(imageUri)} , responseType: 'blob'})
+            .then((response) => {
+                var data = response.data;
+                imageFile = new File([data], 'image.png');
+                            
+                props.updateProjectDataAction({
+                    ...props.projectData,
+                    type: ProjectType.OBJECT_DETECTION
+                });    
+                props.updateActiveImageIndexAction(0);
+                props.addImageDataAction([ImageDataUtil.createImageDataFromFileData(imageFile)]);
     
-        const onAnnotationsLoadFailure = (error?:Error) => {    
-            console.log(error)
-        };
-    
-        async function init() {
-            props.updateActiveLabelNameId(null);
-            props.updateLabelNames([]);
-            props.updateProjectData({type: null, name: 'my-project-name'});
-            props.updateActiveImageIndex(null);
-            props.updateImageData([]);
-            props.updateFirstLabelCreatedFlag(false);
-
-            props.updatePerClassColorationStatusAction(true)
-
-            var imageUri = props.imageUri
-            if(imageUri.startsWith('/'))
-                imageUri = `${window.location.protocol}//${window.location.host}${props.imageUri}`
-
-            var response = await axios.get('/file/download', {params : {'uri' : encodeURIComponent(imageUri)} , responseType: 'blob'})
-
-            var data = response.data;
-            imageFile = new File([data], 'image.png');
-
-            var labelsFile = new File(props.labelsData, 'labels.txt');
-            var annotationFile = new File(props.annotationData, 'image.txt');
-                    
-            props.updateProjectDataAction({
-                ...props.projectData,
-                type: ProjectType.OBJECT_DETECTION
-            });    
-            props.updateActiveImageIndexAction(0);
-            props.addImageDataAction([ImageDataUtil.createImageDataFromFileData(imageFile)]);
-
-            setImageReady(true);
-
-            const importer = new (ImporterSpecData[formatType])([labelType])
-            importer.import([labelsFile, annotationFile], onAnnotationLoadSuccess, onAnnotationsLoadFailure);         
-        };
-
-        init();
-    });
+                setImageReady(true);    
+            })
+    }, [imageUri]);
 
     return (
-        <div className={classNames('App', {'AI': props.ObjectDetectorLoaded || props.PoseDetectionLoaded})}
-            draggable={false}
-        >
-        {(imageReady || importReady) && <EditorView/>}
-        <PopupView/>
-        </div>
+        <Modal title="Image preview" visible={props.visible} onClose={()=>{setImageReady(false); props.onClose()}} width={"100"}>
+            {
+                !imageReady && 
+                <LoadingIndicator 
+                    label='Loading image...'
+                />
+            }
+            { 
+                imageReady && 
+                <EditorView 
+                    imageColors={props.imageColors} 
+                    imageLabels={props.imageLabels} 
+                    imageAnnotations={props.imageAnnotations}
+                    imageBucket={props.imageBucket} 
+                    imageKey={props.imageKey} 
+                    imageFile={props.imageFile}
+                /> 
+            }
+            { 
+                imageReady && 
+                <PopupView/>
+            }
+            </Modal>
     );
 };
 

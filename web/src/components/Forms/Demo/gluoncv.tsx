@@ -140,7 +140,6 @@ const GluonCVDemoForm: FunctionComponent<IProps> = (props) => {
     }
 
     useEffect(() => {
-
         const interval = setInterval(() => {
             if(imageCount === 0) return
             axios.get('/search/import', {params : {industrial_model : industrialModel.id, model_samples: industrialModel.samples, action: 'query'}})

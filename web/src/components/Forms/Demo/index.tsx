@@ -1,5 +1,5 @@
 import { FunctionComponent } from 'react';
-import { Stack, Heading, Container, RadioButton, RadioGroup } from 'aws-northstar';
+import { Stack, Container, RadioButton, RadioGroup } from 'aws-northstar';
 import InferenceForm from '../Inference';
 import TransformJobList from '../../Lists/TransformJob';
 import SampleForm from '../Sample';
@@ -34,7 +34,6 @@ const DemoForm: FunctionComponent = () => {
 
     return (
         <Stack>
-            <Heading variant='h1'>{params.id}</Heading>
             <Container title = 'Demo type'>
                 {renderDemoOptions()}
             </Container>
