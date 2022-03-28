@@ -5,12 +5,10 @@ from botocore.exceptions import ClientError
 from boto3.dynamodb.conditions import Attr
 from boto3.dynamodb.conditions import Key
 from datetime import date, datetime, timedelta
-
+import traceback
 
 ssmh = helper.ssm_helper()
 
-model_name = 'yolov5'
-inference_image = ssmh.get_parameter('/all_in_one_ai/config/meta/models/{0}/sagemaker/image'.format(model_name))
 model_table = ssmh.get_parameter('/all_in_one_ai/config/meta/model_table')
 role_arn = ssmh.get_parameter('/all_in_one_ai/config/meta/sagemaker_role_arn')
 
@@ -22,9 +20,11 @@ def lambda_handler(event, context):
     print(event)
     if event['httpMethod'] == 'POST':
         request = json.loads(event['body'])
+        print(request)
 
-        model_name = 'yolov5'
-        case_name = request['case_name']
+        industrial_model = request['industrial_model']
+        model_algorithm = request['model_algorithm']
+        inference_image = ssmh.get_parameter('/all_in_one_ai/config/meta/algorithms/{0}/sagemaker/image'.format(model_algorithm))
 
         payload = {}
         payload['model_name'] = request['model_name']
@@ -33,7 +33,8 @@ def lambda_handler(event, context):
             payload['model_package_arn'] = request['model_package_arn']
         else:
             payload['container_image'] = request['container_image'] if('container_image' in request and request['container_image'] != '') else inference_image
-            payload['model_data_url'] = request['model_data_url']
+            if('model_data_url' in request):
+                payload['model_data_url'] = request['model_data_url']
             payload['mode'] = request['mode']
         if('tags' in request):
             payload['tags'] = request['tags']
@@ -45,9 +46,18 @@ def lambda_handler(event, context):
         )
 
         if('FunctionError' not in response):
-            params = payload
-            params['case_name'] = case_name
-            ddbh.put_item(payload)
+            if(response['StatusCode'] == 200):
+                try:
+                    params = {}
+                    params['model_name'] = request['model_name']
+                    params['industrial_model'] = industrial_model
+                    ddbh.put_item(params)
+                except Exception as e:
+                    return {
+                        'statusCode': 400,
+                        'body': str(e)
+                    }
+                    
             return {
                 'statusCode': response['StatusCode'],
                 'body': response["Payload"].read().decode("utf-8")
@@ -59,69 +69,99 @@ def lambda_handler(event, context):
             }
     else:    
         model_name = None
-        if event['pathParameters'] != None:
-            if 'model_name' in event['pathParameters']:
+        if event['pathParameters'] != None and 'model_name' in event['pathParameters']:
                 model_name = event['pathParameters']['model_name']
     
-        case_name = None
-        if event['queryStringParameters'] != None:
-            if 'case' in event['queryStringParameters']:
-                case_name = event['queryStringParameters']['case']
+        industrial_model = None
+        if event['queryStringParameters'] != None and 'industrial_model' in event['queryStringParameters']:
+                industrial_model = event['queryStringParameters']['industrial_model']
         try:
             if model_name == None:
-                if case_name != None:
-                    items = ddbh.scan(FilterExpression=Attr('case_name').eq(case_name))
+                if industrial_model != None:
+                    items = ddbh.scan(FilterExpression=Key('industrial_model').eq(industrial_model))
                 else:
                     items = ddbh.scan()
-
-                list = []
-                for item in items:
-                    item = process_item(item)
-                    list.append(item)
-    
-                return {
-                    'statusCode': 200,
-                    'body': json.dumps(list, default = defaultencode)
-                }
             else:
-                params = {}
-                params['model_name'] = model_name
-                params['case_name'] = case_name
-                
-                item = ddbh.get_item(params)
-        
-                item = process_item(item)
-        
-                return {
-                   'statusCode': 200,
-                    'body': json.dumps(item, default = defaultencode)
-                }
-        except Exception as e:
-            print(e)
+                if industrial_model == None:
+                    items = ddbh.scan(FilterExpression=Key('model_name').eq(model_name))
+                else:
+                    params = {}
+                    params['model_name'] = model_name
+                    params['industrial_model'] = industrial_model
+                    item = ddbh.get_item(params)
+                    if item == None:
+                        items = []
+                    else:
+                        items = [ item ]
+                        
+            result = []
+            for item in items:
+                if (event['httpMethod'] == 'DELETE'):
+                    if(process_delete_item(item)):
+                        key = {
+                            'model_name': item['model_name'],
+                            'industrial_model': item['industrial_model']
+                        }
+                        ddbh.delete_item(key = key)
+                        result.append(item)
+                else:
+                    if(process_get_item(item)):
+                        result.append(item)
+
             return {
-                   'statusCode': 400,
-                    'body': str(e)
+                'statusCode': 200,
+                'body': json.dumps(result, default = defaultencode)
+            }
+        
+        except Exception as e:
+            traceback.print_exc()
+            return {
+                'statusCode': 400,
+                'body': str(e)
             }
             
-def process_item(item):
-    if(item == None):
-        raise Exception('Model item is None')
-    else:
-        payload = {'model_name': item['model_name']}
-        response = lambda_client.invoke(
-            FunctionName = 'all_in_one_ai_describe_model',
-            InvocationType = 'RequestResponse',
-            Payload=json.dumps({'body': payload})
-        )
+def process_get_item(item):
+    payload = {'model_name': item['model_name']}
+    response = lambda_client.invoke(
+        FunctionName = 'all_in_one_ai_describe_model',
+        InvocationType = 'RequestResponse',
+        Payload=json.dumps({'body': payload})
+    )
 
-        if('FunctionError' not in response):
-            payload = response["Payload"].read().decode("utf-8")
-            payload = json.loads(payload)
-            payload = json.loads(payload)
-            
-            return payload
+    if('FunctionError' not in response):
+        payload = response["Payload"].read().decode("utf-8")
+        payload = json.loads(payload)
+        if(payload['statusCode'] == 200):
+            payload = json.loads(payload['body'])
+            item.clear()
+            item.update(payload)
+            return True
         else:
-            raise Exception(response["FunctionError"])
+            print(payload['body'])
+            return False
+    else:
+        print(response['FunctionError'])
+        return False
+
+def process_delete_item(item):
+    payload = {'model_name': item['model_name']}
+    response = lambda_client.invoke(
+        FunctionName = 'all_in_one_ai_delete_model',
+        InvocationType = 'RequestResponse',
+        Payload=json.dumps({'body': payload})
+    )
+
+    if('FunctionError' not in response):
+        payload = response["Payload"].read().decode("utf-8")
+        payload = json.loads(payload)
+        if(payload['statusCode'] == 200):
+            return True
+        else:
+            print(payload['body'])
+            return False
+    else:
+        print(response['FunctionError'])
+        return False
 
 def defaultencode(o):
     if isinstance(o, Decimal):

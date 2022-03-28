@@ -68,10 +68,10 @@ def lambda_handler(event, context):
 
     if event['httpMethod'] == 'POST':
         request = json.loads(event['body'])
+        print(request)
 
-        case_name = request['case_name']
-        component_template_url = ssmh.get_parameter('/all_in_one_ai/config/meta/models/yolov5/greengrass/components/{0}/template'.format(component_name))
-        component_artifacts_url = ssmh.get_parameter('/all_in_one_ai/config/meta/models/yolov5/greengrass/components/{0}/artifacts'.format(component_name))
+        component_template_url = ssmh.get_parameter('/all_in_one_ai/config/meta/algorithms/yolov5/greengrass/components/{0}/template'.format(component_name))
+        component_artifacts_url = ssmh.get_parameter('/all_in_one_ai/config/meta/algorithms/yolov5/greengrass/components/{0}/artifacts'.format(component_name))
         payload = {}
         payload['model_data_url'] = request['model_data_url']
         payload['component_template_artifact_url'] = component_template_url + '/com.example.yolov5.zip' 
@@ -88,7 +88,7 @@ def lambda_handler(event, context):
         print(response)
         if('FunctionError' not in response):
             return {
-                'statusCode': 200,
+                'statusCode': response['StatusCode'],
                 'body': response["Payload"].read().decode("utf-8")
             }
         else:

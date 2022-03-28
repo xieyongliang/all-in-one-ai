@@ -6,13 +6,11 @@ from boto3.dynamodb.conditions import Key
 from botocore.exceptions import ClientError
 from decimal import Decimal
 from datetime import datetime, timedelta
-
-model_name = 'yolov5'
+import traceback
 
 ssmh = helper.ssm_helper()
 training_job_table = ssmh.get_parameter('/all_in_one_ai/config/meta/training_job_table')
 role_arn = ssmh.get_parameter('/all_in_one_ai/config/meta/sagemaker_role_arn')
-training_image = ssmh.get_parameter('/all_in_one_ai/config/meta/models/{0}/sagemaker/image'.format(model_name))
 
 ddbh = helper.ddb_helper({'table_name': training_job_table})
 
@@ -22,11 +20,12 @@ def lambda_handler(event, context):
     if event['httpMethod'] == 'POST':
         request = json.loads(event['body'])
 
-        model_name = 'yolov5'
-        case_name = request['case_name']
+        industrial_model = request['industrial_model']
+        model_algorithm = request['model_algorithm']
 
-        weights_s3uri = ssmh.get_parameter('/all_in_one_ai/config/meta/models/{0}/cases/{1}/training_job/weights_s3uri'.format(model_name, case_name))
-        cfg_s3uri = ssmh.get_parameter('/all_in_one_ai/config/meta/models/{0}/cases/{1}/training_job/cfg_s3uri'.format(model_name, case_name))
+        training_image = ssmh.get_parameter('/all_in_one_ai/config/meta/algorithms/{0}/sagemaker/image'.format(model_algorithm))
+        weights_s3uri = '{0}{1}/data/weights'.format(ssmh.get_parameter('/all_in_one_ai/config/meta/algorithms/{0}/industrialmodels'.format(model_algorithm)), industrial_model)
+        cfg_s3uri = '{0}{1}/data/cfg'.format(ssmh.get_parameter('/all_in_one_ai/config/meta/algorithms/{0}/industrialmodels'.format(model_algorithm)), industrial_model)
 
         payload = {}
         payload['training_job_name'] = request['training_job_name']
@@ -43,14 +42,15 @@ def lambda_handler(event, context):
         payload['tags'] = request['tags'] if('tags' in event) else []
 
         response = lambda_client.invoke(
-            FunctionName = 'all_in_one_ai_create_training_job_{0}'.format(model_name),
+            FunctionName = 'all_in_one_ai_create_training_job_{0}'.format(model_algorithm),
             InvocationType = 'RequestResponse',
             Payload=json.dumps({'body' : payload})
         )
 
         if('FunctionError' not in response):
-            params = payload
-            params['case_name'] = case_name
+            params = {}
+            params['industrial_model'] = industrial_model
+            params['training_job_name'] = request['training_job_name']
             ddbh.put_item(params)
 
             return {
@@ -64,68 +64,66 @@ def lambda_handler(event, context):
             }
     else:
         training_job_name = None
-        if event['pathParameters'] != None:
-            if 'training_job_name' in event['pathParameters']:
+        if event['pathParameters'] != None and 'training_job_name' in event['pathParameters']:
                 training_job_name = event['pathParameters']['training_job_name']
 
-        case_name = None
-        if event['queryStringParameters'] != None:
-            if 'case' in event['queryStringParameters']:
-                case_name = event['queryStringParameters']['case']
+        industrial_model = None
+        if event['queryStringParameters'] != None and 'industrial_model' in event['queryStringParameters']:
+                industrial_model = event['queryStringParameters']['industrial_model']
         try:
             if training_job_name == None:
-                if case_name != None:
-                    items = ddbh.scan(FilterExpression=Attr('case_name').eq(case_name))
+                if industrial_model != None:
+                    items = ddbh.scan(FilterExpression=Key('industrial_model').eq(industrial_model))
                 else:
                     items = ddbh.scan()
-                
-                list = []
-                for item in items:
-                    item = process_item(item)
-                    list.append(item)
-    
-                return {
-                    'statusCode': 200,
-                    'body': json.dumps(list, default = defaultencode)
-                }
             else:
-                params = {}
-                params['training_job_name'] = training_job_name
-                if case_name != None:
-                    params['case_name'] = case_name
-                item = ddbh.get_item(params)
-                item = process_item(item)
-    
-                return {
-                   'statusCode': 200,
-                    'body': json.dumps(item, default = defaultencode)
-                }
+                if industrial_model == None:
+                    items = ddbh.scan(FilterExpression=Key('training_job_name').eq(training_job_name))
+                else:
+                    params = {}
+                    params['training_job_name'] = training_job_name
+                    params['industrial_model'] = industrial_model
+                    item = ddbh.get_item(params)
+                    if item == None:
+                        items = []
+                    else:
+                        items = [ item ]
+                    
+            for item in items:
+                process_item(item)
+                if item == {}:
+                    items.remove(item)            
+            
+            return {
+                'statusCode': 200,
+                'body': json.dumps(items, default = defaultencode)
+            }
+
         except Exception as e:
-            print(e)
+            traceback.print_exc()
             return {
                    'statusCode': 400,
                     'body': str(e)
             }
             
 def process_item(item):
-    if(item == None):
-        raise Exception('Training job item is None')
-    else:
-        payload = {'training_job_name': item['training_job_name']}
-        response = lambda_client.invoke(
-            FunctionName = 'all_in_one_ai_describe_training_job',
-            InvocationType = 'RequestResponse',
-            Payload=json.dumps({'body' : payload})
-        )
+    payload = {'training_job_name': item['training_job_name']}
+    response = lambda_client.invoke(
+        FunctionName = 'all_in_one_ai_describe_training_job',
+        InvocationType = 'RequestResponse',
+        Payload=json.dumps({'body' : payload})
+    )
     
-        if('FunctionError' not in response):
-            payload = response["Payload"].read().decode("utf-8")
-            payload = json.loads(payload)
-            payload = json.loads(payload)
+    if('FunctionError' not in response):
+        payload = response["Payload"].read().decode("utf-8")
+        payload = json.loads(payload)
+        payload = json.loads(payload)
             
-            return payload
-        else:
-            raise Exception(response["FunctionError"])
+        item.clear()
+        item.update(payload)
+    else:
+        print(response['FunctionError'])
+        item.clear()
 
 def defaultencode(o):
     if isinstance(o, Decimal):

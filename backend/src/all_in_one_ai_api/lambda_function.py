@@ -22,7 +22,7 @@ def lambda_handler(event, context):
         print(request)
 
         api_name = request['api_name']
-        case_name = request['case_name']
+        industrial_model = request['industrial_model']
         
         payload = {}
         if('rest_api_id' in request):
@@ -33,8 +33,6 @@ def lambda_handler(event, context):
         payload['api_stage'] = request['api_stage']
         payload['api_method'] = request['api_method']
         payload['api_function'] = request['api_function']
-        if('api_env' in request):
-            payload['api_env'] = request['api_env']
 
         response = lambda_client.invoke(
             FunctionName = 'all_in_one_ai_create_api',
@@ -50,7 +48,7 @@ def lambda_handler(event, context):
             payload = json.loads(payload)
             
             params['api_name'] = api_name
-            params['case_name'] = case_name
+            params['industrial_model'] = industrial_model
             params['rest_api_name'] = payload['rest_api_name']
             params['api_url'] = payload['api_url']
             params['created_date'] = payload['created_date']
@@ -82,16 +80,16 @@ def lambda_handler(event, context):
                     }
         
         api_name = None
-        if event['pathParameters'] != None:
+        if event['pathParameters'] != None and 'api_name' in event['pathParameters']:
             api_name = event['pathParameters']['api_name']
 
-        case_name = None
-        if 'case' in event['queryStringParameters']:
-            case_name = event['queryStringParameters']['case']
+        industrial_model = None
+        if 'industrial_model' in event['queryStringParameters'] and industrial_model in event['queryStringParameters']:
+            industrial_model = event['queryStringParameters']['industrial_model']
                 
         if api_name == None:
-            if case_name != None:
-                items = ddbh.scan(FilterExpression=Attr('case_name').eq(case_name))
+            if industrial_model != None:
+                items = ddbh.scan(FilterExpression=Key('industrial_model').eq(industrial_model))
             else:
                 items = ddbh.scan()
 
@@ -100,16 +98,24 @@ def lambda_handler(event, context):
                 'body': json.dumps(items, default = defaultencode)
             }
         else:
-            params = {}
-            params['api_name'] = api_name
-            params['case_name'] = case_name
-            
-            item = ddbh.get_item(params)
-    
-            return {
-               'statusCode': 200,
-                'body': json.dumps(item, default = defaultencode)
-            }
+            if industrial_model == None:
+                items = ddbh.scan(FilterExpression=Key('api_name').eq(api_name))
+
+                return {
+                    'statusCode': 200,
+                    'body': json.dumps(items, default = defaultencode)
+                }
+            else:
+                params = {}
+                params['api_name'] = api_name
+                params['industrial_model'] = industrial_model
+                
+                item = ddbh.get_item(params)
+        
+                return {
+                   'statusCode': 200,
+                    'body': json.dumps(item, default = defaultencode)
+                }
 
 
 def defaultencode(o):

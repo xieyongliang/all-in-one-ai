@@ -12,7 +12,7 @@ lambda_client = boto3.client('lambda')
 def lambda_handler(event, context):
     print(event)
     transform_job_name = event['pathParameters']['transform_job_name']
-    case_name = event['queryStringParameters']['case']
+    industrial_model = event['queryStringParameters']['industrial_model']
     page_size = 20
     if('page_size' in event['queryStringParameters']):
         page_size = int(event['queryStringParameters']['page_size'])

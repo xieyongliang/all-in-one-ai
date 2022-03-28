@@ -10,15 +10,11 @@ from boto3.dynamodb.conditions import Key
 from decimal import Decimal
 from datetime import date, datetime, timedelta
 
-model_name = 'yolov5'
-
 ssmh = helper.ssm_helper()
 pipeline_table = ssmh.get_parameter('/all_in_one_ai/config/meta/pipeline_table')
 training_job_table = ssmh.get_parameter('/all_in_one_ai/config/meta/training_job_table')
 role_arn = ssmh.get_parameter('/all_in_one_ai/config/meta/sagemaker_role_arn')
 lambda_arn = ssmh.get_parameter('/all_in_one_ai/config/meta/pipeline/create_pipeline_helper_lambda_arn')
-training_image = ssmh.get_parameter('/all_in_one_ai/config/meta/models/{0}/sagemaker/image'.format(model_name))
-inference_image = ssmh.get_parameter('/all_in_one_ai/config/meta/models/{0}/sagemaker/image'.format(model_name))
 
 ddbh = helper.ddb_helper({'table_name': pipeline_table})
 
@@ -29,22 +25,26 @@ def lambda_handler(event, context):
     if event['httpMethod'] == 'POST':
         request = json.loads(event['body'])
         
-        case_name = request['case_name']
+        industrial_model = request['industrial_model']
+        model_algorithm = request['model_algorithm']
+        pipeline_name = request['pipeline_name']
         pipeline_type = request['pipeline_type']
         
-        if(pipeline_type == '0' or pipeline_type == '1'):
-            weights_s3uri = ssmh.get_parameter('/all_in_one_ai/config/meta/models/{0}/cases/{1}/training_job/weights_s3uri'.format(model_name, case_name))
-            cfg_s3uri = ssmh.get_parameter('/all_in_one_ai/config/meta/models/{0}/cases/{1}/training_job/cfg_s3uri'.format(model_name, case_name))
+        if(pipeline_type == '0' or pipeline_type == '1' or pipeline_type == '2' or pipeline_type == '3'):
+            training_image = ssmh.get_parameter('/all_in_one_ai/config/meta/algorithms/{0}/sagemaker/image'.format(model_algorithm))
+            inference_image = ssmh.get_parameter('/all_in_one_ai/config/meta/algorithms/{0}/sagemaker/image'.format(model_algorithm))
+
+            weights_s3uri = '{0}{1}/data/weights'.format(ssmh.get_parameter('/all_in_one_ai/config/meta/algorithms/{0}/industrialmodels'.format(model_algorithm)), industrial_model)
+            cfg_s3uri = '{0}{1}/data/cfg'.format(ssmh.get_parameter('/all_in_one_ai/config/meta/algorithms/{0}/industrialmodels'.format(model_algorithm)), industrial_model)
         
             request['role'] = role_arn
             request['lambda_arn'] = lambda_arn
             request['training_image'] = training_image
             request['inference_image'] = inference_image
             subfix = ''.join(random.sample(string.ascii_lowercase + string.digits, 6))
-            request['model_name'] = '{0}-{1}'.format(request['pipeline_name'], subfix) 
-            request['endpoint_name'] = '{0}-{1}'.format(request['pipeline_name'], subfix) 
-            request['endpoint_config_name'] = '{0}-{1}'.format(request['pipeline_name'], subfix)
-            request['api_name'] = '{0}-{1}'.format(request['pipeline_name'], subfix)
+            request['model_name'] = '{0}-{1}'.format(pipeline_name, subfix) 
+            request['endpoint_name'] = '{0}-{1}'.format(pipeline_name, subfix) 
+            request['endpoint_config_name'] = '{0}-{1}'.format(pipeline_name, subfix)
             request['model_package_group_inference_instances'] = request['endpoint_instance_type']
             if(pipeline_type == '0' or pipeline_type == '1'):
                 if(request['training_job_weights_s3uri'] == ''):
@@ -52,12 +52,6 @@ def lambda_handler(event, context):
                 if(request['training_job_cfg_s3uri'] == ''):
                     request['training_job_cfg_s3uri'] = cfg_s3uri
 
-            api_env = {
-                'Variables': {
-                    'endpoint_name_{0}'.format(model_name) : request['endpoint_name']
-                }
-            }
-            request['api_env'] = json.dumps(api_env)
             pipeline_id = uuid.uuid4().hex
             request['pipeline_id'] = pipeline_id
         
@@ -71,10 +65,16 @@ def lambda_handler(event, context):
                 pipeline_execution_arn = response['Payload'].read().decode('utf-8')
                 pipeline_execution_arn = pipeline_execution_arn[1 : len(pipeline_execution_arn) - 1]
                 
-                params = request
+                params = {}
                 params['pipeline_execution_arn'] = pipeline_execution_arn
-                params['case_name'] = case_name
+                params['industrial_model'] = industrial_model
+                params['model_algorithm'] = model_algorithm
+                params['pipeline_name'] = pipeline_name
+                params['pipeline_type'] = pipeline_type
                 params['pipeline_id'] = pipeline_id
+                params['model_name'] = request['model_name']
+                params['endpoint_config_name'] = request['endpoint_config_name']
+                params['endpoint_name'] = request['endpoint_name']
                 print(params)
                 
                 item = ddbh.put_item(params)
@@ -99,20 +99,20 @@ def lambda_handler(event, context):
             if('pipeline_execution_arn' in event['queryStringParameters']):
                 pipeline_execution_arn = event['queryStringParameters']['pipeline_execution_arn']
             
-        case_name = None
+        industrial_model = None
         if event['queryStringParameters'] != None:
-            if 'case' in event['queryStringParameters']:
-                case_name = event['queryStringParameters']['case']
+            if 'industrial_model' in event['queryStringParameters']:
+                industrial_model = event['queryStringParameters']['industrial_model']
         
         try:    
             if pipeline_execution_arn == None:
-                if case_name != None:
-                    items = ddbh.scan(FilterExpression=Attr('case_name').eq(case_name))
+                if industrial_model != None:
+                    items = ddbh.scan(FilterExpression=Attr('industrial_model').eq(industrial_model))
                 else:
                     items = ddbh.scan()
                 
                 for item in items:
-                    process_item(item, case_name)
+                    process_item(item, industrial_model)
 
                 return {
                     'statusCode': 200,
@@ -121,12 +121,12 @@ def lambda_handler(event, context):
             else:
                 params = {}
                 params['pipeline_execution_arn'] = pipeline_execution_arn
-                params['case_name'] = case_name
+                params['industrial_model'] = industrial_model
                 print(params)
                 
                 item = ddbh.get_item(params)
         
-                process_item(item, case_name)
+                process_item(item, industrial_model)
         
                 return {
                    'statusCode': 200,
@@ -140,7 +140,7 @@ def lambda_handler(event, context):
                 'body': str(e)
             }
 
-def process_item(item, case_name):
+def process_item(item, industrial_model):
     print(item)
     if(item == None):
         raise Exception('Endpoint item is None')

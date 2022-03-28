@@ -20,9 +20,15 @@ def lambda_handler(event, context):
     
     body = payload if(content_type == 'application/json') else base64.b64decode(payload)
 
+    print(endpoint_name)
+    print(content_type)
+    print(body)
+
     response = sagemaker_runtime_client.invoke_endpoint(
         EndpointName = endpoint_name,
         ContentType = content_type,
         Body = body)
 
-    return response['Body'].read()
+    body = response['Body'].read()
+    print(body)
+    return body

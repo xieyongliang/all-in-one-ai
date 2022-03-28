@@ -16,12 +16,12 @@ def lambda_handler(event, context):
     print(event)
     if event['httpMethod'] == 'POST':
         request = json.loads(event['body'])
+        print(request)
 
         component_name = 'com.example.yolov5'
 
-        case_name = request['case_name']
-        deployment_policies = ssmh.get_parameter('/all_in_one_ai/config/meta/models/yolov5/greengrass/components/{0}/deployment/deployment_policy'.format(component_name))
-        iot_job_configurations = ssmh.get_parameter('/all_in_one_ai/config/meta/models/yolov5/greengrass/components/{0}/deployment/iot_job_configurations'.format(component_name))
+        deployment_policies = ssmh.get_parameter('/all_in_one_ai/config/meta/algorithms/yolov5/greengrass/components/{0}/deployment/deployment_policy'.format(component_name))
+        iot_job_configurations = ssmh.get_parameter('/all_in_one_ai/config/meta/algorithms/yolov5/greengrass/components/{0}/deployment/iot_job_configurations'.format(component_name))
         
         payload = {}
         payload['deployment_name'] = ''
@@ -40,7 +40,7 @@ def lambda_handler(event, context):
 
         if('FunctionError' not in response):
             return {
-                'statusCode': 200,
+                'statusCode': response['StatusCode'],
                 'body': response["Payload"].read().decode("utf-8")
             }
         else:

@@ -139,12 +139,6 @@ def lambda_handler(event, context):
         SourceArn = source_arn
     )
 
-    if('api_env' in event['body']):
-        response = lambda_client.update_function_configuration(
-            FunctionName = api_function,
-            Environment = json.loads(event['body']['api_env'])
-        )
-
     print(response)
 
     response = api_client.create_deployment(

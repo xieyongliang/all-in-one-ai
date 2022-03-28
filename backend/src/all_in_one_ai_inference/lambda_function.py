@@ -3,11 +3,6 @@ import boto3
 import base64
 import os
 
-endpoints = {
-  "track": "all-in-one-ai-yolov5-track",
-  "mask": "all-in-one-ai-yolov5-mask"
-}
-
 lambda_client = boto3.client('lambda')
 
 def lambda_handler(event, context):
@@ -17,11 +12,6 @@ def lambda_handler(event, context):
         print(event['headers'])
         print(event['queryStringParameters'])
 
-        model_name = None
-        if event['queryStringParameters'] != None:
-            if 'model' in event['queryStringParameters']:
-                model_name = event['queryStringParameters']['model']
-        
         if('Content-Type' in event['headers']):
             content_type = event['headers']['Content-Type']
         elif('content-type' in event['headers']):
@@ -29,15 +19,7 @@ def lambda_handler(event, context):
         else:
             content_type = None
 
-        if(model_name not in endpoints or content_type == None):
-            return {
-                'statusCode': 400,
-                'body': "Invalid parameter"
-            }
-        if('endpoint_name' in event['body']):
-            endpoint_name = event['body']['endpoint_name']
-        else:
-            endpoint_name = endpoints[model_name]
+        endpoint_name = event['queryStringParameters']['endpoint_name']
 
         body = {
             "endpoint_name": endpoint_name,

@@ -8,15 +8,14 @@ sagemaker_client = boto3.client('sagemaker')
 
 ssmh = helper.ssm_helper()
 
-model_name = 'yolov5'
-inference_image = ssmh.get_parameter('/all_in_one_ai/config/meta/models/{0}/sagemaker/image'.format(model_name))
-
 def lambda_handler(event, context):
     try:
         if event['httpMethod'] == 'POST':
             request = json.loads(event['body'])
             
             model_package_group_name = event['pathParameters']['model_package_group_name']
+            algorithm = request['algorithm']
+            inference_image = ssmh.get_parameter('/all_in_one_ai/config/meta/algorithms/{0}/sagemaker/image'.format(algorithm))
             model_package_description = request['model_package_description'] if('model_package_description' in request) else ''
             model_approval_status = request['model_approval_status'] if('model_approval_status' in request) else 'Approved'
             container_image = request['container_image'] if('container_image' in request and request['container_image'] != '') else inference_image

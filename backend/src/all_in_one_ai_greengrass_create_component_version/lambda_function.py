@@ -2,6 +2,7 @@ import json
 import boto3
 import tarfile
 import zipfile
+import traceback
 from io import BytesIO
 from datetime import date, datetime, timedelta
 from decimal import Decimal
@@ -10,23 +11,33 @@ s3_client = boto3.client('s3')
 greengrassv2_client = boto3.client('greengrassv2')
 
 def lambda_handler(event, context):
-    payload = event['body']
-    print(payload)
-    model_data_url = payload['model_data_url']
-    component_template_artifact_url = payload['component_template_artifact_url']
-    component_template_receipt_url = payload['component_template_receipt_url']
-    component_data_url = payload['component_data_url']
-    component_version = payload['component_version']
-    
-    generate_component_artifact(model_data_url, component_template_artifact_url, component_data_url)
-    receipt = generate_component_receipt(component_template_receipt_url, component_version, component_data_url)
-    
-    response = greengrassv2_client.create_component_version(
-        inlineRecipe=bytes(json.dumps(receipt), 'utf-8')
-    )
-    print(response)
-    return response['arn']
-
+    try:
+        payload = event['body']
+        print(payload)
+        model_data_url = payload['model_data_url']
+        component_template_artifact_url = payload['component_template_artifact_url']
+        component_template_receipt_url = payload['component_template_receipt_url']
+        component_data_url = payload['component_data_url']
+        component_version = payload['component_version']
+        
+        generate_component_artifact(model_data_url, component_template_artifact_url, component_data_url)
+        receipt = generate_component_receipt(component_template_receipt_url, component_version, component_data_url)
+        
+        response = greengrassv2_client.create_component_version(
+            inlineRecipe=bytes(json.dumps(receipt), 'utf-8')
+        )
+        print(response)
+        return {
+            'statusCode': 200,
+            'body': response['arn']
+        }
+    except Exception as e:
+        traceback.print_exc()
+        return {
+            'statusCode': 400,
+            'body': str(e)
+        }
+        
 def generate_component_receipt(component_template_receipt_url, component_version, component_data_url):
     first = component_template_receipt_url.find('/', 5)
     last = component_template_receipt_url.rfind('/') 

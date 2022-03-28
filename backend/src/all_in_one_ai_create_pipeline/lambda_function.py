@@ -48,6 +48,7 @@ def lambda_handler(event, context):
         training_job_cfg_s3uri = event['body']['training_job_cfg_s3uri']
         training_job_output_s3uri = event['body']['training_job_output_s3uri']
         greengrass_component_name = event['body']['greengrass_component_name']
+        model_package_group_name = event['body']['model_package_group_name']
         greengrass_component_version = event['body']['greengrass_component_version']
         greengrass_deployment_name = event['body']['greengrass_deployment_name']
         greengrass_deployment_components = event['body']['greengrass_deployment_components']
@@ -62,19 +63,21 @@ def lambda_handler(event, context):
         training_job_weights_s3uri = event['body']['training_job_weights_s3uri']
         training_job_cfg_s3uri = event['body']['training_job_cfg_s3uri']
         training_job_output_s3uri = event['body']['training_job_output_s3uri']
+        model_package_group_name = event['body']['model_package_group_name']
     elif(pipeline_type == '2'):
         model_package_arn = event['body']['model_package_arn']
         greengrass_component_name = event['body']['greengrass_component_name']
         greengrass_component_version = event['body']['greengrass_component_version']
+        model_data_url = event['body']['model_data_url']
         greengrass_deployment_name = event['body']['greengrass_deployment_name']
         greengrass_deployment_components = event['body']['greengrass_deployment_components']
         greengrass_deployment_target_arn = event['body']['greengrass_deployment_target_arn']
     else:
         model_package_arn = event['body']['model_package_arn']
 
-    case_name = event['body']['case_name']
+    industrial_model = event['body']['industrial_model']
+    model_algorithm = event['body']['model_algorithm']
     inference_image = event['body']['inference_image']
-    model_package_group_name = event['body']['model_package_group_name']
     model_package_group_inference_instances = event['body']['model_package_group_inference_instances']
     model_name = event['body']['model_name']
     endpoint_config_name = event['body']['endpoint_config_name']
@@ -82,14 +85,6 @@ def lambda_handler(event, context):
     endpoint_instance_type = event['body']['endpoint_instance_type']
     endpoint_initial_instance_count = event['body']['endpoint_initial_instance_count']
     endpoint_initial_variant_weight = event['body']['endpoint_initial_variant_weight']
-    api_name = event['body']['api_name']
-    rest_api_name = event['body']['rest_api_name']
-    rest_api_id = event['body']['rest_api_id']
-    api_path = event['body']['api_path']
-    api_stage = event['body']['api_stage']
-    api_function = event['body']['api_function']
-    api_method = event['body']['api_method']
-    api_env = event['body']['api_env']
 
     if(pipeline_type == '0'):
         param_training_image = ParameterString(name = 'training_image')
@@ -101,6 +96,7 @@ def lambda_handler(event, context):
         param_training_job_weights_s3uri = ParameterString(name = 'training_job_weights_s3uri')
         param_training_job_cfg_s3uri = ParameterString(name = 'training_job_cfg_s3uri')
         param_training_job_output_s3uri = ParameterString(name = 'training_job_output_s3uri')
+        param_model_package_group_name = ParameterString(name = 'model_package_group_name')
         param_greengrass_component_name = ParameterString(name = 'greengrass_component_name')
         param_greengrass_component_version = ParameterString(name = 'greengrass_component_version')
         param_greengrass_deployment_name = ParameterString(name = 'greengrass_deployment_name')
@@ -116,6 +112,7 @@ def lambda_handler(event, context):
         param_training_job_weights_s3uri = ParameterString(name = 'training_job_weights_s3uri')
         param_training_job_cfg_s3uri = ParameterString(name = 'training_job_cfg_s3uri')
         param_training_job_output_s3uri = ParameterString(name = 'training_job_output_s3uri')
+        param_model_package_group_name = ParameterString(name = 'model_package_group_name')
     elif(pipeline_type == '2'):
         param_model_package_arn = ParameterString(name = 'model_package_arn')
         param_greengrass_component_name = ParameterString(name = 'greengrass_component_name')
@@ -123,12 +120,13 @@ def lambda_handler(event, context):
         param_greengrass_deployment_name = ParameterString(name = 'greengrass_deployment_name')
         param_greengrass_deployment_components = ParameterString(name = 'greengrass_deployment_components')
         param_greengrass_deployment_target_arn = ParameterString(name = 'greengrass_deployment_target_arn')
+        param_model_data_url = ParameterString(name = 'model_data_url')
     else:
         param_model_package_arn = ParameterString(name = 'model_package_arn')
         
-    param_case_name = ParameterString(name = 'case_name')
+    param_industrial_model = ParameterString(name = 'industrial_model')
+    param_model_algorithm = ParameterString(name = 'model_algorithm')
     param_inference_image = ParameterString(name = 'inference_image')
-    param_model_package_group_name = ParameterString(name = 'model_package_group_name')
     param_model_package_group_inference_instances = ParameterString(name = 'model_package_group_inference_instances')
     param_model_name = ParameterString(name = 'model_name')
     param_endpoint_config_name = ParameterString(name = 'endpoint_config_name')
@@ -136,17 +134,7 @@ def lambda_handler(event, context):
     param_endpoint_instance_type = ParameterString(name = 'endpoint_instance_type')
     param_endpoint_initial_instance_count = ParameterInteger(name = 'endpoint_initial_instance_count')
     param_endpoint_initial_variant_weight = ParameterInteger(name = 'endpoint_initial_variant_weight')
-    param_api_name = ParameterString(name = 'api_name')
-    if(rest_api_name != ''):    
-        param_rest_api_name = ParameterString(name = 'rest_api_name')
-    if(rest_api_id != ''):    
-        param_rest_api_id = ParameterString(name = 'rest_api_id')
-    param_api_path = ParameterString(name = 'api_path')
-    param_api_stage = ParameterString(name = 'api_stage')
-    param_api_function = ParameterString(name = 'api_function')
-    param_api_method = ParameterString(name = 'api_method')
-    param_api_env = ParameterString(name = 'api_env')
-    
+
     if(pipeline_type == '0' or pipeline_type =='1'):
         estimator = Estimator(
             image_uri = param_training_image,
@@ -171,16 +159,10 @@ def lambda_handler(event, context):
             inputs = inputs
         )
     
-        model = Model(
-            role = role,
-            image_uri = param_inference_image,
-            model_data = step_train_model.properties.ModelArtifacts.S3ModelArtifacts,
-            sagemaker_session = sagemaker_session
-        )
-
         step_register_model = RegisterModel(
             name = "Yolov5RegisterModel",
-            model = model,
+            estimator=estimator,
+            model_data=step_train_model.properties.ModelArtifacts.S3ModelArtifacts,
             content_types = ['image/png', 'image/jpg', 'image/jpeg'],
             response_types = ['application/json'],
             inference_instances = param_model_package_group_inference_instances.split(','),
@@ -189,20 +171,17 @@ def lambda_handler(event, context):
             approval_status = "Approved",
         )
     
-    output_param_1 = LambdaOutput(output_name="statusCode", output_type=LambdaOutputTypeEnum.Integer)
-    output_param_2 = LambdaOutput(output_name="body", output_type=LambdaOutputTypeEnum.String)
-
     if(pipeline_type == '0'):
         inputs = {
             'pipeline_name' : pipeline_name,
             'pipeline_type' : pipeline_type,
             'pipeline_id': pipeline_id,
-            'case_name' : param_case_name,
+            'industrial_model' : param_industrial_model,
+            'model_algorithm': param_model_algorithm,
             'model_name' : param_model_name,
             'endpoint_config_name' : param_endpoint_config_name,
             'endpoint_name' : param_endpoint_name,
-            'api_name': param_api_name,            
-            'case_name': param_case_name,
+            'industrial_model': param_industrial_model,
             'role_arn': role,
             'model_name': param_model_name,
             'model_package_arn': step_register_model.steps[0].properties.ModelPackageArn,
@@ -211,12 +190,6 @@ def lambda_handler(event, context):
             'instance_type': param_endpoint_instance_type,
             'initial_instance_count': param_endpoint_initial_instance_count,
             'initial_variant_weight': param_endpoint_initial_variant_weight,
-            'api_name': param_api_name,
-            'api_path': param_api_path,
-            'api_stage': param_api_stage,
-            'api_function': param_api_function,
-            'api_method': param_api_method,
-            'api_env': param_api_env,
             'component_name' : param_greengrass_component_name,
             'component_version' : param_greengrass_component_version,
             'model_data_url' : step_train_model.properties.ModelArtifacts.S3ModelArtifacts,
@@ -234,12 +207,12 @@ def lambda_handler(event, context):
             'pipeline_name' : pipeline_name,
             'pipeline_type' : pipeline_type,
             'pipeline_id': pipeline_id,
-            'case_name' : param_case_name,
+            'industrial_model' : param_industrial_model,
+            'model_algorithm': param_model_algorithm,
             'model_name' : param_model_name,
             'endpoint_config_name' : param_endpoint_config_name,
             'endpoint_name' : param_endpoint_name,
-            'api_name': param_api_name,            
-            'case_name': param_case_name,
+            'industrial_model': param_industrial_model,
             'role_arn': role,
             'model_name': param_model_name,
             'model_package_arn': step_register_model.steps[0].properties.ModelPackageArn,
@@ -247,25 +220,19 @@ def lambda_handler(event, context):
             'endpoint_name': param_endpoint_name,
             'instance_type': param_endpoint_instance_type,
             'initial_instance_count': param_endpoint_initial_instance_count,
-            'initial_variant_weight': param_endpoint_initial_variant_weight,
-            'api_name': param_api_name,
-            'api_path': param_api_path,
-            'api_stage': param_api_stage,
-            'api_function': param_api_function,
-            'api_method': param_api_method,
-            'api_env': param_api_env
+            'initial_variant_weight': param_endpoint_initial_variant_weight
         }
     elif(pipeline_type == '2'):
         inputs = {
             'pipeline_name' : pipeline_name,
             'pipeline_type' : pipeline_type,
             'pipeline_id': pipeline_id,
-            'case_name' : param_case_name,
+            'industrial_model' : param_industrial_model,
+            'model_algorithm': param_model_algorithm,
             'model_name' : param_model_name,
             'endpoint_config_name' : param_endpoint_config_name,
             'endpoint_name' : param_endpoint_name,
-            'api_name': param_api_name,
-            'case_name': param_case_name,
+            'industrial_model': param_industrial_model,
             'role_arn': role,
             'model_name': param_model_name,
             'model_package_arn': param_model_package_arn,
@@ -273,15 +240,9 @@ def lambda_handler(event, context):
             'instance_type': param_endpoint_instance_type,
             'initial_instance_count': param_endpoint_initial_instance_count,
             'initial_variant_weight': param_endpoint_initial_variant_weight,
-            'api_name': param_api_name,
-            'api_path': param_api_path,
-            'api_stage': param_api_stage,
-            'api_function': param_api_function,
-            'api_method': param_api_method,
-            'api_env': param_api_env,
             'component_name' : param_greengrass_component_name,
             'component_version' : param_greengrass_component_version,
-            'model_data_url' : step_train_model.properties.ModelArtifacts.S3ModelArtifacts,
+            'model_data_url' : param_model_data_url,
             'components' : param_greengrass_deployment_components,
             'target_arn' : param_greengrass_deployment_target_arn
         }
@@ -296,25 +257,19 @@ def lambda_handler(event, context):
             'pipeline_name' : pipeline_name,
             'pipeline_type' : pipeline_type,
             'pipeline_id': pipeline_id,
-            'case_name' : param_case_name,
+            'industrial_model' : param_industrial_model,
+            'model_algorithm': param_model_algorithm,
             'model_name' : param_model_name,
             'endpoint_config_name' : param_endpoint_config_name,
             'endpoint_name' : param_endpoint_name,
-            'api_name': param_api_name,            
-            'case_name': param_case_name,
+            'industrial_model': param_industrial_model,
             'role_arn': role,
             'model_name': param_model_name,
             'model_package_arn': param_model_package_arn,
             'endpoint_name': param_endpoint_name,
             'instance_type': param_endpoint_instance_type,
             'initial_instance_count': param_endpoint_initial_instance_count,
-            'initial_variant_weight': param_endpoint_initial_variant_weight,
-            'api_name': param_api_name,
-            'api_path': param_api_path,
-            'api_stage': param_api_stage,
-            'api_function': param_api_function,
-            'api_method': param_api_method,
-            'api_env': param_api_env
+            'initial_variant_weight': param_endpoint_initial_variant_weight
         }
     else:
         return {
@@ -322,18 +277,9 @@ def lambda_handler(event, context):
             'body': 'Unsupported pipeline_type'
         }
     
-    if(rest_api_name != ''):
-        inputs.update(
-            {
-                'rest_api_name' : param_rest_api_name
-            }
-        )
-    if(rest_api_id != ''):
-        inputs.update(
-            {
-                'rest_api_id' : param_rest_api_id
-            }
-        )
+
+    output_param_1 = LambdaOutput(output_name="statusCode", output_type=LambdaOutputTypeEnum.Integer)
+    output_param_2 = LambdaOutput(output_name="body", output_type=LambdaOutputTypeEnum.String)
     
     step_pipeline_helper_lambda = LambdaStep(
         name='Yolov5PipelineHelperLambda',
@@ -345,14 +291,14 @@ def lambda_handler(event, context):
         outputs = [output_param_1, output_param_2]
     )
     
-    cond_eq_pipeline_helper_lambda = ConditionEquals(
-        left = output_param_1,
-        right = 200
-    )
-
     step_fail_pipeline_helper_lambda = FailStep(
         name="Yolov5PipelineHelperLambdaFail",
-        error_message = output_param_2 
+        error_message = step_pipeline_helper_lambda.properties.Outputs['body'] 
+    )
+    
+    cond_eq_pipeline_helper_lambda = ConditionEquals(
+        left = step_pipeline_helper_lambda.properties.Outputs['statusCode'],
+        right = 200
     )
     
     step_cond_pipeline_helper_lambda = ConditionStep(
@@ -363,22 +309,16 @@ def lambda_handler(event, context):
     )
 
     parameters = [
-        param_case_name,
+        param_industrial_model,
+        param_model_algorithm,
         param_inference_image,
-        param_model_package_group_name,
         param_model_package_group_inference_instances,
         param_model_name,
         param_endpoint_config_name,
         param_endpoint_name,
         param_endpoint_instance_type,
         param_endpoint_initial_instance_count,
-        param_endpoint_initial_variant_weight,
-        param_api_name,
-        param_api_path,
-        param_api_stage,
-        param_api_function,
-        param_api_method,
-        param_api_env
+        param_endpoint_initial_variant_weight
     ]
 
     if(pipeline_type == '0'):
@@ -392,6 +332,7 @@ def lambda_handler(event, context):
             param_training_job_weights_s3uri,
             param_training_job_cfg_s3uri,
             param_training_job_output_s3uri,
+            param_model_package_group_name,
             param_greengrass_component_name,
             param_greengrass_component_version,
             param_greengrass_deployment_components,
@@ -411,13 +352,15 @@ def lambda_handler(event, context):
             param_training_job_labels_s3uri,
             param_training_job_weights_s3uri,
             param_training_job_cfg_s3uri,
-            param_training_job_output_s3uri
+            param_training_job_output_s3uri,
+            param_model_package_group_name
         ]
     elif(pipeline_type == '2'):
         parameters += [
             param_model_package_arn,
             param_greengrass_component_name,
             param_greengrass_component_version,
+            param_model_data_url,
             param_greengrass_deployment_components,
             param_greengrass_deployment_target_arn
         ]
@@ -431,11 +374,6 @@ def lambda_handler(event, context):
             param_model_package_arn
         ]
     
-    if(rest_api_name != ''):
-        parameters.append(param_rest_api_name)
-    if(rest_api_id != ''):
-        parameters.append(param_rest_api_id)
-
     if(pipeline_type == '0' or pipeline_type == '1'):
         pipeline = Pipeline(
             name = pipeline_name,
@@ -452,29 +390,17 @@ def lambda_handler(event, context):
     print(pipeline.definition())
     pipeline.upsert(role_arn=role)
 
-    api_env = json.dumps({
-        'Variables': {
-            'endpoint_name_{0}'.format(case_name): endpoint_name
-        }
-    })
-
     parameters = {
-        'case_name': case_name,
+        'industrial_model': industrial_model,
+        'model_algorithm': model_algorithm,
         'inference_image': inference_image,
-        'model_package_group_name': model_package_group_name,
         'model_package_group_inference_instances': model_package_group_inference_instances,
         'model_name': model_name,
         'endpoint_config_name': endpoint_config_name,
         'endpoint_name': endpoint_name,
         'endpoint_instance_type': endpoint_instance_type,
         'endpoint_initial_instance_count': endpoint_initial_instance_count,
-        'endpoint_initial_variant_weight': endpoint_initial_variant_weight,
-        'api_name': api_name,
-        'api_path': api_path,
-        'api_stage': api_stage,
-        'api_function': api_function,
-        'api_method': api_method,
-        'api_env': api_env,
+        'endpoint_initial_variant_weight': endpoint_initial_variant_weight
     }
 
     if(pipeline_type == '0'):
@@ -489,6 +415,7 @@ def lambda_handler(event, context):
                 'training_job_weights_s3uri': training_job_weights_s3uri,
                 'training_job_cfg_s3uri': training_job_cfg_s3uri,
                 'training_job_output_s3uri': training_job_output_s3uri,
+                'model_package_group_name': model_package_group_name,
                 'greengrass_component_name': greengrass_component_name,
                 'greengrass_component_version': greengrass_component_version,
                 'greengrass_deployment_components': greengrass_deployment_components,
@@ -514,6 +441,7 @@ def lambda_handler(event, context):
                 'training_job_weights_s3uri': training_job_weights_s3uri,
                 'training_job_cfg_s3uri': training_job_cfg_s3uri,
                 'training_job_output_s3uri': training_job_output_s3uri,
+                'model_package_group_name': model_package_group_name
             }
         )
     elif(pipeline_type == '2'):
@@ -522,6 +450,7 @@ def lambda_handler(event, context):
                 'model_package_arn': model_package_arn,
                 'greengrass_component_name': greengrass_component_name,
                 'greengrass_component_version': greengrass_component_version,
+                'model_data_url': model_data_url,
                 'greengrass_deployment_components': greengrass_deployment_components,
                 'greengrass_deployment_target_arn': greengrass_deployment_target_arn
             }
@@ -539,11 +468,6 @@ def lambda_handler(event, context):
                 'model_package_arn': model_package_arn
             }
         )
-    
-    if(rest_api_name != ''):
-        parameters['rest_api_name'] =  rest_api_name
-    if(rest_api_id != ''):
-        parameters['rest_api_id'] =  rest_api_id
     
     print(parameters)
     response = pipeline.start(parameters =  parameters)
