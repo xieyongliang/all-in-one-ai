@@ -1,0 +1,4308 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Template for Lambda and API gateway resources. (Global)
+
+Parameters:
+  S3Bucket:
+    Description: S3 Bucket of assets
+    Type: String
+
+  S3Key:
+    Description: S3 Bucket of assets
+    Type: String
+
+  VPC:
+    Type: AWS::EC2::VPC::Id
+    Description: VPC ID
+  
+  PrivateSubnet1:
+    Type: AWS::EC2::Subnet::Id
+    Description: VPC Private Subnet1 ID
+  
+  PrivateSubnet2:
+    Type: AWS::EC2::Subnet::Id
+    Description: VPC Private Subnet2 ID
+  
+  PublicSubnet1:
+    Type: AWS::EC2::Subnet::Id
+    Description: VPC Public Subnet1 ID
+  
+  PublicSubnet2:
+    Type: AWS::EC2::Subnet::Id
+    Description: VPC Public Subnet1 ID
+    
+  OpensearchEndpoint:
+    Type: String
+    Description: OpensearchEndpoint
+  
+  EfsAccessPointArn:
+    Type: String
+    Description: Arn of Efs access point
+
+  SecurityGroup:
+    Type: AWS::EC2::SecurityGroup::Id
+    Description: VPC SecurityGroup
+
+  ChinaRegion: 
+    Description: Check if the stack to be in CN Region
+    Type: String
+    Default: false
+    AllowedValues: [ true, false ]
+
+Conditions:
+  Globally: !Equals [ false, !Ref ChinaRegion ]
+
+Resources:
+  ApiGatewayRestApi:
+    Type: AWS::ApiGateway::RestApi
+    Properties:
+      EndpointConfiguration:
+        Types:
+          - REGIONAL
+      Parameters:
+        endpointConfigurationTypes: REGIONAL
+      Name: all-in-one-ai-api  
+
+  ApiGatewayResourceApi:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !GetAtt ApiGatewayRestApi.RootResourceId
+      PathPart: 'api'
+      RestApiId: !Ref ApiGatewayRestApi
+
+  ApiGatewayMethodApiGet:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      ApiKeyRequired: false
+      AuthorizationType: NONE
+      HttpMethod: GET
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: GET
+        Uri: 
+          !If
+          - Globally
+          - !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIApiFunction.Arn}/invocations'
+          - !Sub 'arn:aws-cn:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIApiFunction.Arn}/invocations'
+      ResourceId: !Ref ApiGatewayResourceApi
+      RestApiId: !Ref ApiGatewayRestApi   
+
+  ApiGatewayMethodApiPost:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      ApiKeyRequired: false
+      AuthorizationType: NONE
+      HttpMethod: POST
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: 
+          !If
+          - Globally
+          - !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIApiFunction.Arn}/invocations'
+          - !Sub 'arn:aws-cn:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIApiFunction.Arn}/invocations'
+      ResourceId: !Ref ApiGatewayResourceApi
+      RestApiId: !Ref ApiGatewayRestApi   
+
+  ApiGatewayResourceApiByName:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !GetAtt ApiGatewayResourceApi.ResourceId
+      PathPart: '{api_name}'
+      RestApiId: !Ref ApiGatewayRestApi
+
+  ApiGatewayMethodApiByNameGet:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      ApiKeyRequired: false
+      AuthorizationType: NONE
+      HttpMethod: GET
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: GET
+        Uri: 
+          !If
+          - Globally
+          - !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIApiByNameFunction.Arn}/invocations'
+          - !Sub 'arn:aws-cn:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIApiByNameFunction.Arn}/invocations'
+      ResourceId: !Ref ApiGatewayResourceApiByName
+      RestApiId: !Ref ApiGatewayRestApi   
+  
+  AllInOneAIApiFunctionRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'sts:AssumeRole'
+            Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+      ManagedPolicyArns:
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
+          - 'arn:aws-cn:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess'
+          - 'arn:aws-cn:iam::aws:policy/AmazonDynamoDBFullAccess'
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/AmazonSSMFullAccess'
+          - 'arn:aws-cn:iam::aws:policy/AmazonSSMFullAccess'
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/AmazonS3FullAccess'
+          - 'arn:aws-cn:iam::aws:policy/AmazonS3FullAccess'
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/AmazonAPIGatewayAdministrator'
+          - 'arn:aws-cn:iam::aws:policy/AmazonAPIGatewayAdministrator'
+  
+  AllInOneAIApiFunctionAdditionalPermission:
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName: all_in_one_ai_api
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'logs:*'
+              - 'lambda:*'
+              - 'cloudwatch:*'
+            Resource: '*'
+            Effect: Allow
+      Roles:
+        - !Ref AllInOneAIApiFunctionRole
+
+  AllInOneAIApiFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket: !Ref S3Bucket
+        S3Key: !Sub ${S3Key}/code/all_in_one_ai_api.zip
+      FunctionName: all_in_one_ai_api
+      Tags:
+        - Value: Name
+          Key: 'AllInOneAIApi'
+      Handler: lambda_function.lambda_handler
+      Role: !GetAtt AllInOneAIApiFunctionRole.Arn
+      Timeout: 900
+      Runtime: python3.9
+      VpcConfig:
+        SubnetIds: 
+          - !Ref PrivateSubnet1
+          - !Ref PrivateSubnet2
+        SecurityGroupIds: 
+          - !Ref SecurityGroup
+      Layers:
+        - !Ref HelperLayer
+
+  AllInOneAIApiFunctionCatchAllPermissionProd1:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: 'lambda:InvokeFunction'
+      Principal: apigateway.amazonaws.com      
+      FunctionName: !Ref AllInOneAIApiFunction
+      SourceArn: 
+        !If
+        - Globally
+        - !Sub
+          - >-
+            arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/GET/api
+          - __Stage__: '*'
+            __ApiId__: !Ref ApiGatewayRestApi
+        - !Sub
+          - >-
+            arn:aws-cn:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/GET/api
+          - __Stage__: '*'
+            __ApiId__: !Ref ApiGatewayRestApi
+        
+  AllInOneAIApiFunctionCatchAllPermissionProd2:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: 'lambda:InvokeFunction'
+      Principal: apigateway.amazonaws.com      
+      FunctionName: !Ref AllInOneAIApiFunction
+      SourceArn: 
+        !If
+        - Globally
+        - !Sub
+          - >-
+            arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/GET/api/*
+          - __Stage__: '*'
+            __ApiId__: !Ref ApiGatewayRestApi
+        - !Sub
+          - >-
+            arn:aws-cn:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/GET/api/*
+          - __Stage__: '*'
+            __ApiId__: !Ref ApiGatewayRestApi
+
+  AllInOneAIApiFunctionCatchAllPermissionProd3:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: 'lambda:InvokeFunction'
+      Principal: apigateway.amazonaws.com      
+      FunctionName: !Ref AllInOneAIApiFunction
+      SourceArn: 
+        !If
+        - Globally
+        - !Sub
+          - >-
+            arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/POST/api
+          - __Stage__: '*'
+            __ApiId__: !Ref ApiGatewayRestApi
+        - !Sub
+          - >-
+            arn:aws-cn:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/POST/api
+          - __Stage__: '*'
+            __ApiId__: !Ref ApiGatewayRestApi
+
+  ApiGatewayResourceEndpoint:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !GetAtt ApiGatewayRestApi.RootResourceId
+      PathPart: 'api'
+      RestApiId: !Ref ApiGatewayRestApi
+
+  ApiGatewayMethodEndpointGet:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      ApiKeyRequired: false
+      AuthorizationType: NONE
+      HttpMethod: GET
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: GET
+        Uri: 
+          !If
+          - Globally
+          - !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIEndpointFunction.Arn}/invocations'
+          - !Sub 'arn:aws-cn:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIEndpointFunction.Arn}/invocations'
+      ResourceId: !Ref ApiGatewayResourceEndpoint
+      RestApiId: !Ref ApiGatewayRestApi   
+
+  ApiGatewayMethodEndpointPost:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      ApiKeyRequired: false
+      AuthorizationType: NONE
+      HttpMethod: POST
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: 
+          !If
+          - Globally
+          - !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIEndpointFunction.Arn}/invocations'
+          - !Sub 'arn:aws-cn:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIApiFunction.Arn}/invocations'
+      ResourceId: !Ref ApiGatewayResourceEndpoint
+      RestApiId: !Ref ApiGatewayRestApi   
+
+  ApiGatewayResourceEndpointByName:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !GetAtt ApiGatewayResourceEndpoint.ResourceId
+      PathPart: '{endpoint_name}'
+      RestApiId: !Ref ApiGatewayRestApi
+
+  ApiGatewayMethodEndpointByNameGet:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      ApiKeyRequired: false
+      AuthorizationType: NONE
+      HttpMethod: GET
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: GET
+        Uri: 
+          !If
+          - Globally
+          - !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIEndpointFunction.Arn}/invocations'
+          - !Sub 'arn:aws-cn:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIEndpointFunction.Arn}/invocations'
+      ResourceId: !Ref ApiGatewayResourceEndpointByName
+      RestApiId: !Ref ApiGatewayRestApi   
+
+  ApiGatewayMethodEndpointByNameDelete:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      ApiKeyRequired: false
+      AuthorizationType: NONE
+      HttpMethod: DELETE
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: DELETE
+        Uri: 
+          !If
+          - Globally
+          - !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIEndpointFunction.Arn}/invocations'
+          - !Sub 'arn:aws-cn:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIEndpointFunction.Arn}/invocations'
+      ResourceId: !Ref ApiGatewayResourceEndpointByName
+      RestApiId: !Ref ApiGatewayRestApi 
+  
+  AllInOneAIEndpointFunctionRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'sts:AssumeRole'
+            Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+      ManagedPolicyArns:
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
+          - 'arn:aws-cn:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess'
+          - 'arn:aws-cn:iam::aws:policy/AmazonDynamoDBFullAccess'
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/AmazonSSMFullAccess'
+          - 'arn:aws-cn:iam::aws:policy/AmazonSSMFullAccess'
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/service-role/AWSLambdaRole'
+          - 'arn:aws-cn:iam::aws:policy/service-role/AWSLambdaRole'
+  
+  AllInOneAIEndpointFunctionAdditionalPermission:
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName: all_in_one_ai_endpoint
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'logs:*'
+              - 'lambda:*'
+              - 'cloudwatch:*'
+            Resource: '*'
+            Effect: Allow
+      Roles:
+        - !Ref AllInOneAIEndpointFunctionRole
+
+  AllInOneAIEndpointFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket: !Ref S3Bucket
+        S3Key: !Sub ${S3Key}/code/all_in_one_ai_endpoint.zip
+      FunctionName: all_in_one_ai_endpoint
+      Tags:
+        - Value: Name
+          Key: 'AllInOneAIApi'
+      Handler: lambda_function.lambda_handler
+      Role: !GetAtt AllInOneAIEndpointFunctionRole.Arn
+      Timeout: 900
+      Runtime: python3.9
+      VpcConfig:
+        SubnetIds: 
+          - !Ref PrivateSubnet1
+          - !Ref PrivateSubnet2
+        SecurityGroupIds: 
+          - !Ref SecurityGroup
+      Layers:
+        - !Ref HelperLayer
+
+  AllInOneAIEndpointFunctionCatchAllPermissionProd1:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: 'lambda:InvokeFunction'
+      Principal: apigateway.amazonaws.com      
+      FunctionName: !Ref AllInOneAIEndpointFunction
+      SourceArn: 
+        !If
+        - Globally
+        - !Sub
+          - >-
+            arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/GET/endpoint
+          - __Stage__: '*'
+            __ApiId__: !Ref ApiGatewayRestApi
+        - !Sub
+          - >-
+            arn:aws-cn:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/GET/endpoint
+          - __Stage__: '*'
+            __ApiId__: !Ref ApiGatewayRestApi
+        
+  AllInOneAIEndpointFunctionCatchAllPermissionProd2:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: 'lambda:InvokeFunction'
+      Principal: apigateway.amazonaws.com      
+      FunctionName: !Ref AllInOneAIEndpointFunction
+      SourceArn: 
+        !If
+        - Globally
+        - !Sub
+          - >-
+            arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/GET/endpoint/*
+          - __Stage__: '*'
+            __ApiId__: !Ref ApiGatewayRestApi
+        - !Sub
+          - >-
+            arn:aws-cn:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/GET/endpoint/*
+          - __Stage__: '*'
+            __ApiId__: !Ref ApiGatewayRestApi
+
+  AllInOneAIEndpointFunctionCatchAllPermissionProd3:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: 'lambda:InvokeFunction'
+      Principal: apigateway.amazonaws.com      
+      FunctionName: !Ref AllInOneAIEndpointFunction
+      SourceArn: 
+        !If
+        - Globally
+        - !Sub
+          - >-
+            arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/POST/endpoint
+          - __Stage__: '*'
+            __ApiId__: !Ref ApiGatewayRestApi
+        - !Sub
+          - >-
+            arn:aws-cn:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/POST/endpoint
+          - __Stage__: '*'
+            __ApiId__: !Ref ApiGatewayRestApi
+
+  AllInOneAIEndpointFunctionCatchAllPermissionProd4:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: 'lambda:InvokeFunction'
+      Principal: apigateway.amazonaws.com      
+      FunctionName: !Ref AllInOneAIEndpointFunction
+      SourceArn: 
+        !If
+        - Globally
+        - !Sub
+          - >-
+            arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/DELETE/endpoint
+          - __Stage__: '*'
+            __ApiId__: !Ref ApiGatewayRestApi
+        - !Sub
+          - >-
+            arn:aws-cn:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/DELETE/endpoint
+          - __Stage__: '*'
+            __ApiId__: !Ref ApiGatewayRestApi
+
+  ApiGatewayResourceFunction:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !GetAtt ApiGatewayRestApi.RootResourceId
+      PathPart: 'api'
+      RestApiId: !Ref ApiGatewayRestApi
+
+  ApiGatewayResourceFunctionByName:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !GetAtt ApiGatewayResourceFunction.ResourceId
+      PathPart: '{function_name}'
+      RestApiId: !Ref ApiGatewayRestApi
+
+  ApiGatewayMethodFunctionByNameGet:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      ApiKeyRequired: false
+      AuthorizationType: NONE
+      HttpMethod: GET
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: GET
+        Uri: 
+          !If
+          - Globally
+          - !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIFunctionFunction.Arn}/invocations'
+          - !Sub 'arn:aws-cn:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIFunctionFunction.Arn}/invocations'
+      ResourceId: !Ref ApiGatewayResourceFunctionByName
+      RestApiId: !Ref ApiGatewayRestApi   
+
+  AllInOneAIFunctionFunctionRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'sts:AssumeRole'
+            Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+      ManagedPolicyArns:
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
+          - 'arn:aws-cn:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/AWSLambda_FullAccess'
+          - 'arn:aws-cn:iam::aws:policy/AWSLambda_FullAccess'
+  
+  AllInOneAIFunctionFunctionAdditionalPermission:
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName: all_in_one_ai_function
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'logs:*'
+              - 'lambda:*'
+              - 'cloudwatch:*'
+            Resource: '*'
+            Effect: Allow
+      Roles:
+        - !Ref AllInOneAIFunctionFunctionRole
+
+  AllInOneAIFunctionFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket: !Ref S3Bucket
+        S3Key: !Sub ${S3Key}/code/all_in_one_ai_function.zip
+      FunctionName: all_in_one_ai_function
+      Tags:
+        - Value: Name
+          Key: 'AllInOneAIApi'
+      Handler: lambda_function.lambda_handler
+      Role: !GetAtt AllInOneAIFunctionFunctionRole.Arn
+      Timeout: 900
+      Runtime: python3.9
+      VpcConfig:
+        SubnetIds: 
+          - !Ref PrivateSubnet1
+          - !Ref PrivateSubnet2
+        SecurityGroupIds: 
+          - !Ref SecurityGroup
+
+  AllInOneAIFunctionFunctionCatchAllPermissionProd1:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: 'lambda:InvokeFunction'
+      Principal: apigateway.amazonaws.com      
+      FunctionName: !Ref AllInOneAIFunctionFunction
+      SourceArn: 
+        !If
+        - Globally
+        - !Sub
+          - >-
+            arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/GET/function
+          - __Stage__: '*'
+            __ApiId__: !Ref ApiGatewayRestApi
+        - !Sub
+          - >-
+            arn:aws-cn:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/GET/function
+          - __Stage__: '*'
+            __ApiId__: !Ref ApiGatewayRestApi
+
+  ApiGatewayResourceGreengrass:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !GetAtt ApiGatewayRestApi.RootResourceId
+      PathPart: 'greengrass'
+      RestApiId: !Ref ApiGatewayRestApi
+
+  ApiGatewayResourceGreengrassComponent:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !GetAtt ApiGatewayResourceGreengrass.ResourceId
+      PathPart: 'component'
+      RestApiId: !Ref ApiGatewayRestApi
+
+  ApiGatewayMethodGreengrassComponentGet:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      ApiKeyRequired: false
+      AuthorizationType: NONE
+      HttpMethod: GET
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: GET
+        Uri: 
+          !If
+          - Globally
+          - !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIGreengrassComponentVersionFunction.Arn}/invocations'
+          - !Sub 'arn:aws-cn:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIGreengrassComponentVersionFunction.Arn}/invocations'
+      ResourceId: !Ref ApiGatewayResourceGreengrassComponent
+      RestApiId: !Ref ApiGatewayRestApi   
+
+  ApiGatewayResourceGreengrassComponentByName:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !GetAtt ApiGatewayResourceGreengrassComponent.ResourceId
+      PathPart: '{component_name}'
+      RestApiId: !Ref ApiGatewayRestApi
+
+  ApiGatewayMethodGreengrassComponentByNameGet:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      ApiKeyRequired: false
+      AuthorizationType: NONE
+      HttpMethod: GET
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: GET
+        Uri: 
+          !If
+          - Globally
+          - !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIGreengrassComponentVersionFunction.Arn}/invocations'
+          - !Sub 'arn:aws-cn:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIGreengrassComponentVersionFunction.Arn}/invocations'
+      ResourceId: !Ref ApiGatewayResourceGreengrassComponentByName
+      RestApiId: !Ref ApiGatewayRestApi   
+
+  ApiGatewayMethodGreengrassComponentByNamePost:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      ApiKeyRequired: false
+      AuthorizationType: NONE
+      HttpMethod: POST
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: 
+          !If
+          - Globally
+          - !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIGreengrassComponentVersionFunction.Arn}/invocations'
+          - !Sub 'arn:aws-cn:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIGreengrassComponentVersionFunction.Arn}/invocations'
+      ResourceId: !Ref ApiGatewayResourceGreengrassComponentByName
+      RestApiId: !Ref ApiGatewayRestApi   
+
+  ApiGatewayResourceGreengrassComponentByVersionId:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !GetAtt ApiGatewayResourceGreengrassComponentByName.ResourceId
+      PathPart: '{component_version_arn}'
+      RestApiId: !Ref ApiGatewayRestApi
+
+  ApiGatewayMethodGreengrassComponentByVersionIdGet:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      ApiKeyRequired: false
+      AuthorizationType: NONE
+      HttpMethod: GET
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: GET
+        Uri: 
+          !If
+          - Globally
+          - !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIGreengrassComponentVersionFunction.Arn}/invocations'
+          - !Sub 'arn:aws-cn:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIGreengrassComponentVersionFunction.Arn}/invocations'
+      ResourceId: !Ref ApiGatewayResourceGreengrassComponentByVersionId
+      RestApiId: !Ref ApiGatewayRestApi   
+  
+  AllInOneAIGreengrassComponentVersionFunctionRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'sts:AssumeRole'
+            Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+      ManagedPolicyArns:
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
+          - 'arn:aws-cn:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/AWSGreengrassFullAccess'
+          - 'arn:aws-cn:iam::aws:policy/AWSGreengrassFullAccess'
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/AmazonSSMFullAccess'
+          - 'arn:aws-cn:iam::aws:policy/AmazonSSMFullAccess'
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/service-role/AWSLambdaRole'
+          - 'arn:aws-cn:iam::aws:policy/service-role/AWSLambdaRole'
+  
+  AllInOneAIGreengrassComponentVersionFunctionAdditionalPermission:
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName: all_in_one_ai_greengrass_component_version
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'logs:*'
+              - 'lambda:*'
+              - 'cloudwatch:*'
+            Resource: '*'
+            Effect: Allow
+      Roles:
+        - !Ref AllInOneAIGreengrassComponentVersionFunctionRole
+
+  AllInOneAIGreengrassComponentVersionFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket: !Ref S3Bucket
+        S3Key: !Sub ${S3Key}/code/all_in_one_ai_greengrass_component_version.zip
+      FunctionName: all_in_one_ai_greengrass_component_version
+      Tags:
+        - Value: Name
+          Key: 'AllInOneAIApi'
+      Handler: lambda_function.lambda_handler
+      Role: !GetAtt AllInOneAIGreengrassComponentVersionFunctionRole.Arn
+      Timeout: 900
+      Runtime: python3.9
+      VpcConfig:
+        SubnetIds: 
+          - !Ref PrivateSubnet1
+          - !Ref PrivateSubnet2
+        SecurityGroupIds: 
+          - !Ref SecurityGroup
+      Layers:
+        - !Ref HelperLayer
+
+  AllInOneAIGreengrassComponentVersionFunctionCatchAllPermissionProd1:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: 'lambda:InvokeFunction'
+      Principal: apigateway.amazonaws.com      
+      FunctionName: !Ref AllInOneAIGreengrassComponentVersionFunction
+      SourceArn: 
+        !If
+        - Globally
+        - !Sub
+          - >-
+            arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/GET/greengrass/component
+          - __Stage__: '*'
+            __ApiId__: !Ref ApiGatewayRestApi
+        - !Sub
+          - >-
+            arn:aws-cn:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/GET/greengrass/component
+          - __Stage__: '*'
+            __ApiId__: !Ref ApiGatewayRestApi
+        
+  AllInOneAIGreengrassComponentVersionFunctionCatchAllPermissionProd2:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: 'lambda:InvokeFunction'
+      Principal: apigateway.amazonaws.com      
+      FunctionName: !Ref AllInOneAIGreengrassComponentVersionFunction
+      SourceArn: 
+        !If
+        - Globally
+        - !Sub
+          - >-
+            arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/GET/greengrass/component/*
+          - __Stage__: '*'
+            __ApiId__: !Ref ApiGatewayRestApi
+        - !Sub
+          - >-
+            arn:aws-cn:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/GET/greengrass/component/*
+          - __Stage__: '*'
+            __ApiId__: !Ref ApiGatewayRestApi
+
+
+  AllInOneAIGreengrassComponentVersionFunctionCatchAllPermissionProd3:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: 'lambda:InvokeFunction'
+      Principal: apigateway.amazonaws.com      
+      FunctionName: !Ref AllInOneAIGreengrassComponentVersionFunction
+      SourceArn: 
+        !If
+        - Globally
+        - !Sub
+          - >-
+            arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/POST/greengrass/component
+          - __Stage__: '*'
+            __ApiId__: !Ref ApiGatewayRestApi
+        - !Sub
+          - >-
+            arn:aws-cn:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/POST/greengrass/component
+          - __Stage__: '*'
+            __ApiId__: !Ref ApiGatewayRestApi
+
+  AllInOneAIGreengrassComponentVersionFunctionCatchAllPermissionProd4:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: 'lambda:InvokeFunction'
+      Principal: apigateway.amazonaws.com      
+      FunctionName: !Ref AllInOneAIGreengrassComponentVersionFunction
+      SourceArn: 
+        !If
+        - Globally
+        - !Sub
+          - >-
+            arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/GET/greengrass/component/*/*
+          - __Stage__: '*'
+            __ApiId__: !Ref ApiGatewayRestApi
+        - !Sub
+          - >-
+            arn:aws-cn:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/GET/greengrass/component/*/*
+          - __Stage__: '*'
+            __ApiId__: !Ref ApiGatewayRestApi
+
+  AllInOneAIGreengrassComponentVersionFunctionCatchAllPermissionProd5:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: 'lambda:InvokeFunction'
+      Principal: apigateway.amazonaws.com      
+      FunctionName: !Ref AllInOneAIGreengrassComponentVersionFunction
+      SourceArn: 
+        !If
+        - Globally
+        - !Sub
+          - >-
+            arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/POST/greengrass/component/*/*
+          - __Stage__: '*'
+            __ApiId__: !Ref ApiGatewayRestApi
+        - !Sub
+          - >-
+            arn:aws-cn:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/POST/greengrass/component/*/*
+          - __Stage__: '*'
+            __ApiId__: !Ref ApiGatewayRestApi
+
+  ApiGatewayResourceGreengrassCoreDevices:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !GetAtt ApiGatewayResourceGreengrass.ResourceId
+      PathPart: 'coredevices'
+      RestApiId: !Ref ApiGatewayRestApi
+
+  ApiGatewayMethodGreengrassCoreDevicesGet:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      ApiKeyRequired: false
+      AuthorizationType: NONE
+      HttpMethod: GET
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: GET
+        Uri: 
+          !If
+          - Globally
+          - !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIGreengrassCoreDevicesFunction.Arn}/invocations'
+          - !Sub 'arn:aws-cn:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIGreengrassCoreDevicesFunction.Arn}/invocations'
+      ResourceId: !Ref ApiGatewayResourceGreengrassCoreDevices
+      RestApiId: !Ref ApiGatewayRestApi   
+
+  AllInOneAIGreengrassCoreDevicesFunctionRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'sts:AssumeRole'
+            Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+      ManagedPolicyArns:
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
+          - 'arn:aws-cn:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/AWSGreengrassFullAccess'
+          - 'arn:aws-cn:iam::aws:policy/AWSGreengrassFullAccess'
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/AmazonSSMFullAccess'
+          - 'arn:aws-cn:iam::aws:policy/AmazonSSMFullAccess'
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/service-role/AWSLambdaRole'
+          - 'arn:aws-cn:iam::aws:policy/service-role/AWSLambdaRole'
+  
+  AllInOneAIGreengrassCoreDevicesFunctionAdditionalPermission:
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName: all_in_one_ai_greengrass_core_devices
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'logs:*'
+              - 'lambda:*'
+              - 'cloudwatch:*'
+            Resource: '*'
+            Effect: Allow
+      Roles:
+        - !Ref AllInOneAIGreengrassCoreDevicesFunctionRole
+
+  AllInOneAIGreengrassCoreDevicesFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket: !Ref S3Bucket
+        S3Key: !Sub ${S3Key}/code/all_in_one_ai_greengrass_core_devices.zip
+      FunctionName: all_in_one_ai_greengrass_core_devices
+      Tags:
+        - Value: Name
+          Key: 'AllInOneAIApi'
+      Handler: lambda_function.lambda_handler
+      Role: !GetAtt AllInOneAIGreengrassCoreDevicesFunctionRole.Arn
+      Timeout: 900
+      Runtime: python3.9
+      VpcConfig:
+        SubnetIds: 
+          - !Ref PrivateSubnet1
+          - !Ref PrivateSubnet2
+        SecurityGroupIds: 
+          - !Ref SecurityGroup
+
+  AllInOneAIGreengrassCoreDevicesFunctionCatchAllPermissionProd1:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: 'lambda:InvokeFunction'
+      Principal: apigateway.amazonaws.com      
+      FunctionName: !Ref AllInOneAIGreengrassCoreDevicesFunction
+      SourceArn: 
+        !If
+        - Globally
+        - !Sub
+          - >-
+            arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/GET/greengrass/coredevices
+          - __Stage__: '*'
+            __ApiId__: !Ref ApiGatewayRestApi
+        - !Sub
+          - >-
+            arn:aws-cn:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/GET/greengrass/coredevices
+          - __Stage__: '*'
+            __ApiId__: !Ref ApiGatewayRestApi
+
+  ApiGatewayResourceGreengrassDeployment:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !GetAtt ApiGatewayResourceGreengrass.ResourceId
+      PathPart: 'deployment'
+      RestApiId: !Ref ApiGatewayRestApi
+
+  ApiGatewayMethodGreengrassDeploymentGet:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      ApiKeyRequired: false
+      AuthorizationType: NONE
+      HttpMethod: GET
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: GET
+        Uri: 
+          !If
+          - Globally
+          - !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIGreengrassDeploymentFunction.Arn}/invocations'
+          - !Sub 'arn:aws-cn:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIGreengrassDeploymentFunction.Arn}/invocations'
+      ResourceId: !Ref ApiGatewayResourceGreengrassDeployment
+      RestApiId: !Ref ApiGatewayRestApi   
+
+  ApiGatewayMethodGreengrassDeploymentPost:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      ApiKeyRequired: false
+      AuthorizationType: NONE
+      HttpMethod: POST
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: GET
+        Uri: 
+          !If
+          - Globally
+          - !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIGreengrassDeploymentFunction.Arn}/invocations'
+          - !Sub 'arn:aws-cn:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIGreengrassDeploymentFunction.Arn}/invocations'
+      ResourceId: !Ref ApiGatewayResourceGreengrassDeployment
+      RestApiId: !Ref ApiGatewayRestApi   
+
+  ApiGatewayResourceGreengrassDeploymentById:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !GetAtt ApiGatewayResourceGreencomponentDeployment.ResourceId
+      PathPart: '{deployment_id}'
+      RestApiId: !Ref ApiGatewayRestApi
+
+  ApiGatewayMethodGreengrassDeploymentByIdGet:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      ApiKeyRequired: false
+      AuthorizationType: NONE
+      HttpMethod: GET
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: GET
+        Uri: 
+          !If
+          - Globally
+          - !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIGreengrassDeploymentFunction.Arn}/invocations'
+          - !Sub 'arn:aws-cn:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIGreengrassDeploymentFunction.Arn}/invocations'
+      ResourceId: !Ref ApiGatewayResourceGreengrassDeploymentById
+      RestApiId: !Ref ApiGatewayRestApi   
+
+  AllInOneAIGreengrassDeploymentFunctionRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'sts:AssumeRole'
+            Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+      ManagedPolicyArns:
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
+          - 'arn:aws-cn:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/AWSGreengrassFullAccess'
+          - 'arn:aws-cn:iam::aws:policy/AWSGreengrassFullAccess'
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/AWSIoTFullAccess'
+          - 'arn:aws-cn:iam::aws:policy/AWSIoTFullAccess'
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/AmazonSSMFullAccess'
+          - 'arn:aws-cn:iam::aws:policy/AmazonSSMFullAccess'
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/service-role/AWSLambdaRole'
+          - 'arn:aws-cn:iam::aws:policy/service-role/AWSLambdaRole'
+  
+  AllInOneAIGreengrassDeploymentFunctionAdditionalPermission:
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName: all_in_one_ai_greengrass_deployment
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'logs:*'
+              - 'lambda:*'
+              - 'cloudwatch:*'
+            Resource: '*'
+            Effect: Allow
+      Roles:
+        - !Ref AllInOneAIGreengrassDeploymentFunctionRole
+
+  AllInOneAIGreengrassDeploymentFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket: !Ref S3Bucket
+        S3Key: !Sub ${S3Key}/code/all_in_one_ai_greengrass_deployment.zip
+      FunctionName: all_in_one_ai_greengrass_deployment
+      Tags:
+        - Value: Name
+          Key: 'AllInOneAIApi'
+      Handler: lambda_function.lambda_handler
+      Role: !GetAtt AllInOneAIGreengrassDeploymentFunctionRole.Arn
+      Timeout: 900
+      Runtime: python3.9
+      VpcConfig:
+        SubnetIds: 
+          - !Ref PrivateSubnet1
+          - !Ref PrivateSubnet2
+        SecurityGroupIds: 
+          - !Ref SecurityGroup
+      Layers:
+        - !Ref HelperLayer
+
+  AllInOneAIGreengrassDeploymentFunctionCatchAllPermissionProd1:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: 'lambda:InvokeFunction'
+      Principal: apigateway.amazonaws.com      
+      FunctionName: !Ref AllInOneAIGreengrassDeploymentFunction
+      SourceArn: 
+        !If
+        - Globally
+        - !Sub
+          - >-
+            arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/GET/greengrass/deployment
+          - __Stage__: '*'
+            __ApiId__: !Ref ApiGatewayRestApi
+        - !Sub
+          - >-
+            arn:aws-cn:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/GET/greengrass/deployment
+          - __Stage__: '*'
+            __ApiId__: !Ref ApiGatewayRestApi
+        
+  AllInOneAIGreengrassDeploymentFunctionCatchAllPermissionProd2:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: 'lambda:InvokeFunction'
+      Principal: apigateway.amazonaws.com      
+      FunctionName: !Ref AllInOneAIGreengrassDeploymentFunction
+      SourceArn: 
+        !If
+        - Globally
+        - !Sub
+          - >-
+            arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/GET/greengrass/deployment/*
+          - __Stage__: '*'
+            __ApiId__: !Ref ApiGatewayRestApi
+        - !Sub
+          - >-
+            arn:aws-cn:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/GET/greengrass/deployment/*
+          - __Stage__: '*'
+            __ApiId__: !Ref ApiGatewayRestApi
+
+
+  AllInOneAIGreengrassDeploymentFunctionCatchAllPermissionProd3:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: 'lambda:InvokeFunction'
+      Principal: apigateway.amazonaws.com      
+      FunctionName: !Ref AllInOneAIGreengrassDeploymentFunction
+      SourceArn: 
+        !If
+        - Globally
+        - !Sub
+          - >-
+            arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/POST/greengrass/deployment
+          - __Stage__: '*'
+            __ApiId__: !Ref ApiGatewayRestApi
+        - !Sub
+          - >-
+            arn:aws-cn:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/POST/greengrass/deployment
+          - __Stage__: '*'
+            __ApiId__: !Ref ApiGatewayRestApi
+  
+  ApiGatewayResourceGreengrassThingGroups:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !GetAtt ApiGatewayResourceGreengrass.ResourceId
+      PathPart: 'thinggroups'
+      RestApiId: !Ref ApiGatewayRestApi
+
+  ApiGatewayMethodGreengrassThingGroupsGet:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      ApiKeyRequired: false
+      AuthorizationType: NONE
+      HttpMethod: GET
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: GET
+        Uri: 
+          !If
+          - Globally
+          - !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIGreengrassThingGroupsFunction.Arn}/invocations'
+          - !Sub 'arn:aws-cn:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIGreengrassThingGroupsFunction.Arn}/invocations'
+      ResourceId: !Ref ApiGatewayResourceGreengrassThingGroups
+      RestApiId: !Ref ApiGatewayRestApi   
+
+  AllInOneAIGreengrassThingGroupsFunctionRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'sts:AssumeRole'
+            Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+      ManagedPolicyArns:
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
+          - 'arn:aws-cn:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/AWSIoTFullAccess'
+          - 'arn:aws-cn:iam::aws:policy/AWSIoTFullAccess'
+  
+  AllInOneAIGreengrassThingGroupsFunctionAdditionalPermission:
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName: all_in_one_ai_greengrass_thing_groups
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'logs:*'
+              - 'lambda:*'
+              - 'cloudwatch:*'
+            Resource: '*'
+            Effect: Allow
+      Roles:
+        - !Ref AllInOneAIGreengrassThingGroupsFunctionRole
+
+  AllInOneAIGreengrassThingGroupsFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket: !Ref S3Bucket
+        S3Key: !Sub ${S3Key}/code/all_in_one_ai_greengrass_thing_groups.zip
+      FunctionName: all_in_one_ai_greengrass_thing_groups
+      Tags:
+        - Value: Name
+          Key: 'AllInOneAIApi'
+      Handler: lambda_function.lambda_handler
+      Role: !GetAtt AllInOneAIGreengrassThingGroupsFunctionRole.Arn
+      Timeout: 900
+      Runtime: python3.9
+      VpcConfig:
+        SubnetIds: 
+          - !Ref PrivateSubnet1
+          - !Ref PrivateSubnet2
+        SecurityGroupIds: 
+          - !Ref SecurityGroup
+
+  AllInOneAIGreengrassThingGroupsFunctionCatchAllPermissionProd1:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: 'lambda:InvokeFunction'
+      Principal: apigateway.amazonaws.com      
+      FunctionName: !Ref AllInOneAIGreengrassThingGroupsFunction
+      SourceArn: 
+        !If
+        - Globally
+        - !Sub
+          - >-
+            arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/GET/greengrass/thinggroups
+          - __Stage__: '*'
+            __ApiId__: !Ref ApiGatewayRestApi
+        - !Sub
+          - >-
+            arn:aws-cn:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/GET/greengrass/thinggroups
+          - __Stage__: '*'
+            __ApiId__: !Ref ApiGatewayRestApi
+
+  ApiGatewayResourceGreengrassComponentByName:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !GetAtt ApiGatewayResourceGreencomponentComponent.ResourceId
+      PathPart: '{component_name}'
+      RestApiId: !Ref ApiGatewayRestApi
+
+  ApiGatewayResourceIndustrialModel:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !GetAtt ApiGatewayRestApi.RootResourceId
+      PathPart: 'api'
+      RestApiId: !Ref ApiGatewayRestApi
+
+  ApiGatewayMethodIndustrialModelGet:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      ApiKeyRequired: false
+      AuthorizationType: NONE
+      HttpMethod: GET
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: GET
+        Uri: 
+          !If
+          - Globally
+          - !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIGreengrassIndustrialModel.Arn}/invocations'
+          - !Sub 'arn:aws-cn:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIGreengrassIndustrialModel.Arn}/invocations'
+      ResourceId: !Ref ApiGatewayResourceIndustrialModel
+      RestApiId: !Ref ApiGatewayRestApi   
+
+  ApiGatewayMethodIndustrialModelPost:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      ApiKeyRequired: false
+      AuthorizationType: NONE
+      HttpMethod: POST
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: GET
+        Uri: 
+          !If
+          - Globally
+          - !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIGreengrassIndustrialModel.Arn}/invocations'
+          - !Sub 'arn:aws-cn:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIGreengrassIndustrialModel.Arn}/invocations'
+      ResourceId: !Ref ApiGatewayResourceIndustrialModel
+      RestApiId: !Ref ApiGatewayRestApi   
+
+  ApiGatewayResourceIndustrialModelById:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !GetAtt ApiGatewayResourceIndustrialModel.ResourceId
+      PathPart: '{model_id}'
+      RestApiId: !Ref ApiGatewayRestApi
+
+  ApiGatewayMethodIndustrialModelByIdGet:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      ApiKeyRequired: false
+      AuthorizationType: NONE
+      HttpMethod: GET
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: GET
+        Uri: 
+          !If
+          - Globally
+          - !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIGreengrassIndustrialModel.Arn}/invocations'
+          - !Sub 'arn:aws-cn:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIGreengrassIndustrialModel.Arn}/invocations'
+      ResourceId: !Ref ApiGatewayResourceIndustrialModelById
+      RestApiId: !Ref ApiGatewayRestApi   
+
+  ApiGatewayMethodIndustrialModelByIdPost:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      ApiKeyRequired: false
+      AuthorizationType: NONE
+      HttpMethod: POST
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: 
+          !If
+          - Globally
+          - !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIGreengrassIndustrialModel.Arn}/invocations'
+          - !Sub 'arn:aws-cn:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIGreengrassIndustrialModel.Arn}/invocations'
+      ResourceId: !Ref ApiGatewayResourceIndustrialModelById
+      RestApiId: !Ref ApiGatewayRestApi   
+
+  ApiGatewayMethodIndustrialModelByIdDelete:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      ApiKeyRequired: false
+      AuthorizationType: NONE
+      HttpMethod: DELETE
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: DELETE
+        Uri: 
+          !If
+          - Globally
+          - !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIGreengrassIndustrialModel.Arn}/invocations'
+          - !Sub 'arn:aws-cn:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIGreengrassIndustrialModel.Arn}/invocations'
+      ResourceId: !Ref ApiGatewayResourceIndustrialModelById
+      RestApiId: !Ref ApiGatewayRestApi   
+
+  AllInOneAIIndustrialModelFunctionRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'sts:AssumeRole'
+            Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+      ManagedPolicyArns:
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
+          - 'arn:aws-cn:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/AmazonS3FullAccess'
+          - 'arn:aws-cn:iam::aws:policy/AmazonS3FullAccess'
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess'
+          - 'arn:aws-cn:iam::aws:policy/AmazonDynamoDBFullAccess'
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/AmazonSSMFullAccess'
+          - 'arn:aws-cn:iam::aws:policy/AmazonSSMFullAccess'
+  
+  AllInOneAIIndustrialModelFunctionAdditionalPermission:
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName: all_in_one_ai_industrial_model
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'logs:*'
+              - 'lambda:*'
+              - 'cloudwatch:*'
+            Resource: '*'
+            Effect: Allow
+      Roles:
+        - !Ref AllInOneAIIndustrialModelFunctionRole
+
+  AllInOneAIIndustrialModelFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket: !Ref S3Bucket
+        S3Key: !Sub ${S3Key}/code/all_in_one_ai_industrial_model.zip
+      FunctionName: all_in_one_ai_industrial_model
+      Tags:
+        - Value: Name
+          Key: 'AllInOneAIApi'
+      Handler: lambda_function.lambda_handler
+      Role: !GetAtt AllInOneAIIndustrialModelFunctionRole.Arn
+      Timeout: 900
+      Runtime: python3.9
+      VpcConfig:
+        SubnetIds: 
+          - !Ref PrivateSubnet1
+          - !Ref PrivateSubnet2
+        SecurityGroupIds: 
+          - !Ref SecurityGroup
+      Layers:
+        - !Ref HelperLayer
+
+  AllInOneAIIndustrialModelFunctionCatchAllPermissionProd1:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: 'lambda:InvokeFunction'
+      Principal: apigateway.amazonaws.com      
+      FunctionName: !Ref AllInOneAIIndustrialModelFunction
+      SourceArn: 
+        !If
+        - Globally
+        - !Sub
+          - >-
+            arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/GET/industrialmodel
+          - __Stage__: '*'
+            __ApiId__: !Ref ApiGatewayRestApi
+        - !Sub
+          - >-
+            arn:aws-cn:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/GET/industrialmodel
+          - __Stage__: '*'
+            __ApiId__: !Ref ApiGatewayRestApi
+
+  AllInOneAIIndustrialModelFunctionCatchAllPermissionProd2:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: 'lambda:InvokeFunction'
+      Principal: apigateway.amazonaws.com      
+      FunctionName: !Ref AllInOneAIIndustrialModelFunction
+      SourceArn: 
+        !If
+        - Globally
+        - !Sub
+          - >-
+            arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/POST/industrialmodel
+          - __Stage__: '*'
+            __ApiId__: !Ref ApiGatewayRestApi
+        - !Sub
+          - >-
+            arn:aws-cn:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/POST/industrialmodel
+          - __Stage__: '*'
+            __ApiId__: !Ref ApiGatewayRestApi
+
+  AllInOneAIIndustrialModelFunctionCatchAllPermissionProd3:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: 'lambda:InvokeFunction'
+      Principal: apigateway.amazonaws.com      
+      FunctionName: !Ref AllInOneAIIndustrialModelFunction
+      SourceArn: 
+        !If
+        - Globally
+        - !Sub
+          - >-
+            arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/GET/industrialmodel/*
+          - __Stage__: '*'
+            __ApiId__: !Ref ApiGatewayRestApi
+        - !Sub
+          - >-
+            arn:aws-cn:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/GET/industrialmodel/*
+          - __Stage__: '*'
+            __ApiId__: !Ref ApiGatewayRestApi
+
+  AllInOneAIIndustrialModelFunctionCatchAllPermissionProd4:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: 'lambda:InvokeFunction'
+      Principal: apigateway.amazonaws.com      
+      FunctionName: !Ref AllInOneAIIndustrialModelFunction
+      SourceArn: 
+        !If
+        - Globally
+        - !Sub
+          - >-
+            arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/POST/industrialmodel/*
+          - __Stage__: '*'
+            __ApiId__: !Ref ApiGatewayRestApi
+        - !Sub
+          - >-
+            arn:aws-cn:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/POST/industrialmodel/*
+          - __Stage__: '*'
+            __ApiId__: !Ref ApiGatewayRestApi
+
+  AllInOneAIIndustrialModelFunctionCatchAllPermissionProd5:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: 'lambda:InvokeFunction'
+      Principal: apigateway.amazonaws.com      
+      FunctionName: !Ref AllInOneAIIndustrialModelFunction
+      SourceArn: 
+        !If
+        - Globally
+        - !Sub
+          - >-
+            arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/DELETE/industrialmodel/*
+          - __Stage__: '*'
+            __ApiId__: !Ref ApiGatewayRestApi
+        - !Sub
+          - >-
+            arn:aws-cn:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/DELETE/industrialmodel/*
+          - __Stage__: '*'
+            __ApiId__: !Ref ApiGatewayRestApi
+
+  ApiGatewayResourceInference:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !GetAtt ApiGatewayRestApi.RootResourceId
+      PathPart: 'api'
+      RestApiId: !Ref ApiGatewayRestApi
+
+  ApiGatewayMethodInferencePost:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      ApiKeyRequired: false
+      AuthorizationType: NONE
+      HttpMethod: POST
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: 
+          !If
+          - Globally
+          - !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIInferenceFunction.Arn}/invocations'
+          - !Sub 'arn:aws-cn:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIInferenceFunction.Arn}/invocations'
+      ResourceId: !Ref ApiGatewayResourceIndustrialModel
+      RestApiId: !Ref ApiGatewayRestApi   
+
+  AllInOneAIInferenceFunctionRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'sts:AssumeRole'
+            Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+      ManagedPolicyArns:
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
+          - 'arn:aws-cn:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/service-role/AWSLambdaRole'
+          - 'arn:aws-cn:iam::aws:policy/service-role/AWSLambdaRole'
+  
+  AllInOneAIInferenceFunctionAdditionalPermission:
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName: all_in_one_ai_inference
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'logs:*'
+              - 'lambda:*'
+              - 'cloudwatch:*'
+            Resource: '*'
+            Effect: Allow
+      Roles:
+        - !Ref AllInOneAIInferenceFunctionRole
+
+  AllInOneAIInferenceFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket: !Ref S3Bucket
+        S3Key: !Sub ${S3Key}/code/all_in_one_ai_inference.zip
+      FunctionName: all_in_one_ai_inference
+      Tags:
+        - Value: Name
+          Key: 'AllInOneAIApi'
+      Handler: lambda_function.lambda_handler
+      Role: !GetAtt AllInOneAIInferenceFunctionRole.Arn
+      Timeout: 900
+      Runtime: python3.9
+      VpcConfig:
+        SubnetIds: 
+          - !Ref PrivateSubnet1
+          - !Ref PrivateSubnet2
+        SecurityGroupIds: 
+          - !Ref SecurityGroup
+
+  AllInOneAIInferenceFunctionCatchAllPermissionProd1:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: 'lambda:InvokeFunction'
+      Principal: apigateway.amazonaws.com      
+      FunctionName: !Ref AllInOneAIInferenceFunction
+      SourceArn: 
+        !If
+        - Globally
+        - !Sub
+          - >-
+            arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/POST/inference
+          - __Stage__: '*'
+            __ApiId__: !Ref ApiGatewayRestApi
+        - !Sub
+          - >-
+            arn:aws-cn:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/POST/inference
+          - __Stage__: '*'
+            __ApiId__: !Ref ApiGatewayRestApi
+
+  ApiGatewayResourceModel:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !GetAtt ApiGatewayRestApi.RootResourceId
+      PathPart: 'api'
+      RestApiId: !Ref ApiGatewayRestApi
+
+  ApiGatewayMethodModelGet:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      ApiKeyRequired: false
+      AuthorizationType: NONE
+      HttpMethod: GET
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: GET
+        Uri: 
+          !If
+          - Globally
+          - !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIModelFunction.Arn}/invocations'
+          - !Sub 'arn:aws-cn:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIModelFunction.Arn}/invocations'
+      ResourceId: !Ref ApiGatewayResourceModel
+      RestApiId: !Ref ApiGatewayRestApi   
+
+  ApiGatewayMethodModelPost:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      ApiKeyRequired: false
+      AuthorizationType: NONE
+      HttpMethod: POST
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: 
+          !If
+          - Globally
+          - !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIModelFunction.Arn}/invocations'
+          - !Sub 'arn:aws-cn:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIApiFunction.Arn}/invocations'
+      ResourceId: !Ref ApiGatewayResourceModel
+      RestApiId: !Ref ApiGatewayRestApi   
+
+  ApiGatewayResourceModelByName:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !GetAtt ApiGatewayResourceModel.ResourceId
+      PathPart: '{model_name}'
+      RestApiId: !Ref ApiGatewayRestApi
+
+  ApiGatewayMethodModelByNameGet:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      ApiKeyRequired: false
+      AuthorizationType: NONE
+      HttpMethod: GET
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: GET
+        Uri: 
+          !If
+          - Globally
+          - !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIModelFunction.Arn}/invocations'
+          - !Sub 'arn:aws-cn:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIModelFunction.Arn}/invocations'
+      ResourceId: !Ref ApiGatewayResourceModelByName
+      RestApiId: !Ref ApiGatewayRestApi   
+
+  ApiGatewayMethodModelByNameDelete:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      ApiKeyRequired: false
+      AuthorizationType: NONE
+      HttpMethod: DELETE
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: DELETE
+        Uri: 
+          !If
+          - Globally
+          - !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIModelFunction.Arn}/invocations'
+          - !Sub 'arn:aws-cn:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIModelFunction.Arn}/invocations'
+      ResourceId: !Ref ApiGatewayResourceModelByName
+      RestApiId: !Ref ApiGatewayRestApi 
+  
+  AllInOneAIModelFunctionRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'sts:AssumeRole'
+            Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+      ManagedPolicyArns:
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
+          - 'arn:aws-cn:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess'
+          - 'arn:aws-cn:iam::aws:policy/AmazonDynamoDBFullAccess'
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/AmazonSSMFullAccess'
+          - 'arn:aws-cn:iam::aws:policy/AmazonSSMFullAccess'
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/service-role/AWSLambdaRole'
+          - 'arn:aws-cn:iam::aws:policy/service-role/AWSLambdaRole'
+  
+  AllInOneAIModelFunctionAdditionalPermission:
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName: all_in_one_ai_model
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'logs:*'
+              - 'lambda:*'
+              - 'cloudwatch:*'
+            Resource: '*'
+            Effect: Allow
+      Roles:
+        - !Ref AllInOneAIModelFunctionRole
+
+  AllInOneAIModelFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket: !Ref S3Bucket
+        S3Key: !Sub ${S3Key}/code/all_in_one_ai_model.zip
+      FunctionName: all_in_one_ai_model
+      Tags:
+        - Value: Name
+          Key: 'AllInOneAIApi'
+      Handler: lambda_function.lambda_handler
+      Role: !GetAtt AllInOneAIModelFunctionRole.Arn
+      Timeout: 900
+      Runtime: python3.9
+      VpcConfig:
+        SubnetIds: 
+          - !Ref PrivateSubnet1
+          - !Ref PrivateSubnet2
+        SecurityGroupIds: 
+          - !Ref SecurityGroup
+      Layers:
+        - !Ref HelperLayer
+
+  AllInOneAIModelFunctionCatchAllPermissionProd1:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: 'lambda:InvokeFunction'
+      Principal: apigateway.amazonaws.com      
+      FunctionName: !Ref AllInOneAIModelFunction
+      SourceArn: 
+        !If
+        - Globally
+        - !Sub
+          - >-
+            arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/GET/model
+          - __Stage__: '*'
+            __ApiId__: !Ref ApiGatewayRestApi
+        - !Sub
+          - >-
+            arn:aws-cn:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/GET/model
+          - __Stage__: '*'
+            __ApiId__: !Ref ApiGatewayRestApi
+        
+  AllInOneAIModelFunctionCatchAllPermissionProd2:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: 'lambda:InvokeFunction'
+      Principal: apigateway.amazonaws.com      
+      FunctionName: !Ref AllInOneAIModelFunction
+      SourceArn: 
+        !If
+        - Globally
+        - !Sub
+          - >-
+            arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/GET/model/*
+          - __Stage__: '*'
+            __ApiId__: !Ref ApiGatewayRestApi
+        - !Sub
+          - >-
+            arn:aws-cn:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/GET/model/*
+          - __Stage__: '*'
+            __ApiId__: !Ref ApiGatewayRestApi
+
+  AllInOneAIModelFunctionCatchAllPermissionProd3:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: 'lambda:InvokeFunction'
+      Principal: apigateway.amazonaws.com      
+      FunctionName: !Ref AllInOneAIModelFunction
+      SourceArn: 
+        !If
+        - Globally
+        - !Sub
+          - >-
+            arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/POST/model
+          - __Stage__: '*'
+            __ApiId__: !Ref ApiGatewayRestApi
+        - !Sub
+          - >-
+            arn:aws-cn:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/POST/model
+          - __Stage__: '*'
+            __ApiId__: !Ref ApiGatewayRestApi
+
+  AllInOneAIModelFunctionCatchAllPermissionProd4:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: 'lambda:InvokeFunction'
+      Principal: apigateway.amazonaws.com      
+      FunctionName: !Ref AllInOneAIModelFunction
+      SourceArn: 
+        !If
+        - Globally
+        - !Sub
+          - >-
+            arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/DELETE/model
+          - __Stage__: '*'
+            __ApiId__: !Ref ApiGatewayRestApi
+        - !Sub
+          - >-
+            arn:aws-cn:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/DELETE/model
+          - __Stage__: '*'
+            __ApiId__: !Ref ApiGatewayRestApi
+
+  ApiGatewayResourceModelPackage:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !GetAtt ApiGatewayRestApi.RootResourceId
+      PathPart: 'api'
+      RestApiId: !Ref ApiGatewayRestApi
+
+  ApiGatewayMethodModelPackageGet:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      ApiKeyRequired: false
+      AuthorizationType: NONE
+      HttpMethod: GET
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: GET
+        Uri: 
+          !If
+          - Globally
+          - !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIModelPackageFunction.Arn}/invocations'
+          - !Sub 'arn:aws-cn:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIModelPackageFunction.Arn}/invocations'
+      ResourceId: !Ref ApiGatewayResourceModelPackage
+      RestApiId: !Ref ApiGatewayRestApi   
+
+  ApiGatewayResourceModelPackageGroup:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !GetAtt ApiGatewayResourceModelPackage.ResourceId
+      PathPart: 'group'
+      RestApiId: !Ref ApiGatewayRestApi
+
+  ApiGatewayMethodModelPackageGroupGet:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      ApiKeyRequired: false
+      AuthorizationType: NONE
+      HttpMethod: GET
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: GET
+        Uri: 
+          !If
+          - Globally
+          - !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIModelPackageGroupFunction.Arn}/invocations'
+          - !Sub 'arn:aws-cn:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIModelPackageGroupFunction.Arn}/invocations'
+      ResourceId: !Ref ApiGatewayResourceModelPackageGroup
+      RestApiId: !Ref ApiGatewayRestApi   
+
+  ApiGatewayMethodModelPackagePost:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      ApiKeyRequired: false
+      AuthorizationType: NONE
+      HttpMethod: POST
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: 
+          !If
+          - Globally
+          - !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIModelPackageGroupFunction.Arn}/invocations'
+          - !Sub 'arn:aws-cn:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIModelPackageGroupFunction.Arn}/invocations'
+      ResourceId: !Ref ApiGatewayResourceModelPackageGroup
+      RestApiId: !Ref ApiGatewayRestApi   
+
+  ApiGatewayResourceModelPackageByName:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !GetAtt ApiGatewayResourceModelPackage.ResourceId
+      PathPart: '{model_package_group_name}'
+      RestApiId: !Ref ApiGatewayRestApi
+
+  ApiGatewayMethodModelPackageGroupByNameGet:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      ApiKeyRequired: false
+      AuthorizationType: NONE
+      HttpMethod: GET
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: GET
+        Uri: 
+          !If
+          - Globally
+          - !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIModelPackageFunction.Arn}/invocations'
+          - !Sub 'arn:aws-cn:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIModelPackageFunction.Arn}/invocations'
+      ResourceId: !Ref ApiGatewayResourceModelPackageByName
+      RestApiId: !Ref ApiGatewayRestApi   
+
+  ApiGatewayMethodModelPackageByNamePost:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      ApiKeyRequired: false
+      AuthorizationType: NONE
+      HttpMethod: POST
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: 
+          !If
+          - Globally
+          - !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIModelPackageFunction.Arn}/invocations'
+          - !Sub 'arn:aws-cn:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIModelPackageFunction.Arn}/invocations'
+      ResourceId: !Ref ApiGatewayResourceModelPackageByName
+      RestApiId: !Ref ApiGatewayRestApi   
+
+  ApiGatewayResourcePipeline:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !GetAtt ApiGatewayRestApi.RootResourceId
+      PathPart: 'api'
+      RestApiId: !Ref ApiGatewayRestApi
+
+  ApiGatewayMethodPipelineGet:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      ApiKeyRequired: false
+      AuthorizationType: NONE
+      HttpMethod: GET
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: GET
+        Uri: 
+          !If
+          - Globally
+          - !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIPipelineFunction.Arn}/invocations'
+          - !Sub 'arn:aws-cn:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIPipelineFunction.Arn}/invocations'
+      ResourceId: !Ref ApiGatewayResourcePipeline
+      RestApiId: !Ref ApiGatewayRestApi   
+
+  ApiGatewayMethodModelPackagePost:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      ApiKeyRequired: false
+      AuthorizationType: NONE
+      HttpMethod: POST
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: 
+          !If
+          - Globally
+          - !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIPipelineFunction.Arn}/invocations'
+          - !Sub 'arn:aws-cn:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIPipelineFunction.Arn}/invocations'
+      ResourceId: !Ref ApiGatewayResourcePipeline
+      RestApiId: !Ref ApiGatewayRestApi   
+
+  AllInOneAIModelPackageFunctionRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'sts:AssumeRole'
+            Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+      ManagedPolicyArns:
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
+          - 'arn:aws-cn:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/AmazonS3FullAccess'
+          - 'arn:aws-cn:iam::aws:policy/AmazonS3FullAccess'
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/AmazonSageMakerFullAccess'
+          - 'arn:aws-cn:iam::aws:policy/AmazonSageMakerFullAccess'
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/AmazonSSMFullAccess'
+          - 'arn:aws-cn:iam::aws:policy/AmazonSSMFullAccess'
+  
+  AllInOneAIModelPackageFunctionAdditionalPermission:
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName: all_in_one_ai_model_package
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'logs:*'
+              - 'lambda:*'
+              - 'cloudwatch:*'
+            Resource: '*'
+            Effect: Allow
+      Roles:
+        - !Ref AllInOneAIModelPackageFunctionRole
+
+  AllInOneAIModelPackageFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket: !Ref S3Bucket
+        S3Key: !Sub ${S3Key}/code/all_in_one_ai_model_package.zip
+      FunctionName: all_in_one_ai_model_package
+      Tags:
+        - Value: Name
+          Key: 'AllInOneAIApi'
+      Handler: lambda_function.lambda_handler
+      Role: !GetAtt AllInOneAIModelPackageFunctionRole.Arn
+      Timeout: 900
+      Runtime: python3.9
+      VpcConfig:
+        SubnetIds: 
+          - !Ref PrivateSubnet1
+          - !Ref PrivateSubnet2
+        SecurityGroupIds: 
+          - !Ref SecurityGroup
+      Layers:
+        - !Ref HelperLayer
+
+  AllInOneAIModelPackageFunctionCatchAllPermissionProd1:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: 'lambda:InvokeFunction'
+      Principal: apigateway.amazonaws.com      
+      FunctionName: !Ref AllInOneAIModelPackageFunction
+      SourceArn: 
+        !If
+        - Globally
+        - !Sub
+          - >-
+            arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/GET/modelpackage
+          - __Stage__: '*'
+            __ApiId__: !Ref ApiGatewayRestApi
+        - !Sub
+          - >-
+            arn:aws-cn:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/GET/modelpackage
+          - __Stage__: '*'
+            __ApiId__: !Ref ApiGatewayRestApi
+        
+  AllInOneAIModelPackageFunctionCatchAllPermissionProd2:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: 'lambda:InvokeFunction'
+      Principal: apigateway.amazonaws.com      
+      FunctionName: !Ref AllInOneAIModelPackageFunction
+      SourceArn: 
+        !If
+        - Globally
+        - !Sub
+          - >-
+            arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/GET/modelpackage/*
+          - __Stage__: '*'
+            __ApiId__: !Ref ApiGatewayRestApi
+        - !Sub
+          - >-
+            arn:aws-cn:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/GET/modelpackage/*
+          - __Stage__: '*'
+            __ApiId__: !Ref ApiGatewayRestApi
+
+  AllInOneAIModelPackageFunctionCatchAllPermissionProd3:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: 'lambda:InvokeFunction'
+      Principal: apigateway.amazonaws.com      
+      FunctionName: !Ref AllInOneAIModelPackageFunction
+      SourceArn: 
+        !If
+        - Globally
+        - !Sub
+          - >-
+            arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/POST/modelpackage/*
+          - __Stage__: '*'
+            __ApiId__: !Ref ApiGatewayRestApi
+        - !Sub
+          - >-
+            arn:aws-cn:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/POST/modelpackage/*
+          - __Stage__: '*'
+            __ApiId__: !Ref ApiGatewayRestApi
+
+  AllInOneAIModelPackageGroupFunctionRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'sts:AssumeRole'
+            Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+      ManagedPolicyArns:
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
+          - 'arn:aws-cn:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/AmazonSageMakerFullAccess'
+          - 'arn:aws-cn:iam::aws:policy/AmazonSageMakerFullAccess'
+  
+  AllInOneAIModelPackageGroupFunctionAdditionalPermission:
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName: all_in_one_ai_model_package_group
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'logs:*'
+              - 'lambda:*'
+              - 'cloudwatch:*'
+            Resource: '*'
+            Effect: Allow
+      Roles:
+        - !Ref AllInOneAIModelPackageGroupFunctionRole
+
+  AllInOneAIModelPackageGroupFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket: !Ref S3Bucket
+        S3Key: !Sub ${S3Key}/code/all_in_one_ai_model_package_group.zip
+      FunctionName: all_in_one_ai_model_package_group
+      Tags:
+        - Value: Name
+          Key: 'AllInOneAIApi'
+      Handler: lambda_function.lambda_handler
+      Role: !GetAtt AllInOneAIModelPackageGroupFunctionRole.Arn
+      Timeout: 900
+      Runtime: python3.9
+      VpcConfig:
+        SubnetIds: 
+          - !Ref PrivateSubnet1
+          - !Ref PrivateSubnet2
+        SecurityGroupIds: 
+          - !Ref SecurityGroup
+      Layers:
+        - !Ref HelperLayer
+
+  AllInOneAIModelPackageGroupFunctionCatchAllPermissionProd1:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: 'lambda:InvokeFunction'
+      Principal: apigateway.amazonaws.com      
+      FunctionName: !Ref AllInOneAIModelPackageGroupFunction
+      SourceArn: 
+        !If
+        - Globally
+        - !Sub
+          - >-
+            arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/GET/modelpackage/group
+          - __Stage__: '*'
+            __ApiId__: !Ref ApiGatewayRestApi
+        - !Sub
+          - >-
+            arn:aws-cn:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/GET/modelpackage/group
+          - __Stage__: '*'
+            __ApiId__: !Ref ApiGatewayRestApi
+        
+  AllInOneAIModelPackageGroupFunctionCatchAllPermissionProd2:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: 'lambda:InvokeFunction'
+      Principal: apigateway.amazonaws.com      
+      FunctionName: !Ref AllInOneAIModelPackageGroupFunction
+      SourceArn: 
+        !If
+        - Globally
+        - !Sub
+          - >-
+            arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/POST/modelpackage/group
+          - __Stage__: '*'
+            __ApiId__: !Ref ApiGatewayRestApi
+        - !Sub
+          - >-
+            arn:aws-cn:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/POST/modelpackage/group
+          - __Stage__: '*'
+            __ApiId__: !Ref ApiGatewayRestApi
+
+  ApiGatewayResourceS3:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !GetAtt ApiGatewayRestApi.RootResourceId
+      PathPart: 'api'
+      RestApiId: !Ref ApiGatewayRestApi
+
+  ApiGatewayMethodS3Get:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      ApiKeyRequired: false
+      AuthorizationType: NONE
+      HttpMethod: GET
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: GET
+        Uri: 
+          !If
+          - Globally
+          - !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIS3Function.Arn}/invocations'
+          - !Sub 'arn:aws-cn:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIS3Function.Arn}/invocations'
+      ResourceId: !Ref ApiGatewayResourceS3
+      RestApiId: !Ref ApiGatewayRestApi   
+
+  AllInOneAIS3FunctionRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'sts:AssumeRole'
+            Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+      ManagedPolicyArns:
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
+          - 'arn:aws-cn:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/AmazonS3FullAccess'
+          - 'arn:aws-cn:iam::aws:policy/AmazonS3FullAccess'
+  
+  AllInOneAIS3FunctionAdditionalPermission:
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName: all_in_one_ai_s3
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'logs:*'
+              - 'lambda:*'
+              - 'cloudwatch:*'
+            Resource: '*'
+            Effect: Allow
+      Roles:
+        - !Ref AllInOneAIS3FunctionRole
+
+  AllInOneAIS3Function:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket: !Ref S3Bucket
+        S3Key: !Sub ${S3Key}/code/all_in_one_ai_s3.zip
+      FunctionName: all_in_one_ai_s3
+      Tags:
+        - Value: Name
+          Key: 'AllInOneAIApi'
+      Handler: lambda_function.lambda_handler
+      Role: !GetAtt AllInOneAIS3FunctionRole.Arn
+      Timeout: 900
+      Runtime: python3.9
+      VpcConfig:
+        SubnetIds: 
+          - !Ref PrivateSubnet1
+          - !Ref PrivateSubnet2
+        SecurityGroupIds: 
+          - !Ref SecurityGroup
+
+  AllInOneAIS3FunctionCatchAllPermissionProd1:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: 'lambda:InvokeFunction'
+      Principal: apigateway.amazonaws.com      
+      FunctionName: !Ref AllInOneAIS3Function
+      SourceArn: 
+        !If
+        - Globally
+        - !Sub
+          - >-
+            arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/GET/s3
+          - __Stage__: '*'
+            __ApiId__: !Ref ApiGatewayRestApi
+        - !Sub
+          - >-
+            arn:aws-cn:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/GET/s3
+          - __Stage__: '*'
+            __ApiId__: !Ref ApiGatewayRestApi
+
+  ApiGatewayResourceSearch:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !GetAtt ApiGatewayRestApi.RootResourceId
+      PathPart: 'api'
+      RestApiId: !Ref ApiGatewayRestApi
+
+  ApiGatewayResourceSearchImage:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !GetAtt ApiGatewayResourceSearch.ResourceId
+      PathPart: 'image'
+      RestApiId: !Ref ApiGatewayRestApi
+
+  AllInOneAISearchByImageFunctionRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'sts:AssumeRole'
+            Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+      ManagedPolicyArns:
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
+          - 'arn:aws-cn:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/AmazonS3FullAccess'
+          - 'arn:aws-cn:iam::aws:policy/AmazonS3FullAccess'
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/service-role/AWSLambdaRole'
+          - 'arn:aws-cn:iam::aws:policy/service-role/AWSLambdaRole'
+  
+  AllInOneAISearchByImageFunctionAdditionalPermission:
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName: all_in_one_ai_search_by_image
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'logs:*'
+              - 'lambda:*'
+              - 'cloudwatch:*'
+            Resource: '*'
+            Effect: Allow
+      Roles:
+        - !Ref AllInOneAISearchByImageFunctionRole
+
+  AllInOneAISearchByImageFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        SearchByImageBucket: !Ref SearchByImageBucket
+        SearchByImageKey: !Sub ${SearchByImageKey}/code/all_in_one_ai_search_by_image.zip
+      FunctionName: all_in_one_ai_search_by_image
+      Tags:
+        - Value: Name
+          Key: 'AllInOneAIApi'
+      Handler: lambda_function.lambda_handler
+      Role: !GetAtt AllInOneAISearchByImageFunctionRole.Arn
+      Timeout: 900
+      Runtime: python3.9
+      VpcConfig:
+        SubnetIds: 
+          - !Ref PrivateSubnet1
+          - !Ref PrivateSubnet2
+        SecurityGroupIds: 
+          - !Ref SecurityGroup
+      Environment:
+        Variables:
+          ES_ENDPOINT: !Ref OpensearchEndpoint
+      Layers:
+        - !Ref HelperLayer
+  
+  AllInOneAISearchByImageFunctionCatchAllPermissionProd1:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: 'lambda:InvokeFunction'
+      Principal: apigateway.amazonaws.com      
+      FunctionName: !Ref AllInOneAISearchByImageFunction
+      SourceArn: 
+        !If
+        - Globally
+        - !Sub
+          - >-
+            arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/POST/search/image
+          - __Stage__: '*'
+            __ApiId__: !Ref ApiGatewayRestApi
+        - !Sub
+          - >-
+            arn:aws-cn:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/POST/search/image
+          - __Stage__: '*'
+            __ApiId__: !Ref ApiGatewayRestApi
+  
+  ApiGatewayResourceSearchImport:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !GetAtt ApiGatewayResourceSearch.ResourceId
+      PathPart: 'import'
+      RestApiId: !Ref ApiGatewayRestApi
+
+  AllInOneAIImportOpensearchFunctionRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'sts:AssumeRole'
+            Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+      ManagedPolicyArns:
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
+          - 'arn:aws-cn:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/service-role/AWSLambdaRole'
+          - 'arn:aws-cn:iam::aws:policy/service-role/AWSLambdaRole'
+  
+  AllInOneAIImportOpensearchFunctionAdditionalPermission:
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName: all_in_one_ai_import_opensearch
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'logs:*'
+              - 'lambda:*'
+              - 'cloudwatch:*'
+            Resource: '*'
+            Effect: Allow
+      Roles:
+        - !Ref AllInOneAIImportOpensearchFunctionRole
+
+  AllInOneAIImportOpensearchFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        ImportOpensearchBucket: !Ref ImportOpensearchBucket
+        ImportOpensearchKey: !Sub ${ImportOpensearchKey}/code/all_in_one_ai_import_opensearch.zip
+      FunctionName: all_in_one_ai_import_opensearch
+      Tags:
+        - Value: Name
+          Key: 'AllInOneAIApi'
+      Handler: lambda_function.lambda_handler
+      Role: !GetAtt AllInOneAIImportOpensearchFunctionRole.Arn
+      Timeout: 900
+      Runtime: python3.9
+      VpcConfig:
+        SubnetIds: 
+          - !Ref PrivateSubnet1
+          - !Ref PrivateSubnet2
+        SecurityGroupIds: 
+          - !Ref SecurityGroup
+      Layers:
+        - !Ref HelperLayer
+  
+  AllInOneAIImportOpensearchFunctionCatchAllPermissionProd1:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: 'lambda:InvokeFunction'
+      Principal: apigateway.amazonaws.com      
+      FunctionName: !Ref AllInOneAIImportOpensearchFunction
+      SourceArn: 
+        !If
+        - Globally
+        - !Sub
+          - >-
+            arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/GET/search/import
+          - __Stage__: '*'
+            __ApiId__: !Ref ApiGatewayRestApi
+        - !Sub
+          - >-
+            arn:aws-cn:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/GET/search/import
+          - __Stage__: '*'
+            __ApiId__: !Ref ApiGatewayRestApi
+
+  ApiGatewayResourceTrainingJob:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !GetAtt ApiGatewayRestApi.RootResourceId
+      PathPart: 'api'
+      RestApiId: !Ref ApiGatewayRestApi
+
+  ApiGatewayMethodTrainingJobGet:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      ApiKeyRequired: false
+      AuthorizationType: NONE
+      HttpMethod: GET
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: GET
+        Uri: 
+          !If
+          - Globally
+          - !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAITrainingJobFunction.Arn}/invocations'
+          - !Sub 'arn:aws-cn:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAITrainingJobFunction.Arn}/invocations'
+      ResourceId: !Ref ApiGatewayResourceTrainingJob
+      RestApiId: !Ref ApiGatewayRestApi   
+
+  ApiGatewayMethodTrainingJobPost:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      ApiKeyRequired: false
+      AuthorizationType: NONE
+      HttpMethod: POST
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: 
+          !If
+          - Globally
+          - !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAITrainingJobFunction.Arn}/invocations'
+          - !Sub 'arn:aws-cn:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAITrainingJobFunction.Arn}/invocations'
+      ResourceId: !Ref ApiGatewayResourceTrainingJob
+      RestApiId: !Ref ApiGatewayRestApi   
+
+  ApiGatewayResourceTrainingJobByName:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !GetAtt ApiGatewayResourceTrainingJob.ResourceId
+      PathPart: '{training_job_name}'
+      RestApiId: !Ref ApiGatewayRestApi
+
+  ApiGatewayMethodTrainingJobByNameGet:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      ApiKeyRequired: false
+      AuthorizationType: NONE
+      HttpMethod: GET
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: GET
+        Uri: 
+          !If
+          - Globally
+          - !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAITrainingJobFunction.Arn}/invocations'
+          - !Sub 'arn:aws-cn:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAITrainingJobFunction.Arn}/invocations'
+      ResourceId: !Ref ApiGatewayResourceTrainingJobByName
+      RestApiId: !Ref ApiGatewayRestApi   
+
+  AllInOneAITrainingJobFunctionRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'sts:AssumeRole'
+            Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+      ManagedPolicyArns:
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
+          - 'arn:aws-cn:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess'
+          - 'arn:aws-cn:iam::aws:policy/AmazonDynamoDBFullAccess'
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/AmazonSSMFullAccess'
+          - 'arn:aws-cn:iam::aws:policy/AmazonSSMFullAccess'
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/service-role/AWSLambdaRole'
+          - 'arn:aws-cn:iam::aws:policy/service-role/AWSLambdaRole'
+  
+  AllInOneAITrainingJobFunctionAdditionalPermission:
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName: all_in_one_ai_training_job
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'logs:*'
+              - 'lambda:*'
+              - 'cloudwatch:*'
+            Resource: '*'
+            Effect: Allow
+      Roles:
+        - !Ref AllInOneAITrainingJobFunctionRole
+
+  AllInOneAITrainingJobFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        TrainingJobBucket: !Ref TrainingJobBucket
+        TrainingJobKey: !Sub ${TrainingJobKey}/code/all_in_one_ai_training_job.zip
+      FunctionName: all_in_one_ai_training_job
+      Tags:
+        - Value: Name
+          Key: 'AllInOneAIApi'
+      Handler: lambda_function.lambda_handler
+      Role: !GetAtt AllInOneAITrainingJobFunctionRole.Arn
+      Timeout: 900
+      Runtime: python3.9
+      VpcConfig:
+        SubnetIds: 
+          - !Ref PrivateSubnet1
+          - !Ref PrivateSubnet2
+        SecurityGroupIds: 
+          - !Ref SecurityGroup
+      Layers:
+        - !Ref HelperLayer
+  
+  AllInOneAITrainingJobFunctionCatchAllPermissionProd1:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: 'lambda:InvokeFunction'
+      Principal: apigateway.amazonaws.com      
+      FunctionName: !Ref AllInOneAITrainingJobFunction
+      SourceArn: 
+        !If
+        - Globally
+        - !Sub
+          - >-
+            arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/GET/trainingjob
+          - __Stage__: '*'
+            __ApiId__: !Ref ApiGatewayRestApi
+        - !Sub
+          - >-
+            arn:aws-cn:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/GET/trainingjob
+          - __Stage__: '*'
+            __ApiId__: !Ref ApiGatewayRestApi
+
+  AllInOneAITrainingJobFunctionCatchAllPermissionProd2:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: 'lambda:InvokeFunction'
+      Principal: apigateway.amazonaws.com      
+      FunctionName: !Ref AllInOneAITrainingJobFunction
+      SourceArn: 
+        !If
+        - Globally
+        - !Sub
+          - >-
+            arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/POST/trainingjob
+          - __Stage__: '*'
+            __ApiId__: !Ref ApiGatewayRestApi
+        - !Sub
+          - >-
+            arn:aws-cn:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/POST/trainingjob
+          - __Stage__: '*'
+            __ApiId__: !Ref ApiGatewayRestApi
+
+  AllInOneAITrainingJobFunctionCatchAllPermissionProd3:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: 'lambda:InvokeFunction'
+      Principal: apigateway.amazonaws.com      
+      FunctionName: !Ref AllInOneAITrainingJobFunction
+      SourceArn: 
+        !If
+        - Globally
+        - !Sub
+          - >-
+            arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/GET/trainingjob/*
+          - __Stage__: '*'
+            __ApiId__: !Ref ApiGatewayRestApi
+        - !Sub
+          - >-
+            arn:aws-cn:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/GET/trainingjob/*
+          - __Stage__: '*'
+            __ApiId__: !Ref ApiGatewayRestApi
+
+  ApiGatewayResourceTransformJob:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !GetAtt ApiGatewayRestApi.RootResourceId
+      PathPart: 'api'
+      RestApiId: !Ref ApiGatewayRestApi
+
+  ApiGatewayMethodTransformJobGet:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      ApiKeyRequired: false
+      AuthorizationType: NONE
+      HttpMethod: GET
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: GET
+        Uri: 
+          !If
+          - Globally
+          - !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAITransformJobFunction.Arn}/invocations'
+          - !Sub 'arn:aws-cn:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAITransformJobFunction.Arn}/invocations'
+      ResourceId: !Ref ApiGatewayResourceTransformJob
+      RestApiId: !Ref ApiGatewayRestApi   
+
+  ApiGatewayMethodTransformJobPost:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      ApiKeyRequired: false
+      AuthorizationType: NONE
+      HttpMethod: POST
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: 
+          !If
+          - Globally
+          - !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAITransformJobFunction.Arn}/invocations'
+          - !Sub 'arn:aws-cn:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAITransformJobFunction.Arn}/invocations'
+      ResourceId: !Ref ApiGatewayResourceTransformJob
+      RestApiId: !Ref ApiGatewayRestApi   
+
+  ApiGatewayResourceTransformJobByName:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !GetAtt ApiGatewayResourceTransformJob.ResourceId
+      PathPart: '{transform_job_name}'
+      RestApiId: !Ref ApiGatewayRestApi
+
+  ApiGatewayMethodTransformJobByNameGet:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      ApiKeyRequired: false
+      AuthorizationType: NONE
+      HttpMethod: GET
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: GET
+        Uri: 
+          !If
+          - Globally
+          - !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAITrainingJobFunction.Arn}/invocations'
+          - !Sub 'arn:aws-cn:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAITrainingJobFunction.Arn}/invocations'
+      ResourceId: !Ref ApiGatewayResourceTransformJobByName
+      RestApiId: !Ref ApiGatewayRestApi   
+
+  AllInOneAITransformJobFunctionRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'sts:AssumeRole'
+            Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+      ManagedPolicyArns:
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
+          - 'arn:aws-cn:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess'
+          - 'arn:aws-cn:iam::aws:policy/AmazonDynamoDBFullAccess'
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/AmazonSSMFullAccess'
+          - 'arn:aws-cn:iam::aws:policy/AmazonSSMFullAccess'
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/service-role/AWSLambdaRole'
+          - 'arn:aws-cn:iam::aws:policy/service-role/AWSLambdaRole'
+  
+  AllInOneAITransformJobFunctionAdditionalPermission:
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName: all_in_one_ai_transform_job
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'logs:*'
+              - 'lambda:*'
+              - 'cloudwatch:*'
+            Resource: '*'
+            Effect: Allow
+      Roles:
+        - !Ref AllInOneAITransformJobFunctionRole
+
+  AllInOneAITransformJobFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        TransformJobBucket: !Ref TransformJobBucket
+        TransformJobKey: !Sub ${TransformJobKey}/code/all_in_one_ai_transform_job.zip
+      FunctionName: all_in_one_ai_transform_job
+      Tags:
+        - Value: Name
+          Key: 'AllInOneAIApi'
+      Handler: lambda_function.lambda_handler
+      Role: !GetAtt AllInOneAITransformJobFunctionRole.Arn
+      Timeout: 900
+      Runtime: python3.9
+      VpcConfig:
+        SubnetIds: 
+          - !Ref PrivateSubnet1
+          - !Ref PrivateSubnet2
+        SecurityGroupIds: 
+          - !Ref SecurityGroup
+      Layers:
+        - !Ref HelperLayer
+  
+  AllInOneAITransformJobFunctionCatchAllPermissionProd1:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: 'lambda:InvokeFunction'
+      Principal: apigateway.amazonaws.com      
+      FunctionName: !Ref AllInOneAITransformJobFunction
+      SourceArn: 
+        !If
+        - Globally
+        - !Sub
+          - >-
+            arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/GET/transformjob
+          - __Stage__: '*'
+            __ApiId__: !Ref ApiGatewayRestApi
+        - !Sub
+          - >-
+            arn:aws-cn:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/GET/transformjob
+          - __Stage__: '*'
+            __ApiId__: !Ref ApiGatewayRestApi
+
+  AllInOneAITransformJobFunctionCatchAllPermissionProd2:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: 'lambda:InvokeFunction'
+      Principal: apigateway.amazonaws.com      
+      FunctionName: !Ref AllInOneAITransformJobFunction
+      SourceArn: 
+        !If
+        - Globally
+        - !Sub
+          - >-
+            arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/POST/transformjob
+          - __Stage__: '*'
+            __ApiId__: !Ref ApiGatewayRestApi
+        - !Sub
+          - >-
+            arn:aws-cn:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/POST/transformjob
+          - __Stage__: '*'
+            __ApiId__: !Ref ApiGatewayRestApi
+
+  AllInOneAITransformJobFunctionCatchAllPermissionProd3:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: 'lambda:InvokeFunction'
+      Principal: apigateway.amazonaws.com      
+      FunctionName: !Ref AllInOneAITransformJobFunction
+      SourceArn: 
+        !If
+        - Globally
+        - !Sub
+          - >-
+            arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/GET/transformjob/*
+          - __Stage__: '*'
+            __ApiId__: !Ref ApiGatewayRestApi
+        - !Sub
+          - >-
+            arn:aws-cn:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/GET/transformjob/*
+          - __Stage__: '*'
+            __ApiId__: !Ref ApiGatewayRestApi
+
+  ApiGatewayResourceTransformJobByNameReview:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !GetAtt ApiGatewayResourceTransformJobByName.ResourceId
+      PathPart: 'review'
+      RestApiId: !Ref ApiGatewayRestApi
+
+  ApiGatewayMethodTransformJobByNameReviewGet:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      ApiKeyRequired: false
+      AuthorizationType: NONE
+      HttpMethod: GET
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: GET
+        Uri: 
+          !If
+          - Globally
+          - !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAITrainingJobReviewFunction.Arn}/invocations'
+          - !Sub 'arn:aws-cn:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAITrainingJobReviewFunction.Arn}/invocations'
+      ResourceId: !Ref ApiGatewayResourceTransformJobByNameReview
+      RestApiId: !Ref ApiGatewayRestApi   
+
+  AllInOneAITransformJobReviewFunctionRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'sts:AssumeRole'
+            Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+      ManagedPolicyArns:
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
+          - 'arn:aws-cn:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess'
+          - 'arn:aws-cn:iam::aws:policy/AmazonDynamoDBFullAccess'
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/AmazonSSMFullAccess'
+          - 'arn:aws-cn:iam::aws:policy/AmazonSSMFullAccess'
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/AmazonS3FullAccess'
+          - 'arn:aws-cn:iam::aws:policy/AmazonS3FullAccess'
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/service-role/AWSLambdaRole'
+          - 'arn:aws-cn:iam::aws:policy/service-role/AWSLambdaRole'
+  
+  AllInOneAITransformJobReviewFunctionAdditionalPermission:
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName: all_in_one_ai_transform_job_review
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'logs:*'
+              - 'lambda:*'
+              - 'cloudwatch:*'
+            Resource: '*'
+            Effect: Allow
+      Roles:
+        - !Ref AllInOneAITransformJobReviewFunctionRole
+
+  AllInOneAITransformJobReviewFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        TransformJobReviewBucket: !Ref TransformJobReviewBucket
+        TransformJobReviewKey: !Sub ${TransformJobReviewKey}/code/all_in_one_ai_transform_job_review.zip
+      FunctionName: all_in_one_ai_transform_job_review
+      Tags:
+        - Value: Name
+          Key: 'AllInOneAIApi'
+      Handler: lambda_function.lambda_handler
+      Role: !GetAtt AllInOneAITransformJobReviewFunctionRole.Arn
+      Timeout: 900
+      Runtime: python3.9
+      VpcConfig:
+        SubnetIds: 
+          - !Ref PrivateSubnet1
+          - !Ref PrivateSubnet2
+        SecurityGroupIds: 
+          - !Ref SecurityGroup
+      Layers:
+        - !Ref HelperLayer
+
+  AllInOneAITransformJobReviewFunctionCatchAllPermissionProd1:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: 'lambda:InvokeFunction'
+      Principal: apigateway.amazonaws.com      
+      FunctionName: !Ref AllInOneAITransformJobReviewFunction
+      SourceArn: 
+        !If
+        - Globally
+        - !Sub
+          - >-
+            arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/GET/transformjob/review
+          - __Stage__: '*'
+            __ApiId__: !Ref ApiGatewayRestApi
+        - !Sub
+          - >-
+            arn:aws-cn:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/GET/transformjob/review
+          - __Stage__: '*'
+            __ApiId__: !Ref ApiGatewayRestApi
+
+  AllInOneAICreateApiFunctionRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'sts:AssumeRole'
+            Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+      ManagedPolicyArns:
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
+          - 'arn:aws-cn:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/IAMFullAccess'
+          - 'arn:aws-cn:iam::aws:policy/IAMFullAccess'
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/AmazonAPIGatewayAdministrator'
+          - 'arn:aws-cn:iam::aws:policy/AmazonAPIGatewayAdministrator'
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/AWSLambda_FullAccess'
+          - 'arn:aws-cn:iam::aws:policy/AWSLambda_FullAccess'
+    
+  AllInOneAICreateApiFunctionAdditionalPermission:
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName: all_in_one_ai_create_api
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'logs:*'
+              - 'lambda:*'
+              - 'cloudwatch:*'
+            Resource: '*'
+            Effect: Allow
+      Roles:
+        - !Ref AllInOneAICreateApiFunctionRole
+
+  AllInOneAICreateApiFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket: !Ref S3Bucket
+        S3Key: !Sub ${S3Key}/code/all_in_one_ai_create_api.zip
+      FunctionName: all_in_one_ai_create_api
+      Tags:
+        - Value: Name
+          Key: 'AllInOneAIApi'
+      Handler: lambda_function.lambda_handler
+      Role: !GetAtt AllInOneAICreateApiFunctionRole.Arn
+      Timeout: 900
+      Runtime: python3.9
+      VpcConfig:
+        SubnetIds: 
+          - !Ref PrivateSubnet1
+          - !Ref PrivateSubnet2
+        SecurityGroupIds: 
+          - !Ref SecurityGroup
+  
+  AllInOneAICreateEndpointFunctionRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'sts:AssumeRole'
+            Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+      ManagedPolicyArns:
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
+          - 'arn:aws-cn:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/AmazonSageMakerFullAccess'
+          - 'arn:aws:iam::aws:policy/AmazonSageMakerFullAccess'
+  
+  AllInOneAICreateEndpointFunctionAdditionalPermission:
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName: all_in_one_ai_create_endpoint
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'logs:*'
+              - 'lambda:*'
+              - 'cloudwatch:*'
+            Resource: '*'
+            Effect: Allow
+      Roles:
+        - !Ref AllInOneAICreateEndpointFunctionRole
+
+  AllInOneAICreateEndpointFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket: !Ref S3Bucket
+        S3Key: !Sub ${S3Key}/code/all_in_one_ai_create_endpoint.zip
+      FunctionName: all_in_one_ai_create_endpoint
+      Tags:
+        - Value: Name
+          Key: 'AllInOneAIApi'
+      Handler: lambda_function.lambda_handler
+      Role: !GetAtt AllInOneAICreateEndpointFunctionRole.Arn
+      Timeout: 900
+      Runtime: python3.9
+      VpcConfig:
+        SubnetIds: 
+          - !Ref PrivateSubnet1
+          - !Ref PrivateSubnet2
+        SecurityGroupIds: 
+          - !Ref SecurityGroup
+
+  AllInOneAICreateModelFunctionRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'sts:AssumeRole'
+            Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+      ManagedPolicyArns:
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
+          - 'arn:aws-cn:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/AmazonSageMakerFullAccess'
+          - 'arn:aws:iam::aws:policy/AmazonSageMakerFullAccess'
+    
+  AllInOneAICreateModelFunctionAdditionalPermission:
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName: all_in_one_ai_create_model
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'logs:*'
+              - 'lambda:*'
+              - 'cloudwatch:*'
+            Resource: '*'
+            Effect: Allow
+      Roles:
+        - !Ref AllInOneAICreateModelFunctionRole
+
+  AllInOneAICreateModelFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket: !Ref S3Bucket
+        S3Key: !Sub ${S3Key}/code/all_in_one_ai_create_model.zip
+      FunctionName: all_in_one_ai_create_model
+      Tags:
+        - Value: Name
+          Key: 'AllInOneAIApi'
+      Handler: lambda_function.lambda_handler
+      Role: !GetAtt AllInOneAICreateModelFunctionRole.Arn
+      Timeout: 900
+      Runtime: python3.9
+      VpcConfig:
+        SubnetIds: 
+          - !Ref PrivateSubnet1
+          - !Ref PrivateSubnet2
+        SecurityGroupIds: 
+          - !Ref SecurityGroup
+  
+  AllInOneAICreatePipelineFunctionRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'sts:AssumeRole'
+            Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+      ManagedPolicyArns:
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
+          - 'arn:aws-cn:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/AmazonSageMakerFullAccess'
+          - 'arn:aws-cn:iam::aws:policy/AmazonSageMakerFullAccess'
+  
+  AllInOneAICreatePipelineFunctionAdditionalPermission:
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName: all_in_one_ai_create_pipeline
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'logs:*'
+              - 'lambda:*'
+              - 'cloudwatch:*'
+            Resource: '*'
+            Effect: Allow
+      Roles:
+        - !Ref AllInOneAICreatePipelineFunctionRole
+
+  AllInOneAICreatePipelineFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket: !Ref S3Bucket
+        S3Key: !Sub ${S3Key}/code/all_in_one_ai_create_pipeline.zip
+      FunctionName: all_in_one_ai_create_pipeline
+      Tags:
+        - Value: Name
+          Key: 'AllInOneAIApi'
+      Handler: lambda_function.lambda_handler
+      Role: !GetAtt AllInOneAICreatePipelineFunctionRole.Arn
+      Timeout: 900
+      Runtime: python3.9
+      VpcConfig:
+        SubnetIds: 
+          - !Ref PrivateSubnet1
+          - !Ref PrivateSubnet2
+        SecurityGroupIds: 
+          - !Ref SecurityGroup
+      Layers:
+        - !Ref sagemaker
+  
+  AllInOneAICreatePipelineHelperFunctionRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'sts:AssumeRole'
+            Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+      ManagedPolicyArns:
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
+          - 'arn:aws-cn:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/service-role/AWSLambdaRole'
+          - 'arn:aws-cn:iam::aws:policy/service-role/AWSLambdaRole'
+  
+  AllInOneAICreatePipelineHelperFunctionAdditionalPermission:
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName: all_in_one_ai_create_pipeline_helper
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'logs:*'
+              - 'lambda:*'
+              - 'cloudwatch:*'
+            Resource: '*'
+            Effect: Allow
+      Roles:
+        - !Ref AllInOneAICreatePipelineHelperFunctionRole
+
+  AllInOneAICreatePipelineHelperFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket: !Ref S3Bucket
+        S3Key: !Sub ${S3Key}/code/all_in_one_ai_create_pipeline_helper.zip
+      FunctionName: all_in_one_ai_create_pipeline_helper
+      Tags:
+        - Value: Name
+          Key: 'AllInOneAIApi'
+      Handler: lambda_function.lambda_handler
+      Role: !GetAtt AllInOneAICreatePipelineHelperFunctionRole.Arn
+      Timeout: 900
+      Runtime: python3.9
+      VpcConfig:
+        SubnetIds: 
+          - !Ref PrivateSubnet1
+          - !Ref PrivateSubnet2
+        SecurityGroupIds: 
+          - !Ref SecurityGroup
+  
+    AllInOneAICreateTrainingJobYolov5FunctionRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'sts:AssumeRole'
+            Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+      ManagedPolicyArns:
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
+          - 'arn:aws-cn:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/AmazonSageMakerFullAccess'
+          - 'arn:aws-cn:iam::aws:policy/AmazonSageMakerFullAccess'
+    
+  AllInOneAICreateTrainingJobYolov5FunctionAdditionalPermission:
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName:  all_in_one_ai_create_training_job_yolov5
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'logs:*'
+              - 'lambda:*'
+              - 'cloudwatch:*'
+            Resource: '*'
+            Effect: Allow
+      Roles:
+        - !Ref AllInOneAICreateTrainingJobYolov5FunctionRole
+
+  AllInOneAICreateTrainingJobYolov5Function:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket: !Ref S3Bucket
+        S3Key: !Sub ${S3Key}/code/ all_in_one_ai_create_training_job_yolov5.zip
+      FunctionName:  all_in_one_ai_create_training_job_yolov5
+      Tags:
+        - Value: Name
+          Key: 'AllInOneAIApi'
+      Handler: lambda_function.lambda_handler
+      Role: !GetAtt AllInOneAICreateTrainingJobYolov5FunctionRole.Arn
+      Timeout: 900
+      Runtime: python3.9
+      VpcConfig:
+        SubnetIds: 
+          - !Ref PrivateSubnet1
+          - !Ref PrivateSubnet2
+        SecurityGroupIds: 
+          - !Ref SecurityGroup
+
+  AllInOneAICreateTransformJobFunctionRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'sts:AssumeRole'
+            Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+      ManagedPolicyArns:
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
+          - 'arn:aws-cn:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/AmazonSageMakerFullAccess'
+          - 'arn:aws-cn:iam::aws:policy/AmazonSageMakerFullAccess'
+  
+  AllInOneAICreateTransformJobFunctionAdditionalPermission:
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName: all_in_one_ai_create_transform_job
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'logs:*'
+              - 'lambda:*'
+              - 'cloudwatch:*'
+            Resource: '*'
+            Effect: Allow
+      Roles:
+        - !Ref AllInOneAICreateTransformJobFunctionRole
+
+  AllInOneAICreateTransformJobFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket: !Ref S3Bucket
+        S3Key: !Sub ${S3Key}/code/all_in_one_ai_create_transform_job.zip
+      FunctionName: all_in_one_ai_create_transform_job
+      Tags:
+        - Value: Name
+          Key: 'AllInOneAIApi'
+      Handler: lambda_function.lambda_handler
+      Role: !GetAtt AllInOneAICreateTransformJobFunctionRole.Arn
+      Timeout: 900
+      Runtime: python3.9
+      VpcConfig:
+        SubnetIds: 
+          - !Ref PrivateSubnet1
+          - !Ref PrivateSubnet2
+        SecurityGroupIds: 
+          - !Ref SecurityGroup
+
+  AllInOneAIDeleteEndpointFunctionRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'sts:AssumeRole'
+            Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+      ManagedPolicyArns:
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
+          - 'arn:aws-cn:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/AmazonSageMakerFullAccess'
+          - 'arn:aws-cn:iam::aws:policy/AmazonSageMakerFullAccess'
+    
+  AllInOneAIDeleteEndpointFunctionAdditionalPermission:
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName:   all_in_one_ai_delete_endpoint
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'logs:*'
+              - 'lambda:*'
+              - 'cloudwatch:*'
+            Resource: '*'
+            Effect: Allow
+      Roles:
+        - !Ref AllInOneAIDeleteEndpointFunctionRole
+
+  AllInOneAIDeleteEndpointFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket: !Ref S3Bucket
+        S3Key: !Sub ${S3Key}/code/  all_in_one_ai_delete_endpoint.zip
+      FunctionName:   all_in_one_ai_delete_endpoint
+      Tags:
+        - Value: Name
+          Key: 'AllInOneAIApi'
+      Handler: lambda_function.lambda_handler
+      Role: !GetAtt AllInOneAIDeleteEndpointFunctionRole.Arn
+      Timeout: 900
+      Runtime: python3.9
+      VpcConfig:
+        SubnetIds: 
+          - !Ref PrivateSubnet1
+          - !Ref PrivateSubnet2
+        SecurityGroupIds: 
+          - !Ref SecurityGroup
+
+  AllInOneAIDeleteModelFunctionRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'sts:AssumeRole'
+            Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+      ManagedPolicyArns:
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
+          - 'arn:aws-cn:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/AmazonSageMakerFullAccess'
+          - 'arn:aws-cn:iam::aws:policy/AmazonSageMakerFullAccess'
+    
+  AllInOneAIDeleteModelFunctionAdditionalPermission:
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName:   all_in_one_ai_delete_model
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'logs:*'
+              - 'lambda:*'
+              - 'cloudwatch:*'
+            Resource: '*'
+            Effect: Allow
+      Roles:
+        - !Ref AllInOneAIDeleteModelFunctionRole
+
+  AllInOneAIDeleteModelFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket: !Ref S3Bucket
+        S3Key: !Sub ${S3Key}/code/  all_in_one_ai_delete_model.zip
+      FunctionName:   all_in_one_ai_delete_model
+      Tags:
+        - Value: Name
+          Key: 'AllInOneAIApi'
+      Handler: lambda_function.lambda_handler
+      Role: !GetAtt AllInOneAIDeleteModelFunctionRole.Arn
+      Timeout: 900
+      Runtime: python3.9
+      VpcConfig:
+        SubnetIds: 
+          - !Ref PrivateSubnet1
+          - !Ref PrivateSubnet2
+        SecurityGroupIds: 
+          - !Ref SecurityGroup
+
+  AllInOneAIDescribePipelineExecutionFunctionRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'sts:AssumeRole'
+            Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+      ManagedPolicyArns:
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
+          - 'arn:aws-cn:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/AmazonSageMakerFullAccess'
+          - 'arn:aws-cn:iam::aws:policy/AmazonSageMakerFullAccess'
+    
+  AllInOneAIDescribePipelineExecutionFunctionAdditionalPermission:
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName:   all_in_one_ai_describe_pipeline_execution
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'logs:*'
+              - 'lambda:*'
+              - 'cloudwatch:*'
+            Resource: '*'
+            Effect: Allow
+      Roles:
+        - !Ref AllInOneAIDescribePipelineExecutionFunctionRole
+
+  AllInOneAIDescribePipelineExecutionFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket: !Ref S3Bucket
+        S3Key: !Sub ${S3Key}/code/  all_in_one_ai_describe_pipeline_execution.zip
+      FunctionName:   all_in_one_ai_describe_pipeline_execution
+      Tags:
+        - Value: Name
+          Key: 'AllInOneAIApi'
+      Handler: lambda_function.lambda_handler
+      Role: !GetAtt AllInOneAIDescribePipelineExecutionFunctionRole.Arn
+      Timeout: 900
+      Runtime: python3.9
+      VpcConfig:
+        SubnetIds: 
+          - !Ref PrivateSubnet1
+          - !Ref PrivateSubnet2
+        SecurityGroupIds: 
+          - !Ref SecurityGroup
+
+  AllInOneAIDescribeTrainingJobFunctionRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'sts:AssumeRole'
+            Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+      ManagedPolicyArns:
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
+          - 'arn:aws-cn:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/AmazonSageMakerFullAccess'
+          - 'arn:aws-cn:iam::aws:policy/AmazonSageMakerFullAccess'
+    
+  AllInOneAIDescribeTrainingJobFunctionAdditionalPermission:
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName:   all_in_one_ai_describe_training_job
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'logs:*'
+              - 'lambda:*'
+              - 'cloudwatch:*'
+            Resource: '*'
+            Effect: Allow
+      Roles:
+        - !Ref AllInOneAIDescribeTrainingJobFunctionRole
+
+  AllInOneAIDescribeTrainingJobFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket: !Ref S3Bucket
+        S3Key: !Sub ${S3Key}/code/  all_in_one_ai_describe_training_job.zip
+      FunctionName:   all_in_one_ai_describe_training_job
+      Tags:
+        - Value: Name
+          Key: 'AllInOneAIApi'
+      Handler: lambda_function.lambda_handler
+      Role: !GetAtt AllInOneAIDescribeTrainingJobFunctionRole.Arn
+      Timeout: 900
+      Runtime: python3.9
+      VpcConfig:
+        SubnetIds: 
+          - !Ref PrivateSubnet1
+          - !Ref PrivateSubnet2
+        SecurityGroupIds: 
+          - !Ref SecurityGroup
+
+  AllInOneAIDescribeTransformJobFunctionRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'sts:AssumeRole'
+            Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+      ManagedPolicyArns:
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
+          - 'arn:aws-cn:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/AmazonSageMakerFullAccess'
+          - 'arn:aws-cn:iam::aws:policy/AmazonSageMakerFullAccess'
+    
+  AllInOneAIDescribeTransformJobFunctionAdditionalPermission:
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName:   all_in_one_ai_describe_transform_job
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'logs:*'
+              - 'lambda:*'
+              - 'cloudwatch:*'
+            Resource: '*'
+            Effect: Allow
+      Roles:
+        - !Ref AllInOneAIDescribeTransformJobFunctionRole
+
+  AllInOneAIDescribeTransformJobFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket: !Ref S3Bucket
+        S3Key: !Sub ${S3Key}/code/  all_in_one_ai_describe_transform_job.zip
+      FunctionName:   all_in_one_ai_describe_transform_job
+      Tags:
+        - Value: Name
+          Key: 'AllInOneAIApi'
+      Handler: lambda_function.lambda_handler
+      Role: !GetAtt AllInOneAIDescribeTransformJobFunctionRole.Arn
+      Timeout: 900
+      Runtime: python3.9
+      VpcConfig:
+        SubnetIds: 
+          - !Ref PrivateSubnet1
+          - !Ref PrivateSubnet2
+        SecurityGroupIds: 
+          - !Ref SecurityGroup
+
+  AllInOneAIFinalizePipelineFunctionRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'sts:AssumeRole'
+            Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+      ManagedPolicyArns:
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
+          - 'arn:aws-cn:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/AmazonSSMFullAccess'
+          - 'arn:aws-cn:iam::aws:policy/AmazonSSMFullAccess'
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess'
+          - 'arn:aws-cn:iam::aws:policy/AmazonDynamoDBFullAccess'
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/service-role/AWSLambdaRole'
+          - 'arn:aws-cn:iam::aws:policy/service-role/AWSLambdaRole'
+    
+  AllInOneAIFinalizePipelineFunctionAdditionalPermission:
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName:   all_in_one_ai_finalize_pipeline
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'logs:*'
+              - 'lambda:*'
+              - 'cloudwatch:*'
+            Resource: '*'
+            Effect: Allow
+      Roles:
+        - !Ref AllInOneAFinalizePipelineFunctionRole
+
+  AllInOneAIFinalizePipelineFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket: !Ref S3Bucket
+        S3Key: !Sub ${S3Key}/code/  all_in_one_ai_finalize_pipeline.zip
+      FunctionName:   all_in_one_ai_finalize_pipeline
+      Tags:
+        - Value: Name
+          Key: 'AllInOneAIApi'
+      Handler: lambda_function.lambda_handler
+      Role: !GetAtt AllInOneAFinalizePipelineFunctionRole.Arn
+      Timeout: 900
+      Runtime: python3.9
+      VpcConfig:
+        SubnetIds: 
+          - !Ref PrivateSubnet1
+          - !Ref PrivateSubnet2
+        SecurityGroupIds: 
+          - !Ref SecurityGroup
+
+  AllInOneAIGetFunctionCodeFunctionRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'sts:AssumeRole'
+            Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+      ManagedPolicyArns:
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
+          - 'arn:aws-cn:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/AWSLambda_FullAccess'
+          - 'arn:aws-cn:iam::aws:policy/AWSLambda_FullAccess'
+    
+  AllInOneAIGetFunctionCodeFunctionAdditionalPermission:
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName:   all_in_one_ai_get_function_code
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'logs:*'
+              - 'lambda:*'
+              - 'cloudwatch:*'
+            Resource: '*'
+            Effect: Allow
+      Roles:
+        - !Ref AllInOneAGetFunctionCodeFunctionRole
+
+  AllInOneAIGetFunctionCodeFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket: !Ref S3Bucket
+        S3Key: !Sub ${S3Key}/code/  all_in_one_ai_get_function_code.zip
+      FunctionName:   all_in_one_ai_get_function_code
+      Tags:
+        - Value: Name
+          Key: 'AllInOneAIApi'
+      Handler: lambda_function.lambda_handler
+      Role: !GetAtt AllInOneAGetFunctionCodeFunctionRole.Arn
+      Timeout: 900
+      Runtime: python3.9
+      VpcConfig:
+        SubnetIds: 
+          - !Ref PrivateSubnet1
+          - !Ref PrivateSubnet2
+        SecurityGroupIds: 
+          - !Ref SecurityGroup
+
+  AllInOneAIGetFunctionConsoleFunctionRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'sts:AssumeRole'
+            Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+      ManagedPolicyArns:
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
+          - 'arn:aws-cn:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/AWSLambda_FullAccess'
+          - 'arn:aws-cn:iam::aws:policy/AWSLambda_FullAccess'
+    
+  AllInOneAIGetFunctionConsoleFunctionAdditionalPermission:
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName:   all_in_one_ai_get_function_console
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'logs:*'
+              - 'lambda:*'
+              - 'cloudwatch:*'
+            Resource: '*'
+            Effect: Allow
+      Roles:
+        - !Ref AllInOneAGetFunctionConsoleFunctionRole
+
+  AllInOneAIGetFunctionConsoleFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket: !Ref S3Bucket
+        S3Key: !Sub ${S3Key}/code/  all_in_one_ai_get_function_console.zip
+      FunctionName:   all_in_one_ai_get_function_console
+      Tags:
+        - Value: Name
+          Key: 'AllInOneAIApi'
+      Handler: lambda_function.lambda_handler
+      Role: !GetAtt AllInOneAGetFunctionConsoleFunctionRole.Arn
+      Timeout: 900
+      Runtime: python3.9
+      VpcConfig:
+        SubnetIds: 
+          - !Ref PrivateSubnet1
+          - !Ref PrivateSubnet2
+        SecurityGroupIds: 
+          - !Ref SecurityGroup
+
+  AllInOneAIGreengrassCreateComponentVersionFunctionRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'sts:AssumeRole'
+            Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+      ManagedPolicyArns:
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
+          - 'arn:aws-cn:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/AmazonS3FullAccess'
+          - 'arn:aws-cn:iam::aws:policy/AmazonS3FullAccess'
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/AWSGreengrassFullAccess'
+          - 'arn:aws-cn:iam::aws:policy/AWSGreengrassFullAccess'
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/AmazonElasticFileSystemFullAccess'
+          - 'arn:aws-cn:iam::aws:policy/AmazonElasticFileSystemFullAccess'
+    
+  AllInOneAIGreengrassCreateComponentVersionFunctionAdditionalPermission:
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName:   all_in_one_ai_greengrass_create_component_version
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'logs:*'
+              - 'lambda:*'
+              - 'cloudwatch:*'
+            Resource: '*'
+            Effect: Allow
+      Roles:
+        - !Ref AllInOneAGreengrassCreateComponentVersionFunctionRole
+
+  AllInOneAIGreengrassCreateComponentVersionFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket: !Ref S3Bucket
+        S3Key: !Sub ${S3Key}/code/  all_in_one_ai_greengrass_create_component_version.zip
+      FunctionName:   all_in_one_ai_greengrass_create_component_version
+      Tags:
+        - Value: Name
+          Key: 'AllInOneAIApi'
+      Handler: lambda_function.lambda_handler
+      Role: !GetAtt AllInOneAGreengrassCreateComponentVersionFunctionRole.Arn
+      Timeout: 900
+      Runtime: python3.9
+      VpcConfig:
+        SubnetIds: 
+          - !Ref PrivateSubnet1
+          - !Ref PrivateSubnet2
+        SecurityGroupIds: 
+          - !Ref SecurityGroup
+      FileSystemConfigs:
+      - Arn: !Ref EfsAccessPointArn
+        LocalMountPath: "/mnt/efs"
+
+  AllInOneAIGreengrassCreateDeploymentFunctionRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'sts:AssumeRole'
+            Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+      ManagedPolicyArns:
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
+          - 'arn:aws-cn:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/AWSIoTFullAccess'
+          - 'arn:aws-cn:iam::aws:policy/AWSIoTFullAccess'
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/AWSGreengrassFullAccess'
+          - 'arn:aws-cn:iam::aws:policy/AWSGreengrassFullAccess'
+    
+  AllInOneAIGreengrassCreateDeploymentFunctionAdditionalPermission:
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName:   all_in_one_ai_greengrass_create_deployment
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'logs:*'
+              - 'lambda:*'
+              - 'cloudwatch:*'
+            Resource: '*'
+            Effect: Allow
+      Roles:
+        - !Ref AllInOneAGreengrassCreateDeploymentFunctionRole
+
+  AllInOneAIGreengrassCreateDeploymentFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket: !Ref S3Bucket
+        S3Key: !Sub ${S3Key}/code/  all_in_one_ai_greengrass_create_deployment.zip
+      FunctionName:   all_in_one_ai_greengrass_create_deployment
+      Tags:
+        - Value: Name
+          Key: 'AllInOneAIApi'
+      Handler: lambda_function.lambda_handler
+      Role: !GetAtt AllInOneAGreengrassCreateDeploymentFunctionRole.Arn
+      Timeout: 900
+      Runtime: python3.9
+      VpcConfig:
+        SubnetIds: 
+          - !Ref PrivateSubnet1
+          - !Ref PrivateSubnet2
+        SecurityGroupIds: 
+          - !Ref SecurityGroup
+
+  AllInOneAIImportOpensearchHandlerFunctionRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'sts:AssumeRole'
+            Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+      ManagedPolicyArns:
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
+          - 'arn:aws-cn:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/AmazonSQSFullAccess'
+          - 'arn:aws-cn:iam::aws:policy/AmazonSQSFullAccess'
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/AmazonS3FullAccess'
+          - 'arn:aws-cn:iam::aws:policy/AmazonS3FullAccess'
+  
+  AllInOneAIImportOpensearchHandlerFunctionAdditionalPermission:
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName: all_in_one_ai_import_opensearch_handler
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'logs:*'
+              - 'lambda:*'
+              - 'cloudwatch:*'
+            Resource: '*'
+            Effect: Allow
+      Roles:
+        - !Ref AllInOneAIImportOpensearchHandlerFunctionRole
+
+  AllInOneAIImportOpensearchHandlerFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket: !Ref S3Bucket
+        S3Key: !Sub ${S3Key}/code/all_in_one_ai_import_opensearch_handler.zip
+      FunctionName: all_in_one_ai_import_opensearch_handler
+      Tags:
+        - Value: Name
+          Key: 'AllInOneAIApi'
+      Handler: lambda_function.lambda_handler
+      Role: !GetAtt AllInOneAIImportOpensearchHandlerFunctionRole.Arn
+      Timeout: 900
+      Runtime: python3.9
+      VpcConfig:
+        SubnetIds: 
+          - !Ref PrivateSubnet1
+          - !Ref PrivateSubnet2
+        SecurityGroupIds: 
+          - !Ref SecurityGroup
+      Layers:
+        - !Ref helper
+
+  AllInOneAIImportOpensearchHelperFunctionRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'sts:AssumeRole'
+            Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+      ManagedPolicyArns:
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
+          - 'arn:aws-cn:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/service-role/AWSLambdaRole'
+          - 'arn:aws-cn:iam::aws:policy/service-role/AWSLambdaRole'
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/AmazonSQSFullAccess'
+          - 'arn:aws-cn:iam::aws:policy/AmazonSQSFullAccess'
+  
+  AllInOneAIImportOpensearchHelperFunctionAdditionalPermission:
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName: all_in_one_ai_import_opensearch_helper
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'logs:*'
+              - 'lambda:*'
+              - 'cloudwatch:*'
+            Resource: '*'
+            Effect: Allow
+      Roles:
+        - !Ref AllInOneAIImportOpensearchHelperFunctionRole
+
+  AllInOneAIImportOpensearchHelperFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket: !Ref S3Bucket
+        S3Key: !Sub ${S3Key}/code/all_in_one_ai_import_opensearch_helper.zip
+      FunctionName: all_in_one_ai_import_opensearch_helper
+      Tags:
+        - Value: Name
+          Key: 'AllInOneAIApi'
+      Handler: lambda_function.lambda_handler
+      Role: !GetAtt AllInOneAIImportOpensearchHelperFunctionRole.Arn
+      Timeout: 900
+      Runtime: python3.9
+      VpcConfig:
+        SubnetIds: 
+          - !Ref PrivateSubnet1
+          - !Ref PrivateSubnet2
+        SecurityGroupIds: 
+          - !Ref SecurityGroup
+      Layers:
+        - !Ref helper
+
+  AllInOneAIInvokeEndpointFunctionRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'sts:AssumeRole'
+            Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+      ManagedPolicyArns:
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
+          - 'arn:aws-cn:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/AmazonSageMakerFullAccess'
+          - 'arn:aws-cn:iam::aws:policy/AmazonSageMakerFullAccess'
+    
+  AllInOneAIInvokeEndpointFunctionAdditionalPermission:
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName:   all_in_one_ai_invoke_endpoint
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'logs:*'
+              - 'lambda:*'
+              - 'cloudwatch:*'
+            Resource: '*'
+            Effect: Allow
+      Roles:
+        - !Ref AllInOneAInvokeEndpointFunctionRole
+
+  AllInOneAIInvokeEndpointFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket: !Ref S3Bucket
+        S3Key: !Sub ${S3Key}/code/all_in_one_ai_invoke_endpoint.zip
+      FunctionName:   all_in_one_ai_invoke_endpoint
+      Tags:
+        - Value: Name
+          Key: 'AllInOneAIApi'
+      Handler: lambda_function.lambda_handler
+      Role: !GetAtt AllInOneAInvokeEndpointFunctionRole.Arn
+      Timeout: 900
+      Runtime: python3.9
+      VpcConfig:
+        SubnetIds: 
+          - !Ref PrivateSubnet1
+          - !Ref PrivateSubnet2
+        SecurityGroupIds: 
+          - !Ref SecurityGroup
+
+  ApiGatewayRestApiDeployment:
+    Type: 'AWS::ApiGateway::Deployment'
+    DependsOn: 
+      - 
+    Properties:
+      RestApiId: !Ref ApiGatewayRestApi
+      Description: 'All-In-One-AI API Gateway'
+      StageName: Prod
+  
+Outputs:
+  ApiGatewayProdEndpoint:
+    Description: "API Prod stage endpoint"
+    Value: 
+      !If
+      - Globally
+      - !Sub https://${ApiGatewayRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod
+      - !Sub https://${ApiGatewayRestApi}.execute-api.${AWS::Region}.amazonaws.com.cn/Prod

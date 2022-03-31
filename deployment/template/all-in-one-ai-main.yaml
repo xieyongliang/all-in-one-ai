@@ -1,0 +1,373 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: (spot bot) - The AWS CloudFormation template for deployment of the  spotbot. Version v1.0.0 (Global)
+
+Parameters:
+  S3Bucket:
+    Description: S3 Bucket of assets
+    Type: String
+
+  S3Key:
+    Description: S3 Bucket of assets
+    Type: String
+
+  CustomIdentifier:
+    Description: AWS Resource CustomIdentifier
+    Type: String
+    Default: SpotBot
+
+  AvailabilityZones:
+    Description: >-
+      The list of Availability Zones to use for the subnets in the VPC. Please select two AvailabilityZones.
+    Type: 'List<AWS::EC2::AvailabilityZone::Name>'
+
+  CIDR:
+    Type: String
+    Default: 10.0.0.0/16
+    AllowedPattern: >-
+      ^(([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5]){1}(\/([0-9]|[1-2][0-9]|3[0-2]))?$
+    ConstraintDescription: must be a valid CIDR block format.
+    Description: The CIDR block for the VPC.
+
+  PublicSubnet1CIDR:
+    Type: String
+    Default: 10.0.0.0/24
+    AllowedPattern: >-
+      ^(([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5]){1}(\/([0-9]|[1-2][0-9]|3[0-2]))?$
+    ConstraintDescription: must be a valid CIDR block format.
+    Description: The CIDR block for the public subnet located in Availability Zone A.
+
+  PublicSubnet2CIDR:
+    Type: String
+    Default: 10.0.1.0/24
+    AllowedPattern: >-
+      ^(([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5]){1}(\/([0-9]|[1-2][0-9]|3[0-2]))?$
+    ConstraintDescription: must be a valid CIDR block format.
+    Description: The CIDR block for the public  subnet located in Availability Zone B.
+
+  PrivateSubnet1CIDR:
+    Type: String
+    Default: 10.0.2.0/24
+    AllowedPattern: >-
+      ^(([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5]){1}(\/([0-9]|[1-2][0-9]|3[0-2]))?$
+    ConstraintDescription: must be a valid CIDR block format.
+    Description: The CIDR block for the private  subnet located in Availability Zone 1.
+
+  PrivateSubnet2CIDR:
+    Type: String
+    Default: 10.0.3.0/24
+    AllowedPattern: >-
+      ^(([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5]){1}(\/([0-9]|[1-2][0-9]|3[0-2]))?$
+    ConstraintDescription: must be a valid CIDR block format.
+    Description: The CIDR block for the private  subnet located in Availability Zone 2.
+
+  ElasticSearchDomainName:
+    Type: String
+    Description: Domain Name of ElasticSearch Domain
+    Default: spot-bot
+
+  ElasticSearchVersion:
+      Type: String
+      AllowedValues: ['5.6', '5.5', '5.3', '5.1', '6.8', '6.7', '6.5', '6.4', '6.3', '6.2', '6.0', '7.4', '7.1']
+      Default: 7.4
+      Description: The version of Elasticsearch to use.
+  
+  ElasticSearchInstanceType:
+      Type: String
+      Description: ElasticSearchInstanceType
+      Default: 'm5.large.elasticsearch' 
+      AllowedValues: ['r5.large.elasticsearch','r5.xlarge.elasticsearch','r5.2xlarge.elasticsearch','r5.4xlarge.elasticsearch','r5.12xlarge.elasticsearch','m5.large.elasticsearch','m5.xlarge.elasticsearch','m5.2xlarge.elasticsearch','m5.4xlarge.elasticsearch','m5.12xlarge.elasticsearch']    
+
+  BatchComputeType:
+    Type: String
+    Description: Batch Compute Type
+    Default: SPOT
+
+  SageMakerTrainingJobInstanceType:
+      Type: String
+      Description: SageMaker Training Job Instance Type
+      Default: ml.g4dn.xlarge
+
+  SageMakerEndpointInstanceType:
+      Type: String
+      Description: SageMaker Endpoint Instance Type
+      Default: ml.m5.large
+
+  DomainName:
+    Type: String
+    Description: Domain Name
+
+  Certificate:
+    Type: String
+    Description: Certificate of ALB
+
+  CognitoRegion:
+    Type: String
+    Description: Region where Cognito to be launched
+
+  CognitoUsername:
+    Type: String
+    Description: Username of Cognito user
+
+  CognitoEmail:
+    Type: String
+    Description: Email of Cognito user
+
+  ChinaRegion: 
+    Description: Check if the stack to be in CN Region
+    Type: String
+    Default: false
+    AllowedValues: [ true, false ]
+
+Conditions:
+  Globally: !Equals [ false, !Ref ChinaRegion ]
+
+Resources:
+  VPC:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      Parameters:
+        AvailabilityZones: !Join 
+          - ','
+          - !Ref AvailabilityZones
+        CIDR: !Ref CIDR
+        PublicSubnet1CIDR: !Ref PublicSubnet1CIDR
+        PublicSubnet2CIDR: !Ref PublicSubnet2CIDR
+        PrivateSubnet1CIDR: !Ref PrivateSubnet1CIDR
+        PrivateSubnet2CIDR: !Ref PrivateSubnet2CIDR
+        CustomIdentifier: !Ref CustomIdentifier
+      TemplateURL: 
+        !If
+        - Globally
+        - !Sub https://${S3Bucket}.s3.${AWS::Region}.amazonaws.com/${S3Key}/template/spot-bot-vpc-global.yaml
+        - !Sub https://${S3Bucket}.s3.${AWS::Region}.amazonaws.com.cn/${S3Key}/template/spot-bot-vpc-global.yaml
+
+  CUSTOM:
+    Type: AWS::CloudFormation::Stack
+    DependsOn: 
+      - VPC
+    Properties:
+      Parameters:
+        S3Bucket: !Ref S3Bucket
+        S3Key: !Ref S3Key
+        SecurityGroup: !GetAtt VPC.Outputs.DefaultSecurityGroup
+        PrivateSubnet1: !GetAtt VPC.Outputs.PrivateSubnet1
+        PrivateSubnet2: !GetAtt VPC.Outputs.PrivateSubnet2
+        ChinaRegion: !Ref ChinaRegion
+      TemplateURL: 
+        !If
+        - Globally
+        - !Sub https://${S3Bucket}.s3.${AWS::Region}.amazonaws.com/${S3Key}/template/spot-bot-custom-global.yaml
+        - !Sub https://${S3Bucket}.s3.${AWS::Region}.amazonaws.com.cn/${S3Key}/template/spot-bot-custom-global.yaml
+    
+  IAM:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      Parameters:
+        ChinaRegion: !Ref ChinaRegion
+      TemplateURL: 
+        !If
+        - Globally
+        - !Sub https://${S3Bucket}.s3.${AWS::Region}.amazonaws.com/${S3Key}/template/spot-bot-iam-global.yaml
+        - !Sub https://${S3Bucket}.s3.${AWS::Region}.amazonaws.com.cn/${S3Key}/template/spot-bot-iam-global.yaml
+
+  ES:
+    Type: AWS::CloudFormation::Stack
+    DependsOn: 
+      - VPC
+      - CUSTOM
+    Properties:
+      Parameters:
+        S3Bucket: !Ref S3Bucket
+        S3Key: !Ref S3Key
+        Version: !Ref ElasticSearchVersion
+        InstanceType: !Ref ElasticSearchInstanceType
+        DomainName: !Ref ElasticSearchDomainName
+        VPC: !GetAtt VPC.Outputs.VPC
+        PublicSubnet: !GetAtt VPC.Outputs.PublicSubnet2
+        SecurityGroup: !GetAtt VPC.Outputs.DefaultSecurityGroup
+        CustomFunction: !GetAtt CUSTOM.Outputs.CustomFunction
+      TemplateURL: 
+        !If
+        - Globally
+        - !Sub https://${S3Bucket}.s3.${AWS::Region}.amazonaws.com/${S3Key}/template/spot-bot-es-global.yaml
+        - !Sub https://${S3Bucket}.s3.${AWS::Region}.amazonaws.com.cn/${S3Key}/template/spot-bot-es-global.yaml
+
+  SM:
+    Type: AWS::CloudFormation::Stack
+    DependsOn: IAM
+    Properties:
+      Parameters:
+        S3Bucket: !Ref S3Bucket
+        S3Key: !Ref S3Key
+        SageMakerRole: !GetAtt IAM.Outputs.SageMakerRole
+        InstanceType: !Ref SageMakerEndpointInstanceType
+        ChinaRegion: !Ref ChinaRegion
+      TemplateURL: 
+        !If
+        - Globally
+        - !Sub https://${S3Bucket}.s3.${AWS::Region}.amazonaws.com/${S3Key}/template/spot-bot-sm-global.yaml
+        - !Sub https://${S3Bucket}.s3.${AWS::Region}.amazonaws.com.cn/${S3Key}/template/spot-bot-sm-global.yaml
+
+  DYNAMODB:
+    Type: AWS::CloudFormation::Stack
+    DependsOn:
+      - SM
+      - CUSTOM
+    Properties:
+      Parameters:
+        S3Bucket: !Ref S3Bucket
+        S3Key: !Ref S3Key
+        SageMakerEndpoint: !GetAtt SM.Outputs.SageMakerEndpoint
+        SageMakerEndpointInstanceType: !Ref SageMakerEndpointInstanceType
+        CustomFunction: !GetAtt CUSTOM.Outputs.CustomFunction
+        ChinaRegion: !Ref ChinaRegion
+      TemplateURL: 
+        !If
+        - Globally
+        - !Sub https://${S3Bucket}.s3.${AWS::Region}.amazonaws.com/${S3Key}/template/spot-bot-dynamodb-global.yaml
+        - !Sub https://${S3Bucket}.s3.${AWS::Region}.amazonaws.com.cn/${S3Key}/template/spot-bot-dynamodb-global.yaml
+
+  STEPFUNCTION:
+    Type: AWS::CloudFormation::Stack
+    DependsOn: 
+      - IAM
+      - ES
+      - LAMBDA
+    Properties:
+      Parameters:
+        ModelStateMachineRole: !GetAtt IAM.Outputs.ModelStateMachineRole
+        SpotBotCreateTrainingJobFunction: !GetAtt LAMBDA.Outputs.SpotBotCreateTrainingJobFunction
+        SpotBotCheckTrainingJobStatusFunction: !GetAtt LAMBDA.Outputs.SpotBotCheckTrainingJobStatusFunction
+        SpotBotCreateModelFunction: !GetAtt LAMBDA.Outputs.SpotBotCreateModelFunction
+        SpotBotCreateEndpointConfigFunction: !GetAtt LAMBDA.Outputs.SpotBotCreateEndpointConfigFunction
+        SpotBotCreateEndpointFunction: !GetAtt LAMBDA.Outputs.SpotBotCreateEndpointFunction
+        SpotBotCheckEndpointStatusFunction: !GetAtt LAMBDA.Outputs.SpotBotCheckEndpointStatusFunction
+        ChinaRegion: !Ref ChinaRegion
+      TemplateURL: 
+        !If
+        - Globally
+        - !Sub https://${S3Bucket}.s3.${AWS::Region}.amazonaws.com/${S3Key}/template/spot-bot-stepfunction-global.yaml
+        - !Sub https://${S3Bucket}.s3.${AWS::Region}.amazonaws.com.cn/${S3Key}/template/spot-bot-stepfunction-global.yaml
+
+  SSM:
+    Type: AWS::CloudFormation::Stack
+    DependsOn: 
+      - ES
+      - IAM
+      - STEPFUNCTION
+    Properties:
+      Parameters:
+        ESEndpoint: !GetAtt ES.Outputs.ESEndpoint
+        NamePrefix: !Ref CustomIdentifier
+        ModelStateMachine: !GetAtt STEPFUNCTION.Outputs.ModelStateMachine
+        SageMakerRole: !GetAtt IAM.Outputs.SageMakerRole
+        SageMakerTrainingJobInstanceType: !Ref SageMakerTrainingJobInstanceType
+        SageMakerEndpointInstanceType: !Ref SageMakerEndpointInstanceType
+        ChinaRegion: !Ref ChinaRegion
+      TemplateURL: 
+        !If
+        - Globally
+        - !Sub https://${S3Bucket}.s3.${AWS::Region}.amazonaws.com/${S3Key}/template/spot-bot-ssm-global.yaml
+        - !Sub https://${S3Bucket}.s3.${AWS::Region}.amazonaws.com.cn/${S3Key}/template/spot-bot-ssm-global.yaml
+
+
+  STACK:
+    Type: AWS::CloudFormation::Stack
+    Condition: Globally
+    DependsOn: 
+      - CUSTOM
+    Properties:
+      Parameters:
+        TemplateURL:
+          !Sub https://${S3Bucket}.s3.${AWS::Region}.amazonaws.com/${S3Key}/template/spot-bot-cognito-global.yaml
+        CallbackURL: !Sub https://${DomainName}/callback
+        LogoutURL: !Sub https://${DomainName}
+        ClientName: !Ref CustomIdentifier
+        Region: !Ref CognitoRegion
+        Domain: 'spotbot'
+        Username: !Ref CognitoUsername
+        Email: !Ref CognitoEmail
+        CustomFunction: !GetAtt CUSTOM.Outputs.CustomFunction
+      TemplateURL:
+        !Sub https://${S3Bucket}.s3.${AWS::Region}.amazonaws.com/${S3Key}/template/spot-bot-stack-global.yaml
+
+  LAMBDA:
+    Type: AWS::CloudFormation::Stack
+    DependsOn: 
+      - VPC
+      - IAM
+      - ES
+    Properties:
+      Parameters:
+        S3Bucket: !Ref S3Bucket
+        S3Key: !Ref S3Key
+        BatchComputeType: !Ref BatchComputeType
+        BatchInstanceProfile: !GetAtt IAM.Outputs.BatchInstanceProfile
+        BatchServiceRole: !GetAtt IAM.Outputs.BatchServiceRole
+        InferenceStateMachineRole: !GetAtt IAM.Outputs.InferenceStateMachineRole
+        SageMakerRole: !GetAtt IAM.Outputs.SageMakerRole
+        SpotFleetRole: !GetAtt IAM.Outputs.SpotFleetRole
+        ESEndpoint: !GetAtt ES.Outputs.ESEndpoint
+        VPC: !GetAtt VPC.Outputs.VPC
+        SecurityGroup: !GetAtt VPC.Outputs.DefaultSecurityGroup
+        BatchSecurityGroup: !GetAtt VPC.Outputs.BatchSecurityGroup
+        PrivateSubnet1: !GetAtt VPC.Outputs.PrivateSubnet1
+        PrivateSubnet2: !GetAtt VPC.Outputs.PrivateSubnet2
+        PublicSubnet1: !GetAtt VPC.Outputs.PublicSubnet1
+        PublicSubnet2: !GetAtt VPC.Outputs.PublicSubnet2  
+        ChinaRegion: !Ref ChinaRegion
+      TemplateURL:
+        !If
+        - Globally
+        - !Sub https://${S3Bucket}.s3.${AWS::Region}.amazonaws.com/${S3Key}/template/spot-bot-lambda-global.yaml
+        - !Sub https://${S3Bucket}.s3.${AWS::Region}.amazonaws.com.cn/${S3Key}/template/spot-bot-lambda-global.yaml
+  
+  WEB:
+    Type: AWS::CloudFormation::Stack
+    DependsOn: 
+      - VPC
+      - ES
+      - LAMBDA
+    Properties:
+      Parameters:
+        VPC: !GetAtt VPC.Outputs.VPC
+        PrivateSubnets: !Join [",", [!GetAtt VPC.Outputs.PrivateSubnet1, !GetAtt VPC.Outputs.PrivateSubnet2]]
+        PublicSubnets: !Join [",", [!GetAtt VPC.Outputs.PublicSubnet1, !GetAtt VPC.Outputs.PublicSubnet2]]
+        DomainName: !Ref DomainName
+        Certificate: !Ref Certificate
+        ESIP: !GetAtt ES.Outputs.ESIP
+        ApiGatewayProdEndpoint: !GetAtt LAMBDA.Outputs.ApiGatewayProdEndpoint
+        ESKibana: !Sub https://${DomainName}/_plugin/kibana
+        UserPool: 
+          !If
+          - Globally
+          - !GetAtt STACK.Outputs.UserPool
+          - ""        
+        UserPoolClient: 
+          !If
+          - Globally
+          - !GetAtt STACK.Outputs.UserPoolClient
+          - ""
+        UserPoolDomain: 
+          !If
+          - Globally
+          - !GetAtt STACK.Outputs.UserPoolDomain
+          - ""
+        CognitoRegion: !Ref CognitoRegion
+        ChinaRegion: !Ref ChinaRegion
+      TemplateURL: 
+        !If
+        - Globally
+        - !Sub https://${S3Bucket}.s3.${AWS::Region}.amazonaws.com/${S3Key}/template/spot-bot-web-global.yaml
+        - !Sub https://${S3Bucket}.s3.${AWS::Region}.amazonaws.com.cn/${S3Key}/template/spot-bot-web-global.yaml
+
+Outputs:
+  WebPortalUrl:
+    Description: Web Portal URL
+    Value: !Sub https://${DomainName}
+  WebPortalDomainName:
+    Description: Web Portal Domain Name
+    Value: !Ref DomainName
+  WebPortalCName:
+    Description: Web Portal CName
+    Value: !GetAtt WEB.Outputs.DNSName

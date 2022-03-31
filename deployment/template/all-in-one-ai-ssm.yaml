@@ -1,0 +1,191 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Template for SSM Parameter Store (Global)
+
+Parameters:    
+  S3Bucket:
+    Description: S3 Bucket of assets
+    Type: String
+
+  S3Key:
+    Description: S3 Bucket of assets
+    Type: String
+
+  SageMakerRole:
+    Type: String
+    Description: SageMaker Role Arn
+
+  CreatePipelineHelperLambdaArn:
+    Type: String
+    Description: CreatePipelineHelper Lambda Arn
+
+  ChinaRegion: 
+    Description: Check if the stack to be in CN Region
+    Type: String
+    Default: false
+    AllowedValues: [ true, false ]
+
+Conditions:
+  Globally: !Equals [ false, !Ref ChinaRegion ]
+
+Resources:
+  Parameter1:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /all_in_one_ai/config/meta/algorithms/gluoncv/sagemaker/image
+      Type: String
+      Value: 
+        !If
+        - Globally
+        - !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/all-in-one-ai-gluoncv:latest
+        - !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com.cn/all-in-one-ai-gluoncv:latest
+
+  Parameter2:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /all_in_one_ai/config/meta/algorithms/yolov5/sagemaker/image
+      Type: String
+      Value: 
+        !If
+        - Globally
+        - !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/all-in-one-ai-yolov5:latest
+        - !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com.cn/all-in-one-ai-yolov5:latest
+
+  Parameter3:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /all_in_one_ai/config/meta/algorithms/yolov5/greengrass/components/com.example.yolov5/artifacts
+      Type: String
+      Value: !Sub s3://${S3Bucket}/{S3Key}/algorithms/yolov5/greengrass/components/com.example.yolov5/artifacts
+
+  Parameter4:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /all_in_one_ai/config/meta/algorithms/yolov5/greengrass/components/com.example.yolov5/template
+      Type: String
+      Value: !Sub s3://${S3Bucket}/{S3Key}/algorithms/yolov5/greengrass/components/com.example.yolov5/template
+
+  Parameter5:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /all_in_one_ai/config/meta/algorithms/yolov5/greengrass/components/com.example.yolov5/deployment/deployment_policy
+      Type: String
+      Value: !Sub |
+        {
+          "failureHandlingPolicy": "ROLLBACK",
+          "componentUpdatePolicy": {
+            "action": "NOTIFY_COMPONENTS",
+            "timeoutInSeconds": 60
+          },
+          "configurationValidationPolicy": {
+            "timeoutInSeconds": 60
+          }
+        }
+
+  Parameter6:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /all_in_one_ai/config/meta/algorithms/yolov5/greengrass/components/com.example.yolov5/deployment/iot_job_configurations
+      Type: String
+      Value: !Sub |
+        {
+          "jobExecutionsRolloutConfig": {
+            "exponentialRate": {
+              "baseRatePerMinute": 5,
+              "incrementFactor": 2,
+              "rateIncreaseCriteria": {
+                "numberOfNotifiedThings": 10
+              }
+            },
+            "maximumPerMinute": 50
+          },
+          "abortConfig": {
+            "criteriaList": [
+              {
+                "action": "CANCEL",
+                "failureType": "ALL",
+                "minNumberOfExecutedThings": 100,
+                "thresholdPercentage": 5
+              }
+            ]
+          },
+          "timeoutConfig": {
+            "inProgressTimeoutInMinutes": 5
+          }
+        }
+
+  Parameter7:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /all_in_one_ai/config/meta/icons
+      Type: String
+      Value: !Sub s3://${S3Bucket}/{S3Key}/icons/
+
+  Parameter8:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /all_in_one_ai/config/meta/algorithms/yolov5/industrialmodels
+      Type: String
+      Value: s3://${S3Bucket}/{S3Key}/algorithms/yolov5/industrialmodels/
+    
+  Parameter9:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /all_in_one_ai/config/meta/api_table
+      Type: String
+      Value: all_in_one_ai_api
+  
+  Parameter10:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /all_in_one_ai/config/meta/endpoint_table
+      Type: String
+      Value: all_in_one_ai_endpoint
+
+  Parameter11:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /all_in_one_ai/config/meta/industrial_model_table
+      Type: String
+      Value: !Sub all_in_one_ai_industrial_model
+
+  Parameter12:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /all_in_one_ai/config/meta/model_table
+      Type: String
+      Value: all_in_one_ai_model
+
+  Parameter13:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /all_in_one_ai/config/meta/pipeline/create_pipeline_helper_lambda_arn
+      Type: String
+      Value: !Ref CreatePipelineHelperLambdaArn
+
+  Parameter14:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /all_in_one_ai/config/meta/pipeline_table
+      Type: String
+      Value: all_in_one_ai_pipeline
+
+  Parameter15:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /all_in_one_ai/config/meta/sagemaker_role_arn
+      Type: String
+      Value: !Ref SageMakerRole
+
+  Parameter16:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /all_in_one_ai/config/meta/training_job_table
+      Type: String
+      Value: all_in_one_ai_training_job
+
+  Parameter17:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /all_in_one_ai/config/meta/transform_job_table
+      Type: String
+      Value: all_in_one_ai_transform_job

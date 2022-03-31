@@ -1,0 +1,55 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Template for IAM
+
+Parameters:
+  ChinaRegion: 
+    Description: Check if the stack to be in CN Region
+    Type: String
+    Default: false
+    AllowedValues: [ true, false ]
+
+Conditions:
+  Globally: !Equals [ false, !Ref ChinaRegion ]
+
+Resources:
+  SageMakerRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              Service:
+                - sagemaker.amazonaws.com
+            Action: "sts:AssumeRole"
+      Path: "/"
+      ManagedPolicyArns:
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/AmazonSageMakerFullAccess'
+          - 'arn:aws-cn:iam::aws:policy/AmazonSageMakerFullAccess'
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryFullAccess'
+          - 'arn:aws-cn:iam::aws:policy/AmazonEC2ContainerRegistryFullAccess'
+      Policies:
+        - PolicyName: SpotSageMakerExecutionPolicy 
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "s3:GetObject"
+                  - "s3:PutObject"
+                  - "s3:DeleteObject"
+                  - "s3:ListBucket"
+                Resource:
+                  - !If
+                    - Globally
+                    - 'arn:aws:s3:::*'
+                    - 'arn:aws-cn:s3:::*'
+
+Outputs:
+  SageMakerRole:
+    Value: !GetAtt SageMakerRole.Arn

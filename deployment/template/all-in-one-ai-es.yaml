@@ -1,0 +1,71 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Template for ElasticSearch
+
+Parameters:
+  S3Bucket:
+    Description: S3 Bucket of assets
+    Type: String
+
+  S3Key:
+    Description: S3 Bucket of assets
+    Type: String
+
+  InstanceType:
+    Type: String
+    Description: "InstanceType "
+    Default: 'm5.large.elasticsearch' 
+    AllowedValues: ['r5.large.elasticsearch','r5.xlarge.elasticsearch','r5.2xlarge.elasticsearch','r5.4xlarge.elasticsearch','r5.12xlarge.elasticsearch','m5.large.elasticsearch','m5.xlarge.elasticsearch','m5.2xlarge.elasticsearch','m5.4xlarge.elasticsearch','m5.12xlarge.elasticsearch']    
+
+  VPC:
+    Type: AWS::EC2::VPC::Id
+    Description: VPC ID
+
+  PublicSubnet:
+    Type: AWS::EC2::Subnet::Id
+    Description: VPC Public Subnet ID
+
+  SecurityGroup:
+    Type: AWS::EC2::SecurityGroup::Id
+    Description: Elastic Search Security Group
+
+  DomainName:
+    Type: String
+    Description: Domain Name
+    Default: all-in-one-ai
+
+Resources:
+  ElasticsearchDomain:
+    Type: AWS::Elasticsearch::Domain
+    Properties:
+      DomainName: !Ref DomainName
+      EncryptionAtRestOptions:
+         Enabled: True
+      EBSOptions:
+        VolumeSize: 10
+        VolumeType: gp2
+        EBSEnabled: true
+      ElasticsearchClusterConfig:
+        InstanceCount: 1
+        InstanceType: !Ref InstanceType
+      SnapshotOptions:
+        AutomatedSnapshotStartHour: '0'
+      AccessPolicies:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow 
+            Principal:
+              AWS: '*'
+            Action: 'es:ESHttp*'
+            Resource: !Sub 'arn:${AWS::Partition}:es:${AWS::Region}:${AWS::AccountId}:domain/${DomainName}/*'
+      AdvancedOptions:
+        rest.action.multi.allow_explicit_index: 'true'
+      VPCOptions:
+        SubnetIds:
+          - !Ref PublicSubnet
+        SecurityGroupIds:
+          - !Ref SecurityGroup
+
+Outputs:
+  OpensearchEndpoint:
+    Description: Domain Name of ES Domain
+    Value: !GetAtt ElasticsearchDomain.DomainEndpoint

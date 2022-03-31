@@ -1,0 +1,82 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: Template for EFS
+
+Parameters:
+  EncrpytedBoolean:
+    AllowedValues:
+      - True
+      - False
+    Default: True
+    Description: Create an encrypted Amazon EFS file system.
+    Type: String
+  
+  Growth:
+    ConstraintDescription: Must be an integer.
+    Default: 0
+    Description: Amount of dummy data (GiB) to add to the file system (max 6144 GiB). Amazon EFS storage charges apply. 
+    MaxValue: 6144
+    MinValue: 0
+    Type: Number
+  
+  PerformanceMode:
+    AllowedValues:
+      - generalPurpose
+      - maxIO
+    Default: generalPurpose
+    Description: Select the performance mode of the file system.
+    Type: String
+
+  SecurityGroup:
+    Description: Select the Amazon EFS security group.
+    Type: AWS::EC2::SecurityGroup::Id   
+  
+  Subnets:
+    Description: Select existing subnets.
+    Type: List<AWS::EC2::Subnet::Id>
+  
+Resources:
+
+  ElasticFileSystem:
+    Type: AWS::EFS::FileSystem
+    Properties:
+      Encrypted: !Ref EncrpytedBoolean
+      PerformanceMode: !Ref PerformanceMode
+  
+  ElasticFileSystemMountTarget0:
+    Type: AWS::EFS::MountTarget
+    Properties:
+      FileSystemId: !Ref ElasticFileSystem
+      SecurityGroups:
+      - !Ref SecurityGroup
+      SubnetId: !Select [ 0, !Ref Subnets ]
+  
+  ElasticFileSystemMountTarget1:
+    Type: AWS::EFS::MountTarget
+    Properties:
+      FileSystemId: !Ref ElasticFileSystem
+      SecurityGroups:
+      - !Ref SecurityGroup
+      SubnetId: !Select [ 1, !Ref Subnets ]
+
+  EfsAccessPoint:
+    Type: 'AWS::EFS::AccessPoint'
+    Properties:
+      FileSystemId: !Ref ElasticFileSystem
+      PosixUser:
+        Uid: "1000"
+        Gid: "1000"
+      RootDirectory:
+        CreationInfo:
+          OwnerGid: "1000"
+          OwnerUid: "1000"
+          Permissions: "0777"
+        Path: "/mnt/efs"
+
+Outputs:
+  ElasticFileSystem:
+    Value: !Ref ElasticFileSystem
+
+  EfsAccessPointArn:
+    Value: !GetAtt EfsAccessPoint.Arn
+    Description: Arn of the created Amazon EFS Access Point

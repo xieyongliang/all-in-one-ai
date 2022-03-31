@@ -1,0 +1,175 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Template for DynamoDB (Global)
+
+Parameters:
+  S3Bucket:
+    Description: S3 Bucket of assets
+    Type: String
+
+  S3Key:
+    Description: S3 Bucket of assets
+    Type: String
+
+  ChinaRegion: 
+    Description: Check if the stack to be in CN Region
+    Type: String
+    Default: false
+    AllowedValues: [ true, false ]
+
+Conditions:
+  Globally: !Equals [ false, !Ref ChinaRegion ]
+
+Resources: 
+  IndustrialModelDynamoDBTable: 
+    Type: AWS::DynamoDB::Table
+    Properties: 
+      AttributeDefinitions: 
+        - 
+          AttributeName: "model_id"
+          AttributeType: "S"
+        - 
+          AttributeName: "model_algorithm"
+          AttributeType: "S"
+      KeySchema: 
+        - 
+          AttributeName: "model_id"
+          KeyType: "HASH"
+        - 
+          AttributeName: "model_algorithm"
+          KeyType: "RANGE"
+      ProvisionedThroughput: 
+        ReadCapacityUnits: "1"
+        WriteCapacityUnits: "1"
+      TableName: "all_in_one_ai_industrial_model"
+
+  ModelDynamoDBTable: 
+    Type: AWS::DynamoDB::Table
+    Properties: 
+      AttributeDefinitions: 
+        - 
+          AttributeName: "model_name"
+          AttributeType: "S"
+        - 
+          AttributeName: "industrial_model"
+          AttributeType: "S"
+      KeySchema: 
+        - 
+          AttributeName: "model_name"
+          KeyType: "HASH"
+        - 
+          AttributeName: "industrial_model"
+          KeyType: "RANGE"
+      ProvisionedThroughput: 
+        ReadCapacityUnits: "1"
+        WriteCapacityUnits: "1"
+      TableName: "all_in_one_ai_model"
+
+  EndpointDynamoDBTable: 
+    Type: AWS::DynamoDB::Table
+    Properties: 
+      AttributeDefinitions: 
+        - 
+          AttributeName: "endpoint_name"
+          AttributeType: "S"
+        - 
+          AttributeName: "industrial_model"
+          AttributeType: "S"
+      KeySchema: 
+        - 
+          AttributeName: "endpoint_name"
+          KeyType: "HASH"
+        - 
+          AttributeName: "industrial_model"
+          KeyType: "RANGE"
+      ProvisionedThroughput: 
+        ReadCapacityUnits: "1"
+        WriteCapacityUnits: "1"
+      TableName: "all_in_one_ai_endpoint"
+
+  TrainingJobDynamoDBTable: 
+    Type: AWS::DynamoDB::Table
+    Properties: 
+      AttributeDefinitions: 
+        - 
+          AttributeName: "training_job_name"
+          AttributeType: "S"
+        - 
+          AttributeName: "industrial_model"
+          AttributeType: "S"
+      KeySchema: 
+        - 
+          AttributeName: "training_job_name"
+          KeyType: "HASH"
+        - 
+          AttributeName: "industrial_model"
+          KeyType: "RANGE"
+      ProvisionedThroughput: 
+        ReadCapacityUnits: "1"
+        WriteCapacityUnits: "1"
+      TableName: "all_in_one_ai_training_job"
+
+  TransformJobDynamoDBTable: 
+    Type: AWS::DynamoDB::Table
+    Properties: 
+      AttributeDefinitions: 
+        - 
+          AttributeName: "transform_job_name"
+          AttributeType: "S"
+        - 
+          AttributeName: "industrial_model"
+          AttributeType: "S"
+      KeySchema: 
+        - 
+          AttributeName: "transform_job_name"
+          KeyType: "HASH"
+        - 
+          AttributeName: "industrial_model"
+          KeyType: "RANGE"
+      ProvisionedThroughput: 
+        ReadCapacityUnits: "1"
+        WriteCapacityUnits: "1"
+      TableName: "all_in_one_ai_transform_job"
+
+  ApiDynamoDBTable: 
+    Type: AWS::DynamoDB::Table
+    Properties: 
+      AttributeDefinitions: 
+        - 
+          AttributeName: "api_name"
+          AttributeType: "S"
+        - 
+          AttributeName: "industrial_model"
+          AttributeType: "S"
+      KeySchema: 
+        - 
+          AttributeName: "api_name"
+          KeyType: "HASH"
+        - 
+          AttributeName: "industrial_model"
+          KeyType: "RANGE"
+      ProvisionedThroughput: 
+        ReadCapacityUnits: "1"
+        WriteCapacityUnits: "1"
+      TableName: "all_in_one_ai_api"
+
+  PipelineDynamoDBTable: 
+    Type: AWS::DynamoDB::Table
+    Properties: 
+      AttributeDefinitions: 
+        - 
+          AttributeName: "pipeline_execution_arn"
+          AttributeType: "S"
+        - 
+          AttributeName: "industrial_model"
+          AttributeType: "S"
+      KeySchema: 
+        - 
+          AttributeName: "pipeline_execution_arn"
+          KeyType: "HASH"
+        - 
+          AttributeName: "industrial_model"
+          KeyType: "RANGE"
+      ProvisionedThroughput: 
+        ReadCapacityUnits: "1"
+        WriteCapacityUnits: "1"
+      TableName: "all_in_one_ai_pipeline"

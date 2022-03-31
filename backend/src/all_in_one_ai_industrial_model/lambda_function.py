@@ -21,7 +21,7 @@ def lambda_handler(event, context):
     if event['httpMethod'] == 'POST':
         request = json.loads(event['body'])
         model_algorithm = request['model_algorithm']
-        icon_s3uri = ssmh.get_parameter('/all_in_one_ai/config/meta/algorithms/{0}/icon'.format(model_algorithm))
+        icon_s3uri = ssmh.get_parameter('/all_in_one_ai/config/meta/icons')
         icon_s3bucket, icon_s3key = get_bucket_and_key(icon_s3uri)
         icon_s3key = '{0}{1}.jpg'.format(icon_s3key, request['file_name'])
         response = s3_client.put_object( 
