@@ -15,6 +15,7 @@ def lambda_handler(event, context):
     try:
         industrial_model = event['body']['industrial_model']
         model_samples = event['body']['model_samples']
+        endpoint_name = event['body']['endpoint_name']
         index = industrial_model
 
         queue = sqs_resource.get_queue_by_name(QueueName='all_in_one_ai_sqs')
@@ -25,7 +26,8 @@ def lambda_handler(event, context):
                 MessageBody = json.dumps(
                     {
                         's3uri': s3uri, 
-                        'index': index
+                        'index': index,
+                        'endpoint_name': endpoint_name
                     }
                 )
             )

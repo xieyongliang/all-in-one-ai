@@ -8,6 +8,7 @@ import {connect} from 'react-redux';
 import { AppState } from '../../../store';
 import { UpdateTrainingjobImageS3Uri, UpdateTrainingjobInstanceCount, UpdateTrainingjobInstanceType, UpdateTrainingjobLabelsS3Uri, UpdateTrainingjobVolumeSizeInGB, UpdateTrainingjobWeightsS3Uri, UpdateTrainingjobCfgS3Uri, UpdateTrainingjobOutputS3Uri } from '../../../store/pipelines/actionCreators';
 import { IIndustrialModel } from '../../../store/industrialmodels/reducer';
+import { PathParams } from '../../Interfaces/PathParams';
 
 interface IProps {
     updateTrainingjobInstanceTypeAction: (trainingjobInstanceType: string) => any;
@@ -64,10 +65,6 @@ const optionsInstance : SelectOption[]= [
         ]
     }
 ];
-
-interface PathParams {
-    name: string;
-}
 
 const TrainingJobForm: FunctionComponent<IProps> = (props) => {
     const [ trainingJobName, setTrainingJobName ] = useState('')
@@ -154,12 +151,12 @@ const TrainingJobForm: FunctionComponent<IProps> = (props) => {
         else if(outputS3Uri === '')
             setInvalidOutputS3Uri(true)
         else {
-            var index = props.industrialModels.findIndex((item) => item.name === params.name)
+            var index = props.industrialModels.findIndex((item) => item.id === params.id)
             var algorithm = props.industrialModels[index].algorithm
 
             var body = {
                 'training_job_name' : trainingJobName,
-                'industrial_model': params.name,
+                'industrial_model': params.id,
                 'model_algorithm': algorithm,
                 'instance_type': selectedInstanceType.value,
                 'instance_count': instanceCount,

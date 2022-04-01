@@ -20,7 +20,7 @@ def lambda_handler(event, context):
         index = payload['index']
         bucket, key = get_bucket_and_key(s3uri)
         content_type = 'application/json'
-        endpoint_name = 'track-search-by-image'
+        endpoint_name = payload['endpoint_name']
         payload = {
             'bucket' : bucket, 
             'image_uri' : key,

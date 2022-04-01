@@ -29,7 +29,7 @@ Parameters:
   PublicSubnet2:
     Type: AWS::EC2::Subnet::Id
     Description: VPC Public Subnet1 ID
-    
+      
   OpensearchEndpoint:
     Type: String
     Description: OpensearchEndpoint
@@ -84,6 +84,10 @@ Resources:
           - REGIONAL
       Parameters:
         endpointConfigurationTypes: REGIONAL
+      BinaryMediaTypes:
+        - 'image/png'
+        - 'image/jpg'
+        - 'image/jpeg'
       Name: all-in-one-ai-api  
 
   ApiGatewayResourceApi:
@@ -101,7 +105,7 @@ Resources:
       HttpMethod: GET
       Integration:
         Type: AWS_PROXY
-        IntegrationHttpMethod: GET
+        IntegrationHttpMethod: POST
         Uri: 
           !If
           - Globally
@@ -142,7 +146,7 @@ Resources:
       HttpMethod: GET
       Integration:
         Type: AWS_PROXY
-        IntegrationHttpMethod: GET
+        IntegrationHttpMethod: POST
         Uri: 
           !If
           - Globally
@@ -299,7 +303,7 @@ Resources:
       HttpMethod: GET
       Integration:
         Type: AWS_PROXY
-        IntegrationHttpMethod: GET
+        IntegrationHttpMethod: POST
         Uri: 
           !If
           - Globally
@@ -340,7 +344,7 @@ Resources:
       HttpMethod: GET
       Integration:
         Type: AWS_PROXY
-        IntegrationHttpMethod: GET
+        IntegrationHttpMethod: POST
         Uri: 
           !If
           - Globally
@@ -357,7 +361,7 @@ Resources:
       HttpMethod: DELETE
       Integration:
         Type: AWS_PROXY
-        IntegrationHttpMethod: DELETE
+        IntegrationHttpMethod: POST
         Uri: 
           !If
           - Globally
@@ -537,7 +541,7 @@ Resources:
       HttpMethod: GET
       Integration:
         Type: AWS_PROXY
-        IntegrationHttpMethod: GET
+        IntegrationHttpMethod: POST
         Uri: 
           !If
           - Globally
@@ -593,7 +597,7 @@ Resources:
       FunctionName: all_in_one_ai_function
       Tags:
         - Value: Name
-          Key: 'AllInOneAIApi'
+          Key: 'AllInOneAIFunction'
       Handler: lambda_function.lambda_handler
       Role: !GetAtt AllInOneAIFunctionFunctionRole.Arn
       Timeout: 900
@@ -616,12 +620,12 @@ Resources:
         - Globally
         - !Sub
           - >-
-            arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/GET/function
+            arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/GET/function/*
           - __Stage__: '*'
             __ApiId__: !Ref ApiGatewayRestApi
         - !Sub
           - >-
-            arn:aws-cn:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/GET/function
+            arn:aws-cn:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/GET/function/*
           - __Stage__: '*'
             __ApiId__: !Ref ApiGatewayRestApi
 
@@ -647,7 +651,7 @@ Resources:
       HttpMethod: GET
       Integration:
         Type: AWS_PROXY
-        IntegrationHttpMethod: GET
+        IntegrationHttpMethod: POST
         Uri: 
           !If
           - Globally
@@ -671,7 +675,7 @@ Resources:
       HttpMethod: GET
       Integration:
         Type: AWS_PROXY
-        IntegrationHttpMethod: GET
+        IntegrationHttpMethod: POST
         Uri: 
           !If
           - Globally
@@ -712,7 +716,7 @@ Resources:
       HttpMethod: GET
       Integration:
         Type: AWS_PROXY
-        IntegrationHttpMethod: GET
+        IntegrationHttpMethod: POST
         Uri: 
           !If
           - Globally
@@ -906,7 +910,7 @@ Resources:
       HttpMethod: GET
       Integration:
         Type: AWS_PROXY
-        IntegrationHttpMethod: GET
+        IntegrationHttpMethod: POST
         Uri: 
           !If
           - Globally
@@ -1017,7 +1021,7 @@ Resources:
       HttpMethod: GET
       Integration:
         Type: AWS_PROXY
-        IntegrationHttpMethod: GET
+        IntegrationHttpMethod: POST
         Uri: 
           !If
           - Globally
@@ -1034,7 +1038,7 @@ Resources:
       HttpMethod: POST
       Integration:
         Type: AWS_PROXY
-        IntegrationHttpMethod: GET
+        IntegrationHttpMethod: POST
         Uri: 
           !If
           - Globally
@@ -1058,7 +1062,7 @@ Resources:
       HttpMethod: GET
       Integration:
         Type: AWS_PROXY
-        IntegrationHttpMethod: GET
+        IntegrationHttpMethod: POST
         Uri: 
           !If
           - Globally
@@ -1216,7 +1220,7 @@ Resources:
       HttpMethod: GET
       Integration:
         Type: AWS_PROXY
-        IntegrationHttpMethod: GET
+        IntegrationHttpMethod: POST
         Uri: 
           !If
           - Globally
@@ -1319,7 +1323,7 @@ Resources:
       HttpMethod: GET
       Integration:
         Type: AWS_PROXY
-        IntegrationHttpMethod: GET
+        IntegrationHttpMethod: POST
         Uri: 
           !If
           - Globally
@@ -1360,7 +1364,7 @@ Resources:
       HttpMethod: GET
       Integration:
         Type: AWS_PROXY
-        IntegrationHttpMethod: GET
+        IntegrationHttpMethod: POST
         Uri: 
           !If
           - Globally
@@ -1394,7 +1398,7 @@ Resources:
       HttpMethod: DELETE
       Integration:
         Type: AWS_PROXY
-        IntegrationHttpMethod: DELETE
+        IntegrationHttpMethod: POST
         Uri: 
           !If
           - Globally
@@ -1690,7 +1694,7 @@ Resources:
       HttpMethod: GET
       Integration:
         Type: AWS_PROXY
-        IntegrationHttpMethod: GET
+        IntegrationHttpMethod: POST
         Uri: 
           !If
           - Globally
@@ -1731,7 +1735,7 @@ Resources:
       HttpMethod: GET
       Integration:
         Type: AWS_PROXY
-        IntegrationHttpMethod: GET
+        IntegrationHttpMethod: POST
         Uri: 
           !If
           - Globally
@@ -1748,7 +1752,7 @@ Resources:
       HttpMethod: DELETE
       Integration:
         Type: AWS_PROXY
-        IntegrationHttpMethod: DELETE
+        IntegrationHttpMethod: POST
         Uri: 
           !If
           - Globally
@@ -1921,7 +1925,7 @@ Resources:
       HttpMethod: GET
       Integration:
         Type: AWS_PROXY
-        IntegrationHttpMethod: GET
+        IntegrationHttpMethod: POST
         Uri: 
           !If
           - Globally
@@ -1945,7 +1949,7 @@ Resources:
       HttpMethod: GET
       Integration:
         Type: AWS_PROXY
-        IntegrationHttpMethod: GET
+        IntegrationHttpMethod: POST
         Uri: 
           !If
           - Globally
@@ -1986,7 +1990,7 @@ Resources:
       HttpMethod: GET
       Integration:
         Type: AWS_PROXY
-        IntegrationHttpMethod: GET
+        IntegrationHttpMethod: POST
         Uri: 
           !If
           - Globally
@@ -2274,7 +2278,7 @@ Resources:
       HttpMethod: GET
       Integration:
         Type: AWS_PROXY
-        IntegrationHttpMethod: GET
+        IntegrationHttpMethod: POST
         Uri: 
           !If
           - Globally
@@ -2376,6 +2380,23 @@ Resources:
       PathPart: 'image'
       RestApiId: !Ref ApiGatewayRestApi
 
+  ApiGatewayMethodSearchImage:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      ApiKeyRequired: false
+      AuthorizationType: NONE
+      HttpMethod: POST
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: 
+          !If
+          - Globally
+          - !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAISearchByImageFunction.Arn}/invocations'
+          - !Sub 'arn:aws-cn:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAISearchByImageFunction.Arn}/invocations'
+      ResourceId: !Ref ApiGatewayResourceSearchImage
+      RestApiId: !Ref ApiGatewayRestApi   
+
   AllInOneAISearchByImageFunctionRole:
     Type: 'AWS::IAM::Role'
     Properties:
@@ -2440,7 +2461,7 @@ Resources:
           - !Ref SecurityGroup
       Environment:
         Variables:
-          ES_ENDPOINT: !Sub https://{OpensearchEndpoint}
+          ES_ENDPOINT: !Sub https://${OpensearchEndpoint}
       Layers:
         - !Ref HelperLayer
   
@@ -2470,6 +2491,23 @@ Resources:
       ParentId: !GetAtt ApiGatewayResourceSearch.ResourceId
       PathPart: 'import'
       RestApiId: !Ref ApiGatewayRestApi
+
+  ApiGatewayMethodSearchImport:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      ApiKeyRequired: false
+      AuthorizationType: NONE
+      HttpMethod: GET
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: 
+          !If
+          - Globally
+          - !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIImportOpensearchFunction.Arn}/invocations'
+          - !Sub 'arn:aws-cn:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIImportOpensearchFunction.Arn}/invocations'
+      ResourceId: !Ref ApiGatewayResourceSearchImport
+      RestApiId: !Ref ApiGatewayRestApi   
 
   AllInOneAIImportOpensearchFunctionRole:
     Type: 'AWS::IAM::Role'
@@ -2529,6 +2567,9 @@ Resources:
           - !Ref PrivateSubnet2
         SecurityGroupIds: 
           - !Ref SecurityGroup
+      Environment:
+        Variables:
+          ES_ENDPOINT: !Sub https://${OpensearchEndpoint}
       Layers:
         - !Ref HelperLayer
   
@@ -2567,7 +2608,7 @@ Resources:
       HttpMethod: GET
       Integration:
         Type: AWS_PROXY
-        IntegrationHttpMethod: GET
+        IntegrationHttpMethod: POST
         Uri: 
           !If
           - Globally
@@ -2608,7 +2649,7 @@ Resources:
       HttpMethod: GET
       Integration:
         Type: AWS_PROXY
-        IntegrationHttpMethod: GET
+        IntegrationHttpMethod: POST
         Uri: 
           !If
           - Globally
@@ -2761,7 +2802,7 @@ Resources:
       HttpMethod: GET
       Integration:
         Type: AWS_PROXY
-        IntegrationHttpMethod: GET
+        IntegrationHttpMethod: POST
         Uri: 
           !If
           - Globally
@@ -2802,7 +2843,7 @@ Resources:
       HttpMethod: GET
       Integration:
         Type: AWS_PROXY
-        IntegrationHttpMethod: GET
+        IntegrationHttpMethod: POST
         Uri: 
           !If
           - Globally
@@ -2955,7 +2996,7 @@ Resources:
       HttpMethod: GET
       Integration:
         Type: AWS_PROXY
-        IntegrationHttpMethod: GET
+        IntegrationHttpMethod: POST
         Uri: 
           !If
           - Globally
@@ -3350,7 +3391,7 @@ Resources:
       HttpMethod: GET
       Integration:
         Type: AWS_PROXY
-        IntegrationHttpMethod: GET
+        IntegrationHttpMethod: POST
         Uri: 
           !If
           - Globally
@@ -4466,6 +4507,9 @@ Resources:
           - !Ref PrivateSubnet2
         SecurityGroupIds: 
           - !Ref SecurityGroup
+      Environment:
+        Variables:
+          ES_ENDPOINT: !Sub https://${OpensearchEndpoint}
       Layers:
         - !Ref HelperLayer
 
@@ -4566,6 +4610,8 @@ Resources:
       - ApiGatewayMethodPipelineGet
       - ApiGatewayMethodModelPackagePost
       - ApiGatewayMethodS3Get
+      - ApiGatewayMethodSearchImage
+      - ApiGatewayMethodSearchImport
       - ApiGatewayMethodTrainingJobGet
       - ApiGatewayMethodTrainingJobPost
       - ApiGatewayMethodTrainingJobByNameGet
@@ -4589,5 +4635,6 @@ Outputs:
   CreatePipelineHelperFunction:
     Description: Arn of AllInOneAICreatePipelineHelperFunction
     Value: !GetAtt AllInOneAICreatePipelineHelperFunction.Arn
-
-
+  ImportOpensearchHelperFunction:
+    Description: Arn of AllInOneAIImportOpensearchHelperFunction
+    Value: !GetAtt AllInOneAIImportOpensearchHelperFunction.Arn

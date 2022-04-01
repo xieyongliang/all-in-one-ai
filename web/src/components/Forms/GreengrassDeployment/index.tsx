@@ -8,6 +8,7 @@ import axios from 'axios';
 import { connect } from 'react-redux';
 import { AppState } from '../../../store';
 import { UpdateGreengrassDeploymentComponents, UpdateGreengrassDeploymentName, UpdateGreengrassDeploymentTargetArn, UpdateGreengrassDeploymentTargetType } from '../../../store/pipelines/actionCreators';
+import { PathParams } from '../../Interfaces/PathParams';
 
 interface IProps {
     updateGreengrassDeploymentNameAction: (greengrassDeploymentName: string) => any;
@@ -27,10 +28,6 @@ interface ComponentVersionItem {
     versions: string[];
     config: string;
     selected: boolean;
-}
-
-interface PathParams {
-    name: string;
 }
 
 const GreengrassDeploymentForm: FunctionComponent<IProps> = (props) => {
@@ -166,7 +163,7 @@ const GreengrassDeploymentForm: FunctionComponent<IProps> = (props) => {
                 'deployment_name': deployment_name,
                 'target_arn': target_arn,
                 'components': components,
-                'industrial_model': params.name
+                'industrial_model': params.id
             }
             axios.post('/greengrass/deployment', body,  { headers: {'content-type': 'application/json' }}) 
             .then((response) => {

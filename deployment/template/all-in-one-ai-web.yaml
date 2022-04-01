@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: 2010-09-09
-Description: Template for Web Server (Global)
+Description: Template for Web Server
 
 Parameters:
   VPC:
@@ -13,10 +13,6 @@ Parameters:
   PrivateSubnets:
     Type: List<AWS::EC2::Subnet::Id>
     Description: Select at least two private subnets in your selected VPC.
-
-  ESIP:
-    Description: IP of ES
-    Type: String
 
   ApiGatewayProdEndpoint:
     Type: String

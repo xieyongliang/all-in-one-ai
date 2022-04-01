@@ -43,9 +43,12 @@ def lambda_handler(event, context):
 
         create_index(es, index)
 
+        endpoint_name = event['queryStringParameters']['endpoint_name']
+
         request = {
             'industrial_model': industrial_model,
-            'model_samples': model_samples
+            'model_samples': model_samples,
+            'endpoint_name': endpoint_name
         }
 
         response = lambda_client.invoke(
@@ -53,9 +56,9 @@ def lambda_handler(event, context):
             InvocationType = 'Event',
             Payload=json.dumps({'body' : request})
         )
-            
+        
         return {
-            'statusCode': response['statusCode'],
+            'statusCode': response['StatusCode'],
             'body': response['Payload'].read().decode('utf-8')
         }
 

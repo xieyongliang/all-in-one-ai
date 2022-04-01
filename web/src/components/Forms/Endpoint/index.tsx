@@ -8,6 +8,7 @@ import { AppState } from '../../../store';
 import { connect } from 'react-redux';
 import { UpdateEndpointAcceleratorType, UpdateEndpointInitialInstanceCount, UpdateEndpointInitialVariantWeight, UpdateEndpointInstanceType } from '../../../store/pipelines/actionCreators';
 import { IIndustrialModel } from '../../../store/industrialmodels/reducer';
+import { PathParams } from '../../Interfaces/PathParams';
 
 interface IProps {
     updateEndpointInstanceTypeAction: (endpointInstanceType: string) => any;
@@ -115,10 +116,6 @@ const optionsAcceleratorType : SelectOption[] = [
     { label: 'ml.eia2.xlarge', value: 'ml.eia2.xlarge' },
 ]
 
-interface PathParams {
-    name: string;
-}
-
 const EndpointForm: FunctionComponent<IProps> = (props) => {
     const [ modelOptions, setModelOptions ] = useState([])
     const [ endpointName, setEndpointName ] = useState(''); 
@@ -141,7 +138,7 @@ const EndpointForm: FunctionComponent<IProps> = (props) => {
     var params : PathParams = useParams();
 
     useEffect(() => {
-        axios.get('/model', {params : {industrial_model: params.name}})
+        axios.get('/model', {params : {industrial_model: params.id}})
             .then((response) => {
                 var items = []
                 for(let item of response.data) {
@@ -152,7 +149,7 @@ const EndpointForm: FunctionComponent<IProps> = (props) => {
             }, (error) => {
                 console.log(error);
             });
-    }, [params.name])
+    }, [params.id])
 
     const onChange = (id: string, event: any) => {
         if(id === 'formFieldIdEndpointName')
@@ -195,13 +192,13 @@ const EndpointForm: FunctionComponent<IProps> = (props) => {
         else if(initialVariantWeight <= 0)
             setInvalidInitialVariantWeight(true)
         else {
-            var index = props.industrialModels.findIndex((item) => item.name === params.name)
+            var index = props.industrialModels.findIndex((item) => item.id === params.id)
             var algorithm = props.industrialModels[index].algorithm
 
             var body = {
                 'endpoint_name': endpointName,
                 'model_name' : selectedModelName.value,
-                'industrial_model': params.name,
+                'industrial_model': params.id,
                 'model_algorithm': algorithm,
                 'instance_type': selectedInstanceType.value,
                 'accelerator_type': selectedAcceleratorTypeType.value === 'none' ? '': selectedAcceleratorTypeType.value,

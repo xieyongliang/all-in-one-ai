@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: 2010-09-09
-Description: Template for VPC (Global)
+Description: Template for VPC
 
 Parameters:
   AvailabilityZones:

@@ -1,0 +1,23 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Template for SQS
+Parameters:
+  ImportOpensearchHelperFunctionArn:
+    Type: String
+    Description: ImportOpensearchHelperFunction Arn
+
+Resources: 
+  AllInOneAIQueue: 
+    Type: AWS::SQS::Queue
+    Properties: 
+      QueueName: all_in_one_ai_sqs
+      VisibilityTimeout: 900
+  
+  ImportOpensearchHelperFunctionEventSourceMapping:
+    Type: AWS::Lambda::EventSourceMapping
+    Properties:
+      BatchSize: 10
+      Enabled: true
+      FunctionResponseTypes: 
+        - ReportBatchItemFailures
+      EventSourceArn: !GetAtt AllInOneAIQueue.Arn
+      FunctionName: !Ref ImportOpensearchHelperFunctionArn

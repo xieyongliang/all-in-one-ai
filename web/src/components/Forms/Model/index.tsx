@@ -8,10 +8,7 @@ import { AppState } from '../../../store';
 import { connect } from 'react-redux';
 import { UpdateModelModelPackageGroupName, UpdateModelModelPackageArn, UpdateModelDataUrl } from '../../../store/pipelines/actionCreators';
 import { IIndustrialModel } from '../../../store/industrialmodels/reducer';
-
-interface PathParams {
-    name: string;
-}
+import { PathParams } from '../../Interfaces/PathParams';
 
 interface ModelPackageItem {
     name: string;
@@ -152,7 +149,7 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
 
     const onSubmit = () => {
         var body = {}
-        var index = props.industrialModels.findIndex((item) => item.name === params.name)
+        var index = props.industrialModels.findIndex((item) => item.id === params.id)
         var algorithm = props.industrialModels[index].algorithm
 
         if(containerInputType === '0'){
@@ -164,7 +161,7 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
     
                 body = {
                     'model_name' : modelName,
-                    'industrial_model': params.name,
+                    'industrial_model': params.id,
                     'model_algorithm': algorithm,
                     'container_image': containerIamge,
                     'model_data_url': modelDataUrl,
@@ -191,7 +188,7 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
                 var model_package_arn = modelPackageVersionItems[model_package_group_name]['arns'][index]
                 body = {
                     'model_name' : modelName,
-                    'industrial_model': params.name,
+                    'industrial_model': params.id,
                     'model_algorithm': algorithm,
                     'model_package_arn': model_package_arn
                 }
@@ -309,7 +306,7 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
             accessor: 'name',
             Cell: ({ row  }) => {
                 if (row && row.original) {
-                    return <a href={`/industrialmodel/${params.name}?tab=modelpackage#prop:id=${row.original.name}`}> {row.original.name} </a>;
+                    return <a href={`/industrialmodel/${params.id}?tab=modelpackage#prop:id=${row.original.name}`}> {row.original.name} </a>;
                 }
                 return null;
             }

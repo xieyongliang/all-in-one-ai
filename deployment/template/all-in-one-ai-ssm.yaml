@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: 2010-09-09
-Description: Template for SSM Parameter Store (Global)
+Description: Template for SSM Parameter Store
 
 Parameters:    
   S3Bucket:
