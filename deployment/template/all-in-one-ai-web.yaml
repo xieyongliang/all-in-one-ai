@@ -22,26 +22,6 @@ Parameters:
     Type: String
     Description: API Prod stage endpoint
 
-  DomainName:
-    Type: String
-    Description: Domain Name
-
-  Certificate:
-    Type: String
-    Description: Certificate of ALB
-
-  UserPool:
-    Type: String
-    Description: UserPool Id
-
-  UserPoolClient:
-    Type: String
-    Description: UserPoolClient Id
-
-  UserPoolDomain:
-    Type: String
-    Description: Endpoint of UserPoolDomain
-
   ChinaRegion: 
     Description: Check if the stack to be in CN Region
     Type: String
@@ -99,13 +79,13 @@ Resources:
       GroupDescription: ECS Security Group
       VpcId: !Ref VPC
 
-  AlbSecurityGroupHTTPSinbound:
+  AlbSecurityGroupHTTPinbound:
     Type: 'AWS::EC2::SecurityGroupIngress'
     Properties:
       GroupId: !Ref AlbSecurityGroup
       IpProtocol: tcp
-      FromPort: 443
-      ToPort: 443
+      FromPort: 80
+      ToPort: 80
       CidrIp: 0.0.0.0/0
  
   CloudwatchLogsGroup:
@@ -140,8 +120,8 @@ Resources:
       NetworkMode: awsvpc
       RequiresCompatibilities:
         - FARGATE
-      Cpu: '1024'
-      Memory: '2048'
+      Cpu: '2048'
+      Memory: '4096'
       ExecutionRoleArn: !GetAtt ExecutionRole.Arn
       ContainerDefinitions:
         - Name: web-app
@@ -150,15 +130,15 @@ Resources:
           Image: 
             !If
             - Globally
-            - !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/spot-bot-web:latest
-            - !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com.cn/spot-bot-web:latest
-          Memory: '2048'
+            - !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/all-in-one-ai-web:latest
+            - !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com.cn/all-in-one-ai-web:latest
+          Memory: '4096'
           LogConfiguration:
             LogDriver: awslogs
             Options:
               awslogs-group: !Ref CloudwatchLogsGroup
               awslogs-region: !Ref 'AWS::Region'
-              awslogs-stream-prefix: spot-bot-web
+              awslogs-stream-prefix: all-in-one-ai-web
           PortMappings:
             - ContainerPort: 3000
           Environment:
@@ -168,7 +148,7 @@ Resources:
   ECSALB:
     Type: 'AWS::ElasticLoadBalancingV2::LoadBalancer'
     Properties:
-      Name: spot-bot
+      Name: all-in-one-ai
       Scheme: internet-facing
       LoadBalancerAttributes:
         - Key: idle_timeout.timeout_seconds
@@ -184,10 +164,8 @@ Resources:
         - Type: forward
           TargetGroupArn: !Ref ECSTG
       LoadBalancerArn: !Ref ECSALB
-      Port: '443'
-      Protocol: HTTPS
-      Certificates: 
-        - CertificateArn: !Ref Certificate
+      Port: '80'
+      Protocol: HTTP
 
   ECSTG:
     Type: 'AWS::ElasticLoadBalancingV2::TargetGroup'
