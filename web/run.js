@@ -6,7 +6,7 @@ const fs = require('fs');
 const { default: axios } = require('axios');
 const { createProxyMiddleware }  = require('http-proxy-middleware');
 
-const baseUrl = 'https://4a8oxccfn7.execute-api.ap-southeast-1.amazonaws.com/prod'
+const baseUrl = process.env.API_GATEWAY_PROD_ENDPOINT
 
 app.post('/image', (req, res) => {
     var data = [];
@@ -100,10 +100,11 @@ app.get('/file/download', (req, res) => {
 app.get('/search/image', (req, res) => {
     try {
             var endpoint_name = req.query['endpoint_name'];
+            var industrial_model = req.query['industrial_model']
             var file_name = req.query['file_name'];
             var data = fs.readFileSync('images/' + file_name + '.jpg');
     
-            options = {headers: {'content-type': 'image/jpg'}, params: {endpoint_name: endpoint_name}};
+            options = {headers: {'content-type': 'image/jpg'}, params: {endpoint_name: endpoint_name, industrial_model: industrial_model}};
             axios.post(baseUrl + '/search/image', data, options)
             .then((response) => {
                 res.send(response.data);

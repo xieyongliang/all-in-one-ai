@@ -55,14 +55,14 @@ Resources:
     Properties:
       Name: /all_in_one_ai/config/meta/algorithms/yolov5/greengrass/components/com.example.yolov5/artifacts
       Type: String
-      Value: !Sub s3://${S3Bucket}/{S3Key}/algorithms/yolov5/greengrass/components/com.example.yolov5/artifacts
+      Value: !Sub s3://${S3Bucket}/{S3Key}algorithms/yolov5/greengrass/components/com.example.yolov5/artifacts
 
   Parameter4:
     Type: AWS::SSM::Parameter
     Properties:
       Name: /all_in_one_ai/config/meta/algorithms/yolov5/greengrass/components/com.example.yolov5/template
       Type: String
-      Value: !Sub s3://${S3Bucket}/{S3Key}/algorithms/yolov5/greengrass/components/com.example.yolov5/template
+      Value: !Sub s3://${S3Bucket}/{S3Key}algorithms/yolov5/greengrass/components/com.example.yolov5/template
 
   Parameter5:
     Type: AWS::SSM::Parameter
@@ -116,17 +116,17 @@ Resources:
   Parameter7:
     Type: AWS::SSM::Parameter
     Properties:
-      Name: /all_in_one_ai/config/meta/icons
+      Name: /all_in_one_ai/config/meta/algorithms/yolov5/industrialmodels
       Type: String
-      Value: !Sub s3://${S3Bucket}/{S3Key}/icons/
+      Value: s3://${S3Bucket}/{S3Key}algorithms/yolov5/industrialmodels/
 
   Parameter8:
     Type: AWS::SSM::Parameter
     Properties:
-      Name: /all_in_one_ai/config/meta/algorithms/yolov5/industrialmodels
+      Name: /all_in_one_ai/config/meta/algorithms/gluoncv/industrialmodels
       Type: String
-      Value: s3://${S3Bucket}/{S3Key}/algorithms/yolov5/industrialmodels/
-    
+      Value: s3://${S3Bucket}/{S3Key}algorithms/gluoncv/industrialmodels/
+
   Parameter9:
     Type: AWS::SSM::Parameter
     Properties:

@@ -70,13 +70,6 @@ rm -r ${build_dir}
 
 mkdir -p ${build_dir}/python/
 
-if [[ $region =~ ^cn.* ]]
-then
-    pip3 install sagemaker -t ${build_dir}/python/ -i https://opentuna.cn/pypi/web/simple
-else
-    pip3 install sagemaker -t ${build_dir}/python/
-fi
-
 cp -R *.py ${build_dir}/python/
 cd ${build_dir}
 zip -r9 all_in_one_ai_create_pipeline.zip python
@@ -124,10 +117,11 @@ all_in_one_ai_describe_transform_job
 all_in_one_ai_function
 all_in_one_ai_get_function_code
 all_in_one_ai_get_function_console
-all_in_one_ai_greengrass_coredevices
+all_in_one_ai_greengrass_core_devices
 all_in_one_ai_greengrass_create_component_version
 all_in_one_ai_greengrass_create_deployment
-all_in_one_ai_greengrass_thingroups
+all_in_one_ai_greengrass_thing_groups
+all_in_one_ai_import_opensearch_helper
 all_in_one_ai_import_opensearch_handler
 all_in_one_ai_inference
 all_in_one_ai_invoke_endpoint

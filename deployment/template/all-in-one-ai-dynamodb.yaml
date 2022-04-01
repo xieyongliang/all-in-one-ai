@@ -1,24 +1,6 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: Template for DynamoDB (Global)
 
-Parameters:
-  S3Bucket:
-    Description: S3 Bucket of assets
-    Type: String
-
-  S3Key:
-    Description: S3 Bucket of assets
-    Type: String
-
-  ChinaRegion: 
-    Description: Check if the stack to be in CN Region
-    Type: String
-    Default: false
-    AllowedValues: [ true, false ]
-
-Conditions:
-  Globally: !Equals [ false, !Ref ChinaRegion ]
-
 Resources: 
   IndustrialModelDynamoDBTable: 
     Type: AWS::DynamoDB::Table

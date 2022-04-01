@@ -51,9 +51,8 @@ Parameters:
 
   CustomIdentifier:
     Type: String
-    Default: SpotBot
-    MaxLength: '10'
-    AllowedPattern: '[A-Za-z0-9]+'
+    Default: all-in-one-ai
+    MaxLength: '20'
     ConstraintDescription: >-
       must only contain uppercase and lowercase letters and numbers. Max length is 10.
     Description: >-
@@ -371,6 +370,10 @@ Outputs:
   ElasticSearchSecurityGroup:
     Description: ElasticSearchSecurityGroup
     Value: !Ref ElasticSearchSecurityGroup
+  EfsSecurityGroup:
+    Description: EfstSecurityGroup
+    Value: !Ref EfsSecurityGroup
   DefaultSecurityGroup:
     Description: DefaultSecurityGroup
     Value: !Ref DefaultSecurityGroup
+    

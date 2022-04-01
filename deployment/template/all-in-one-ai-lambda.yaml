@@ -52,6 +52,30 @@ Conditions:
   Globally: !Equals [ false, !Ref ChinaRegion ]
 
 Resources:
+  HelperLayer:
+    Type: AWS::Lambda::LayerVersion
+    Properties:
+      CompatibleRuntimes:
+        - python3.9
+      Content:
+        S3Bucket: !Ref S3Bucket
+        S3Key: !Sub ${S3Key}code/all_in_one_ai_helper.zip
+      Description: Helper layer for DynamoDB, SSM, ane ES
+      LayerName: all_in_one_ai_helper
+      LicenseInfo: MIT
+
+  SageMakerLayer:
+    Type: AWS::Lambda::LayerVersion
+    Properties:
+      CompatibleRuntimes:
+        - python3.9
+      Content:
+        S3Bucket: !Ref S3Bucket
+        S3Key: !Sub ${S3Key}code/all_in_one_ai_sagemaker.zip
+      Description: SageMaker layer for SageMaker
+      LayerName: all_in_one_ai_sagemaker
+      LicenseInfo: MIT
+
   ApiGatewayRestApi:
     Type: AWS::ApiGateway::RestApi
     Properties:
@@ -122,8 +146,8 @@ Resources:
         Uri: 
           !If
           - Globally
-          - !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIApiByNameFunction.Arn}/invocations'
-          - !Sub 'arn:aws-cn:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIApiByNameFunction.Arn}/invocations'
+          - !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIApiFunction.Arn}/invocations'
+          - !Sub 'arn:aws-cn:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIApiFunction.Arn}/invocations'
       ResourceId: !Ref ApiGatewayResourceApiByName
       RestApiId: !Ref ApiGatewayRestApi   
   
@@ -182,7 +206,7 @@ Resources:
     Properties:
       Code:
         S3Bucket: !Ref S3Bucket
-        S3Key: !Sub ${S3Key}/code/all_in_one_ai_api.zip
+        S3Key: !Sub ${S3Key}code/all_in_one_ai_api.zip
       FunctionName: all_in_one_ai_api
       Tags:
         - Value: Name
@@ -264,7 +288,7 @@ Resources:
     Type: AWS::ApiGateway::Resource
     Properties:
       ParentId: !GetAtt ApiGatewayRestApi.RootResourceId
-      PathPart: 'api'
+      PathPart: 'endpoint'
       RestApiId: !Ref ApiGatewayRestApi
 
   ApiGatewayMethodEndpointGet:
@@ -393,7 +417,7 @@ Resources:
     Properties:
       Code:
         S3Bucket: !Ref S3Bucket
-        S3Key: !Sub ${S3Key}/code/all_in_one_ai_endpoint.zip
+        S3Key: !Sub ${S3Key}code/all_in_one_ai_endpoint.zip
       FunctionName: all_in_one_ai_endpoint
       Tags:
         - Value: Name
@@ -495,7 +519,7 @@ Resources:
     Type: AWS::ApiGateway::Resource
     Properties:
       ParentId: !GetAtt ApiGatewayRestApi.RootResourceId
-      PathPart: 'api'
+      PathPart: 'function'
       RestApiId: !Ref ApiGatewayRestApi
 
   ApiGatewayResourceFunctionByName:
@@ -565,7 +589,7 @@ Resources:
     Properties:
       Code:
         S3Bucket: !Ref S3Bucket
-        S3Key: !Sub ${S3Key}/code/all_in_one_ai_function.zip
+        S3Key: !Sub ${S3Key}code/all_in_one_ai_function.zip
       FunctionName: all_in_one_ai_function
       Tags:
         - Value: Name
@@ -748,7 +772,7 @@ Resources:
     Properties:
       Code:
         S3Bucket: !Ref S3Bucket
-        S3Key: !Sub ${S3Key}/code/all_in_one_ai_greengrass_component_version.zip
+        S3Key: !Sub ${S3Key}code/all_in_one_ai_greengrass_component_version.zip
       FunctionName: all_in_one_ai_greengrass_component_version
       Tags:
         - Value: Name
@@ -924,7 +948,7 @@ Resources:
   AllInOneAIGreengrassCoreDevicesFunctionAdditionalPermission:
     Type: 'AWS::IAM::Policy'
     Properties:
-      PolicyName: all_in_one_ai_greengrass_core_devices
+      PolicyName: all_in_one_ai_greengrass_coredevices
       PolicyDocument:
         Version: 2012-10-17
         Statement:
@@ -942,7 +966,7 @@ Resources:
     Properties:
       Code:
         S3Bucket: !Ref S3Bucket
-        S3Key: !Sub ${S3Key}/code/all_in_one_ai_greengrass_core_devices.zip
+        S3Key: !Sub ${S3Key}code/all_in_one_ai_greengrass_core_devices.zip
       FunctionName: all_in_one_ai_greengrass_core_devices
       Tags:
         - Value: Name
@@ -1022,7 +1046,7 @@ Resources:
   ApiGatewayResourceGreengrassDeploymentById:
     Type: AWS::ApiGateway::Resource
     Properties:
-      ParentId: !GetAtt ApiGatewayResourceGreencomponentDeployment.ResourceId
+      ParentId: !GetAtt ApiGatewayResourceGreengrassDeployment.ResourceId
       PathPart: '{deployment_id}'
       RestApiId: !Ref ApiGatewayRestApi
 
@@ -1098,7 +1122,7 @@ Resources:
     Properties:
       Code:
         S3Bucket: !Ref S3Bucket
-        S3Key: !Sub ${S3Key}/code/all_in_one_ai_greengrass_deployment.zip
+        S3Key: !Sub ${S3Key}code/all_in_one_ai_greengrass_deployment.zip
       FunctionName: all_in_one_ai_greengrass_deployment
       Tags:
         - Value: Name
@@ -1244,7 +1268,7 @@ Resources:
     Properties:
       Code:
         S3Bucket: !Ref S3Bucket
-        S3Key: !Sub ${S3Key}/code/all_in_one_ai_greengrass_thing_groups.zip
+        S3Key: !Sub ${S3Key}code/all_in_one_ai_greengrass_thing_groups.zip
       FunctionName: all_in_one_ai_greengrass_thing_groups
       Tags:
         - Value: Name
@@ -1280,18 +1304,11 @@ Resources:
           - __Stage__: '*'
             __ApiId__: !Ref ApiGatewayRestApi
 
-  ApiGatewayResourceGreengrassComponentByName:
-    Type: AWS::ApiGateway::Resource
-    Properties:
-      ParentId: !GetAtt ApiGatewayResourceGreencomponentComponent.ResourceId
-      PathPart: '{component_name}'
-      RestApiId: !Ref ApiGatewayRestApi
-
   ApiGatewayResourceIndustrialModel:
     Type: AWS::ApiGateway::Resource
     Properties:
       ParentId: !GetAtt ApiGatewayRestApi.RootResourceId
-      PathPart: 'api'
+      PathPart: 'industrialmodel'
       RestApiId: !Ref ApiGatewayRestApi
 
   ApiGatewayMethodIndustrialModelGet:
@@ -1306,8 +1323,8 @@ Resources:
         Uri: 
           !If
           - Globally
-          - !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIGreengrassIndustrialModel.Arn}/invocations'
-          - !Sub 'arn:aws-cn:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIGreengrassIndustrialModel.Arn}/invocations'
+          - !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIIndustrialModelFunction.Arn}/invocations'
+          - !Sub 'arn:aws-cn:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIIndustrialModelFunction.Arn}/invocations'
       ResourceId: !Ref ApiGatewayResourceIndustrialModel
       RestApiId: !Ref ApiGatewayRestApi   
 
@@ -1319,12 +1336,12 @@ Resources:
       HttpMethod: POST
       Integration:
         Type: AWS_PROXY
-        IntegrationHttpMethod: GET
+        IntegrationHttpMethod: POST
         Uri: 
           !If
           - Globally
-          - !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIGreengrassIndustrialModel.Arn}/invocations'
-          - !Sub 'arn:aws-cn:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIGreengrassIndustrialModel.Arn}/invocations'
+          - !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIIndustrialModelFunction.Arn}/invocations'
+          - !Sub 'arn:aws-cn:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIIndustrialModelFunction.Arn}/invocations'
       ResourceId: !Ref ApiGatewayResourceIndustrialModel
       RestApiId: !Ref ApiGatewayRestApi   
 
@@ -1347,8 +1364,8 @@ Resources:
         Uri: 
           !If
           - Globally
-          - !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIGreengrassIndustrialModel.Arn}/invocations'
-          - !Sub 'arn:aws-cn:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIGreengrassIndustrialModel.Arn}/invocations'
+          - !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIIndustrialModelFunction.Arn}/invocations'
+          - !Sub 'arn:aws-cn:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIIndustrialModelFunction.Arn}/invocations'
       ResourceId: !Ref ApiGatewayResourceIndustrialModelById
       RestApiId: !Ref ApiGatewayRestApi   
 
@@ -1364,8 +1381,8 @@ Resources:
         Uri: 
           !If
           - Globally
-          - !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIGreengrassIndustrialModel.Arn}/invocations'
-          - !Sub 'arn:aws-cn:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIGreengrassIndustrialModel.Arn}/invocations'
+          - !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIIndustrialModelFunction.Arn}/invocations'
+          - !Sub 'arn:aws-cn:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIIndustrialModelFunction.Arn}/invocations'
       ResourceId: !Ref ApiGatewayResourceIndustrialModelById
       RestApiId: !Ref ApiGatewayRestApi   
 
@@ -1381,8 +1398,8 @@ Resources:
         Uri: 
           !If
           - Globally
-          - !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIGreengrassIndustrialModel.Arn}/invocations'
-          - !Sub 'arn:aws-cn:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIGreengrassIndustrialModel.Arn}/invocations'
+          - !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIIndustrialModelFunction.Arn}/invocations'
+          - !Sub 'arn:aws-cn:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIIndustrialModelFunction.Arn}/invocations'
       ResourceId: !Ref ApiGatewayResourceIndustrialModelById
       RestApiId: !Ref ApiGatewayRestApi   
 
@@ -1437,7 +1454,7 @@ Resources:
     Properties:
       Code:
         S3Bucket: !Ref S3Bucket
-        S3Key: !Sub ${S3Key}/code/all_in_one_ai_industrial_model.zip
+        S3Key: !Sub ${S3Key}code/all_in_one_ai_industrial_model.zip
       FunctionName: all_in_one_ai_industrial_model
       Tags:
         - Value: Name
@@ -1559,7 +1576,7 @@ Resources:
     Type: AWS::ApiGateway::Resource
     Properties:
       ParentId: !GetAtt ApiGatewayRestApi.RootResourceId
-      PathPart: 'api'
+      PathPart: 'inference'
       RestApiId: !Ref ApiGatewayRestApi
 
   ApiGatewayMethodInferencePost:
@@ -1576,7 +1593,7 @@ Resources:
           - Globally
           - !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIInferenceFunction.Arn}/invocations'
           - !Sub 'arn:aws-cn:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIInferenceFunction.Arn}/invocations'
-      ResourceId: !Ref ApiGatewayResourceIndustrialModel
+      ResourceId: !Ref ApiGatewayResourceInference
       RestApiId: !Ref ApiGatewayRestApi   
 
   AllInOneAIInferenceFunctionRole:
@@ -1622,7 +1639,7 @@ Resources:
     Properties:
       Code:
         S3Bucket: !Ref S3Bucket
-        S3Key: !Sub ${S3Key}/code/all_in_one_ai_inference.zip
+        S3Key: !Sub ${S3Key}code/all_in_one_ai_inference.zip
       FunctionName: all_in_one_ai_inference
       Tags:
         - Value: Name
@@ -1662,7 +1679,7 @@ Resources:
     Type: AWS::ApiGateway::Resource
     Properties:
       ParentId: !GetAtt ApiGatewayRestApi.RootResourceId
-      PathPart: 'api'
+      PathPart: 'model'
       RestApiId: !Ref ApiGatewayRestApi
 
   ApiGatewayMethodModelGet:
@@ -1791,7 +1808,7 @@ Resources:
     Properties:
       Code:
         S3Bucket: !Ref S3Bucket
-        S3Key: !Sub ${S3Key}/code/all_in_one_ai_model.zip
+        S3Key: !Sub ${S3Key}code/all_in_one_ai_model.zip
       FunctionName: all_in_one_ai_model
       Tags:
         - Value: Name
@@ -1893,7 +1910,7 @@ Resources:
     Type: AWS::ApiGateway::Resource
     Properties:
       ParentId: !GetAtt ApiGatewayRestApi.RootResourceId
-      PathPart: 'api'
+      PathPart: 'modelpackage'
       RestApiId: !Ref ApiGatewayRestApi
 
   ApiGatewayMethodModelPackageGet:
@@ -1995,30 +2012,6 @@ Resources:
       ResourceId: !Ref ApiGatewayResourceModelPackageByName
       RestApiId: !Ref ApiGatewayRestApi   
 
-  ApiGatewayResourcePipeline:
-    Type: AWS::ApiGateway::Resource
-    Properties:
-      ParentId: !GetAtt ApiGatewayRestApi.RootResourceId
-      PathPart: 'api'
-      RestApiId: !Ref ApiGatewayRestApi
-
-  ApiGatewayMethodPipelineGet:
-    Type: AWS::ApiGateway::Method
-    Properties:
-      ApiKeyRequired: false
-      AuthorizationType: NONE
-      HttpMethod: GET
-      Integration:
-        Type: AWS_PROXY
-        IntegrationHttpMethod: GET
-        Uri: 
-          !If
-          - Globally
-          - !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIPipelineFunction.Arn}/invocations'
-          - !Sub 'arn:aws-cn:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIPipelineFunction.Arn}/invocations'
-      ResourceId: !Ref ApiGatewayResourcePipeline
-      RestApiId: !Ref ApiGatewayRestApi   
-
   ApiGatewayMethodModelPackagePost:
     Type: AWS::ApiGateway::Method
     Properties:
@@ -2031,8 +2024,8 @@ Resources:
         Uri: 
           !If
           - Globally
-          - !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIPipelineFunction.Arn}/invocations'
-          - !Sub 'arn:aws-cn:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIPipelineFunction.Arn}/invocations'
+          - !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIModelPackageFunction.Arn}/invocations'
+          - !Sub 'arn:aws-cn:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIModelPackageFunction.Arn}/invocations'
       ResourceId: !Ref ApiGatewayResourcePipeline
       RestApiId: !Ref ApiGatewayRestApi   
 
@@ -2087,7 +2080,7 @@ Resources:
     Properties:
       Code:
         S3Bucket: !Ref S3Bucket
-        S3Key: !Sub ${S3Key}/code/all_in_one_ai_model_package.zip
+        S3Key: !Sub ${S3Key}code/all_in_one_ai_model_package.zip
       FunctionName: all_in_one_ai_model_package
       Tags:
         - Value: Name
@@ -2208,7 +2201,7 @@ Resources:
     Properties:
       Code:
         S3Bucket: !Ref S3Bucket
-        S3Key: !Sub ${S3Key}/code/all_in_one_ai_model_package_group.zip
+        S3Key: !Sub ${S3Key}code/all_in_one_ai_model_package_group.zip
       FunctionName: all_in_one_ai_model_package_group
       Tags:
         - Value: Name
@@ -2270,7 +2263,7 @@ Resources:
     Type: AWS::ApiGateway::Resource
     Properties:
       ParentId: !GetAtt ApiGatewayRestApi.RootResourceId
-      PathPart: 'api'
+      PathPart: 's3'
       RestApiId: !Ref ApiGatewayRestApi
 
   ApiGatewayMethodS3Get:
@@ -2333,7 +2326,7 @@ Resources:
     Properties:
       Code:
         S3Bucket: !Ref S3Bucket
-        S3Key: !Sub ${S3Key}/code/all_in_one_ai_s3.zip
+        S3Key: !Sub ${S3Key}code/all_in_one_ai_s3.zip
       FunctionName: all_in_one_ai_s3
       Tags:
         - Value: Name
@@ -2373,7 +2366,7 @@ Resources:
     Type: AWS::ApiGateway::Resource
     Properties:
       ParentId: !GetAtt ApiGatewayRestApi.RootResourceId
-      PathPart: 'api'
+      PathPart: 'search'
       RestApiId: !Ref ApiGatewayRestApi
 
   ApiGatewayResourceSearchImage:
@@ -2429,8 +2422,8 @@ Resources:
     Type: AWS::Lambda::Function
     Properties:
       Code:
-        SearchByImageBucket: !Ref SearchByImageBucket
-        SearchByImageKey: !Sub ${SearchByImageKey}/code/all_in_one_ai_search_by_image.zip
+        S3Bucket: !Ref S3Bucket
+        S3Key: !Sub ${S3Key}code/all_in_one_ai_search_by_image.zip
       FunctionName: all_in_one_ai_search_by_image
       Tags:
         - Value: Name
@@ -2447,7 +2440,7 @@ Resources:
           - !Ref SecurityGroup
       Environment:
         Variables:
-          ES_ENDPOINT: !Ref OpensearchEndpoint
+          ES_ENDPOINT: !Sub https://{OpensearchEndpoint}
       Layers:
         - !Ref HelperLayer
   
@@ -2520,8 +2513,8 @@ Resources:
     Type: AWS::Lambda::Function
     Properties:
       Code:
-        ImportOpensearchBucket: !Ref ImportOpensearchBucket
-        ImportOpensearchKey: !Sub ${ImportOpensearchKey}/code/all_in_one_ai_import_opensearch.zip
+        S3Bucket: !Ref S3Bucket
+        S3Key: !Sub ${S3Key}code/all_in_one_ai_import_opensearch.zip
       FunctionName: all_in_one_ai_import_opensearch
       Tags:
         - Value: Name
@@ -2563,7 +2556,7 @@ Resources:
     Type: AWS::ApiGateway::Resource
     Properties:
       ParentId: !GetAtt ApiGatewayRestApi.RootResourceId
-      PathPart: 'api'
+      PathPart: 'trainingjob'
       RestApiId: !Ref ApiGatewayRestApi
 
   ApiGatewayMethodTrainingJobGet:
@@ -2674,8 +2667,8 @@ Resources:
     Type: AWS::Lambda::Function
     Properties:
       Code:
-        TrainingJobBucket: !Ref TrainingJobBucket
-        TrainingJobKey: !Sub ${TrainingJobKey}/code/all_in_one_ai_training_job.zip
+        S3Bucket: !Ref S3Bucket
+        S3Key: !Sub ${S3Key}code/all_in_one_ai_training_job.zip
       FunctionName: all_in_one_ai_training_job
       Tags:
         - Value: Name
@@ -2757,7 +2750,7 @@ Resources:
     Type: AWS::ApiGateway::Resource
     Properties:
       ParentId: !GetAtt ApiGatewayRestApi.RootResourceId
-      PathPart: 'api'
+      PathPart: 'transformjob'
       RestApiId: !Ref ApiGatewayRestApi
 
   ApiGatewayMethodTransformJobGet:
@@ -2868,8 +2861,8 @@ Resources:
     Type: AWS::Lambda::Function
     Properties:
       Code:
-        TransformJobBucket: !Ref TransformJobBucket
-        TransformJobKey: !Sub ${TransformJobKey}/code/all_in_one_ai_transform_job.zip
+        S3Bucket: !Ref S3Bucket
+        S3Key: !Sub ${S3Key}code/all_in_one_ai_transform_job.zip
       FunctionName: all_in_one_ai_transform_job
       Tags:
         - Value: Name
@@ -2966,8 +2959,8 @@ Resources:
         Uri: 
           !If
           - Globally
-          - !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAITrainingJobReviewFunction.Arn}/invocations'
-          - !Sub 'arn:aws-cn:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAITrainingJobReviewFunction.Arn}/invocations'
+          - !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAITransformJobReviewFunction.Arn}/invocations'
+          - !Sub 'arn:aws-cn:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAITransformJobReviewFunction.Arn}/invocations'
       ResourceId: !Ref ApiGatewayResourceTransformJobByNameReview
       RestApiId: !Ref ApiGatewayRestApi   
 
@@ -3025,8 +3018,8 @@ Resources:
     Type: AWS::Lambda::Function
     Properties:
       Code:
-        TransformJobReviewBucket: !Ref TransformJobReviewBucket
-        TransformJobReviewKey: !Sub ${TransformJobReviewKey}/code/all_in_one_ai_transform_job_review.zip
+        S3Bucket: !Ref S3Bucket
+        S3Key: !Sub ${S3Key}code/all_in_one_ai_transform_job_review.zip
       FunctionName: all_in_one_ai_transform_job_review
       Tags:
         - Value: Name
@@ -3061,6 +3054,99 @@ Resources:
         - !Sub
           - >-
             arn:aws-cn:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/GET/transformjob/review
+          - __Stage__: '*'
+            __ApiId__: !Ref ApiGatewayRestApi
+
+  AllInOneAITransformJobReviewFunctionRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'sts:AssumeRole'
+            Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+      ManagedPolicyArns:
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
+          - 'arn:aws-cn:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/AmazonS3FullAccess'
+          - 'arn:aws-cn:iam::aws:policy/AmazonS3FullAccess'
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess'
+          - 'arn:aws-cn:iam::aws:policy/AmazonDynamoDBFullAccess'
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/AmazonSageMakerFullAccess'
+          - 'arn:aws-cn:iam::aws:policy/AmazonSageMakerFullAccess'
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/service-role/AWSLambdaRole'
+          - 'arn:aws-cn:iam::aws:policy/service-role/AWSLambdaRole'
+  
+  AllInOneAITransformJobReviewFunctionAdditionalPermission:
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName: all_in_one_ai_transform_job_review
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'logs:*'
+              - 'lambda:*'
+              - 'cloudwatch:*'
+            Resource: '*'
+            Effect: Allow
+      Roles:
+        - !Ref AllInOneAITransformJobReviewFunctionRole
+
+  AllInOneAITransformJobReviewFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket: !Ref S3Bucket
+        S3Key: !Sub ${S3Key}code/all_in_one_ai_transform_job_review.zip
+      FunctionName: all_in_one_ai_transform_job_review
+      Tags:
+        - Value: Name
+          Key: 'AllInOneAIApi'
+      Handler: lambda_function.lambda_handler
+      Role: !GetAtt AllInOneAITransformJobReviewFunctionRole.Arn
+      Timeout: 900
+      Runtime: python3.9
+      VpcConfig:
+        SubnetIds: 
+          - !Ref PrivateSubnet1
+          - !Ref PrivateSubnet2
+        SecurityGroupIds: 
+          - !Ref SecurityGroup
+      Layers:
+        - !Ref HelperLayer
+
+  AllInOneAITransformJobReviewFunctionCatchAllPermissionProd1:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: 'lambda:InvokeFunction'
+      Principal: apigateway.amazonaws.com      
+      FunctionName: !Ref AllInOneAITransformJobReviewFunction
+      SourceArn: 
+        !If
+        - Globally
+        - !Sub
+          - >-
+            arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/GET/*/transform_job_review
+          - __Stage__: '*'
+            __ApiId__: !Ref ApiGatewayRestApi
+        - !Sub
+          - >-
+            arn:aws-cn:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/GET/*/transform_job_review
           - __Stage__: '*'
             __ApiId__: !Ref ApiGatewayRestApi
 
@@ -3115,7 +3201,7 @@ Resources:
     Properties:
       Code:
         S3Bucket: !Ref S3Bucket
-        S3Key: !Sub ${S3Key}/code/all_in_one_ai_create_api.zip
+        S3Key: !Sub ${S3Key}code/all_in_one_ai_create_api.zip
       FunctionName: all_in_one_ai_create_api
       Tags:
         - Value: Name
@@ -3174,7 +3260,7 @@ Resources:
     Properties:
       Code:
         S3Bucket: !Ref S3Bucket
-        S3Key: !Sub ${S3Key}/code/all_in_one_ai_create_endpoint.zip
+        S3Key: !Sub ${S3Key}code/all_in_one_ai_create_endpoint.zip
       FunctionName: all_in_one_ai_create_endpoint
       Tags:
         - Value: Name
@@ -3233,7 +3319,7 @@ Resources:
     Properties:
       Code:
         S3Bucket: !Ref S3Bucket
-        S3Key: !Sub ${S3Key}/code/all_in_one_ai_create_model.zip
+        S3Key: !Sub ${S3Key}code/all_in_one_ai_create_model.zip
       FunctionName: all_in_one_ai_create_model
       Tags:
         - Value: Name
@@ -3248,7 +3334,160 @@ Resources:
           - !Ref PrivateSubnet2
         SecurityGroupIds: 
           - !Ref SecurityGroup
+
+  ApiGatewayResourcePipeline:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !GetAtt ApiGatewayRestApi.RootResourceId
+      PathPart: 'pipeline'
+      RestApiId: !Ref ApiGatewayRestApi
+
+  ApiGatewayMethodPipelineGet:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      ApiKeyRequired: false
+      AuthorizationType: NONE
+      HttpMethod: GET
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: GET
+        Uri: 
+          !If
+          - Globally
+          - !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIPipelineFunction.Arn}/invocations'
+          - !Sub 'arn:aws-cn:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIPipelineFunction.Arn}/invocations'
+      ResourceId: !Ref ApiGatewayResourcePipeline
+      RestApiId: !Ref ApiGatewayRestApi   
+
+  AllInOneAIPipelineFunctionRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'sts:AssumeRole'
+            Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+      ManagedPolicyArns:
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
+          - 'arn:aws-cn:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess'
+          - 'arn:aws-cn:iam::aws:policy/AmazonDynamoDBFullAccess'
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/AmazonSageMakerFullAccess'
+          - 'arn:aws-cn:iam::aws:policy/AmazonSageMakerFullAccess'
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/service-role/AWSLambdaRole'
+          - 'arn:aws-cn:iam::aws:policy/service-role/AWSLambdaRole'
   
+  AllInOneAIPipelineFunctionAdditionalPermission:
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName: all_in_one_ai_pipeline
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'logs:*'
+              - 'lambda:*'
+              - 'cloudwatch:*'
+            Resource: '*'
+            Effect: Allow
+      Roles:
+        - !Ref AllInOneAIPipelineFunctionRole
+
+  AllInOneAIPipelineFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket: !Ref S3Bucket
+        S3Key: !Sub ${S3Key}code/all_in_one_ai_pipeline.zip
+      FunctionName: all_in_one_ai_pipeline
+      Tags:
+        - Value: Name
+          Key: 'AllInOneAIApi'
+      Handler: lambda_function.lambda_handler
+      Role: !GetAtt AllInOneAIPipelineFunctionRole.Arn
+      Timeout: 900
+      Runtime: python3.9
+      VpcConfig:
+        SubnetIds: 
+          - !Ref PrivateSubnet1
+          - !Ref PrivateSubnet2
+        SecurityGroupIds: 
+          - !Ref SecurityGroup
+      Layers:
+        - !Ref HelperLayer
+
+  AllInOneAIPipelineFunctionCatchAllPermissionProd1:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: 'lambda:InvokeFunction'
+      Principal: apigateway.amazonaws.com      
+      FunctionName: !Ref AllInOneAIPipelineFunction
+      SourceArn: 
+        !If
+        - Globally
+        - !Sub
+          - >-
+            arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/GET/pipeline
+          - __Stage__: '*'
+            __ApiId__: !Ref ApiGatewayRestApi
+        - !Sub
+          - >-
+            arn:aws-cn:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/GET/pipeline
+          - __Stage__: '*'
+            __ApiId__: !Ref ApiGatewayRestApi
+        
+  AllInOneAIPipelineFunctionCatchAllPermissionProd2:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: 'lambda:InvokeFunction'
+      Principal: apigateway.amazonaws.com      
+      FunctionName: !Ref AllInOneAIPipelineFunction
+      SourceArn: 
+        !If
+        - Globally
+        - !Sub
+          - >-
+            arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/POST/pipeline
+          - __Stage__: '*'
+            __ApiId__: !Ref ApiGatewayRestApi
+        - !Sub
+          - >-
+            arn:aws-cn:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/POST/pipeline
+          - __Stage__: '*'
+            __ApiId__: !Ref ApiGatewayRestApi
+
+  AllInOneAIPipelineFunctionCatchAllPermissionProd3:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: 'lambda:InvokeFunction'
+      Principal: apigateway.amazonaws.com      
+      FunctionName: !Ref AllInOneAIPipelineFunction
+      SourceArn: 
+        !If
+        - Globally
+        - !Sub
+          - >-
+            arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/GET/pipeline/*
+          - __Stage__: '*'
+            __ApiId__: !Ref ApiGatewayRestApi
+        - !Sub
+          - >-
+            arn:aws-cn:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/GET/pipeline/*
+          - __Stage__: '*'
+            __ApiId__: !Ref ApiGatewayRestApi
+
   AllInOneAICreatePipelineFunctionRole:
     Type: 'AWS::IAM::Role'
     Properties:
@@ -3292,7 +3531,7 @@ Resources:
     Properties:
       Code:
         S3Bucket: !Ref S3Bucket
-        S3Key: !Sub ${S3Key}/code/all_in_one_ai_create_pipeline.zip
+        S3Key: !Sub ${S3Key}code/all_in_one_ai_create_pipeline.zip
       FunctionName: all_in_one_ai_create_pipeline
       Tags:
         - Value: Name
@@ -3308,7 +3547,7 @@ Resources:
         SecurityGroupIds: 
           - !Ref SecurityGroup
       Layers:
-        - !Ref sagemaker
+        - !Ref SageMakerLayer
   
   AllInOneAICreatePipelineHelperFunctionRole:
     Type: 'AWS::IAM::Role'
@@ -3353,7 +3592,7 @@ Resources:
     Properties:
       Code:
         S3Bucket: !Ref S3Bucket
-        S3Key: !Sub ${S3Key}/code/all_in_one_ai_create_pipeline_helper.zip
+        S3Key: !Sub ${S3Key}code/all_in_one_ai_create_pipeline_helper.zip
       FunctionName: all_in_one_ai_create_pipeline_helper
       Tags:
         - Value: Name
@@ -3369,7 +3608,7 @@ Resources:
         SecurityGroupIds: 
           - !Ref SecurityGroup
   
-    AllInOneAICreateTrainingJobYolov5FunctionRole:
+  AllInOneAICreateTrainingJobYolov5FunctionRole:
     Type: 'AWS::IAM::Role'
     Properties:
       AssumeRolePolicyDocument:
@@ -3412,8 +3651,8 @@ Resources:
     Properties:
       Code:
         S3Bucket: !Ref S3Bucket
-        S3Key: !Sub ${S3Key}/code/ all_in_one_ai_create_training_job_yolov5.zip
-      FunctionName:  all_in_one_ai_create_training_job_yolov5
+        S3Key: !Sub ${S3Key}code/all_in_one_ai_create_training_job_yolov5.zip
+      FunctionName: all_in_one_ai_create_training_job_yolov5
       Tags:
         - Value: Name
           Key: 'AllInOneAIApi'
@@ -3471,7 +3710,7 @@ Resources:
     Properties:
       Code:
         S3Bucket: !Ref S3Bucket
-        S3Key: !Sub ${S3Key}/code/all_in_one_ai_create_transform_job.zip
+        S3Key: !Sub ${S3Key}code/all_in_one_ai_create_transform_job.zip
       FunctionName: all_in_one_ai_create_transform_job
       Tags:
         - Value: Name
@@ -3530,8 +3769,8 @@ Resources:
     Properties:
       Code:
         S3Bucket: !Ref S3Bucket
-        S3Key: !Sub ${S3Key}/code/  all_in_one_ai_delete_endpoint.zip
-      FunctionName:   all_in_one_ai_delete_endpoint
+        S3Key: !Sub ${S3Key}code/all_in_one_ai_delete_endpoint.zip
+      FunctionName: all_in_one_ai_delete_endpoint
       Tags:
         - Value: Name
           Key: 'AllInOneAIApi'
@@ -3589,8 +3828,8 @@ Resources:
     Properties:
       Code:
         S3Bucket: !Ref S3Bucket
-        S3Key: !Sub ${S3Key}/code/  all_in_one_ai_delete_model.zip
-      FunctionName:   all_in_one_ai_delete_model
+        S3Key: !Sub ${S3Key}code/all_in_one_ai_delete_model.zip
+      FunctionName: all_in_one_ai_delete_model
       Tags:
         - Value: Name
           Key: 'AllInOneAIApi'
@@ -3648,8 +3887,8 @@ Resources:
     Properties:
       Code:
         S3Bucket: !Ref S3Bucket
-        S3Key: !Sub ${S3Key}/code/  all_in_one_ai_describe_pipeline_execution.zip
-      FunctionName:   all_in_one_ai_describe_pipeline_execution
+        S3Key: !Sub ${S3Key}code/all_in_one_ai_describe_pipeline_execution.zip
+      FunctionName: all_in_one_ai_describe_pipeline_execution
       Tags:
         - Value: Name
           Key: 'AllInOneAIApi'
@@ -3707,8 +3946,8 @@ Resources:
     Properties:
       Code:
         S3Bucket: !Ref S3Bucket
-        S3Key: !Sub ${S3Key}/code/  all_in_one_ai_describe_training_job.zip
-      FunctionName:   all_in_one_ai_describe_training_job
+        S3Key: !Sub ${S3Key}code/all_in_one_ai_describe_training_job.zip
+      FunctionName: all_in_one_ai_describe_training_job
       Tags:
         - Value: Name
           Key: 'AllInOneAIApi'
@@ -3766,8 +4005,8 @@ Resources:
     Properties:
       Code:
         S3Bucket: !Ref S3Bucket
-        S3Key: !Sub ${S3Key}/code/  all_in_one_ai_describe_transform_job.zip
-      FunctionName:   all_in_one_ai_describe_transform_job
+        S3Key: !Sub ${S3Key}code/all_in_one_ai_describe_transform_job.zip
+      FunctionName: all_in_one_ai_describe_transform_job
       Tags:
         - Value: Name
           Key: 'AllInOneAIApi'
@@ -3826,20 +4065,20 @@ Resources:
             Resource: '*'
             Effect: Allow
       Roles:
-        - !Ref AllInOneAFinalizePipelineFunctionRole
+        - !Ref AllInOneAIFinalizePipelineFunctionRole
 
   AllInOneAIFinalizePipelineFunction:
     Type: AWS::Lambda::Function
     Properties:
       Code:
         S3Bucket: !Ref S3Bucket
-        S3Key: !Sub ${S3Key}/code/  all_in_one_ai_finalize_pipeline.zip
-      FunctionName:   all_in_one_ai_finalize_pipeline
+        S3Key: !Sub ${S3Key}code/all_in_one_ai_finalize_pipeline.zip
+      FunctionName: all_in_one_ai_finalize_pipeline
       Tags:
         - Value: Name
           Key: 'AllInOneAIApi'
       Handler: lambda_function.lambda_handler
-      Role: !GetAtt AllInOneAFinalizePipelineFunctionRole.Arn
+      Role: !GetAtt AllInOneAIFinalizePipelineFunctionRole.Arn
       Timeout: 900
       Runtime: python3.9
       VpcConfig:
@@ -3885,20 +4124,20 @@ Resources:
             Resource: '*'
             Effect: Allow
       Roles:
-        - !Ref AllInOneAGetFunctionCodeFunctionRole
+        - !Ref AllInOneAIGetFunctionCodeFunctionRole
 
   AllInOneAIGetFunctionCodeFunction:
     Type: AWS::Lambda::Function
     Properties:
       Code:
         S3Bucket: !Ref S3Bucket
-        S3Key: !Sub ${S3Key}/code/  all_in_one_ai_get_function_code.zip
-      FunctionName:   all_in_one_ai_get_function_code
+        S3Key: !Sub ${S3Key}code/all_in_one_ai_get_function_code.zip
+      FunctionName: all_in_one_ai_get_function_code
       Tags:
         - Value: Name
           Key: 'AllInOneAIApi'
       Handler: lambda_function.lambda_handler
-      Role: !GetAtt AllInOneAGetFunctionCodeFunctionRole.Arn
+      Role: !GetAtt AllInOneAIGetFunctionCodeFunctionRole.Arn
       Timeout: 900
       Runtime: python3.9
       VpcConfig:
@@ -3944,20 +4183,20 @@ Resources:
             Resource: '*'
             Effect: Allow
       Roles:
-        - !Ref AllInOneAGetFunctionConsoleFunctionRole
+        - !Ref AllInOneAIGetFunctionConsoleFunctionRole
 
   AllInOneAIGetFunctionConsoleFunction:
     Type: AWS::Lambda::Function
     Properties:
       Code:
         S3Bucket: !Ref S3Bucket
-        S3Key: !Sub ${S3Key}/code/  all_in_one_ai_get_function_console.zip
-      FunctionName:   all_in_one_ai_get_function_console
+        S3Key: !Sub ${S3Key}code/all_in_one_ai_get_function_console.zip
+      FunctionName: all_in_one_ai_get_function_console
       Tags:
         - Value: Name
           Key: 'AllInOneAIApi'
       Handler: lambda_function.lambda_handler
-      Role: !GetAtt AllInOneAGetFunctionConsoleFunctionRole.Arn
+      Role: !GetAtt AllInOneAIGetFunctionConsoleFunctionRole.Arn
       Timeout: 900
       Runtime: python3.9
       VpcConfig:
@@ -4011,20 +4250,20 @@ Resources:
             Resource: '*'
             Effect: Allow
       Roles:
-        - !Ref AllInOneAGreengrassCreateComponentVersionFunctionRole
+        - !Ref AllInOneAIGreengrassCreateComponentVersionFunctionRole
 
   AllInOneAIGreengrassCreateComponentVersionFunction:
     Type: AWS::Lambda::Function
     Properties:
       Code:
         S3Bucket: !Ref S3Bucket
-        S3Key: !Sub ${S3Key}/code/  all_in_one_ai_greengrass_create_component_version.zip
-      FunctionName:   all_in_one_ai_greengrass_create_component_version
+        S3Key: !Sub ${S3Key}code/all_in_one_ai_greengrass_create_component_version.zip
+      FunctionName: all_in_one_ai_greengrass_create_component_version
       Tags:
         - Value: Name
           Key: 'AllInOneAIApi'
       Handler: lambda_function.lambda_handler
-      Role: !GetAtt AllInOneAGreengrassCreateComponentVersionFunctionRole.Arn
+      Role: !GetAtt AllInOneAIGreengrassCreateComponentVersionFunctionRole.Arn
       Timeout: 900
       Runtime: python3.9
       VpcConfig:
@@ -4077,20 +4316,20 @@ Resources:
             Resource: '*'
             Effect: Allow
       Roles:
-        - !Ref AllInOneAGreengrassCreateDeploymentFunctionRole
+        - !Ref AllInOneAIGreengrassCreateDeploymentFunctionRole
 
   AllInOneAIGreengrassCreateDeploymentFunction:
     Type: AWS::Lambda::Function
     Properties:
       Code:
         S3Bucket: !Ref S3Bucket
-        S3Key: !Sub ${S3Key}/code/  all_in_one_ai_greengrass_create_deployment.zip
-      FunctionName:   all_in_one_ai_greengrass_create_deployment
+        S3Key: !Sub ${S3Key}code/all_in_one_ai_greengrass_create_deployment.zip
+      FunctionName: all_in_one_ai_greengrass_create_deployment
       Tags:
         - Value: Name
           Key: 'AllInOneAIApi'
       Handler: lambda_function.lambda_handler
-      Role: !GetAtt AllInOneAGreengrassCreateDeploymentFunctionRole.Arn
+      Role: !GetAtt AllInOneAIGreengrassCreateDeploymentFunctionRole.Arn
       Timeout: 900
       Runtime: python3.9
       VpcConfig:
@@ -4147,7 +4386,7 @@ Resources:
     Properties:
       Code:
         S3Bucket: !Ref S3Bucket
-        S3Key: !Sub ${S3Key}/code/all_in_one_ai_import_opensearch_handler.zip
+        S3Key: !Sub ${S3Key}code/all_in_one_ai_import_opensearch_handler.zip
       FunctionName: all_in_one_ai_import_opensearch_handler
       Tags:
         - Value: Name
@@ -4163,7 +4402,7 @@ Resources:
         SecurityGroupIds: 
           - !Ref SecurityGroup
       Layers:
-        - !Ref helper
+        - !Ref HelperLayer
 
   AllInOneAIImportOpensearchHelperFunctionRole:
     Type: 'AWS::IAM::Role'
@@ -4212,7 +4451,7 @@ Resources:
     Properties:
       Code:
         S3Bucket: !Ref S3Bucket
-        S3Key: !Sub ${S3Key}/code/all_in_one_ai_import_opensearch_helper.zip
+        S3Key: !Sub ${S3Key}code/all_in_one_ai_import_opensearch_helper.zip
       FunctionName: all_in_one_ai_import_opensearch_helper
       Tags:
         - Value: Name
@@ -4228,7 +4467,7 @@ Resources:
         SecurityGroupIds: 
           - !Ref SecurityGroup
       Layers:
-        - !Ref helper
+        - !Ref HelperLayer
 
   AllInOneAIInvokeEndpointFunctionRole:
     Type: 'AWS::IAM::Role'
@@ -4266,20 +4505,20 @@ Resources:
             Resource: '*'
             Effect: Allow
       Roles:
-        - !Ref AllInOneAInvokeEndpointFunctionRole
+        - !Ref AllInOneAIInvokeEndpointFunctionRole
 
   AllInOneAIInvokeEndpointFunction:
     Type: AWS::Lambda::Function
     Properties:
       Code:
         S3Bucket: !Ref S3Bucket
-        S3Key: !Sub ${S3Key}/code/all_in_one_ai_invoke_endpoint.zip
-      FunctionName:   all_in_one_ai_invoke_endpoint
+        S3Key: !Sub ${S3Key}code/all_in_one_ai_invoke_endpoint.zip
+      FunctionName: all_in_one_ai_invoke_endpoint
       Tags:
         - Value: Name
           Key: 'AllInOneAIApi'
       Handler: lambda_function.lambda_handler
-      Role: !GetAtt AllInOneAInvokeEndpointFunctionRole.Arn
+      Role: !GetAtt AllInOneAIInvokeEndpointFunctionRole.Arn
       Timeout: 900
       Runtime: python3.9
       VpcConfig:
@@ -4292,7 +4531,48 @@ Resources:
   ApiGatewayRestApiDeployment:
     Type: 'AWS::ApiGateway::Deployment'
     DependsOn: 
-      - 
+      - ApiGatewayMethodApiGet
+      - ApiGatewayMethodApiPost
+      - ApiGatewayMethodApiByNameGet
+      - ApiGatewayMethodEndpointGet
+      - ApiGatewayMethodEndpointPost
+      - ApiGatewayMethodEndpointByNameGet
+      - ApiGatewayMethodEndpointByNameDelete
+      - ApiGatewayMethodFunctionByNameGet
+      - ApiGatewayMethodGreengrassComponentGet
+      - ApiGatewayMethodGreengrassComponentByNameGet
+      - ApiGatewayMethodGreengrassComponentByNamePost
+      - ApiGatewayMethodGreengrassComponentByVersionIdGet
+      - ApiGatewayMethodGreengrassCoreDevicesGet
+      - ApiGatewayMethodGreengrassDeploymentGet
+      - ApiGatewayMethodGreengrassDeploymentPost
+      - ApiGatewayMethodGreengrassDeploymentByIdGet
+      - ApiGatewayMethodGreengrassThingGroupsGet
+      - ApiGatewayMethodIndustrialModelGet
+      - ApiGatewayMethodIndustrialModelPost
+      - ApiGatewayMethodIndustrialModelByIdGet
+      - ApiGatewayMethodIndustrialModelByIdPost
+      - ApiGatewayMethodIndustrialModelByIdDelete
+      - ApiGatewayMethodInferencePost
+      - ApiGatewayMethodModelGet
+      - ApiGatewayMethodModelPost
+      - ApiGatewayMethodModelByNameGet
+      - ApiGatewayMethodModelByNameDelete
+      - ApiGatewayMethodModelPackageGet
+      - ApiGatewayMethodModelPackageGroupGet
+      - ApiGatewayMethodModelPackagePost
+      - ApiGatewayMethodModelPackageGroupByNameGet
+      - ApiGatewayMethodModelPackageByNamePost
+      - ApiGatewayMethodPipelineGet
+      - ApiGatewayMethodModelPackagePost
+      - ApiGatewayMethodS3Get
+      - ApiGatewayMethodTrainingJobGet
+      - ApiGatewayMethodTrainingJobPost
+      - ApiGatewayMethodTrainingJobByNameGet
+      - ApiGatewayMethodTransformJobGet
+      - ApiGatewayMethodTransformJobPost
+      - ApiGatewayMethodTransformJobByNameGet
+      - ApiGatewayMethodTransformJobByNameReviewGet
     Properties:
       RestApiId: !Ref ApiGatewayRestApi
       Description: 'All-In-One-AI API Gateway'
@@ -4306,3 +4586,8 @@ Outputs:
       - Globally
       - !Sub https://${ApiGatewayRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod
       - !Sub https://${ApiGatewayRestApi}.execute-api.${AWS::Region}.amazonaws.com.cn/Prod
+  CreatePipelineHelperFunction:
+    Description: Arn of AllInOneAICreatePipelineHelperFunction
+    Value: !GetAtt AllInOneAICreatePipelineHelperFunction.Arn
+
+

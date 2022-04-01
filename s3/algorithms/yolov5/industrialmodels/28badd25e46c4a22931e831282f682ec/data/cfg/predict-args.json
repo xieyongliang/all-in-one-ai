@@ -1,0 +1,7 @@
+{
+   "FP_SOURCE": "/opt/ml/input/data/images/test",
+   "FP_WEIGHT": "/opt/ml/model/tutorial/weights/best.pt",
+   "CONF": "0.02",
+   "NAME": "tutorial",
+   "FP_OUTPUT": "/opt/ml/input/data/images/test/detect"
+}

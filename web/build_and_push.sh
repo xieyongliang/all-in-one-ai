@@ -11,7 +11,7 @@ if [ "$#" -ne 1 ]; then
     exit 1
 fi
 
-image="all-in-one-ai"
+image="all-in-one-ai-web"
 
 # Get the account number associated with the current IAM credentials
 account=$(aws sts get-caller-identity --query Account --output text)
@@ -38,7 +38,7 @@ then
     aws ecr create-repository --repository-name "${image}" --region ${region}
 fi
 
-aws ecr get-login-password --region ${region} | sudo docker login --username AWS --password-stdin ${account}.dkr.ecr.${region}.${aws_endpoint}
+aws ecr get-login-password --region ${region} | docker login --username AWS --password-stdin ${account}.dkr.ecr.${region}.${aws_endpoint}
 
 aws ecr set-repository-policy \
     --repository-name "${image}" \
@@ -46,8 +46,8 @@ aws ecr set-repository-policy \
     --region ${region}
 
 # Build the docker image, tag with full name and then push it to ECR
-sudo docker build -t ${image} -f Dockerfile .
+docker build -t ${image} -f Dockerfile .
 
-sudo docker tag ${image} ${fullname}
-sudo docker push ${fullname}
+docker tag ${image} ${fullname}
+docker push ${fullname}
 
