@@ -1,5 +1,5 @@
 
-import React, { FunctionComponent, useEffect, useState } from 'react';
+import { FunctionComponent, useCallback, useEffect, useState } from 'react';
 import { useHistory, useParams } from 'react-router-dom';
 import {Column} from 'react-table'
 import { Container, Link, Stack, Toggle, Button, ButtonDropdown, StatusIndicator, Table} from 'aws-northstar';
@@ -34,7 +34,8 @@ const GreengrassDeploymentList: FunctionComponent = () => {
         return response.data
     }
 
-    useEffect(() => {
+    const onRefresh = useCallback(() => {
+        setLoading(true)
         var cancel = false
         const requests = [ axios.get('/function/all_in_one_ai_greengrass_create_deployment?action=code'), axios.get('/function/all_in_one_ai_create_deployment?action=console')];
         axios.all(requests)
@@ -54,7 +55,11 @@ const GreengrassDeploymentList: FunctionComponent = () => {
         return () => { 
             cancel = true;
         }
-    }, []);
+    }, [])
+
+    useEffect(() => {
+        onRefresh()
+    }, [onRefresh]);
 
     useEffect(() => {
         axios.get(`/greengrass/deployment`, {params : {'industrial_model': params.id}})
@@ -75,7 +80,7 @@ const GreengrassDeploymentList: FunctionComponent = () => {
         history.push(`/imodels/${params.id}?tab=greengrassdeployment#form`)
     }
 
-    const getRowId = React.useCallback(data => data.name, []);
+    const getRowId = useCallback(data => data.name, []);
 
     const columnDefinitions : Column<DataType>[]= [
         {
@@ -137,6 +142,7 @@ const GreengrassDeploymentList: FunctionComponent = () => {
     
     const tableActions = (
         <Inline>
+            <Button variant="icon" icon="refresh" size="small" onClick={onRefresh}/>
             <ButtonDropdown
                 content='Action'
                     items={[{ text: 'Clone' }, { text: 'Create rest api' }, { text: 'Stop', disabled: true }, { text: 'Add/Edit tags' }]}

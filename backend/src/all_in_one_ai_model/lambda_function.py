@@ -1,10 +1,11 @@
+from decimal import Decimal
 import json
 import boto3
 import helper
 from botocore.exceptions import ClientError
 from boto3.dynamodb.conditions import Attr
 from boto3.dynamodb.conditions import Key
-from datetime import date, datetime, timedelta
+from datetime import date, datetime
 import traceback
 
 ssmh = helper.ssm_helper()

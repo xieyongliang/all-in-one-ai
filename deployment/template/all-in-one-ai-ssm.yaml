@@ -118,14 +118,14 @@ Resources:
     Properties:
       Name: /all_in_one_ai/config/meta/algorithms/yolov5/industrialmodels
       Type: String
-      Value: s3://${S3Bucket}/{S3Key}algorithms/yolov5/industrialmodels/
+      Value: !Sub s3://${S3Bucket}/${S3Key}algorithms/yolov5/industrialmodels/
 
   Parameter8:
     Type: AWS::SSM::Parameter
     Properties:
       Name: /all_in_one_ai/config/meta/algorithms/gluoncv/industrialmodels
       Type: String
-      Value: s3://${S3Bucket}/{S3Key}algorithms/gluoncv/industrialmodels/
+      Value: !Sub s3://${S3Bucket}/${S3Key}algorithms/gluoncv/industrialmodels/
 
   Parameter9:
     Type: AWS::SSM::Parameter

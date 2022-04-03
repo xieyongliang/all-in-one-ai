@@ -9,7 +9,7 @@ sagemaker_client = boto3.client('sagemaker')
 def lambda_handler(event, context):
     try:
         transform_job_name = event['body']['transform_job_name']
-        response = sagemaker_client.describe_transform_job(
+        response = sagemaker_client.stop_transform_job(
             TransformJobName = transform_job_name
         )
         return {

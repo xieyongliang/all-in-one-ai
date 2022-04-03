@@ -1,5 +1,5 @@
 
-import React, { FunctionComponent, useEffect, useState } from 'react';
+import { FunctionComponent, useCallback, useEffect, useState } from 'react';
 import { useHistory, useParams } from 'react-router-dom';
 import {Column} from 'react-table'
 import { Container, Link, Stack, Toggle, Button, ButtonDropdown, StatusIndicator, Table, Text, DeleteConfirmationDialog } from 'aws-northstar';
@@ -60,7 +60,16 @@ const EndpointList: FunctionComponent = () => {
         }
     }, []);
 
-    useEffect(() => {
+    const onCreate = () => {
+        history.push(`/imodels/${params.id}?tab=endpoint#form`)
+    }
+
+    const onDelete = () => {
+        setDeleteConfirmationDialogVisiable(true)
+    }
+    
+    const onRefresh = useCallback(() => {
+        setLoading(true)
         axios.get('/endpoint', {params : {'industrial_model': params.id}})
         .then((response) => {
             var items = []
@@ -73,17 +82,13 @@ const EndpointList: FunctionComponent = () => {
         }, (error) => {
             console.log(error);
         });
-    }, [params.id]);
+    }, [params.id])
 
-    const onCreate = () => {
-        history.push(`/imodels/${params.id}?tab=endpoint#form`)
-    }
+    useEffect(() => {
+        onRefresh()
+    }, [onRefresh]);
 
-    const onDelete = () => {
-        setDeleteConfirmationDialogVisiable(true)
-    }
-    
-    const getRowId = React.useCallback(data => data.endpointName, []);
+    const getRowId = useCallback(data => data.endpointName, []);
 
     const columnDefinitions : Column<EndpointItem>[]= [
         {
@@ -142,6 +147,7 @@ const EndpointList: FunctionComponent = () => {
     
     const tableActions = (
         <Inline>
+            <Button variant="icon" icon="refresh" size="small" onClick={onRefresh}/>
             <ButtonDropdown
                 content='Action'
                     items={[{ text: 'Delete', onClick: onDelete, disabled: deleteDisabled }, { text: 'Add/Edit tags', disabled: true }]}
@@ -170,7 +176,7 @@ const EndpointList: FunctionComponent = () => {
     const deleteEndpoint = () => {
         setIsDeleteProcessing(true)
         axios.delete(`/endpoint/${selectedEndpoint.endpointName}`, {params: {industrial_model: params.id}}).then((data) => {
-            setEndpointItems(endpointItems.filter((item) => item.modelName !== selectedEndpoint.endpointName))
+            onRefresh()    
             setDeleteConfirmationDialogVisiable(false)
             setIsDeleteProcessing(false)
         })

@@ -1,11 +1,9 @@
 import json
 import boto3
 import helper
-from boto3.dynamodb.conditions import Attr
 from boto3.dynamodb.conditions import Key
-from botocore.exceptions import ClientError
 from decimal import Decimal
-from datetime import datetime, timedelta
+from datetime import date, datetime
 import traceback
 
 ssmh = helper.ssm_helper()
@@ -70,6 +68,11 @@ def lambda_handler(event, context):
         industrial_model = None
         if event['queryStringParameters'] != None and 'industrial_model' in event['queryStringParameters']:
                 industrial_model = event['queryStringParameters']['industrial_model']
+
+        action = None
+        if event['queryStringParameters'] != None and 'action' in event['queryStringParameters']:
+                action = event['queryStringParameters']['action']
+
         try:
             if training_job_name == None:
                 if industrial_model != None:
@@ -88,15 +91,15 @@ def lambda_handler(event, context):
                         items = []
                     else:
                         items = [ item ]
-                    
+
+            result = []
             for item in items:
-                process_item(item)
-                if item == {}:
-                    items.remove(item)            
+                if(process_item(item, action)):
+                    result.append(item)
             
             return {
                 'statusCode': 200,
-                'body': json.dumps(items, default = defaultencode)
+                'body': json.dumps(result, default = defaultencode)
             }
 
         except Exception as e:
@@ -106,24 +109,35 @@ def lambda_handler(event, context):
                     'body': str(e)
             }
             
-def process_item(item):
+def process_item(item, action):
     payload = {'training_job_name': item['training_job_name']}
-    response = lambda_client.invoke(
-        FunctionName = 'all_in_one_ai_describe_training_job',
-        InvocationType = 'RequestResponse',
-        Payload=json.dumps({'body' : payload})
-    )
+    if(action == 'stop'):
+        response = lambda_client.invoke(
+            FunctionName = 'all_in_one_ai_stop_training_job',
+            InvocationType = 'RequestResponse',
+            Payload=json.dumps({'body' : payload})
+        )
+    else:
+        response = lambda_client.invoke(
+            FunctionName = 'all_in_one_ai_describe_training_job',
+            InvocationType = 'RequestResponse',
+            Payload=json.dumps({'body' : payload})
+        )
     
     if('FunctionError' not in response):
         payload = response["Payload"].read().decode("utf-8")
         payload = json.loads(payload)
-        payload = json.loads(payload)
-            
-        item.clear()
-        item.update(payload)
+        if(payload['statusCode'] == 200):
+            payload = json.loads(payload['body'])
+            item.clear()
+            item.update(payload)
+            return True
+        else:
+            print(payload['body'])
+            return False
     else:
         print(response['FunctionError'])
-        item.clear()
+        return False
 
 def defaultencode(o):
     if isinstance(o, Decimal):

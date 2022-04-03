@@ -22,7 +22,6 @@ const PipelineProp: FunctionComponent = () => {
     useEffect(() => {
         axios.get(`/pipeline`, {params: {'industrial_model': params.id, 'pipeline_execution_arn': id}})
             .then((response) => {
-            console.log(response.data)
             setPipelineType(response.data.pipeline_type)
             setTraingJobName(response.data.training_job_name)
             setModelName(response.data.model_name)

@@ -1,7 +1,7 @@
-import React, { FunctionComponent, useEffect, useState } from 'react';
+import { FunctionComponent, useCallback, useEffect, useState } from 'react';
 import { useHistory, useParams } from 'react-router-dom'; 
 import { Column } from 'react-table'
-import { Button, ButtonDropdown, StatusIndicator, Table, Toggle, Link } from 'aws-northstar/components';
+import { Button, ButtonDropdown, StatusIndicator, Table, Toggle, Link, Text } from 'aws-northstar/components';
 import { Container, Inline, Stack }  from 'aws-northstar/layouts';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { github } from 'react-syntax-highlighter/dist/esm/styles/hljs';
@@ -9,6 +9,7 @@ import JSZip from 'jszip';
 import axios from 'axios';
 import { PathParams } from '../../Interfaces/PathParams';
 import { getDurationBySeconds, getUtcDate } from '../../Utils/Helper/index';
+import { DeleteConfirmationDialog } from 'aws-northstar';
 
 interface TrainingJobItem {
     trainingJobName: string;
@@ -23,6 +24,10 @@ const TrainingJobList: FunctionComponent = () => {
     const [ sampleCode, setSampleCode ] = useState('')
     const [ sampleConsole, setSampleConsole ] = useState('')
     const [ visibleSampleCode, setVisibleSampleCode ] = useState(false)
+    const [ stopConfirmationDialogVisible, setStopConfirmationDialogVisiable ] = useState(false);
+    const [ isStopProcessing, setIsStopProcessing ] = useState(false);
+    const [ selectedTrainingJob, setSelectedTrainingJob ] = useState<TrainingJobItem>()
+    const [ stopDisabled, setStopDisabled ] = useState(true)
 
     const history = useHistory();
 
@@ -55,7 +60,8 @@ const TrainingJobList: FunctionComponent = () => {
         }
     }, []);
 
-    useEffect(() => {
+    const onRefresh = useCallback(() => {
+        setLoading(true)
         axios.get('/trainingjob', {params : {'industrial_model': params.id}})
         .then((response) => {
             var items = []
@@ -68,14 +74,55 @@ const TrainingJobList: FunctionComponent = () => {
         }, (error) => {
             console.log(error);
         });
-    }, [params.id]);
+    }, [params.id])
+
+    useEffect(() => {
+        onRefresh()
+    }, [onRefresh]);
 
 
     const onCreate = () => {
         history.push(`/imodels/${params.id}?tab=trainingjob#form`)
     }
     
-    const getRowId = React.useCallback(data => data.trainingJobName, []);
+    const onStop = () => {
+        setStopConfirmationDialogVisiable(true)
+    }
+
+    const renderStopConfirmationDialog = () => {
+        return (
+            <DeleteConfirmationDialog
+                variant="confirmation"
+                visible={stopConfirmationDialogVisible}
+                title={`Delete ${selectedTrainingJob.trainingJobName}`}
+                onCancelClicked={() => setStopConfirmationDialogVisiable(false)}
+                onDeleteClicked={stopTrainingJob}
+                loading={isStopProcessing}
+            >
+                <Text>This will permanently delete your model and cannot be undone. This may affect other resources.</Text>
+            </DeleteConfirmationDialog>
+        )
+    }
+
+    const stopTrainingJob = () => {
+        axios.get('/trainingjob', {params : {industrial_model: params.id, training_job_name: selectedTrainingJob, action: 'stop'}})
+        .then((response) => {
+            onRefresh()
+            setStopConfirmationDialogVisiable(false)
+            setIsStopProcessing(false)
+        }, (error) => {
+            console.log(error);
+        });        
+    }
+
+    const onSelectionChange = (selectedItems: TrainingJobItem[]) => {
+        if(selectedItems.length > 0) {
+            setSelectedTrainingJob(selectedItems[0])
+            setStopDisabled(false)
+        }
+    }
+
+    const getRowId = useCallback(data => data.trainingJobName, []);
 
     const columnDefinitions : Column<TrainingJobItem>[]= [
         {
@@ -131,9 +178,10 @@ const TrainingJobList: FunctionComponent = () => {
     
     const tableActions = (
         <Inline>
+            <Button variant="icon" icon="refresh" size="small" onClick={onRefresh}/>
             <ButtonDropdown
                 content='Action'
-                    items={[{ text: 'Clone' }, { text: 'Create model' }, { text: 'Stop', disabled: true }, { text: 'Add/Edit tags' }]}
+                    items={[{ text: 'Stop', onClick: onStop, disabled: stopDisabled }, { text: 'Add/Edit tags', disabled: true }]}
             />        
             <Button variant='primary' onClick={onCreate}>
                 Create
@@ -150,7 +198,7 @@ const TrainingJobList: FunctionComponent = () => {
                 columnDefinitions={columnDefinitions}
                 items={trainingJobItems}
                 loading={loading}
-                onSelectionChange={console.log}
+                onSelectionChange={onSelectionChange}
                 getRowId={getRowId}
             />
         )    
@@ -173,6 +221,7 @@ const TrainingJobList: FunctionComponent = () => {
 
     return (
         <Stack>
+            { selectedTrainingJob !== undefined && renderStopConfirmationDialog() }
             {renderTrainingJobList()}
             {renderSampleCode()}
         </Stack>

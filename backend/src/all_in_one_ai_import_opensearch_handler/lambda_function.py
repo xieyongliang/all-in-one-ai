@@ -7,6 +7,7 @@ from elasticsearch import Elasticsearch
 import traceback
 
 sqs_resource = boto3.resource('sqs')
+sqs_client = boto3.client('sqs')
 s3_client = boto3.client('s3', config=boto3.session.Config(s3={'addressing_style': 'virtual'}, signature_version='s3v4'))
 
 def lambda_handler(event, context):
@@ -19,6 +20,9 @@ def lambda_handler(event, context):
         index = industrial_model
 
         queue = sqs_resource.get_queue_by_name(QueueName='all_in_one_ai_sqs')
+        sqs_client.purge_queue(
+            QueueUrl = queue.url
+        )
         bucket, key = get_bucket_and_key(model_samples)
         s3uris = get_s3_images(bucket, key)
         for s3uri in s3uris:

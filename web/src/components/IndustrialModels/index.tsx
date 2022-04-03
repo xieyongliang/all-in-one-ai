@@ -36,13 +36,17 @@ interface IProps {
     industrialModels : IIndustrialModel[];
 }
 
-const IndustrialModels: FunctionComponent<IProps> = (props) => {
+const IndustrialModels: FunctionComponent<IProps> = (
+    {
+        industrialModels
+    }) => {
     var params : PathParams = useParams();
 
     var localtion = useLocation();
     const search = new URLSearchParams(localtion.search);
     
     var tab = search.get('tab') !== undefined ? search.get('tab') : 'demo';
+
     var hash = localtion.hash.substring(1);
 
     const history = useHistory();
@@ -51,14 +55,14 @@ const IndustrialModels: FunctionComponent<IProps> = (props) => {
         history.push(`/imodels/${params.id}?tab=${tab}`);
     }
 
-    var index = props.industrialModels.findIndex((item) => item.id === params.id)
+    var index = industrialModels.findIndex((item) => item.id === params.id)
 
     if(index === -1)
         return (
             <Tabs tabs={[]} variant='container' activeId={tab} onChange={onChange}/>
         )
     
-    var algorithm = props.industrialModels[index].algorithm
+    var algorithm = industrialModels[index].algorithm
 
     if(algorithm === 'yolov5') {
         if(hash === 'form' || hash === 'review') {

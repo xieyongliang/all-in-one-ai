@@ -31,7 +31,6 @@ const GreengrassDeploymentProp: FunctionComponent = () => {
     useEffect(() => {
         axios.get(`/greengrass/deployment/${id}`, {params: {'industrial_model': params.id}})
             .then((response) => {
-            console.log(response.data);
             setTargetArn(response.data.targetArn);
             setRevisionId(response.data.revisionId);
             setDeploymentStatus(response.data.deploymentStatus);

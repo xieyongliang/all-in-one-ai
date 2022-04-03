@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useEffect, useState } from 'react';
+import { FunctionComponent, useCallback, useEffect, useState } from 'react';
 import { useHistory, useParams } from 'react-router-dom';
 import {Column} from 'react-table'
 import { Container, Link, Stack, Toggle, Table, Button, Inline, ButtonDropdown, Text, DeleteConfirmationDialog } from 'aws-northstar';
@@ -56,6 +56,22 @@ const ModelList: FunctionComponent = () => {
         }
     }, []);
 
+    const onRefresh = useCallback(() => {
+        setLoading(true)
+        axios.get('/model', {params : {'industrial_model': params.id}})
+            .then((response) => {
+                var items = []
+                for(let item of response.data) {
+                    items.push({modelName: item.ModelName, creationTime: getUtcDate(item.CreationTime)})
+                    if(items.length === response.data.length)
+                        setModelItems(items)
+                }
+                setLoading(false);
+            }, (error) => {
+                console.log(error);
+            });
+        }, [params.id])
+    
     useEffect(() => {
         axios.get('/model', {params : {'industrial_model': params.id}})
             .then((response) => {
@@ -71,7 +87,7 @@ const ModelList: FunctionComponent = () => {
             });
         }, [params.id]);
 
-    const getRowId = React.useCallback(data => data.modelName, []);
+    const getRowId = useCallback(data => data.modelName, []);
 
     const onCreate = () => {
         history.push(`/imodels/${params.id}?tab=model#form`)
@@ -104,6 +120,7 @@ const ModelList: FunctionComponent = () => {
 
     const tableActions = (
         <Inline>
+            <Button variant="icon" icon="refresh" size="small" onClick={onRefresh}/>
             <ButtonDropdown
                 content='Action'
                     items={[{ text: 'Delete', onClick: onDelete, disabled: deleteDisabled }, { text: 'Add/Edit tags', disabled: true }]}

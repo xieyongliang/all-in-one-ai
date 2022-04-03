@@ -53,6 +53,7 @@ def lambda_handler(event, context):
             body = response["Payload"].read().decode("utf-8")
             if(statusCode == 200):
                 payload = json.loads(body)
+                payload = json.loads(payload['body'])
                 prediction = payload['predictions'][0]
                 print(prediction)
                 response = es.search(

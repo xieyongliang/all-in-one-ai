@@ -1,8 +1,7 @@
-import json
 import boto3
-import datetime
 from botocore.config import Config
 import base64
+import traceback
 
 config = Config(
     read_timeout=120,
@@ -11,24 +10,30 @@ config = Config(
     }
 )
 
-sagemaker_runtime_client = boto3.client('sagemaker-runtime', config=config)
+sagemaker_runtime_client = boto3.client('sagemaker-runtime', config = config)
 
 def lambda_handler(event, context):
-    endpoint_name = event['endpoint_name']
-    content_type = event['content_type']
-    payload = event['payload']
+    try:
+        endpoint_name = event['endpoint_name']
+        content_type = event['content_type']
+        payload = event['payload']
+        
+        body = payload if(content_type == 'application/json') else base64.b64decode(payload)
+
+        response = sagemaker_runtime_client.invoke_endpoint(
+            EndpointName = endpoint_name,
+            ContentType = content_type,
+            Body = body)
+
+        body = response['Body'].read()
+        return {
+            'statusCode': 200,
+            'body': body
+        }
     
-    body = payload if(content_type == 'application/json') else base64.b64decode(payload)
-
-    print(endpoint_name)
-    print(content_type)
-    print(body)
-
-    response = sagemaker_runtime_client.invoke_endpoint(
-        EndpointName = endpoint_name,
-        ContentType = content_type,
-        Body = body)
-
-    body = response['Body'].read()
-    print(body)
-    return body
+    except Exception as e:
+        traceback.print_exc()
+        return {
+            'statusCode': 400,
+            'body': str(e)
+        }

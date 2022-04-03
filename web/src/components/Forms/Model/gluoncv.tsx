@@ -41,8 +41,6 @@ const GluonCVModelForm: FunctionComponent<IProps> = (props) => {
 
     const onSubmit = () => {
         var body = {}
-        console.log(props.industrialModels)
-        console.log(params.id)
         var index = props.industrialModels.findIndex((item) => item.id === params.id)
         var algorithm = props.industrialModels[index].algorithm
 

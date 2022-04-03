@@ -26,7 +26,8 @@ const PipelineList: FunctionComponent = () => {
 
     var params : PathParams = useParams();
 
-    useEffect(() => {
+    const onRefresh = useCallback(() => {
+        setLoading(true)
         axios.get('/pipeline', {params : {'industrial_model': params.id}})
             .then((response) => {
             var items = []
@@ -39,7 +40,11 @@ const PipelineList: FunctionComponent = () => {
         }, (error) => {
             console.log(error);
         });
-    }, [params.id]);
+    }, [params.id])
+
+    useEffect(() => {
+        onRefresh()
+    }, [onRefresh]);
 
     const onCreate = () => {
         history.push(`/imodels/${params.id}?tab=pipeline#form`)
@@ -107,6 +112,7 @@ const PipelineList: FunctionComponent = () => {
     
     const tableActions = (
         <Inline>
+            <Button variant="icon" icon="refresh" size="small" onClick={onRefresh}/>
             <ButtonDropdown
                 content='Action'
                     items={[{ text: 'Clone' }, { text: 'Delete' }, { text: 'Add/Edit tags' }]}

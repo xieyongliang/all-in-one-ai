@@ -1,4 +1,7 @@
 export const getDurationBySeconds = (duration_in_seconds) => {
+    if(duration_in_seconds === undefined)
+        return 'N/A'
+
     var days    = Math.floor(duration_in_seconds / 86400);
     var hours   = Math.floor((duration_in_seconds % 86400) / 3600);
     var minutes = Math.floor(((duration_in_seconds % 86400) % 3600) / 60);

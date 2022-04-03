@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useState, useEffect } from 'react';
+import React, { FunctionComponent, useState, useEffect, useCallback } from 'react';
 import { useHistory, useParams } from 'react-router-dom';
 import { Column } from 'react-table'
 import { Container, Stack, Inline } from 'aws-northstar';
@@ -53,7 +53,8 @@ const GreengrassComponentList: FunctionComponent = () => {
         }
     }, []);
 
-    useEffect(() => {
+    const onRefresh = useCallback(() => {
+        setLoading(true)
         var component_name = 'com.example.yolov5'
         axios.get(`/greengrass/component/${component_name}`, {params : {'industrial_model': params.id}})
         .then((response) => {
@@ -67,7 +68,11 @@ const GreengrassComponentList: FunctionComponent = () => {
         }, (error) => {
             console.log(error);
         });
-    }, [params.id]);
+    }, [params.id])
+
+    useEffect(() => {
+        onRefresh()
+    }, [onRefresh]);
 
     const onCreate = () => {
         history.push(`/imodels/${params.id}?tab=greengrasscomponentversion#form`)
@@ -104,6 +109,7 @@ const GreengrassComponentList: FunctionComponent = () => {
     
     const tableActions = (
         <Inline>
+            <Button variant="icon" icon="refresh" size="small" onClick={onRefresh}/>
             <ButtonDropdown
                 content='Action'
                     items={[{ text: 'Clone' }, { text: 'Create endpoint' }, { text: 'Add/Edit tags' }]}

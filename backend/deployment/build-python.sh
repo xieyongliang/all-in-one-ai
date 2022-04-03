@@ -127,6 +127,8 @@ all_in_one_ai_inference
 all_in_one_ai_invoke_endpoint
 all_in_one_ai_model_package_group
 all_in_one_ai_s3
+all_in_one_ai_stop_training_job
+all_in_one_ai_stop_transform_job
 all_in_one_ai_transform_job_review
 all_in_one_ai_wait_endpoint_in_service"
 

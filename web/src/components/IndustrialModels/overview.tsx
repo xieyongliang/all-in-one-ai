@@ -1,4 +1,4 @@
-import { Badge, Box, Button, Card, Container, Stack } from 'aws-northstar';
+import { Badge, Box, Card, Container } from 'aws-northstar';
 import { FunctionComponent, useEffect, useState } from 'react';
 import Grid from '@mui/material/Grid';
 import { useHistory } from 'react-router-dom';
@@ -8,6 +8,10 @@ import { connect } from 'react-redux';
 import { IIndustrialModel } from '../../store/industrialmodels/reducer';
 import { AppState } from '../../store';
 import axios from 'axios';
+import DeleteIcon from '@mui/icons-material/Delete';
+import EditIcon from '@mui/icons-material/Edit';
+import Stack from '@mui/material/Stack';
+import Button from '@mui/material/Button';
 
 interface IProps {
     industrialModels: IIndustrialModel[];
@@ -41,6 +45,16 @@ const IndustrialModelOverview: FunctionComponent<IProps> = (props) => {
             })
      }, [industrialModels])
 
+    const onDelete = (event) => {
+        alert('remove...')
+        event.stopPropagation();
+    }
+
+    const onEdit = (event) => {
+        alert('edit...')
+        event.stopPropagation();
+    }
+ 
     if(visibleCustom)
         return <CustomForm/>
     
@@ -54,8 +68,14 @@ const IndustrialModelOverview: FunctionComponent<IProps> = (props) => {
                                 <Grid item xs={2} sm={4} md={4}>
                                     <Box>
                                         <Card title={item.name} subtitle={item.description} withHover onClick={()=>{history.push(`/imodels/${item.id}?tab=demo#sample`)}}>
-                                            <Badge content={item.algorithm} color="blue" />
-                                            <Image width={128} height={128} src={item.httpuri} current='' public={true} /> 
+                                        <Stack direction='row' spacing={5}>
+                                                <Image width={128} height={128} src={item.httpuri} current='' public={true} />
+                                                <Stack direction="column" spacing={2}>
+                                                    <Badge content={item.algorithm} color="blue" />
+                                                    <Button variant="contained" size="small" startIcon={<DeleteIcon />} onClick={onDelete}>Delete</Button>
+                                                    <Button variant="contained" size="small" startIcon={<EditIcon />} onClick={onEdit}>Edit</Button>
+                                                </Stack>
+                                            </Stack>
                                         </Card>
                                     </Box>
                                 </Grid>

@@ -1,6 +1,6 @@
-import React, { FunctionComponent, useEffect, useState } from 'react';
+import { FunctionComponent, useCallback, useEffect, useState } from 'react';
 import { useHistory, useParams } from 'react-router-dom'; 
-import { Container, Stack, Table, Button, Inline, ButtonDropdown, StatusIndicator, Flashbar, Toggle, Link } from 'aws-northstar'
+import { Container, Stack, Table, Button, Inline, ButtonDropdown, StatusIndicator, Flashbar, Toggle, Link, Text, DeleteConfirmationDialog } from 'aws-northstar'
 import { Column } from 'react-table'
 import ImageList from '@mui/material/ImageList';
 import ImageListItem from '@mui/material/ImageListItem';
@@ -32,7 +32,6 @@ interface IProps {
 
 const TransformJobList: FunctionComponent<IProps> = (props) => {
     const [ transformJobItems, setTransformJobItems ] = useState([])
-    const [ selectedTransformJob, setSelectedTransformJob ] = useState('')
     const [ enabledReview, setEnabledReview ] = useState(false)
     const [ loadingTable, setLoadingTable ] = useState(true)
     const [ visibleReview, setVisibleReview ] = useState(false)
@@ -46,6 +45,10 @@ const TransformJobList: FunctionComponent<IProps> = (props) => {
     const [ visibleSampleCode, setVisibleSampleCode ] = useState(false)
     const [ visibleImagePreview, setVisibleImagePreview ] = useState(false)
     const [ imagePage, setImagePage ] = useState(0)
+    const [ stopConfirmationDialogVisible, setStopConfirmationDialogVisiable ] = useState(false);
+    const [ isStopProcessing, setIsStopProcessing ] = useState(false);
+    const [ selectedTransformJob, setSelectedTransformJob ] = useState<TransformJobItem>()
+    const [ stopDisabled, setStopDisabled ] = useState(true)
 
     const history = useHistory();
 
@@ -80,7 +83,7 @@ const TransformJobList: FunctionComponent<IProps> = (props) => {
 
     var industrialModels = props.industrialModels
 
-    useEffect(() => {
+    const onRefresh = useCallback(() => {
         if(industrialModels.length > 0) {
             var transformJobItems = []
             var index = industrialModels.findIndex((item) => item.id === params.id)
@@ -89,6 +92,7 @@ const TransformJobList: FunctionComponent<IProps> = (props) => {
             setVisibleImagePreview(false);
             setVisibleReview(false);
 
+            setLoadingTable(true)
             axios.get('/transformjob', {params : {'industrial_model': params.id}})
                 .then((response) => {
                     for(let item of response.data) {
@@ -100,7 +104,11 @@ const TransformJobList: FunctionComponent<IProps> = (props) => {
                 }
             )
         }
-    }, [params.id, industrialModels]);
+    }, [params.id, industrialModels])
+
+    useEffect(() => {
+        onRefresh()
+    }, [onRefresh]);
 
     const onImageClose = () => {
         setVisibleImagePreview(false);
@@ -145,21 +153,23 @@ const TransformJobList: FunctionComponent<IProps> = (props) => {
 
     }
 
-    const onChange = ((id: string, event: any) => {
-        if(id === '') {
-            setLoadingReview(true)
-            setImagePage(event)
-            axios.get(`/transformjob/${selectedTransformJob}/review`, {params: {'industrial_model': params.id, 'page_num': event, 'page_size': 20}})
-                .then((response) => {
-                    setTransformJobResult(response.data)
-                    setLoadingReview(false)
-                }, (error) => {
-                    console.log(error);
-                }
-            );
-        }
-        else if(event.length > 0) {
-            setSelectedTransformJob(event[0].transformJobName)
+    const onChange = (event) => {
+        setLoadingReview(true)
+        setImagePage(event)
+        axios.get(`/transformjob/${selectedTransformJob.transformJobName}/review`, {params: {'industrial_model': params.id, 'page_num': event, 'page_size': 20}})
+            .then((response) => {
+                setTransformJobResult(response.data)
+                setLoadingReview(false)
+            }, (error) => {
+                console.log(error);
+            }
+        );
+    }
+
+    const onSelectionChange = ((event: any) => {
+        if(event.length > 0) {
+            setSelectedTransformJob(event[0])
+            setStopDisabled(false)
             setEnabledReview(true)
         } 
     })
@@ -170,7 +180,7 @@ const TransformJobList: FunctionComponent<IProps> = (props) => {
 
     const onReview = () => {
         setVisibleReview(true)
-        axios.get(`/transformjob/${selectedTransformJob}/review`, {params: {'industrial_model': params.id, 'page_num': 1, 'page_size': 20}})
+        axios.get(`/transformjob/${selectedTransformJob.transformJobName}/review`, {params: {'industrial_model': params.id, 'page_num': 1, 'page_size': 20}})
             .then((response) => {
             setTransformJobResult(response.data)
             setLoadingReview(false)
@@ -179,7 +189,38 @@ const TransformJobList: FunctionComponent<IProps> = (props) => {
         });
     }
 
-    const getRowId = React.useCallback(data => data.transformJobName, []);
+    const onStop = () => {
+        setStopConfirmationDialogVisiable(true)
+    }
+
+    const renderStopConfirmationDialog = () => {
+        return (
+            <DeleteConfirmationDialog
+                variant="confirmation"
+                visible={stopConfirmationDialogVisible}
+                title={`Delete ${selectedTransformJob.transformJobName}`}
+                onCancelClicked={() => setStopConfirmationDialogVisiable(false)}
+                onDeleteClicked={stopTrainingJob}
+                loading={isStopProcessing}
+            >
+                <Text>This will permanently delete your model and cannot be undone. This may affect other resources.</Text>
+            </DeleteConfirmationDialog>
+        )
+    }
+
+    const stopTrainingJob = () => {
+        axios.get('/transformjob', {params : {industrial_model: params.id, training_job_name: selectedTransformJob.transformJobName, action: 'stop'}})
+        .then((response) => {
+            onRefresh()
+            setStopConfirmationDialogVisiable(false)
+            setIsStopProcessing(false)
+        }, (error) => {
+            console.log(error);
+        });        
+    }
+
+
+    const getRowId = useCallback(data => data.transformJobName, []);
 
     const columnDefinitions : Column<TransformJobItem>[]= [
         {
@@ -234,12 +275,13 @@ const TransformJobList: FunctionComponent<IProps> = (props) => {
 
     const tableActions = (
         <Inline>
+            <Button variant="icon" icon="refresh" size="small" onClick={onRefresh}/>
             <Button onClick={onReview} disabled={!enabledReview}>
                 Review
             </Button>
             <ButtonDropdown
                 content='Action'
-                    items={[{ text: 'Stop', disabled: true }, { text: 'Add/Edit tags' }]}
+                    items={[{ text: 'Stop', onClick: onStop, disabled: stopDisabled }, { text: 'Add/Edit tags', disabled: true }]}
             />        
             <Button variant='primary' onClick={onCreate}>
                 Create
@@ -274,7 +316,7 @@ const TransformJobList: FunctionComponent<IProps> = (props) => {
                                 </ImageListItem>
                             ))}
                         </ImageList>
-                        <Pagination page={imagePage} onChange={(event, value) => onChange('', value)} count={Math.floor(transformJobResult.count / 20)} />
+                        <Pagination page={imagePage} onChange={onChange} count={Math.floor(transformJobResult.count / 20)} />
                     </Container>
                 }
             </Stack>            
@@ -289,7 +331,7 @@ const TransformJobList: FunctionComponent<IProps> = (props) => {
                 multiSelect={false}
                 columnDefinitions={columnDefinitions}
                 items={transformJobItems}
-                onSelectionChange={(event) => onChange('formFieldIdTable', event)}
+                onSelectionChange={onSelectionChange}
                 getRowId={getRowId}
                 loading={loadingTable}
             />
@@ -332,6 +374,7 @@ const TransformJobList: FunctionComponent<IProps> = (props) => {
     else 
         return (
             <Stack>
+                { selectedTransformJob !== undefined && renderStopConfirmationDialog() }
                 {renderTransformJobList()}
                 {renderSampleCode()}
             </Stack>

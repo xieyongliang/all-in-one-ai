@@ -170,12 +170,12 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
                 if(tags.length > 1 || (tags.length === 1 && tags[0].key !== '' && tags[0].value !== ''))
                     body['tags'] = tags
                 axios.post('/model', body,  { headers: {'content-type': 'application/json' }}) 
-                .then((response) => {
-                    history.goBack()
-                }, (error) => {
-                    alert('Error occured, please check and try it again');
-                    console.log(error);
-                });
+                    .then((response) => {
+                        history.goBack()
+                    }, (error) => {
+                        alert('Error occured, please check and try it again');
+                        console.log(error);
+                    });
             }
         }
         else if(containerInputType === '1') {

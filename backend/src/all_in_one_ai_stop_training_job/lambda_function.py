@@ -8,9 +8,9 @@ sagemaker_client = boto3.client('sagemaker')
 
 def lambda_handler(event, context):
     try:
-        transform_job_name = event['body']['transform_job_name']
-        response = sagemaker_client.describe_transform_job(
-            TransformJobName = transform_job_name
+        training_job_name = event['body']['training_job_name']
+        response = sagemaker_client.stop_training_job(
+            TrainingJobName = training_job_name
         )
         return {
             'statusCode': 200,
