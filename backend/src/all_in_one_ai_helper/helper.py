@@ -1,5 +1,4 @@
 import datetime
-import json
 import boto3
 
 class ddb_helper:

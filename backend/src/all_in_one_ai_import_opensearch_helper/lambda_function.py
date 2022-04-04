@@ -2,7 +2,6 @@ import json
 import os
 import helper
 import boto3
-from botocore.exceptions import ClientError
 from elasticsearch import Elasticsearch
 
 sqs = boto3.resource('sqs')

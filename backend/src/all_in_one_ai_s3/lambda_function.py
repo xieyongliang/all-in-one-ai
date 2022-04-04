@@ -1,5 +1,6 @@
 import json
 import boto3
+from botocore.exceptions import ClientError
 
 s3_client = boto3.client('s3', config=boto3.session.Config(s3={'addressing_style': 'virtual'}, signature_version='s3v4'))
 s3_resource = boto3.resource('s3')
@@ -75,8 +76,8 @@ def get_presigned_url(bucket, key):
           ExpiresIn=1000
         )
         print("Got presigned URL: {}".format(url))
-    except ClientError:
-        print("Couldn't get a presigned URL for client method {}.".format(client_method))
+    except ClientError as e:
+        print(str(e))
         raise
     return url
 

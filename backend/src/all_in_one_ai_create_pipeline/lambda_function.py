@@ -1,4 +1,3 @@
-import json
 import boto3
 import sagemaker
 from sagemaker.workflow.condition_step import ConditionStep

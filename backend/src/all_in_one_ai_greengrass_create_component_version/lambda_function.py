@@ -4,7 +4,7 @@ import tarfile
 import zipfile
 import traceback
 from io import BytesIO
-from datetime import date, datetime, timedelta
+from datetime import date, datetime
 from decimal import Decimal
 
 s3_client = boto3.client('s3')

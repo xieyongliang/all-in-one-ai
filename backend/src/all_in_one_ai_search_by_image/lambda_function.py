@@ -99,7 +99,7 @@ def get_presigned_url(bucket, key):
           ExpiresIn=1000
         )
         print("Got presigned URL: {}".format(url))
-    except ClientError:
-        print("Couldn't get a presigned URL for client method {}.".format(client_method))
+    except ClientError as e:
+        print(str(e))
         raise
     return url

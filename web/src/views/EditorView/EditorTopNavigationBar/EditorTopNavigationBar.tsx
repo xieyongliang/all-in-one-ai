@@ -198,8 +198,6 @@ const EditorTopNavigationBar: React.FC<IProps> = (
     }
 
     const importAnnotations = useCallback(() => {
-        console.log(imageLabels)
-        console.log(computedAnnotations)
         var labelsFile = new File(imageLabels, 'labels.txt');
         var annotationFile = new File(computedAnnotations, 'image.txt');
                     
@@ -241,7 +239,7 @@ const EditorTopNavigationBar: React.FC<IProps> = (
                     computedAnnotations.push(annotation);
                     index++;
                 });
-    
+                
                 importAnnotations();
 
             }, (error) => {

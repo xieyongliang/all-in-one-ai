@@ -1,7 +1,6 @@
 import json
 import boto3
 import helper
-from boto3.dynamodb.conditions import Attr
 from boto3.dynamodb.conditions import Key
 import traceback
 
@@ -74,7 +73,7 @@ def lambda_handler(event, context):
                     'body': response['FunctionError']
                 }
 
-        items = ddbhPipeline.scan(FilterExpression=Attr('pipeline_id').eq(pipeline_id))
+        items = ddbhPipeline.scan(FilterExpression=Key('pipeline_id').eq(pipeline_id))
         pipeline_execution_arn = items[0]['pipeline_execution_arn']
         params = {}
         if(pipeline_type == '0'):

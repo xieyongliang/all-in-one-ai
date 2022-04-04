@@ -4,11 +4,9 @@ import helper
 import random
 import string
 import uuid
-from botocore.exceptions import ClientError
-from boto3.dynamodb.conditions import Attr
 from boto3.dynamodb.conditions import Key
 from decimal import Decimal
-from datetime import date, datetime, timedelta
+from datetime import date, datetime
 
 ssmh = helper.ssm_helper()
 pipeline_table = ssmh.get_parameter('/all_in_one_ai/config/meta/pipeline_table')
@@ -107,7 +105,7 @@ def lambda_handler(event, context):
         try:    
             if pipeline_execution_arn == None:
                 if industrial_model != None:
-                    items = ddbh.scan(FilterExpression=Attr('industrial_model').eq(industrial_model))
+                    items = ddbh.scan(FilterExpression=Key('industrial_model').eq(industrial_model))
                 else:
                     items = ddbh.scan()
                 

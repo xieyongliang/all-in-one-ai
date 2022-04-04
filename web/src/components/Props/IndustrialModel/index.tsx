@@ -1,31 +1,40 @@
-import { Button, Container, Form, FormField, FormSection, Input, Select, Stack, Textarea } from "aws-northstar";
-import { FunctionComponent, useState } from "react";
+import { Button, Container, Form, FormField, FormSection, Input, LoadingIndicator, Select, Stack, Textarea } from "aws-northstar";
+import { FunctionComponent, useEffect, useState } from "react";
 import axios from "axios";
 import FileUpload from 'aws-northstar/components/FileUpload';
 import { FileMetadata } from "aws-northstar/components/FileUpload/types";
-import Image from "../Utils/Image"
-import { IIndustrialModel } from "../../store/industrialmodels/reducer";
-import { AppState } from "../../store";
+import Image from "../../Utils/Image"
+import { IIndustrialModel } from "../../../store/industrialmodels/reducer";
+import { AppState } from "../../../store";
 import { connect } from "react-redux";
-import { Updateindustrialmodels } from "../../store/industrialmodels/actionCreators";
-import { useHistory } from "react-router-dom";
+import { Updateindustrialmodels } from "../../../store/industrialmodels/actionCreators";
 
 interface IProps {
     updateindustrialmodelsAction : (industrialModels : IIndustrialModel[]) => any
     industrialModels: IIndustrialModel[];
+    industrialModel: IIndustrialModel;
+    onClose: () => any;
 }
 
-const InustrialModelForm: FunctionComponent<IProps> = (props) => {
-    const optionsAlgorithm = [{label: 'Yolov5', value: 'yolov5'}]
-    const selectedAlgorithm = {label: 'Yolov5', value: 'yolov5'}
-    const [ modelName, setModelName ] = useState('')
-    const [ modelDescription, setModelDescription ] = useState('')
-    const [ modelSamples, setModelSamples ] = useState('')
-    const [ modelLables, setModelLabels ] = useState('')
+const InustrialModelProp: FunctionComponent<IProps> = (props) => {
+    var labels = ''
+    console.log(props.industrialModel)
+    if(props.industrialModel.labels !== undefined) {
+        props.industrialModel.labels.forEach((label) => {
+            labels += label + '\n'
+        })
+        labels = labels.substring(0, labels.length - 1)
+    }
+    const algorithmOptions = [{label: 'Yolov5', value: 'yolov5'}, {label: 'GluonCV', value:'gluoncv'}]
+    const selectedAlgorithm = algorithmOptions.find((item) => item.value === props.industrialModel.algorithm)
+    const [ modelName, setModelName ] = useState(props.industrialModel.name)
+    const [ modelDescription, setModelDescription ] = useState(props.industrialModel.description)
+    const [ modelSamples, setModelSamples ] = useState(props.industrialModel.samples)
+    const [ modelLables, setModelLabels ] = useState(labels)
+    const [ iconHttpUri, setIconHttpUri ] = useState('')
     const [ fileName, setFileName ] = useState('')
+    const [ processing, setProcessing ] = useState(false)
     
-    const history = useHistory();
-
     const onChange = (id, event) => {
         if(id === 'formFieldIdModelName')
             setModelName(event)
@@ -42,13 +51,25 @@ const InustrialModelForm: FunctionComponent<IProps> = (props) => {
         .then((response) => {
             var filename : string = response.data;
             setFileName(filename);
+            setIconHttpUri(`/image/${fileName}`)
         }, (error) => {
             console.log(error);
         });
     }
 
+    const getHttpUri = async (s3uri) => {
+        var response = await axios.get('/s3', {params: {s3uri: s3uri}})
+        return response.data
+    }
+
+    useEffect(() => {
+        getHttpUri(props.industrialModel.icon).then((data) => {
+            setIconHttpUri(data.payload)
+        })
+     }, [props.industrialModel.icon])
+
     const renderImagePreview = () => {
-        if(fileName === '') 
+        if(iconHttpUri === '') 
             return (
                 <Container title='Select an icon for your industrial model'>
                     <FileUpload
@@ -65,8 +86,8 @@ const InustrialModelForm: FunctionComponent<IProps> = (props) => {
                             controlId='fileImage'
                             onChange={onFileChange}
                         />
-                        <FormField controlId='button'>
-                            <Image src={`/image/${fileName}`} width={128} height={128} current={""} public={true}/>
+                        <FormField controlId='formFieldIdImage'>
+                            <Image src={iconHttpUri} width={128} height={128} current={""} public={true}/>
                         </FormField>          
                     </Container>
                 </Stack> 
@@ -98,8 +119,9 @@ const InustrialModelForm: FunctionComponent<IProps> = (props) => {
                 <FormField label="Industrial model algorithm" controlId="formFieldIdModelType">
                     <Select
                         placeholder='Choose an option'
-                        options={optionsAlgorithm}
+                        options={algorithmOptions}
                         selectedOption={selectedAlgorithm}
+                        disabled={true}
                     />
                 </FormField>
             </FormSection>
@@ -107,20 +129,21 @@ const InustrialModelForm: FunctionComponent<IProps> = (props) => {
     }
 
     const onCancel = () => {
-        history.goBack();
+        props.onClose()
     }
 
-    const renderCustom = () => {
+    const renderEditIndustrialModel = () => {
         return (
             <Form
-            header='Create industrial model'
-            description='To use an industrial model for training, deployment, and inference, please create industrial model based on supported algorithm first'
-            actions={
+                header='Edit industrial model'
+                description='To use an industrial model for training, deployment, and inference, please create industrial model based on supported algorithm first'
+                actions={
                 <div>
                     <Button variant='link' onClick={onCancel}>Cancel</Button>
                     <Button variant='primary' onClick={onSubmit}>Submit</Button>
                 </div>
             }>
+                { processing && <LoadingIndicator label='Processing...'/> }
                 { renderModelSetting() }
                 { renderImagePreview() }
                 { renderClassDefinition() }
@@ -129,29 +152,38 @@ const InustrialModelForm: FunctionComponent<IProps> = (props) => {
     }
 
     const onSubmit = () => {
+        setProcessing(true)
         var buffer = {
+            'model_id': props.industrialModel.id,
             'model_name': modelName,
             'model_algorithm': selectedAlgorithm.value,
             'model_description': modelDescription,
             'model_labels': modelLables,
             'model_samples': modelSamples,
+            'model_icon': props.industrialModel.icon,
             'file_name': fileName
         }
         axios.post('/industrialmodel', buffer)
-        .then((response) => {
-            var modelId = response.data.modelId;
-            var modelIcon = response.data.modelIcon;
-            var industrialModels = props.industrialModels.map((x) => x)
-            industrialModels.push({id: modelId, name: modelName, algorithm : selectedAlgorithm.value, description: modelDescription, labels: modelLables.split('\n'), samples: modelSamples, icon: modelIcon})
-            props.updateindustrialmodelsAction(industrialModels)
-            history.goBack()
-        }).catch((error) => {
-            console.log(error)
-        })
+            .then((response) => {
+                var modelId = response.data.id;
+                var modelIcon = response.data.icon;
+                props.industrialModel.id = modelId
+                props.industrialModel.icon = modelIcon
+                props.industrialModel.name = modelName
+                props.industrialModel.description = modelDescription
+                props.industrialModel.labels = modelLables.split('\n');
+                props.industrialModel.samples = modelSamples
+                props.updateindustrialmodelsAction(props.industrialModels)
+                props.onClose()
+                setProcessing(false)
+            }).catch((error) => {
+                alert(error)
+                console.log(error)
+            })
     };
-    
+
     return (
-        renderCustom()
+        renderEditIndustrialModel()
     )
 }
 
@@ -166,4 +198,4 @@ const mapStateToProps = (state: AppState) => ({
 export default connect(
     mapStateToProps,
     mapDispatchToProps
-)(InustrialModelForm);
+)(InustrialModelProp);

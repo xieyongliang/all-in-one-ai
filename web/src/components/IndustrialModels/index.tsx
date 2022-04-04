@@ -41,15 +41,15 @@ const IndustrialModels: FunctionComponent<IProps> = (
         industrialModels
     }) => {
     var params : PathParams = useParams();
+    const history = useHistory();
 
     var localtion = useLocation();
+
     const search = new URLSearchParams(localtion.search);
     
     var tab = search.get('tab') !== undefined ? search.get('tab') : 'demo';
 
     var hash = localtion.hash.substring(1);
-
-    const history = useHistory();
 
     const onChange = (tab: string) => {
         history.push(`/imodels/${params.id}?tab=${tab}`);

@@ -127,7 +127,13 @@ const EditorContainer: React.FC<IProps> = (
                  key="editor-wrapper"
             >
                 {
-                    projectType === ProjectType.OBJECT_DETECTION && 
+                    (
+                        projectType === ProjectType.OBJECT_DETECTION ||
+                        projectType === ProjectType.OBJECT_DETECTION_RECT || 
+                        projectType === ProjectType.OBJECT_DETECTION_POINT ||
+                        projectType === ProjectType.OBJECT_DETECTION_LINE ||
+                        projectType === ProjectType.OBJECT_DETECTION_POLYGON
+                    )   && 
                     <EditorTopNavigationBar 
                         imageBucket={imageBucket} 
                         imageKey={imageKey} 

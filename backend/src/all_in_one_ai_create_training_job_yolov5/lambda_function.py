@@ -1,6 +1,4 @@
 import boto3
-from botocore.exceptions import ClientError
-
 
 sagemaker_client = boto3.client('sagemaker')
 

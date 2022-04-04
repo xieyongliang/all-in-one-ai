@@ -45,16 +45,40 @@ class LabelsToolkit extends React.Component<IProps, IState> {
             size: null,
         };
 
-        this.tabs = props.projectType === ProjectType.IMAGE_RECOGNITION ?
-            [
-                LabelType.IMAGE_RECOGNITION
-            ] :
-            [
-                LabelType.RECT,
-                LabelType.POINT,
-                LabelType.LINE,
-                LabelType.POLYGON
-            ];
+        switch(props.projectType) {
+            case ProjectType.IMAGE_RECOGNITION: 
+                this.tabs = [
+                    LabelType.IMAGE_RECOGNITION
+                ]
+                break;
+            case ProjectType.OBJECT_DETECTION_RECT:
+                this.tabs = [
+                    LabelType.RECT,
+                ]
+                break;
+            case ProjectType.OBJECT_DETECTION_POINT:
+                this.tabs = [
+                    LabelType.POINT
+                ]
+                break;
+            case ProjectType.OBJECT_DETECTION_LINE:
+                this.tabs = [
+                    LabelType.LINE
+                ]
+                break;
+            case ProjectType.OBJECT_DETECTION_POLYGON:
+                this.tabs = [
+                    LabelType.POLYGON
+                ]
+                break;
+            default:
+                this.tabs = [
+                    LabelType.RECT,
+                    LabelType.POINT,
+                    LabelType.LINE,
+                    LabelType.POLYGON    
+                ]
+        }
 
         const activeTab: LabelType = props.activeLabelType ? props.activeLabelType : this.tabs[0];
         props.updateActiveLabelType(activeTab);

@@ -94,7 +94,7 @@ const ImageAnnotate: React.FC<IProps> = (
                             
                 updateProjectDataAction({
                     ...projectData,
-                    type: ProjectType.OBJECT_DETECTION
+                    type: ProjectType.OBJECT_DETECTION_RECT
                 });
                 updateActiveImageIndexAction(0);
                 addImageDataAction([ImageDataUtil.createImageDataFromFileData(imageFile)]);

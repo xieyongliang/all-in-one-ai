@@ -1,7 +1,7 @@
 import json
 import boto3
 from decimal import Decimal
-from datetime import date, datetime, timedelta
+from datetime import date, datetime
 import traceback
 
 sagemaker_client = boto3.client("sagemaker")

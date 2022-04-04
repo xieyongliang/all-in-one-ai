@@ -1,9 +1,7 @@
 import json
 import boto3
 import helper
-from boto3.dynamodb.conditions import Attr
-from boto3.dynamodb.conditions import Key
-from datetime import date, datetime, timedelta
+from datetime import date, datetime
 from decimal import Decimal
 
 ssmh = helper.ssm_helper()

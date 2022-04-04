@@ -1901,12 +1901,12 @@ Resources:
         - Globally
         - !Sub
           - >-
-            arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/DELETE/model
+            arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/DELETE/model/*
           - __Stage__: '*'
             __ApiId__: !Ref ApiGatewayRestApi
         - !Sub
           - >-
-            arn:aws-cn:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/DELETE/model
+            arn:aws-cn:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/DELETE/model/*
           - __Stage__: '*'
             __ApiId__: !Ref ApiGatewayRestApi
 

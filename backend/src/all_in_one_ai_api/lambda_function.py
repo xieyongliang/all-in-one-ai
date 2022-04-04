@@ -1,11 +1,9 @@
 import json
 import boto3
 import helper
-from botocore.exceptions import ClientError
-from boto3.dynamodb.conditions import Attr
 from boto3.dynamodb.conditions import Key
 from decimal import Decimal
-from datetime import date, datetime, timedelta
+from datetime import date, datetime
 
 ssmh = helper.ssm_helper()
 api_table = ssmh.get_parameter('/all_in_one_ai/config/meta/api_table')

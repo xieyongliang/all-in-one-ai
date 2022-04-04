@@ -3,10 +3,10 @@ import boto3
 import helper
 import uuid
 from botocore.exceptions import ClientError
-from boto3.dynamodb.conditions import Attr
 from boto3.dynamodb.conditions import Key
 from decimal import Decimal
-from datetime import date, datetime, timedelta
+from datetime import date, datetime
+import traceback
 
 ssmh = helper.ssm_helper()
 models_table = ssmh.get_parameter('/all_in_one_ai/config/meta/industrial_model_table')
@@ -19,52 +19,84 @@ s3_resource = boto3.resource('s3')
 def lambda_handler(event, context):
     print(event)
     if event['httpMethod'] == 'POST':
-        request = json.loads(event['body'])
-        model_algorithm = request['model_algorithm']
-        icon_s3uri = ssmh.get_parameter('/all_in_one_ai/config/meta/algorithms/{0}/industrialmodels/icon'.format(model_algorithm))
-        icon_s3bucket, icon_s3key = get_bucket_and_key('{0}/icon'.format(icon_s3uri))
-        icon_s3key = '{0}{1}.jpg'.format(icon_s3key, request['file_name'])
-        response = s3_client.put_object( 
-            Body = bytes(request['file_content']['data']),
-            Bucket = icon_s3bucket, 
-            Key = icon_s3key
-        ) 
-
-        icon_s3uri = 's3://{0}/{1}'.format(icon_s3bucket, icon_s3key)
-        
-        params = {}
-        params['model_id'] = uuid.uuid4()
-        params['model_id'] = request['model_id']
-        params['model_algorithm'] = request['model_algorithm']
-        params['model_description'] = request['model_description']
-        params['model_labels'] = request['model_labels'].split('\n')
-        params['model_samples'] = request['model_samples']
-        params['model_icon'] = icon_s3uri
-        
         try:
-            if(model_algorithm == 'yolov5'):
-                industrialmodels_s3bucket, industrialmodels_s3key = get_bucket_and_key(industrialmodels_s3uri)
-                s3bucketcopy(industrialmodels_s3bucket, '{0}default/data/cfg'.format(industrialmodels_s3key), '{0}{1}/data/cfg'.format(industrialmodels_s3key, params['model_id']))
-                s3bucketcopy(industrialmodels_s3bucket, '{0}default/data/weights'.format(industrialmodels_s3key), '{0}{1}/data/weights'.format(industrialmodels_s3key, params['model_id']))
-                data_yaml_template_s3uri = '{0}default/data/cfg/data.yaml'.format(industrialmodels_s3uri)
-                data_yaml_output_s3uri = '{0}{1}/data/cfg/data.yaml'.format(industrialmodels_s3uri, params['model_id'])
-                generate_data_yaml(data_yaml_template_s3uri, data_yaml_output_s3uri, params['model_labels'])
-            ddbh.put_item(params)
+            request = json.loads(event['body'])
+        
+            model_id = None
+            if event['pathParameters'] != None and 'model_id' in event['pathParameters']:
+                model_id = event['pathParameters']['model_id']
             
+            model_algorithm = request['model_algorithm']
+
+            params = {}
+            params['model_description'] = request['model_description']
+            params['model_labels'] = request['model_labels'].split('\n')
+            params['model_samples'] = request['model_samples']
+        
+            if(model_id == None):
+                model_id = str(uuid.uuid4())
+
+                icon_s3uri = '{0}{1}'.format(ssmh.get_parameter('/all_in_one_ai/config/meta/algorithms/{0}/industrialmodels'.format(model_algorithm)), model_id)
+                icon_s3bucket, icon_s3key = get_bucket_and_key('{0}/icon/{1}.jpg'.format(icon_s3uri, model_id))
+                response = s3_client.put_object( 
+                    Body = bytes(request['file_content']['data']),
+                    Bucket = icon_s3bucket, 
+                    Key = icon_s3key
+                )
+                icon_s3uri = 's3://{0}/{1}'.format(icon_s3bucket, icon_s3key)
+                params['model_icon'] = icon_s3uri
+
+                if(model_algorithm == 'yolov5'):
+                    industrialmodels_s3bucket, industrialmodels_s3key = get_bucket_and_key(industrialmodels_s3uri)
+                    s3bucketcopy(industrialmodels_s3bucket, '{0}default/data/cfg'.format(industrialmodels_s3key), '{0}{1}/data/cfg'.format(industrialmodels_s3key, model_id))
+                    s3bucketcopy(industrialmodels_s3bucket, '{0}default/data/weights'.format(industrialmodels_s3key), '{0}{1}/data/weights'.format(industrialmodels_s3key, model_id))
+                    data_yaml_template_s3uri = '{0}default/data/cfg/data.yaml'.format(industrialmodels_s3uri)
+                    data_yaml_output_s3uri = '{0}{1}/data/cfg/data.yaml'.format(industrialmodels_s3uri, model_id)
+                    generate_data_yaml(data_yaml_template_s3uri, data_yaml_output_s3uri, params['model_labels'])
+            
+                params['model_id'] = model_id
+                params['model_algorithm'] = request['model_algorithm']
+                ddbh.put_item(params)
+            
+            else:
+                if(request['file_name'] != ''):
+                    icon_s3uri = '{0}{1}/icon'.format(ssmh.get_parameter('/all_in_one_ai/config/meta/algorithms/{0}/industrialmodels'.format(model_algorithm)), model_id)
+                    icon_s3bucket, icon_s3key = get_bucket_and_key('{0}/icon/{1}.jpg'.format(icon_s3uri, model_id))
+                    response = s3_client.put_object( 
+                        Body = bytes(request['file_content']['data']),
+                        Bucket = icon_s3bucket, 
+                        Key = icon_s3key
+                    )
+                    icon_s3uri = 's3://{0}/{1}'.format(icon_s3bucket, icon_s3key)
+                    params['model_icon'] = icon_s3uri
+                else:
+                    icon_s3uri = request['model_icon']
+                
+                keys = {
+                    'model_id': model_id,
+                    'model_algorithm': model_algorithm
+                }
+                
+                ddbh.update_item(keys, params)
+                
+            print(request)
+            response = {
+                'statusCode': 200,
+                'body': json.dumps({
+                    'id': model_id,
+                    'icon': icon_s3uri
+                })
+            }
+            
+            print(response)
+            return response
+                
         except Exception as e:
+            traceback.print_exc()
             return {
                 'statusCode': 400,
                 'body': str(e)
             }
-    
-        print(request)
-        return {
-            'statusCode': 200,
-            'body': {
-                'id': params['model_id'],
-                'icon': icon_s3uri
-            }
-        }
     else:
         model_id = None
         if event['pathParameters'] != None and 'model_id' in event['pathParameters']:
@@ -119,8 +151,8 @@ def get_presigned_url(bucket, key):
           ExpiresIn=1000
         )
         print("Got presigned URL: {}".format(url))
-    except ClientError:
-        print("Couldn't get a presigned URL for client method {}.".format(client_method))
+    except ClientError as e:
+        print(str(e))
         raise
     return url
 

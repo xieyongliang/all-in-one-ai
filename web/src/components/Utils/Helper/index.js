@@ -1,6 +1,6 @@
 export const getDurationBySeconds = (duration_in_seconds) => {
-    if(duration_in_seconds === undefined)
-        return 'N/A'
+    if(isNaN(duration_in_seconds))
+        return '-'
 
     var days    = Math.floor(duration_in_seconds / 86400);
     var hours   = Math.floor((duration_in_seconds % 86400) / 3600);

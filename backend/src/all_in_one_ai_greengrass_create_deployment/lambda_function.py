@@ -1,10 +1,7 @@
 import json
 import boto3
-import tarfile
-import zipfile
 import traceback
-from io import BytesIO
-from datetime import date, datetime, timedelta
+from datetime import date, datetime
 from decimal import Decimal
 
 greengrassv2_client = boto3.client('greengrassv2')
@@ -37,7 +34,7 @@ def lambda_handler(event, context):
 
         print(response)
         return {
-            'statusCode': 200
+            'statusCode': 200,
             'body': json.dumps(response, default = defaultencode)
         }
         

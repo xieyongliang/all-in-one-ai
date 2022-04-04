@@ -1,7 +1,6 @@
 import boto3
 import json
 import botocore
-import traceback
 
 lambda_client = boto3.client('lambda', config = botocore.config.Config(retries={'max_attempts': 0}, read_timeout=900 ))
 

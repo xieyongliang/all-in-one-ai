@@ -19,7 +19,7 @@ import AppLayout from './components/AppLayout';
 import Dashboard from './components/Dashboard/index'
 import Yolov5 from './components/Algorithms/Yolov5'
 import PPE from './components/Scenarios/PPE';
-import IndustrialModelOverview from './components/IndustrialModels/overview';
+import IndustrialModelOverview from './components/Lists/IndustrialModel';
 import IndustrialModels from './components/IndustrialModels';
 import { FunctionComponent, useEffect } from 'react';
 import { IIndustrialModel } from './store/industrialmodels/reducer';

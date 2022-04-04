@@ -2,7 +2,7 @@ import json
 import boto3
 import helper
 from decimal import Decimal
-from datetime import date, datetime, time
+from datetime import date, datetime
 
 sagemaker_client = boto3.client('sagemaker')
 
