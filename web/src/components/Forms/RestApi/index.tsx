@@ -27,6 +27,7 @@ const RestApiForm: FunctionComponent = () => {
     const [ invalidRestApiName, setInvalidRestApiName ] = useState(false)
     const [ invalidApiPath, setInvalidApiPath ] = useState(false)
     const [ invalidApiStage, setInvalidApiStage ] = useState(false)
+    const [ processing, setProcessing ] = useState(false)
 
     const history = useHistory();
 
@@ -104,6 +105,7 @@ const RestApiForm: FunctionComponent = () => {
                 'api_method': apiMethod,
                 'api_function': apiFunction
             }
+            setProcessing(true)
             if(tags.length > 1 || (tags.length === 1 && tags[0].key !== '' && tags[0].value !== ''))
                 body['tags'] = tags
             axios.post('/api', body,  { headers: {'content-type': 'application/json' }}) 
@@ -245,7 +247,7 @@ const RestApiForm: FunctionComponent = () => {
             actions={
                 <div>
                     <Button variant='link' onClick={onCancel}>Cancel</Button>
-                    <Button variant='primary' onClick={onSubmit}>Submit</Button>
+                    <Button variant='primary' onClick={onSubmit} loading={processing}>Submit</Button>
                 </div>
             }> 
             {renderRestApiSetting()}

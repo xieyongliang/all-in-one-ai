@@ -85,6 +85,7 @@ const TransformJobForm: FunctionComponent<IProps> = (props) => {
     const [ invalidMaxConcurrentTransform, setInvalidMaxconcurrentTransform ] = useState(false);
     const [ invalidInputS3Uri, setInvalidInputS3Uri ] = useState(false);
     const [ invalidOutputS3Uri, setInvalidOutputS3Uri ] = useState(false);
+    const [ processing, setProcessing ] = useState(false)
 
     const history = useHistory();
 
@@ -161,13 +162,14 @@ const TransformJobForm: FunctionComponent<IProps> = (props) => {
                 'output_s3uri': outputS3Uri,
                 'industrial_model': params.id
             }
+            setProcessing(true)
             axios.post('/transformjob', body) 
-            .then((response) => {
-                history.goBack()
-            }, (error) => {
-                alert('Error occured, please check and try it again');
-                console.log(error);
-            });    
+                .then((response) => {
+                    history.goBack()
+                }, (error) => {
+                    alert('Error occured, please check and try it again');
+                    console.log(error);
+                });
         }
     }
 
@@ -182,7 +184,7 @@ const TransformJobForm: FunctionComponent<IProps> = (props) => {
             actions={
                 <div>
                     <Button variant='link' onClick={onCancel}>Cancel</Button>
-                    <Button variant='primary' onClick={onSubmit}>Submit</Button>
+                    <Button variant='primary' onClick={onSubmit} loading={processing}>Submit</Button>
                 </div>
             }>            
             <FormSection header='Job configuration'>

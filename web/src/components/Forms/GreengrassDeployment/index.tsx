@@ -46,6 +46,7 @@ const GreengrassDeploymentForm: FunctionComponent<IProps> = (props) => {
     const [ forcedRefresh, setForcedRefresh ] = useState(false)
     const [ invalidCoreDevice, setInvalidCoreDevice ] = useState(false)
     const [ invalidThingGroup, setInvalidThingGroup ] = useState(false)
+    const [ processing, setProcessing ] = useState(false)
     const [ forceRefreshed, setForceRefreshed ] = useState(false)
 
     const history = useHistory();
@@ -165,6 +166,7 @@ const GreengrassDeploymentForm: FunctionComponent<IProps> = (props) => {
                 'components': components,
                 'industrial_model': params.id
             }
+            setProcessing(true)
             axios.post('/greengrass/deployment', body,  { headers: {'content-type': 'application/json' }}) 
             .then((response) => {
                 history.goBack();
@@ -417,7 +419,7 @@ const GreengrassDeploymentForm: FunctionComponent<IProps> = (props) => {
                 actions={
                     <div>
                         <Button variant='link' onClick={onCancel}>Cancel</Button>
-                        <Button variant='primary' onClick={onSubmit}>Submit</Button>
+                        <Button variant='primary' onClick={onSubmit} loading={processing}>Submit</Button>
                     </div>
                 }>        
                 {renderGreengrassDeploymentSetting()}

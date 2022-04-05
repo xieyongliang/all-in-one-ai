@@ -325,8 +325,8 @@ const EditorTopNavigationBar: React.FC<IProps> = (
                         selectedOption={selectedEndpoint}
                         options={endpointOptions}
                     >
-                    </Select>}
-
+                    </Select>
+                }
                 {
                     (imageId !== undefined || (imageBucket !== undefined && imageKey !== undefined)) &&
                     getButtonWithTooltip(

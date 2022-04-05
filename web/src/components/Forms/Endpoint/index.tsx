@@ -132,6 +132,7 @@ const EndpointForm: FunctionComponent<IProps> = (props) => {
     const [ invalidAcceleratorTypeType, setInvalidAcceleratorTypeType ] = useState(false);
     const [ invalidInitialInstanceCount, setInvalidInitialInstanceCount ] = useState(false);
     const [ invalidInitialVariantWeight, setInvalidInitialVariantWeight ] = useState(false);
+    const [ processing, setProcessing ] = useState(false)
 
     const history = useHistory();
 
@@ -207,6 +208,7 @@ const EndpointForm: FunctionComponent<IProps> = (props) => {
             }
             if(tags.length > 1 || (tags.length === 1 && tags[0].key !== '' && tags[0].value !== ''))
                 body['tags'] = tags
+            setProcessing(true)
             axios.post('/endpoint', body,  { headers: {'content-type': 'application/json' }}) 
             .then((response) => {
                 history.goBack()
@@ -351,7 +353,7 @@ const EndpointForm: FunctionComponent<IProps> = (props) => {
                 actions={
                     <div>
                         <Button variant='link' onClick={onCancel}>Cancel</Button>
-                        <Button variant='primary' onClick={onSubmit}>Submit</Button>
+                        <Button variant='primary' onClick={onSubmit} loading={processing}>Submit</Button>
                     </div>
                 }>
                 {renderEndpointSetting()}

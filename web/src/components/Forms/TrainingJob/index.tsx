@@ -85,6 +85,7 @@ const TrainingJobForm: FunctionComponent<IProps> = (props) => {
     const [ invalidImagesS3Uri, setInvalidImagesS3Uri ] = useState(false)
     const [ invalidLabelsS3Uri, setInvalidLabelsS3Uri ] = useState(false)
     const [ invalidOutputS3Uri, setInvalidOutputS3Uri ] = useState(false)
+    const [ processing, setProcessing ] = useState(false)
 
     const history = useHistory();
 
@@ -169,6 +170,7 @@ const TrainingJobForm: FunctionComponent<IProps> = (props) => {
             }
             if(tags.length > 1 || (tags.length === 1 && tags[0].key !== '' && tags[0].value !== ''))
                 body['tags'] = tags
+            setProcessing(true)
             axios.post('/trainingjob', body,  { headers: {'content-type': 'application/json' }}) 
             .then((response) => {
                 history.goBack()
@@ -313,7 +315,7 @@ const TrainingJobForm: FunctionComponent<IProps> = (props) => {
                 actions={
                     <div>
                         <Button variant='link' onClick={onCancel}>Cancel</Button>
-                        <Button variant='primary' onClick={onSubmit}>Submit</Button>
+                        <Button variant='primary' onClick={onSubmit} loading={processing}>Submit</Button>
                     </div>
                 }>            
                 {renderTrainingJobSetting()}

@@ -1,4 +1,4 @@
-import { Button, Container, Form, FormField, FormSection, Input, LoadingIndicator, Select, Stack, Textarea } from "aws-northstar";
+import { Button, Container, Form, FormField, FormSection, Input, Select, Stack, Textarea } from "aws-northstar";
 import { FunctionComponent, useState } from "react";
 import axios from "axios";
 import FileUpload from 'aws-northstar/components/FileUpload';
@@ -16,8 +16,8 @@ interface IProps {
 }
 
 const IndustrialModelForm: FunctionComponent<IProps> = (props) => {
-    const algorithmOptions = [{label: 'Yolov5', value: 'yolov5'}, {label: 'GluonCV', value:'gluoncv'}]
-    const selectedAlgorithm = {label: 'Yolov5', value: 'yolov5'}
+    const algorithmOptions = [{label: 'Yolov5', value: 'yolov5'}, {label: 'GluonCV', value:'gluoncv'}, {label: 'PaddleOCR', value: 'paddle'}]
+    const [ selectedAlgorithm, setSelectedAlgorithm] = useState({label: 'Yolov5', value: 'yolov5'})
     const [ modelName, setModelName ] = useState('')
     const [ modelDescription, setModelDescription ] = useState('')
     const [ modelSamples, setModelSamples ] = useState('')
@@ -34,6 +34,8 @@ const IndustrialModelForm: FunctionComponent<IProps> = (props) => {
             setModelLabels(event.target.value)
         else if(id === 'formFieldIdModelSamples')
             setModelSamples(event)
+        else
+            setSelectedAlgorithm({label: event.target.value, value: event.target.value})
     }
 
     const onFileChange = (files: (File | FileMetadata)[]) => {
@@ -99,6 +101,7 @@ const IndustrialModelForm: FunctionComponent<IProps> = (props) => {
                         placeholder='Choose an option'
                         options={algorithmOptions}
                         selectedOption={selectedAlgorithm}
+                        onChange={(event)=>onChange('formFieldIdAlgorithms', event)}
                     />
                 </FormField>
             </FormSection>
@@ -117,10 +120,9 @@ const IndustrialModelForm: FunctionComponent<IProps> = (props) => {
             actions={
                 <div>
                     <Button variant='link' onClick={onCancel}>Cancel</Button>
-                    <Button variant='primary' onClick={onSubmit}>Submit</Button>
+                    <Button variant='primary' onClick={onSubmit} loading={processing}>Submit</Button>
                 </div>
             }>
-                { processing && <LoadingIndicator label='Processing...'/> }
                 { renderModelSetting() }
                 { renderImagePreview() }
                 { renderClassDefinition() }
@@ -146,7 +148,6 @@ const IndustrialModelForm: FunctionComponent<IProps> = (props) => {
                 industrialModels.push({id: modelId, name: modelName, algorithm : selectedAlgorithm.value, description: modelDescription, labels: modelLables.split('\n'), samples: modelSamples, icon: modelIcon})
                 props.updateindustrialmodelsAction(industrialModels)
                 props.onClose();
-                setProcessing(false)
             }).catch((error) => {
                 console.log(error)
             })

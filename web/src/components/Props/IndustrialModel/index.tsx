@@ -1,4 +1,4 @@
-import { Button, Container, Form, FormField, FormSection, Input, LoadingIndicator, Select, Stack, Textarea } from "aws-northstar";
+import { Button, Container, Form, FormField, FormSection, Input, Select, Stack, Textarea } from "aws-northstar";
 import { FunctionComponent, useEffect, useState } from "react";
 import axios from "axios";
 import FileUpload from 'aws-northstar/components/FileUpload';
@@ -140,10 +140,9 @@ const InustrialModelProp: FunctionComponent<IProps> = (props) => {
                 actions={
                 <div>
                     <Button variant='link' onClick={onCancel}>Cancel</Button>
-                    <Button variant='primary' onClick={onSubmit}>Submit</Button>
+                    <Button variant='primary' onClick={onSubmit} loading={processing}>Submit</Button>
                 </div>
             }>
-                { processing && <LoadingIndicator label='Processing...'/> }
                 { renderModelSetting() }
                 { renderImagePreview() }
                 { renderClassDefinition() }
@@ -152,7 +151,6 @@ const InustrialModelProp: FunctionComponent<IProps> = (props) => {
     }
 
     const onSubmit = () => {
-        setProcessing(true)
         var buffer = {
             'model_id': props.industrialModel.id,
             'model_name': modelName,
@@ -163,6 +161,7 @@ const InustrialModelProp: FunctionComponent<IProps> = (props) => {
             'model_icon': props.industrialModel.icon,
             'file_name': fileName
         }
+        setProcessing(true)
         axios.post('/industrialmodel', buffer)
             .then((response) => {
                 var modelId = response.data.id;
@@ -175,7 +174,6 @@ const InustrialModelProp: FunctionComponent<IProps> = (props) => {
                 props.industrialModel.samples = modelSamples
                 props.updateindustrialmodelsAction(props.industrialModels)
                 props.onClose()
-                setProcessing(false)
             }).catch((error) => {
                 alert(error)
                 console.log(error)

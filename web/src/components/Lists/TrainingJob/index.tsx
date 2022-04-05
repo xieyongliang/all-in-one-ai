@@ -65,12 +65,18 @@ const TrainingJobList: FunctionComponent = () => {
         axios.get('/trainingjob', {params : {'industrial_model': params.id}})
         .then((response) => {
             var items = []
-            for(let item of response.data) {
-                items.push({trainingJobName: item.TrainingJobName, trainingJobStatus : item.TrainingJobStatus, duration: getDurationBySeconds(parseInt(item.TrainingTimeInSeconds)), creationTime: getUtcDate(item.CreationTime)})
-                if(items.length === response.data.length)
-                    setTrainingJobItems(items)
+            if(response.data.length === 0) {
+                setTrainingJobItems(items)
+                setLoading(false);
             }
-            setLoading(false);
+            else
+                for(let item of response.data) {
+                    items.push({trainingJobName: item.TrainingJobName, trainingJobStatus : item.TrainingJobStatus, duration: getDurationBySeconds(parseInt(item.TrainingTimeInSeconds)), creationTime: getUtcDate(item.CreationTime)})
+                    if(items.length === response.data.length) {
+                        setTrainingJobItems(items)
+                        setLoading(false);
+                    }
+                }
         }, (error) => {
             console.log(error);
         });

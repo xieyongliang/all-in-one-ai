@@ -31,12 +31,18 @@ const PipelineList: FunctionComponent = () => {
         axios.get('/pipeline', {params : {'industrial_model': params.id}})
             .then((response) => {
             var items = []
-            for(let item of response.data) {
-                items.push({pipelineExecutionArn : item.PipelineExecutionArn, pipelineName: item.PipelineExperimentConfig['ExperimentName'], pipelineExecutionStatus: item.PipelineExecutionStatus, creationTime: getUtcDate(item.CreationTime), lastModifiedTime: getUtcDate(item.LastModifiedTime)})
-                if(items.length === response.data.length)
-                    setPipelineItems(items)
+            if(response.data.length === 0) {
+                setPipelineItems(items);
+                setLoading(false);
             }
-            setLoading(false);
+            else 
+                for(let item of response.data) {
+                    items.push({pipelineExecutionArn : item.PipelineExecutionArn, pipelineName: item.PipelineExperimentConfig['ExperimentName'], pipelineExecutionStatus: item.PipelineExecutionStatus, creationTime: getUtcDate(item.CreationTime), lastModifiedTime: getUtcDate(item.LastModifiedTime)})
+                    if(items.length === response.data.length) {
+                        setPipelineItems(items);
+                        setLoading(false);
+                    }
+                }
         }, (error) => {
             console.log(error);
         });

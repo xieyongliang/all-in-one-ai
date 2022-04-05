@@ -46,6 +46,7 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
     const [ invalidModelDataUrl, setInvalidModelDataUrl ] = useState(false)
     const [ invalidModelPackageName, setInvalidModelPackageName ] = useState(false)
     const [ forceRefreshed, setForceRefreshed ] = useState(false)
+    const [ processing, setProcessing ] = useState(false)
 
     const history = useHistory();
 
@@ -169,6 +170,7 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
                 }
                 if(tags.length > 1 || (tags.length === 1 && tags[0].key !== '' && tags[0].value !== ''))
                     body['tags'] = tags
+                setProcessing(true)
                 axios.post('/model', body,  { headers: {'content-type': 'application/json' }}) 
                     .then((response) => {
                         history.goBack()
@@ -508,7 +510,7 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
                 actions={
                     <div>
                         <Button variant='link' onClick={onCancel}>Cancel</Button>
-                        <Button variant='primary' onClick={onSubmit}>Submit</Button>
+                        <Button variant='primary' onClick={onSubmit} loading={processing}>Submit</Button>
                     </div>
                 }>            
                 {renderModelSetting()}

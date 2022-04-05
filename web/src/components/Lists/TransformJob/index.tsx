@@ -1,6 +1,6 @@
 import { FunctionComponent, useCallback, useEffect, useState } from 'react';
 import { useHistory, useParams } from 'react-router-dom'; 
-import { Container, Stack, Table, Button, Inline, ButtonDropdown, StatusIndicator, Flashbar, Toggle, Link, Text, DeleteConfirmationDialog } from 'aws-northstar'
+import { Container, Stack, Table, Button, Inline, ButtonDropdown, StatusIndicator, Toggle, Link, Text, DeleteConfirmationDialog, LoadingIndicator } from 'aws-northstar'
 import { Column } from 'react-table'
 import ImageList from '@mui/material/ImageList';
 import ImageListItem from '@mui/material/ImageListItem';
@@ -95,12 +95,18 @@ const TransformJobList: FunctionComponent<IProps> = (props) => {
             setLoadingTable(true)
             axios.get('/transformjob', {params : {'industrial_model': params.id}})
                 .then((response) => {
-                    for(let item of response.data) {
-                        transformJobItems.push({transformJobName: item.TransformJobName, transformJobStatus : item.TransformJobStatus, duration: getDurationByDates(item.TransformStartTime, item.TransformEndTime), creationTime: item.CreationTime})
-                        if(transformJobItems.length === response.data.length)
-                            setTransformJobItems(transformJobItems);
+                    if(response.data.length === 0) {
+                        setTransformJobItems(transformJobItems);
+                        setLoadingTable(false);
                     }
-                    setLoadingTable(false);
+                    else
+                        for(let item of response.data) {
+                            transformJobItems.push({transformJobName: item.TransformJobName, transformJobStatus : item.TransformJobStatus, duration: getDurationByDates(item.TransformStartTime, item.TransformEndTime), creationTime: item.CreationTime})
+                            if(transformJobItems.length === response.data.length) {
+                                setTransformJobItems(transformJobItems);
+                                setLoadingTable(false);
+                            }
+                        }
                 }
             )
         }
@@ -290,37 +296,36 @@ const TransformJobList: FunctionComponent<IProps> = (props) => {
     );
 
     const renderReview = () => {
-        return (
-            <Stack>
-                {   
-                    loadingReview && <Flashbar items={[{
-                        header: 'Loading batch transform result...',
-                        content: 'This may take up to an minute. Please wait a bit...',
-                        dismissible: true,
-                        loading: loadingReview
-                    }]} />
-                }
-                {
-                    !loadingReview && 
-                    <Container title = 'Select image file from batch transform result'>
-                        <ImageList cols={10} rowHeight={64} gap={10} variant={'quilted'} >
-                            {transformJobResult.input.map((item) => (
-                                <ImageListItem key={item} rows={2}>
-                                    <Image
-                                        src={item}
-                                        width={128}
-                                        height={128}
-                                        current={curImageItem}
-                                        onClick={onImageClick}
-                                    />
-                                </ImageListItem>
-                            ))}
-                        </ImageList>
-                        <Pagination page={imagePage} onChange={onChange} count={Math.floor(transformJobResult.count / 20)} />
-                    </Container>
-                }
-            </Stack>            
-        )
+        if(loadingReview)
+            return (
+                <Container title = 'Select image file from batch transform result'>
+                    <LoadingIndicator label='Loading...'/>
+                </Container>
+            )
+        else
+            return (
+                <Stack>
+                    {
+                        !loadingReview && 
+                        <Container title = 'Select image file from batch transform result'>
+                            <ImageList cols={10} rowHeight={64} gap={10} variant={'quilted'} >
+                                {transformJobResult.input.map((item) => (
+                                    <ImageListItem key={item} rows={2}>
+                                        <Image
+                                            src={item}
+                                            width={128}
+                                            height={128}
+                                            current={curImageItem}
+                                            onClick={onImageClick}
+                                        />
+                                    </ImageListItem>
+                                ))}
+                            </ImageList>
+                            <Pagination page={imagePage} onChange={onChange} count={Math.floor(transformJobResult.count / 20)} />
+                        </Container>
+                    }
+                </Stack>            
+            )
     }
 
     const renderTransformJobList = () => {

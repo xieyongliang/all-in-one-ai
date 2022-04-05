@@ -40,7 +40,7 @@ module.exports = function(app) {
                     res.send(response.data);
                 }, (error) => {
                         res.status(400);
-                        res.send('client error');
+                        res.send(res.data);
                         console.log(error);
                     }
                 ).catch((e) => {
@@ -67,7 +67,7 @@ module.exports = function(app) {
                     res.send(response.data)
                 }, (error) => {
                         res.status(400);
-                        res.send('client error');
+                        res.send(res.data);
                         console.log(error);
                     }
                 ).catch((e) => {
@@ -86,6 +86,10 @@ module.exports = function(app) {
                 .then((response) => {
                         res.setHeader('content-type', response.headers['content-type']);
                         res.send(response.data);
+                }, (error) => {
+                        res.status(400);
+                        res.send(res.data);
+                        console.log(error);
                     }
                 ).catch((e) => {
                     console.log(e);
@@ -109,7 +113,7 @@ module.exports = function(app) {
                     res.send(response.data);
                 }, (error) => {
                         res.status(400);
-                        res.send('client error');
+                        res.send(res.data);
                         console.log(error);
                     }
                 ).catch((e) => {
@@ -144,7 +148,7 @@ module.exports = function(app) {
                             res.send(response.data);
                         }, (error) => {
                                 res.status(400);
-                                res.send('client error');
+                                res.send(res.data);
                                 console.log(error);
                             }
                         ).catch((e) => {
@@ -159,7 +163,7 @@ module.exports = function(app) {
                             res.send(response.data);
                         }, (error) => {
                                 res.status(400);
-                                res.send('client error');
+                                res.send(res.data);
                                 console.log(error);
                             }
                         ).catch((e) => {
@@ -172,6 +176,15 @@ module.exports = function(app) {
             }
         })
     })
+    app.use(createProxyMiddleware('/inference', {
+        target: baseUrl + '/inference',
+        pathRewrite: {
+            '^/inference': ''
+        },
+        changeOrigin: true,
+        secure: false,
+        ws: false,
+    }));
     app.use(createProxyMiddleware('/transformjob', {
         target: baseUrl + '/transformjob',
         pathRewrite: {

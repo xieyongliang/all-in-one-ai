@@ -73,12 +73,18 @@ const EndpointList: FunctionComponent = () => {
         axios.get('/endpoint', {params : {'industrial_model': params.id}})
         .then((response) => {
             var items = []
-            for(let item of response.data) {
-                items.push({endpointName: item.EndpointName, endpointStatus: item.EndpointStatus, creationTime: getUtcDate(item.CreationTime), lastModifiedTime: getUtcDate(item.LastModifiedTime)})
-                if(items.length ===  response.data.length)
-                    setEndpointItems(items)
+            if(response.data.length === 0) {
+                setEndpointItems(items);
+                setLoading(false);
             }
-            setLoading(false);
+            else
+                for(let item of response.data) {
+                    items.push({endpointName: item.EndpointName, endpointStatus: item.EndpointStatus, creationTime: getUtcDate(item.CreationTime), lastModifiedTime: getUtcDate(item.LastModifiedTime)})
+                    if(items.length ===  response.data.length) {
+                        setEndpointItems(items);
+                        setLoading(false);
+                    }
+                }
         }, (error) => {
             console.log(error);
         });

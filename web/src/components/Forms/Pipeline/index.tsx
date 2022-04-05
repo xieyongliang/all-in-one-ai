@@ -47,7 +47,7 @@ interface IProps {
 const PipelineForm: FunctionComponent<IProps> = (props) => {
     const [ pipelineType, setPipelineType ] = useState('0')
     const [ pipelineName, setPipelineName ] = useState('')
-    
+
     const history = useHistory();
 
     var params : PathParams = useParams();
@@ -102,7 +102,6 @@ const PipelineForm: FunctionComponent<IProps> = (props) => {
         if(pipelineType === '2')
             body['model_data_url'] = props.modelDataUrl
 
-        console.log(JSON.stringify(body))
         axios.post('/pipeline', body,  { headers: {'content-type': 'application/json' }}) 
         .then((response) => {
             history.goBack()

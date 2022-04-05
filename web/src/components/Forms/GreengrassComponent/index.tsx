@@ -38,6 +38,7 @@ const GreengrassComponentForm: FunctionComponent<IProps> = (props) => {
     const [ invalidComponent, setInvalidComponent ] = useState(false)
     const [ invalidComponentVersion, setInvalidComponentVersion ] = useState(false)
     const [ itemsModel ] = useState({})
+    const [ processing, setProcessing ] = useState(false)
 
     const history = useHistory();
     
@@ -96,6 +97,7 @@ const GreengrassComponentForm: FunctionComponent<IProps> = (props) => {
                 'industrial_model': params.id,
                 'model_data_url': itemsModel[selectedModel.value]
             }
+            setProcessing(true)
             axios.post(`/greengrass/component/${selectedComponent.value}`, body,  { headers: {'content-type': 'application/json' }}) 
             .then((response) => {
                 history.goBack()
@@ -176,7 +178,7 @@ const GreengrassComponentForm: FunctionComponent<IProps> = (props) => {
                 actions={
                     <div>
                         <Button variant='link' onClick={onCancel}>Cancel</Button>
-                        <Button variant='primary' onClick={onSubmit}>Submit</Button>
+                        <Button variant='primary' onClick={onSubmit} loading={processing}>Submit</Button>
                     </div>
                 }>
                 {renderGreengrassComponentSetting()}

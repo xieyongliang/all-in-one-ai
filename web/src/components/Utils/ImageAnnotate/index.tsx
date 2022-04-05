@@ -104,28 +104,28 @@ const ImageAnnotate: React.FC<IProps> = (
       }, [imageUri]); // eslint-disable-line react-hooks/exhaustive-deps
     
       return (
-        <Modal title="Image preview" visible={visible} onClose={()=>{setImageReady(false); onClose()}} width={"100"}>
-            {
-                !imageReady && 
-                <LoadingIndicator 
-                    label='Loading image...'
-                />
-            }
-            { 
-                imageReady && 
-                <EditorView 
-                    imageColors={imageColors} 
-                    imageLabels={imageLabels} 
-                    imageAnnotations={imageAnnotations}
-                    imageBucket={imageBucket} 
-                    imageKey={imageKey} 
-                    imageId={imageId}
-                /> 
-            }
-            { 
-                imageReady && 
-                <PopupView/>
-            }
+            <Modal title="Image preview" visible={visible} onClose={()=>{setImageReady(false); onClose()}} width={"100"}>
+                {
+                    !imageReady && 
+                    <LoadingIndicator 
+                        label='Loading...'
+                    />
+                }
+                { 
+                    imageReady && 
+                    <EditorView 
+                        imageColors={imageColors} 
+                        imageLabels={imageLabels} 
+                        imageAnnotations={imageAnnotations}
+                        imageBucket={imageBucket} 
+                        imageKey={imageKey} 
+                        imageId={imageId}
+                    /> 
+                }
+                { 
+                    imageReady && 
+                    <PopupView/>
+                }
             </Modal>
     );
 };

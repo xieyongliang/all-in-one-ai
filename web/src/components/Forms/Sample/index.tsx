@@ -1,6 +1,6 @@
 import { FunctionComponent, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Container, Link, Toggle, Flashbar, Stack } from 'aws-northstar';
+import { Container, Link, Toggle, Stack, LoadingIndicator } from 'aws-northstar';
 import ImageList from '@mui/material/ImageList';
 import ImageListItem from '@mui/material/ImageListItem';
 import SyntaxHighlighter from 'react-syntax-highlighter';
@@ -93,17 +93,6 @@ const SampleForm: FunctionComponent<IProps> = (props) => {
             setImagePage(event)
     }
 
-    const renderFlashbar = () => {
-        return (
-            <Flashbar items={[{
-                header: 'Loading sample images...',
-                content: 'This may take up to an minute. Please wait a bit...',
-                dismissible: true,
-                loading: loading
-            }]} />
-        )
-    }
-
     const renderImagePreview = () => {
         
         var imageItem = imageItems.find((item) => item.httpuri === curImageItem)
@@ -122,26 +111,33 @@ const SampleForm: FunctionComponent<IProps> = (props) => {
     }
     
     const renderImageList = () => {
-        return (
-            <Container title = 'Select image file from sample list'>
-                <ImageList cols={10} rowHeight={64} gap={10} variant={'quilted'}>
-                    {
-                        imageItems.map((item) => (
-                            <ImageListItem key={item.httpuri} rows={2}>
-                                <Image
-                                    src={item.httpuri}
-                                    width={128}
-                                    height={128}
-                                    current={curImageItem}
-                                    onClick={onImageClick}
-                                />
-                            </ImageListItem>
-                        ))
-                    }
-                </ImageList>
-                <Pagination page={imagePage} onChange={(event, value) => onChange('formFieldIdPage', value)} count={Math.floor(imageCount / 20)} />
-            </Container>
-        )
+        if(loading)
+            return (
+                <Container title = 'Select image file from sample list'>
+                    <LoadingIndicator label='Loading...'/>
+                </Container>
+            )
+        else 
+            return (
+                <Container title = 'Select image file from sample list'>
+                    <ImageList cols={10} rowHeight={64} gap={10} variant={'quilted'}>
+                        {
+                            imageItems.map((item) => (
+                                <ImageListItem key={item.httpuri} rows={2}>
+                                    <Image
+                                        src={item.httpuri}
+                                        width={128}
+                                        height={128}
+                                        current={curImageItem}
+                                        onClick={onImageClick}
+                                    />
+                                </ImageListItem>
+                            ))
+                        }
+                    </ImageList>
+                    <Pagination page={imagePage} onChange={(event, value) => onChange('formFieldIdPage', value)} count={Math.floor(imageCount / 20)} />
+                </Container>
+            )
     }
 
     const renderSampleCode = () => {
@@ -158,10 +154,13 @@ const SampleForm: FunctionComponent<IProps> = (props) => {
         )
     }
 
+    if(visibleImagePreview)
+        return (
+            renderImagePreview()
+        )
+    else
         return (
             <Stack>
-                { visibleImagePreview && renderImagePreview() }
-                { loading && renderFlashbar() }
                 { renderImageList() }
                 { renderSampleCode() }
             </Stack>

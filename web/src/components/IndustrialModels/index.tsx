@@ -29,8 +29,9 @@ import PipelineProp from '../Props/Pipeline';
 import { AppState } from '../../store';
 import { connect } from 'react-redux';
 import { IIndustrialModel } from '../../store/industrialmodels/reducer';
-import GluonCVModelForm from '../Forms/Model/gluoncv'
+import LiteModelForm from '../Forms/Model/lite'
 import GluonCVDemoForm from '../Forms/Demo/gluoncv'
+import { LoadingIndicator } from 'aws-northstar';
 
 interface IProps {
     industrialModels : IIndustrialModel[];
@@ -59,7 +60,7 @@ const IndustrialModels: FunctionComponent<IProps> = (
 
     if(index === -1)
         return (
-            <Tabs tabs={[]} variant='container' activeId={tab} onChange={onChange}/>
+            <LoadingIndicator label='Loading...'/>
         )
     
     var algorithm = industrialModels[index].algorithm
@@ -152,13 +153,54 @@ const IndustrialModels: FunctionComponent<IProps> = (
         return (
             <Tabs tabs={tabs} variant='container' activeId={tab} onChange={onChange}/>
         )
-    } else {
+    } 
+    else if(algorithm === 'paddle') {
+        if(hash === 'form' || hash === 'review') {
+            switch(tab) {
+                case 'model':
+                    return <LiteModelForm/>;
+                case 'endpoint':
+                    return <EndpointForm/>;
+            }
+        }
+
+        if(hash.startsWith('prop')) {
+            switch(tab) {
+                case 'model':
+                    return <ModelProp />;
+                case 'endpoint':
+                    return <EndpointProp />;
+            }
+        }
+
+        const tabs = [
+            {
+                label: 'Demo',
+                id: 'demo',
+                content: <DemoForm/>
+            },
+            {
+                label: 'Models',
+                id: 'model',
+                content: <ModelList/>
+            },
+            {
+                label: 'Endpoints',
+                id: 'endpoint',
+                content: <EndpointList/>
+            }
+        ];
+        return (
+            <Tabs tabs={tabs} variant='container' activeId={tab} onChange={onChange}/>
+        )
+    }
+    else {
         if(hash === 'form') {
             switch(tab) {
                 case 'demo':
                     return <GluonCVDemoForm/>;
                 case 'model':
-                    return <GluonCVModelForm/>;
+                    return <LiteModelForm/>;
                 case 'endpoint':
                     return <EndpointForm/>;
             }

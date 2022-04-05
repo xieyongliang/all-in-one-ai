@@ -126,13 +126,17 @@ const InferenceForm: FunctionComponent<IProps> = (props) => {
         )
     }
 
-    return (
-        <Stack>
-            {visibleImagePreview && renderImagePreview()}
-            {renderImageUpload()}
-            {renderSampleCode()}
-        </Stack>
-    )
+    if(visibleImagePreview)
+        return (
+            renderImagePreview()
+        )
+    else
+        return (
+            <Stack>
+                {renderImageUpload()}
+                {renderSampleCode()}
+            </Stack>
+        )
 }
 
 const mapStateToProps = (state: AppState) => ({

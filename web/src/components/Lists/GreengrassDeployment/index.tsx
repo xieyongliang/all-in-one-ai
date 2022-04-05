@@ -62,15 +62,22 @@ const GreengrassDeploymentList: FunctionComponent = () => {
     }, [onRefresh]);
 
     useEffect(() => {
+        setLoading(true)
         axios.get(`/greengrass/deployment`, {params : {'industrial_model': params.id}})
         .then((response) => {
             var items = []
-            for(let item of response.data) {
-                items.push({target_arn: item.targetArn, revision_id: item.revisionId, deployment_id : item.deploymentId, deployment_created: item.creationTimestamp, status: item.deploymentStatus})
-                if(items.length === response.data.length)
-                    setGreengrassDeploymentItems(items)
+            if(response.data.length === 0) {
+                setGreengrassDeploymentItems(items);
+                setLoading(false);
             }
-            setLoading(false);
+            else
+                for(let item of response.data) {
+                    items.push({target_arn: item.targetArn, revision_id: item.revisionId, deployment_id : item.deploymentId, deployment_created: item.creationTimestamp, status: item.deploymentStatus})
+                    if(items.length === response.data.length) {
+                        setGreengrassDeploymentItems(items);
+                        setLoading(false);
+                    }
+                }
         }, (error) => {
             console.log(error);
         });

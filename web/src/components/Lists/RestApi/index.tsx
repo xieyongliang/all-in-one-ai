@@ -28,12 +28,18 @@ const RestApiList: FunctionComponent = () => {
         axios.get('/api', {params : {'industrial_model': params.id}})
             .then((response) => {
             var items = []
-            for(let item of response.data) {
-                items.push({name: item.api_name, function: item.api_function, created_date: getUtcDate(item.created_date), url: item.api_url})
-                if(items.length === response.data.length)
-                    setApiItems(items)
+            if(response.data.length === 0) {
+                setApiItems(items);
+                setLoading(false);
             }
-            setLoading(false);
+            else
+                for(let item of response.data) {
+                    items.push({name: item.api_name, function: item.api_function, created_date: getUtcDate(item.created_date), url: item.api_url})
+                    if(items.length === response.data.length) {
+                        setApiItems(items);
+                        setLoading(false);
+                    }
+                }
         }, (error) => {
             console.log(error);
         });

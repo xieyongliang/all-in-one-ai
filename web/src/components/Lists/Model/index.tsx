@@ -73,15 +73,22 @@ const ModelList: FunctionComponent = () => {
         }, [params.id])
     
     useEffect(() => {
+        setLoading(true)
         axios.get('/model', {params : {'industrial_model': params.id}})
             .then((response) => {
                 var items = []
-                for(let item of response.data) {
-                    items.push({modelName: item.ModelName, creationTime: getUtcDate(item.CreationTime)})
-                    if(items.length === response.data.length)
-                        setModelItems(items)
+                if(response.data.length === 0) {
+                    setModelItems(items)
+                    setLoading(false)
                 }
-                setLoading(false);
+                else
+                    for(let item of response.data) {
+                        items.push({modelName: item.ModelName, creationTime: getUtcDate(item.CreationTime)})
+                        if(items.length === response.data.length) {
+                            setModelItems(items)
+                            setLoading(false);
+                        }
+                    }
             }, (error) => {
                 console.log(error);
             });

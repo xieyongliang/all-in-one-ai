@@ -41,7 +41,7 @@ app.get('/inference/image/:file_name', (req, res) => {
                 res.send(response.data);
             }, (error) => {
                     res.status(400);
-                    res.send('client error');
+                    res.send(res.data);
                     console.log(error);
                 }
             ).catch((e) => {
@@ -68,7 +68,7 @@ app.get('/inference/sample', (req, res) => {
                 res.send(response.data)
             }, (error) => {
                     res.status(400);
-                    res.send('client error');
+                    res.send(res.data);
                     console.log(error);
                 }
             ).catch((e) => {
@@ -87,6 +87,10 @@ app.get('/file/download', (req, res) => {
             .then((response) => {
                     res.setHeader('content-type', response.headers['content-type']);
                     res.send(response.data);
+            }, (error) => {
+                    res.status(400);
+                    res.send(res.data);
+                    console.log(error);
                 }
             ).catch((e) => {
                 console.log(e);
@@ -110,7 +114,7 @@ app.get('/search/image', (req, res) => {
                 res.send(response.data);
             }, (error) => {
                     res.status(400);
-                    res.send('client error');
+                    res.send(res.data);
                     console.log(error);
                 }
             ).catch((e) => {
@@ -130,29 +134,58 @@ app.post('/industrialmodel', (req, res) => {
     req.on('end', () => {
         try {
             data = JSON.parse(body);
+            var model_id = data.model_id
             var file_name = data.file_name;
-            var buffer = fs.readFileSync('images/' + file_name + '.jpg');
-            data['file_content'] = buffer;
+            if(file_name !== '') {
+                var buffer = fs.readFileSync('images/' + file_name + '.jpg');
+                data['file_content'] = buffer;
+            }
 
             options = {headers: {'content-type': 'application/json'}};
-            axios.post(baseUrl + '/industrialmodel', body, options)
-                .then((response) => {
-                    res.send(response.data);
-                }, (error) => {
-                        res.status(400);
-                        res.send('client error');
-                        console.log(error);
-                    }
-                ).catch((e) => {
-                    console.log(e);
+            if(model_id === undefined) {
+                body = JSON.stringify(data)
+                axios.post(baseUrl + '/industrialmodel', body, options)
+                    .then((response) => {
+                        res.send(response.data);
+                    }, (error) => {
+                            res.status(400);
+                            res.send(res.data);
+                            console.log(error);
+                        }
+                    ).catch((e) => {
+                        console.log(e);
+                    })
                 }
-            );
-        }
+            else {
+                delete body.model_id
+                axios.post(baseUrl + `/industrialmodel/${model_id}`, body, options)
+                    .then((response) => {
+                        console.log(response)
+                        res.send(response.data);
+                    }, (error) => {
+                            res.status(400);
+                            res.send(res.data);
+                            console.log(error);
+                        }
+                    ).catch((e) => {
+                        console.log(e);
+                    })
+            }
+        }    
         catch (error) {
             console.log(error)
         }
     })
 })
+app.use(createProxyMiddleware('/inference', {
+    target: baseUrl + '/inference',
+    pathRewrite: {
+        '^/inference': ''
+    },
+    changeOrigin: true,
+    secure: false,
+    ws: false,
+}));
 app.use(createProxyMiddleware('/transformjob', {
     target: baseUrl + '/transformjob',
     pathRewrite: {

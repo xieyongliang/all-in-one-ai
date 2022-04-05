@@ -1,6 +1,6 @@
 import { FunctionComponent, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Container, Link, Toggle, Select, Stack, FormField, Button, Grid, ProgressBar, Alert, LoadingIndicator } from 'aws-northstar';
+import { Container, Link, Toggle, Select, Stack, FormField, Button, Grid, ProgressBar, LoadingIndicator } from 'aws-northstar';
 import ImageList from '@mui/material/ImageList';
 import ImageListItem from '@mui/material/ImageListItem';
 import SyntaxHighlighter from 'react-syntax-highlighter';
@@ -38,11 +38,12 @@ const GluonCVDemoForm: FunctionComponent<IProps> = (
     const [ imagePage, setImagePage ] = useState(0)
     const [ imageCount, setImageCount ] = useState(0)
     const [ srcImagePreview, setSrcImagePreview ] = useState('')
-    const [ visibleAlert, setVisibleAlert ] = useState(false)
     const [ visibleSampleCode, setVisibleSampleCode ] = useState(false)
     const [ visibleSearchImage, setVisibleSearchImage ] = useState(false)
     const [ visibleImagePreview, setVisibleImagePreview ] = useState(false)
     const [ loading, setLoading ] = useState(true);
+    const [ processing, setProcessing ] = useState(false);
+    const [ importing, setImporting ] = useState(false);
     const [ importedCount, setImportedCount ] = useState(0)
 
     var params : PathParams = useParams();
@@ -121,14 +122,15 @@ const GluonCVDemoForm: FunctionComponent<IProps> = (
     }
 
     const onImportSamples = () => {
-        return (
-            axios.get('/search/import', {params : {industrial_model : params.id, endpoint_name: selectedEndpoint.value, model_samples: industrialModel.samples}})
-                .then((response) => {
-                    setVisibleAlert(true)
-                }, (error) => {
-                    console.log(error);
-                })
-        )
+        setImporting(true)
+        axios.get('/search/import', {params : {industrial_model : params.id, endpoint_name: selectedEndpoint.value, model_samples: industrialModel.samples}})
+            .then((response) => {
+                setImporting(false)
+            }, (error) => {
+                setImporting(false)
+                alert(error)
+                console.log(error);
+            })
     }
 
     useEffect(() => {
@@ -176,7 +178,7 @@ const GluonCVDemoForm: FunctionComponent<IProps> = (
                         <Grid container spacing={3}>
                             <Grid item xs={4}>
                                 <FormField controlId='formFieldIdImportSamples'>
-                                    <Button onClick={onImportSamples}> Import into Opensearch</Button>
+                                    <Button onClick={onImportSamples} loading={importing}> Start to import</Button>
                                 </FormField>
                             </Grid>
                             <Grid item xs={8}>
@@ -203,11 +205,15 @@ const GluonCVDemoForm: FunctionComponent<IProps> = (
     }
 
     const onSearch = () => {
+        setProcessing(true)
         axios.get('/search/image', { params: {industrial_model: industrialModel.id, endpoint_name: selectedEndpoint.value, file_name: curImagePreviewItem}})
             .then((response) => {
                 setSearchSearchItems(response.data);
                 setVisibleSearchImage(true);
+                setProcessing(false)
             }, (error) => {
+                alert(error)
+                setProcessing(false)
                 console.log(error);
             });
     }
@@ -231,7 +237,7 @@ const GluonCVDemoForm: FunctionComponent<IProps> = (
                         </Grid>
                         <Grid item xs={6}>
                             <FormField controlId='formFieldIdSearch'>
-                                <Button variant='primary' disabled={curImagePreviewItem === ''} onClick={onSearch}>Search by image</Button>
+                                <Button variant='primary' disabled={curImagePreviewItem === ''} onClick={onSearch} loading={processing}>Search by image</Button>
                             </FormField>
                         </Grid>
                     </Grid>
@@ -249,7 +255,7 @@ const GluonCVDemoForm: FunctionComponent<IProps> = (
                         </Grid>
                         <Grid item xs={6}>
                             <FormField controlId='formFieldIdSearchByImage'>
-                                <Button variant='primary' disabled={curImagePreviewItem === ''} onClick={onSearch}>Search by image</Button>
+                                <Button variant='primary' disabled={curImagePreviewItem === ''} onClick={onSearch} loading={processing}>Search by image</Button>
                             </FormField>
                         </Grid>
                         <Grid item xs={12}>
@@ -297,14 +303,6 @@ const GluonCVDemoForm: FunctionComponent<IProps> = (
         )
     }
 
-    const renderAlert = () => {
-        return (
-            <Alert type="success" dismissible={true}>
-                    Sucessfully start to import sample images to Opensearch
-            </Alert>
-        )
-    }
-
     const renderEndpoint = () => {
         return (
             <Container headingVariant='h4' title='Select endpoint to inference'>
@@ -322,7 +320,6 @@ const GluonCVDemoForm: FunctionComponent<IProps> = (
 
     return (
         <Stack>
-            { visibleAlert && renderAlert() }
             { renderEndpoint() }
             { renderImagePreview() }
             { renderOriginImageList() }

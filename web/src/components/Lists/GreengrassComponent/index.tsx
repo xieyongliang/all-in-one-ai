@@ -57,17 +57,23 @@ const GreengrassComponentList: FunctionComponent = () => {
         setLoading(true)
         var component_name = 'com.example.yolov5'
         axios.get(`/greengrass/component/${component_name}`, {params : {'industrial_model': params.id}})
-        .then((response) => {
-            var items = []
-            for(let item of response.data) {
-                items.push({name: item.component_name, version: item.component_version, arn : item.component_version_arn})
-                if(items.length === response.data.length)
-                    setGreengrassComponentItems(items)
-            }
-            setLoading(false);
-        }, (error) => {
-            console.log(error);
-        });
+            .then((response) => {
+                var items = []
+                if(response.data.length === 0) {
+                    setGreengrassComponentItems(items);
+                    setLoading(false);
+                }
+                else
+                    for(let item of response.data) {
+                        items.push({name: item.component_name, version: item.component_version, arn : item.component_version_arn})
+                        if(items.length === response.data.length) {
+                            setGreengrassComponentItems(items);
+                            setLoading(false);
+                        }       
+                    }
+            }, (error) => {
+                console.log(error);
+            });
     }, [params.id])
 
     useEffect(() => {
