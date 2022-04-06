@@ -1,5 +1,5 @@
 import {AnnotationFormatType} from "../../data/enums/AnnotationFormatType";
-import {ImageData, LabelName, LabelPoint} from "../../store/labels/types";
+import {ImageLabelData, LabelName, LabelPoint} from "../../store/labels/types";
 import {ImageRepository} from "../imageRepository/ImageRepository";
 import {LabelsSelector} from "../../store/selectors/LabelsSelector";
 import {ExporterUtil} from "../../utils/ExporterUtil";
@@ -18,7 +18,7 @@ export class PointLabelsExporter {
 
     private static exportAsCSV(): void {
         const content: string = LabelsSelector.getImagesData()
-            .map((imageData: ImageData) => {
+            .map((imageData: ImageLabelData) => {
                 return PointLabelsExporter.wrapRectLabelsIntoCSV(imageData)})
             .filter((imageLabelData: string) => {
                 return !!imageLabelData})
@@ -27,7 +27,7 @@ export class PointLabelsExporter {
         ExporterUtil.saveAs(content, fileName);
     }
 
-    private static wrapRectLabelsIntoCSV(imageData: ImageData): string {
+    private static wrapRectLabelsIntoCSV(imageData: ImageLabelData): string {
         if (imageData.labelPoints.length === 0 || !imageData.loadStatus)
             return null;
 

@@ -1,4 +1,4 @@
-import { PipelineActionTypes, IndustrialModelState } from './types';
+import { IndustrialModelActionTypes, IndustrialModelState } from './types';
 import { Action } from '../Actions';
 
 export interface IIndustrialModel {
@@ -17,7 +17,7 @@ const initialState: IndustrialModelState = {
 
 export function industrialModelReducer(
     state = initialState,
-    action: PipelineActionTypes
+    action: IndustrialModelActionTypes
 ): IndustrialModelState {
     switch (action.type) {
         case Action.UPDATE_INDUSTRIAL_MODELS: {

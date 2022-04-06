@@ -1,7 +1,8 @@
 import React from 'react';
 import './EditorBottomNavigationBar.scss';
-import {ImageData} from "../../../store/labels/types";
-import {AppState} from "../../../store";
+import {ImageLabelData} from "../../../store/labels/types";
+import {ImageTextData} from "../../../store/texts/types";
+import {AppState} from "../../../store"; 
 import {connect} from "react-redux";
 import {ImageButton} from "../../Common/ImageButton/ImageButton";
 import {ISize} from "../../../interfaces/ISize";
@@ -11,7 +12,7 @@ import {ImageActions} from "../../../logic/actions/ImageActions";
 
 interface IProps {
     size: ISize;
-    imageData: ImageData;
+    imageData: ImageLabelData | ImageTextData;
     totalImageCount: number;
     activeImageIndex: number;
     activeContext: ContextType;

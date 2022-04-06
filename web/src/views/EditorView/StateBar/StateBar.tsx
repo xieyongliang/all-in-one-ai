@@ -1,34 +1,34 @@
 import React from 'react';
 import './StateBar.scss';
-import {ImageData} from "../../../store/labels/types";
+import {ImageLabelData} from "../../../store/labels/types";
 import {AppState} from "../../../store";
 import {connect} from "react-redux";
 import {LabelType} from "../../../data/enums/LabelType";
 
 interface IProps {
-    imagesData: ImageData[];
+    imagesData: ImageLabelData[];
     activeLabelType: LabelType;
 }
 
 const StateBar: React.FC<IProps> = ({imagesData, activeLabelType}) => {
 
-    const pointLabeledImages = imagesData.reduce((currentCount: number, currentImage: ImageData) => {
+    const pointLabeledImages = imagesData.reduce((currentCount: number, currentImage: ImageLabelData) => {
         return currentCount + (currentImage.labelPoints.length > 0 ? 1 : 0);
     }, 0);
 
-    const rectLabeledImages = imagesData.reduce((currentCount: number, currentImage: ImageData) => {
+    const rectLabeledImages = imagesData.reduce((currentCount: number, currentImage: ImageLabelData) => {
         return currentCount + (currentImage.labelRects.length > 0 ? 1 : 0);
     }, 0);
 
-    const polygonLabeledImages = imagesData.reduce((currentCount: number, currentImage: ImageData) => {
+    const polygonLabeledImages = imagesData.reduce((currentCount: number, currentImage: ImageLabelData) => {
         return currentCount + (currentImage.labelPolygons.length > 0 ? 1 : 0);
     }, 0);
 
-    const lineLabeledImages = imagesData.reduce((currentCount: number, currentImage: ImageData) => {
+    const lineLabeledImages = imagesData.reduce((currentCount: number, currentImage: ImageLabelData) => {
         return currentCount + (currentImage.labelLines.length > 0 ? 1 : 0);
     }, 0);
 
-    const tagLabeledImages = imagesData.reduce((currentCount: number, currentImage: ImageData) => {
+    const tagLabeledImages = imagesData.reduce((currentCount: number, currentImage: ImageLabelData) => {
         return currentCount + (currentImage.labelNameIds.length !== 0 ? 1 : 0);
     }, 0);
 

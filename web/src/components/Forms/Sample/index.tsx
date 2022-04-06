@@ -15,8 +15,10 @@ import '../../Utils/Image/index.scss'
 import { AppState } from '../../../store';
 import { connect } from 'react-redux';
 import { IIndustrialModel } from '../../../store/industrialmodels/reducer';
+import { ProjectType } from '../../../data/enums/ProjectType';
 
 interface IProps {
+    type: ProjectType;
     industrialModels: IIndustrialModel[];
 }
 
@@ -106,7 +108,16 @@ const SampleForm: FunctionComponent<IProps> = (props) => {
         })
 
         return (
-            <ImageAnnotate imageUri={curImageItem} imageLabels={labelsData} imageColors={COLORS} imageBucket={imageBucket} imageKey={imageKey} visible={visibleImagePreview} onClose={onImageClose}/>
+            <ImageAnnotate 
+                imageUri={curImageItem} 
+                imageLabels={labelsData} 
+                imageColors={COLORS} 
+                imageBucket={imageBucket} 
+                imageKey={imageKey} 
+                type={props.type}
+                visible={visibleImagePreview} 
+                onClose={onImageClose}
+            />
         )
     }
     
@@ -135,7 +146,7 @@ const SampleForm: FunctionComponent<IProps> = (props) => {
                             ))
                         }
                     </ImageList>
-                    <Pagination page={imagePage} onChange={(event, value) => onChange('formFieldIdPage', value)} count={Math.floor(imageCount / 20)} />
+                    <Pagination page={imagePage} onChange={(event, value) => onChange('formFieldIdPage', value)} count={Math.ceil(imageCount / 20)} />
                 </Container>
             )
     }

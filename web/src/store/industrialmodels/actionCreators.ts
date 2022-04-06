@@ -1,8 +1,8 @@
 import { Action } from '../Actions';
 import { IIndustrialModel } from './reducer';
-import { PipelineActionTypes } from './types';
+import { IndustrialModelActionTypes } from './types';
 
-export function Updateindustrialmodels(industrialModels: IIndustrialModel[]): PipelineActionTypes {
+export function Updateindustrialmodels(industrialModels: IIndustrialModel[]): IndustrialModelActionTypes {
     return {
         type: Action.UPDATE_INDUSTRIAL_MODELS,
         payload: {

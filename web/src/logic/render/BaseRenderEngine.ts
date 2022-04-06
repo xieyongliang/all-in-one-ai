@@ -9,7 +9,7 @@ import {LabelsSelector} from '../../store/selectors/LabelsSelector';
 
 export abstract class BaseRenderEngine {
     protected readonly canvas: HTMLCanvasElement;
-    public labelType: LabelType;
+    public labelType?: LabelType;
 
     protected constructor(canvas: HTMLCanvasElement) {
         this.canvas = canvas;

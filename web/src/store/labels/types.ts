@@ -47,7 +47,7 @@ export type LabelName = {
     color: string;
 }
 
-export type ImageData = {
+export type ImageLabelData = {
     id: string;
     fileData: File;
     loadStatus: boolean;
@@ -70,65 +70,69 @@ export type LabelsState = {
     activeLabelType: LabelType;
     activeLabelId: string;
     highlightedLabelId: string;
-    imagesData: ImageData[];
+    imagesData: ImageLabelData[];
     firstLabelCreatedFlag: boolean;
     labels: LabelName[];
 }
 
+export type TextsState = {
+    activeTextId: string;
+}
+
 interface UpdateActiveImageIndex {
-    type: typeof Action.UPDATE_ACTIVE_IMAGE_INDEX;
+    type: typeof Action.UPDATE_LABEL_ACTIVE_IMAGE_INDEX;
     payload: {
         activeImageIndex: number;
     }
 }
 
 interface UpdateActiveLabelNameId {
-    type: typeof Action.UPDATE_ACTIVE_LABEL_NAME_ID;
+    type: typeof Action.UPDATE_LABEL_ACTIVE_LABEL_NAME_ID;
     payload: {
         activeLabelNameId: string;
     }
 }
 
 interface UpdateActiveLabelId {
-    type: typeof Action.UPDATE_ACTIVE_LABEL_ID;
+    type: typeof Action.UPDATE_LABEL_ACTIVE_LABEL_ID;
     payload: {
         activeLabelId: string;
     }
 }
 
 interface UpdateHighlightedLabelId {
-    type: typeof Action.UPDATE_HIGHLIGHTED_LABEL_ID;
+    type: typeof Action.UPDATE_LABEL_HIGHLIGHTED_LABEL_ID;
     payload: {
         highlightedLabelId: string;
     }
 }
 
 interface UpdateActiveLabelType {
-    type: typeof Action.UPDATE_ACTIVE_LABEL_TYPE;
+    type: typeof Action.UPDATE_LABEL_ACTIVE_LABEL_TYPE;
     payload: {
         activeLabelType: LabelType;
     }
 }
 
-interface UpdateImageDataById {
-    type: typeof Action.UPDATE_IMAGE_DATA_BY_ID;
+interface UpdateImageLabelDataById {
+    type: typeof Action.UPDATE_LABEL_IMAGE_DATA_BY_ID;
     payload: {
         id: string;
-        newImageData: ImageData;
+        newImageLabelData: ImageLabelData;
     }
 }
 
-interface AddImageData {
-    type: typeof Action.ADD_IMAGES_DATA;
+interface AddImageLabelData {
+    type: typeof Action.ADD_LABEL_IMAGES_DATA;
     payload: {
-        imageData: ImageData[];
+        imageData: ImageLabelData[];
     }
 }
 
-interface UpdateImageData {
-    type: typeof Action.UPDATE_IMAGES_DATA;
+interface UpdateImageLabelData {
+    type: typeof Action.UPDATE_LABEL_IMAGES_DATA;
     payload: {
-        imageData: ImageData[];
+        imageData: ImageLabelData[];
     }
 }
 
@@ -140,7 +144,7 @@ interface UpdateLabelNames {
 }
 
 interface UpdateFirstLabelCreatedFlag {
-    type: typeof Action.UPDATE_FIRST_LABEL_CREATED_FLAG;
+    type: typeof Action.UPDATE_LABEL_FIRST_LABEL_CREATED_FLAG;
     payload: {
         firstLabelCreatedFlag: boolean;
     }
@@ -149,9 +153,9 @@ interface UpdateFirstLabelCreatedFlag {
 export type LabelsActionTypes = UpdateActiveImageIndex
     | UpdateActiveLabelNameId
     | UpdateActiveLabelType
-    | UpdateImageDataById
-    | AddImageData
-    | UpdateImageData
+    | UpdateImageLabelDataById
+    | AddImageLabelData
+    | UpdateImageLabelData
     | UpdateLabelNames
     | UpdateActiveLabelId
     | UpdateHighlightedLabelId

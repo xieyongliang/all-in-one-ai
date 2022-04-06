@@ -1,11 +1,11 @@
 import React from 'react';
 import './Editor.scss';
 import {ISize} from '../../../interfaces/ISize';
-import {ImageData, LabelPoint, LabelRect} from '../../../store/labels/types';
+import {ImageLabelData, LabelPoint, LabelRect} from '../../../store/labels/types';
 import {FileUtil} from '../../../utils/FileUtil';
 import {AppState} from '../../../store';
 import {connect} from 'react-redux';
-import {updateImageDataById} from '../../../store/labels/actionCreators';
+import {updateImageLabelDataById} from '../../../store/labels/actionCreators';
 import {ImageRepository} from '../../../logic/imageRepository/ImageRepository';
 import {LabelType} from '../../../data/enums/LabelType';
 import {PopupWindowType} from '../../../data/enums/PopupWindowType';
@@ -15,7 +15,8 @@ import {ImageLoadManager} from '../../../logic/imageRepository/ImageLoadManager'
 import {EventType} from '../../../data/enums/EventType';
 import {EditorData} from '../../../data/EditorData';
 import {EditorModel} from '../../../staticModels/EditorModel';
-import {EditorActions} from '../../../logic/actions/EditorActions';
+import {LabelEditorActions} from '../../../logic/actions/LabelEditorActions';
+import {TextEditorActions} from '../../../logic/actions/TextEditorActions';
 import {EditorUtil} from '../../../utils/EditorUtil';
 import {ContextManager} from '../../../logic/context/ContextManager';
 import {ContextType} from '../../../data/enums/ContextType';
@@ -23,22 +24,26 @@ import Scrollbars from 'react-custom-scrollbars';
 import {ViewPortActions} from '../../../logic/actions/ViewPortActions';
 import {PlatformModel} from '../../../staticModels/PlatformModel';
 import LabelControlPanel from '../LabelControlPanel/LabelControlPanel';
+import TextControlPanel from '../TextControlPandel/TextControlPanel';
 import {IPoint} from '../../../interfaces/IPoint';
 import {RenderEngineUtil} from '../../../utils/RenderEngineUtil';
 import {LabelStatus} from '../../../data/enums/LabelStatus';
 import {isEqual} from 'lodash';
 import {AIActions} from '../../../logic/actions/AIActions';
+import { ProjectType } from '../../../data/enums/ProjectType';
+import { TextRect } from '../../../store/texts/types';
 
 interface IProps {
     size: ISize;
-    imageData: ImageData;
+    imageData : any;
     activeLabelType: LabelType;
-    updateImageDataById: (id: string, newImageData: ImageData) => any;
+    updateImageLabelDataById: (id: string, newImageLabelData: ImageLabelData) => any;
     activePopupType: PopupWindowType;
     activeLabelId: string;
     customCursorStyle: CustomCursorStyle;
     imageDragMode: boolean;
     zoom: number;
+    projectType: string;
 }
 
 interface IState {
@@ -67,7 +72,10 @@ class Editor extends React.Component<IProps, IState> {
         const {imageData, activeLabelType} = this.props;
 
         ContextManager.switchCtx(ContextType.EDITOR);
-        EditorActions.mountRenderEnginesAndHelpers(activeLabelType);
+        if(this.props.projectType === ProjectType.TEXT_RECOGNITION)
+            TextEditorActions.mountRenderEnginesAndHelpers()
+        else
+            LabelEditorActions.mountRenderEnginesAndHelpers(activeLabelType);
         ImageLoadManager.addAndRun(this.loadImage(imageData));
         ViewPortActions.resizeCanvas(this.props.size);
     }
@@ -81,10 +89,11 @@ class Editor extends React.Component<IProps, IState> {
 
         prevProps.imageData.id !== imageData.id && ImageLoadManager.addAndRun(this.loadImage(imageData));
 
-        if (prevProps.activeLabelType !== activeLabelType) {
-            EditorActions.swapSupportRenderingEngine(activeLabelType);
-            AIActions.detect(imageData.id, ImageRepository.getById(imageData.id));
-        }
+        if(this.props.projectType !== ProjectType.TEXT_RECOGNITION)
+            if (prevProps.activeLabelType !== activeLabelType) {
+                LabelEditorActions.swapSupportRenderingEngine(activeLabelType);
+                AIActions.detect(imageData.id, ImageRepository.getById(imageData.id));
+            }
 
         this.updateModelAndRender();
     }
@@ -111,15 +120,15 @@ class Editor extends React.Component<IProps, IState> {
     // LOAD IMAGE
     // =================================================================================================================
 
-    private loadImage = async (imageData: ImageData): Promise<any> => {
+    private loadImage = async (imageData: ImageLabelData): Promise<any> => {
         if (imageData.loadStatus) {
-            EditorActions.setActiveImage(ImageRepository.getById(imageData.id));
+            LabelEditorActions.setActiveImage(ImageRepository.getById(imageData.id));
             AIActions.detect(imageData.id, ImageRepository.getById(imageData.id));
             this.updateModelAndRender()
         }
         else {
             if (!EditorModel.isLoading) {
-                EditorActions.setLoadingStatus(true);
+                LabelEditorActions.setLoadingStatus(true);
                 const saveLoadedImagePartial = (image: HTMLImageElement) => this.saveLoadedImage(image, imageData);
                 FileUtil.loadImage(imageData.fileData)
                     .then((image:HTMLImageElement) => saveLoadedImagePartial(image))
@@ -128,13 +137,13 @@ class Editor extends React.Component<IProps, IState> {
         }
     };
 
-    private saveLoadedImage = (image: HTMLImageElement, imageData: ImageData) => {
+    private saveLoadedImage = (image: HTMLImageElement, imageData: ImageLabelData) => {
         imageData.loadStatus = true;
-        this.props.updateImageDataById(imageData.id, imageData);
+        this.props.updateImageLabelDataById(imageData.id, imageData);
         ImageRepository.storeImage(imageData.id, image);
-        EditorActions.setActiveImage(image);
+        LabelEditorActions.setActiveImage(image);
         AIActions.detect(imageData.id, image);
-        EditorActions.setLoadingStatus(false);
+        LabelEditorActions.setLoadingStatus(false);
         this.updateModelAndRender()
     };
 
@@ -148,11 +157,11 @@ class Editor extends React.Component<IProps, IState> {
         ViewPortActions.updateViewPortSize();
         ViewPortActions.updateDefaultViewPortImageRect();
         ViewPortActions.resizeViewPortContent();
-        EditorActions.fullRender();
+        LabelEditorActions.fullRender();
     };
 
     private update = (event: MouseEvent) => {
-        const editorData: EditorData = EditorActions.getEditorData(event);
+        const editorData: EditorData = LabelEditorActions.getEditorData(event);
         EditorModel.mousePositionOnViewPortContent = CanvasUtil.getMousePositionOnCanvasFromEvent(event, EditorModel.canvas);
         EditorModel.primaryRenderingEngine.update(editorData);
 
@@ -162,8 +171,8 @@ class Editor extends React.Component<IProps, IState> {
             EditorModel.supportRenderingEngine && EditorModel.supportRenderingEngine.update(editorData);
         }
 
-        !this.props.activePopupType && EditorActions.updateMousePositionIndicator(event);
-        EditorActions.fullRender();
+        !this.props.activePopupType && LabelEditorActions.updateMousePositionIndicator(event);
+        LabelEditorActions.fullRender();
     };
 
     private handleZoom = (event: WheelEvent) => {
@@ -180,8 +189,21 @@ class Editor extends React.Component<IProps, IState> {
     };
 
     private getOptionsPanels = () => {
-        const editorData: EditorData = EditorActions.getEditorData();
-        if (this.props.activeLabelType === LabelType.RECT) {
+        const editorData: EditorData = LabelEditorActions.getEditorData();
+        if(this.props.projectType === ProjectType.TEXT_RECOGNITION) {
+            return this.props.imageData.textRects
+                .map((textRect: TextRect) => {
+                    const positionOnImage: IPoint = {x: textRect.rect.x, y: textRect.rect.y};
+                    const positionOnViewPort: IPoint = RenderEngineUtil.transferPointFromImageToViewPortContent(positionOnImage, editorData);
+                    return <TextControlPanel
+                        position={positionOnViewPort}
+                        textData={textRect}
+                        imageData={this.props.imageData}
+                        key={textRect.id}
+                    />
+                })
+        }
+        else if (this.props.activeLabelType === LabelType.RECT) {
             return this.props.imageData.labelRects
                 .filter((labelRect: LabelRect) => labelRect.isCreatedByAI && labelRect.status !== LabelStatus.ACCEPTED)
                 .map((labelRect: LabelRect) => {
@@ -269,10 +291,11 @@ class Editor extends React.Component<IProps, IState> {
 }
 
 const mapDispatchToProps = {
-    updateImageDataById
+    updateImageLabelDataById
 };
 
 const mapStateToProps = (state: AppState) => ({
+    projectType: state.general.projectData.type,
     activeLabelType: state.labels.activeLabelType,
     activePopupType: state.general.activePopupType,
     activeLabelId: state.labels.activeLabelId,

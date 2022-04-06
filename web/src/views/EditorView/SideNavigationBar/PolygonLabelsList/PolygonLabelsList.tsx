@@ -1,12 +1,12 @@
 import React from 'react';
 import {ISize} from "../../../../interfaces/ISize";
 import Scrollbars from 'react-custom-scrollbars';
-import {ImageData, LabelName, LabelPolygon} from "../../../../store/labels/types";
+import {ImageLabelData, LabelName, LabelPolygon} from "../../../../store/labels/types";
 import './PolygonLabelsList.scss';
 import {
     updateActiveLabelId,
     updateActiveLabelNameId,
-    updateImageDataById
+    updateImageLabelDataById
 } from "../../../../store/labels/actionCreators";
 import {AppState} from "../../../../store";
 import {connect} from "react-redux";
@@ -17,8 +17,8 @@ import {findLast} from "lodash";
 
 interface IProps {
     size: ISize;
-    imageData: ImageData;
-    updateImageDataById: (id: string, newImageData: ImageData) => any;
+    imageData: ImageLabelData;
+    updateImageLabelDataById: (id: string, newImageLabelData: ImageLabelData) => any;
     activeLabelId: string;
     highlightedLabelId: string;
     updateActiveLabelNameId: (activeLabelId: string) => any;
@@ -26,7 +26,7 @@ interface IProps {
     updateActiveLabelId: (activeLabelId: string) => any;
 }
 
-const PolygonLabelsList: React.FC<IProps> = ({size, imageData, updateImageDataById, labelNames, updateActiveLabelNameId, activeLabelId, highlightedLabelId, updateActiveLabelId}) => {
+const PolygonLabelsList: React.FC<IProps> = ({size, imageData, updateImageLabelDataById, labelNames, updateActiveLabelNameId, activeLabelId, highlightedLabelId, updateActiveLabelId}) => {
     const labelInputFieldHeight = 40;
     const listStyle: React.CSSProperties = {
         width: size.width,
@@ -42,7 +42,7 @@ const PolygonLabelsList: React.FC<IProps> = ({size, imageData, updateImageDataBy
     };
 
     const updatePolygonLabel = (labelPolygonId: string, labelNameId: string) => {
-        const newImageData = {
+        const newImageLabelData = {
             ...imageData,
             labelPolygons: imageData.labelPolygons.map((currentLabel: LabelPolygon) => {
                 if (currentLabel.id === labelPolygonId) {
@@ -54,7 +54,7 @@ const PolygonLabelsList: React.FC<IProps> = ({size, imageData, updateImageDataBy
                 return currentLabel
             })
         };
-        updateImageDataById(imageData.id, newImageData);
+        updateImageLabelDataById(imageData.id, newImageLabelData);
         updateActiveLabelNameId(labelNameId);
     };
 
@@ -106,7 +106,7 @@ const PolygonLabelsList: React.FC<IProps> = ({size, imageData, updateImageDataBy
 };
 
 const mapDispatchToProps = {
-    updateImageDataById,
+    updateImageLabelDataById,
     updateActiveLabelNameId,
     updateActiveLabelId
 };

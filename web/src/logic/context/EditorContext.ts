@@ -2,7 +2,7 @@ import {HotKeyAction} from "../../data/HotKeyAction";
 import {EditorModel} from "../../staticModels/EditorModel";
 import {LabelType} from "../../data/enums/LabelType";
 import {EditorData} from "../../data/EditorData";
-import {EditorActions} from "../actions/EditorActions";
+import {LabelEditorActions} from "../actions/LabelEditorActions";
 import {PolygonRenderEngine} from "../render/PolygonRenderEngine";
 import {BaseContext} from "./BaseContext";
 import {ImageActions} from "../actions/ImageActions";
@@ -18,10 +18,10 @@ export class EditorContext extends BaseContext {
             keyCombo: ["Enter"],
             action: (event: KeyboardEvent) => {
                 if (EditorModel.supportRenderingEngine && EditorModel.supportRenderingEngine.labelType === LabelType.POLYGON) {
-                    const editorData: EditorData = EditorActions.getEditorData();
+                    const editorData: EditorData = LabelEditorActions.getEditorData();
                     (EditorModel.supportRenderingEngine as PolygonRenderEngine).addLabelAndFinishCreation(editorData);
                 }
-                EditorActions.fullRender();
+                LabelEditorActions.fullRender();
             }
         },
         {
@@ -37,7 +37,7 @@ export class EditorContext extends BaseContext {
                             break;
                     }
                 }
-                EditorActions.fullRender();
+                LabelEditorActions.fullRender();
             }
         },
         {
@@ -102,70 +102,70 @@ export class EditorContext extends BaseContext {
             keyCombo: PlatformUtil.isMac(window.navigator.userAgent) ? ["Alt", "0"] : ["Control", "0"],
             action: (event: KeyboardEvent) => {
                 ImageActions.setActiveLabelOnActiveImage(0);
-                EditorActions.fullRender();
+                LabelEditorActions.fullRender();
             }
         },
         {
             keyCombo: PlatformUtil.isMac(window.navigator.userAgent) ? ["Alt", "1"] : ["Control", "1"],
             action: (event: KeyboardEvent) => {
                 ImageActions.setActiveLabelOnActiveImage(1);
-                EditorActions.fullRender();
+                LabelEditorActions.fullRender();
             }
         },
         {
             keyCombo: PlatformUtil.isMac(window.navigator.userAgent) ? ["Alt", "2"] : ["Control", "2"],
             action: (event: KeyboardEvent) => {
                 ImageActions.setActiveLabelOnActiveImage(2);
-                EditorActions.fullRender();
+                LabelEditorActions.fullRender();
             }
         },
         {
             keyCombo: PlatformUtil.isMac(window.navigator.userAgent) ? ["Alt", "3"] : ["Control", "3"],
             action: (event: KeyboardEvent) => {
                 ImageActions.setActiveLabelOnActiveImage(3);
-                EditorActions.fullRender();
+                LabelEditorActions.fullRender();
             }
         },
         {
             keyCombo: PlatformUtil.isMac(window.navigator.userAgent) ? ["Alt", "4"] : ["Control", "4"],
             action: (event: KeyboardEvent) => {
                 ImageActions.setActiveLabelOnActiveImage(4);
-                EditorActions.fullRender();
+                LabelEditorActions.fullRender();
             }
         },
         {
             keyCombo: PlatformUtil.isMac(window.navigator.userAgent) ? ["Alt", "5"] : ["Control", "5"],
             action: (event: KeyboardEvent) => {
                 ImageActions.setActiveLabelOnActiveImage(5);
-                EditorActions.fullRender();
+                LabelEditorActions.fullRender();
             }
         },
         {
             keyCombo: PlatformUtil.isMac(window.navigator.userAgent) ? ["Alt", "6"] : ["Control", "6"],
             action: (event: KeyboardEvent) => {
                 ImageActions.setActiveLabelOnActiveImage(6);
-                EditorActions.fullRender();
+                LabelEditorActions.fullRender();
             }
         },
         {
             keyCombo: PlatformUtil.isMac(window.navigator.userAgent) ? ["Alt", "7"] : ["Control", "7"],
             action: (event: KeyboardEvent) => {
                 ImageActions.setActiveLabelOnActiveImage(7);
-                EditorActions.fullRender();
+                LabelEditorActions.fullRender();
             }
         },
         {
             keyCombo: PlatformUtil.isMac(window.navigator.userAgent) ? ["Alt", "8"] : ["Control", "8"],
             action: (event: KeyboardEvent) => {
                 ImageActions.setActiveLabelOnActiveImage(8);
-                EditorActions.fullRender();
+                LabelEditorActions.fullRender();
             }
         },
         {
             keyCombo: PlatformUtil.isMac(window.navigator.userAgent) ? ["Alt", "9"] : ["Control", "9"],
             action: (event: KeyboardEvent) => {
                 ImageActions.setActiveLabelOnActiveImage(9);
-                EditorActions.fullRender();
+                LabelEditorActions.fullRender();
             }
         }
     ];

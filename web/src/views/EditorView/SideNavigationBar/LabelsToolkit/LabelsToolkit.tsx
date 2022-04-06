@@ -1,7 +1,7 @@
 import React from "react";
 import './LabelsToolkit.scss';
-import {ImageData} from "../../../../store/labels/types";
-import {updateActiveLabelId, updateActiveLabelType, updateImageDataById} from "../../../../store/labels/actionCreators";
+import {ImageLabelData} from "../../../../store/labels/types";
+import {updateActiveLabelId, updateActiveLabelType, updateImageLabelDataById} from "../../../../store/labels/actionCreators";
 import {AppState} from "../../../../store";
 import {connect} from "react-redux";
 import {LabelType} from "../../../../data/enums/LabelType";
@@ -23,9 +23,9 @@ import TagLabelsList from "../TagLabelsList/TagLabelsList";
 interface IProps {
     activeImageIndex:number,
     activeLabelType: LabelType;
-    imagesData: ImageData[];
+    imagesData: ImageLabelData[];
     projectType: ProjectType;
-    updateImageDataById: (id: string, newImageData: ImageData) => any;
+    updateImageLabelDataById: (id: string, newImageLabelData: ImageLabelData) => any;
     updateActiveLabelType: (activeLabelType: LabelType) => any;
     updateActiveLabelId: (highlightedLabelId: string) => any;
 }
@@ -214,7 +214,7 @@ class LabelsToolkit extends React.Component<IProps, IState> {
 }
 
 const mapDispatchToProps = {
-    updateImageDataById,
+    updateImageLabelDataById,
     updateActiveLabelType,
     updateActiveLabelId
 };

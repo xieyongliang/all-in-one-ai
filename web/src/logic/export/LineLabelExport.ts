@@ -1,6 +1,6 @@
 import {AnnotationFormatType} from "../../data/enums/AnnotationFormatType";
 import {LabelsSelector} from "../../store/selectors/LabelsSelector";
-import {ImageData, LabelLine, LabelName} from "../../store/labels/types";
+import {ImageLabelData, LabelLine, LabelName} from "../../store/labels/types";
 import {ExporterUtil} from "../../utils/ExporterUtil";
 import {ImageRepository} from "../imageRepository/ImageRepository";
 import {findLast} from "lodash";
@@ -18,7 +18,7 @@ export class LineLabelsExporter {
 
     private static exportAsCSV(): void {
         const content: string = LabelsSelector.getImagesData()
-            .map((imageData: ImageData) => {
+            .map((imageData: ImageLabelData) => {
                 return LineLabelsExporter.wrapLineLabelsIntoCSV(imageData)})
             .filter((imageLabelData: string) => {
                 return !!imageLabelData})
@@ -27,7 +27,7 @@ export class LineLabelsExporter {
         ExporterUtil.saveAs(content, fileName);
     }
 
-    private static wrapLineLabelsIntoCSV(imageData: ImageData): string {
+    private static wrapLineLabelsIntoCSV(imageData: ImageLabelData): string {
         if (imageData.labelLines.length === 0 || !imageData.loadStatus)
             return null;
 

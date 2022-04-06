@@ -1,12 +1,12 @@
 import React from 'react';
 import {ISize} from "../../../../interfaces/ISize";
 import Scrollbars from 'react-custom-scrollbars';
-import {ImageData, LabelName, LabelPoint} from "../../../../store/labels/types";
+import {ImageLabelData, LabelName, LabelPoint} from "../../../../store/labels/types";
 import './PointLabelsList.scss';
 import {
     updateActiveLabelId,
     updateActiveLabelNameId,
-    updateImageDataById
+    updateImageLabelDataById
 } from "../../../../store/labels/actionCreators";
 import {AppState} from "../../../../store";
 import {connect} from "react-redux";
@@ -18,8 +18,8 @@ import {LabelStatus} from "../../../../data/enums/LabelStatus";
 
 interface IProps {
     size: ISize;
-    imageData: ImageData;
-    updateImageDataById: (id: string, newImageData: ImageData) => any;
+    imageData: ImageLabelData;
+    updateImageLabelDataById: (id: string, newImageLabelData: ImageLabelData) => any;
     activeLabelId: string;
     highlightedLabelId: string;
     updateActiveLabelNameId: (activeLabelId: string) => any;
@@ -31,7 +31,7 @@ const PointLabelsList: React.FC<IProps> = (
     {
         size,
         imageData,
-        updateImageDataById,
+        updateImageLabelDataById,
         labelNames,
         updateActiveLabelNameId,
         activeLabelId,
@@ -54,7 +54,7 @@ const PointLabelsList: React.FC<IProps> = (
     };
 
     const updatePointLabel = (labelPointId: string, labelNameId: string) => {
-        const newImageData = {
+        const newImageLabelData = {
             ...imageData,
             labelPoints: imageData.labelPoints.map((labelPoint: LabelPoint) => {
                 if (labelPoint.id === labelPointId) {
@@ -66,7 +66,7 @@ const PointLabelsList: React.FC<IProps> = (
                 return labelPoint
             })
         };
-        updateImageDataById(imageData.id, newImageData);
+        updateImageLabelDataById(imageData.id, newImageLabelData);
         updateActiveLabelNameId(labelNameId);
     };
 
@@ -120,7 +120,7 @@ const PointLabelsList: React.FC<IProps> = (
 };
 
 const mapDispatchToProps = {
-    updateImageDataById,
+    updateImageLabelDataById,
     updateActiveLabelNameId,
     updateActiveLabelId
 };

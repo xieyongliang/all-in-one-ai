@@ -9,15 +9,15 @@ import {AppState} from '../../../store';
 import {connect} from 'react-redux';
 import {useDropzone} from 'react-dropzone';
 import {AcceptedFileType} from '../../../data/enums/AcceptedFileType';
-import {ImageData, LabelName} from '../../../store/labels/types';
-import {updateActiveLabelType, updateImageData, updateLabelNames} from '../../../store/labels/actionCreators';
+import {ImageLabelData, LabelName} from '../../../store/labels/types';
+import {updateActiveLabelType, updateImageLabelData, updateLabelNames} from '../../../store/labels/actionCreators';
 import {ImporterSpecData} from '../../../data/ImporterSpecData';
 import {AnnotationFormatType} from '../../../data/enums/AnnotationFormatType';
 import {ILabelFormatData} from '../../../interfaces/ILabelFormatData';
 
 interface IProps {
     activeLabelType: LabelType,
-    updateImageDataAction: (imageData: ImageData[]) => any,
+    updateImageLabelDataAction: (imageData: ImageLabelData[]) => any,
     updateLabelNamesAction: (labels: LabelName[]) => any,
     updateActiveLabelTypeAction: (activeLabelType: LabelType) => any
 }
@@ -25,7 +25,7 @@ interface IProps {
 const ImportLabelPopup: React.FC<IProps> = (
     {
         activeLabelType,
-        updateImageDataAction,
+        updateImageLabelDataAction,
         updateLabelNamesAction,
         updateActiveLabelTypeAction
     }) => {
@@ -37,7 +37,7 @@ const ImportLabelPopup: React.FC<IProps> = (
     const [labelType, setLabelType] = useState(activeLabelType);
     const [formatType, setFormatType] = useState(resolveFormatType(activeLabelType));
     const [loadedLabelNames, setLoadedLabelNames] = useState([]);
-    const [loadedImageData, setLoadedImageData] = useState([]);
+    const [loadedImageLabelData, setLoadedImageLabelData] = useState([]);
     const [annotationsLoadedError, setAnnotationsLoadedError] = useState(null);
 
     const {getRootProps, getInputProps} = useDropzone({
@@ -53,25 +53,25 @@ const ImportLabelPopup: React.FC<IProps> = (
         setLabelType(labelType);
         setFormatType(resolveFormatType(labelType))
         setLoadedLabelNames([]);
-        setLoadedImageData([]);
+        setLoadedImageLabelData([]);
         setAnnotationsLoadedError(null);
     }
 
-    const onAnnotationLoadSuccess = (imagesData: ImageData[], labelNames: LabelName[]) => {
+    const onAnnotationLoadSuccess = (imagesData: ImageLabelData[], labelNames: LabelName[]) => {
         setLoadedLabelNames(labelNames);
-        setLoadedImageData(imagesData);
+        setLoadedImageLabelData(imagesData);
         setAnnotationsLoadedError(null);
     }
 
     const onAnnotationsLoadFailure = (error?:Error) => {
         setLoadedLabelNames([]);
-        setLoadedImageData([]);
+        setLoadedImageLabelData([]);
         setAnnotationsLoadedError(error);
     };
 
     const onAccept = (labelType: LabelType) => {
-        if (loadedLabelNames.length !== 0 && loadedImageData.length !== 0) {
-            updateImageDataAction(loadedImageData);
+        if (loadedLabelNames.length !== 0 && loadedImageLabelData.length !== 0) {
+            updateImageLabelDataAction(loadedImageLabelData);
             updateLabelNamesAction(loadedLabelNames);
             updateActiveLabelTypeAction(labelType);
             PopupActions.close();
@@ -99,7 +99,7 @@ const ImportLabelPopup: React.FC<IProps> = (
                 {annotationsLoadedError.message}
                 <p className='extraBold'>Try again</p>
             </>;
-        } else if (loadedImageData.length !== 0 && loadedLabelNames.length !== 0) {
+        } else if (loadedImageLabelData.length !== 0 && loadedLabelNames.length !== 0) {
             return <>
                 <img
                     draggable={false}
@@ -175,7 +175,7 @@ const ImportLabelPopup: React.FC<IProps> = (
             acceptLabel={'Import'}
             onAccept={onAccept}
             skipAcceptButton={ImportFormatData[labelType].length === 0}
-            disableAcceptButton={loadedImageData.length === 0 || loadedLabelNames.length === 0 || !!annotationsLoadedError}
+            disableAcceptButton={loadedImageLabelData.length === 0 || loadedLabelNames.length === 0 || !!annotationsLoadedError}
             rejectLabel={'Cancel'}
             onReject={onReject}
             renderInternalContent={renderInternalContent}
@@ -184,7 +184,7 @@ const ImportLabelPopup: React.FC<IProps> = (
 };
 
 const mapDispatchToProps = {
-    updateImageDataAction: updateImageData,
+    updateImageLabelDataAction: updateImageLabelData,
     updateLabelNamesAction: updateLabelNames,
     updateActiveLabelTypeAction: updateActiveLabelType
 };

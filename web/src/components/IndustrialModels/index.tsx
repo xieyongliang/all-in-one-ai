@@ -32,6 +32,7 @@ import { IIndustrialModel } from '../../store/industrialmodels/reducer';
 import LiteModelForm from '../Forms/Model/lite'
 import GluonCVDemoForm from '../Forms/Demo/gluoncv'
 import { LoadingIndicator } from 'aws-northstar';
+import PaddleDemoForm from '../Forms/Demo/paddle';
 
 interface IProps {
     industrialModels : IIndustrialModel[];
@@ -177,7 +178,7 @@ const IndustrialModels: FunctionComponent<IProps> = (
             {
                 label: 'Demo',
                 id: 'demo',
-                content: <DemoForm/>
+                content: <PaddleDemoForm/>
             },
             {
                 label: 'Models',

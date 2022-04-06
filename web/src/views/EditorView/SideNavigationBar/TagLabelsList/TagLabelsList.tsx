@@ -1,8 +1,8 @@
 import {ISize} from "../../../../interfaces/ISize";
-import {ImageData, LabelName} from "../../../../store/labels/types";
+import {ImageLabelData, LabelName} from "../../../../store/labels/types";
 import React from "react";
 import Scrollbars from "react-custom-scrollbars";
-import {updateImageDataById} from "../../../../store/labels/actionCreators";
+import {updateImageLabelDataById} from "../../../../store/labels/actionCreators";
 import {AppState} from "../../../../store";
 import {connect} from "react-redux";
 import {remove} from "lodash";
@@ -13,8 +13,8 @@ import {PopupWindowType} from "../../../../data/enums/PopupWindowType";
 import {updateActivePopupType} from "../../../../store/general/actionCreators";
 interface IProps {
     size: ISize;
-    imageData: ImageData;
-    updateImageDataById: (id: string, newImageData: ImageData) => any;
+    imageData: ImageLabelData;
+    updateImageLabelDataById: (id: string, newImageLabelData: ImageLabelData) => any;
     labelNames: LabelName[];
     updateActivePopupType: (activePopupType: PopupWindowType) => any;
 }
@@ -23,7 +23,7 @@ const TagLabelsList: React.FC<IProps> = (
     {
         size,
         imageData,
-        updateImageDataById,
+        updateImageLabelDataById,
         labelNames,
         updateActivePopupType
     }) => {
@@ -39,12 +39,12 @@ const TagLabelsList: React.FC<IProps> = (
 
     const onTagClick = (labelId: string)  => {
         if (imageData.labelNameIds.includes(labelId)) {
-            updateImageDataById(imageData.id, {
+            updateImageLabelDataById(imageData.id, {
                 ...imageData,
                 labelNameIds: remove(imageData.labelNameIds, (element: string) => element !== labelId)
             })
         } else {
-            updateImageDataById(imageData.id, {
+            updateImageLabelDataById(imageData.id, {
                 ...imageData,
                 labelNameIds: imageData.labelNameIds.concat(labelId)
             })
@@ -118,7 +118,7 @@ const TagLabelsList: React.FC<IProps> = (
 };
 
 const mapDispatchToProps = {
-    updateImageDataById,
+    updateImageLabelDataById,
     updateActivePopupType
 };
 

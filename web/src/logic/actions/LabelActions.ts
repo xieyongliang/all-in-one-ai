@@ -1,15 +1,15 @@
 import {LabelsSelector} from '../../store/selectors/LabelsSelector';
-import {ImageData, LabelLine, LabelName, LabelPoint, LabelPolygon, LabelRect} from '../../store/labels/types';
+import {ImageLabelData, LabelLine, LabelName, LabelPoint, LabelPolygon, LabelRect} from '../../store/labels/types';
 import {filter} from 'lodash';
 import {store} from '../../index';
-import {updateImageData, updateImageDataById} from '../../store/labels/actionCreators';
+import {updateImageLabelData, updateImageLabelDataById} from '../../store/labels/actionCreators';
 import {LabelType} from '../../data/enums/LabelType';
 
 export class LabelActions {
     public static deleteActiveLabel() {
-        const activeImageData: ImageData = LabelsSelector.getActiveImageData();
+        const activeImageLabelData: ImageLabelData = LabelsSelector.getActiveImageLabelData();
         const activeLabelId: string = LabelsSelector.getActiveLabelId();
-        LabelActions.deleteImageLabelById(activeImageData.id, activeLabelId);
+        LabelActions.deleteImageLabelById(activeImageLabelData.id, activeLabelId);
     }
 
     public static deleteImageLabelById(imageId: string, labelId: string) {
@@ -27,58 +27,58 @@ export class LabelActions {
     }
 
     public static deleteRectLabelById(imageId: string, labelRectId: string) {
-        const imageData: ImageData = LabelsSelector.getImageDataById(imageId);
-        const newImageData = {
+        const imageData: ImageLabelData = LabelsSelector.getImageLabelDataById(imageId);
+        const newImageLabelData = {
             ...imageData,
             labelRects: filter(imageData.labelRects, (currentLabel: LabelRect) => {
                 return currentLabel.id !== labelRectId;
             })
         };
-        store.dispatch(updateImageDataById(imageData.id, newImageData));
+        store.dispatch(updateImageLabelDataById(imageData.id, newImageLabelData));
     }
 
     public static deletePointLabelById(imageId: string, labelPointId: string) {
-        const imageData: ImageData = LabelsSelector.getImageDataById(imageId);
-        const newImageData = {
+        const imageData: ImageLabelData = LabelsSelector.getImageLabelDataById(imageId);
+        const newImageLabelData = {
             ...imageData,
             labelPoints: filter(imageData.labelPoints, (currentLabel: LabelPoint) => {
                 return currentLabel.id !== labelPointId;
             })
         };
-        store.dispatch(updateImageDataById(imageData.id, newImageData));
+        store.dispatch(updateImageLabelDataById(imageData.id, newImageLabelData));
     }
 
     public static deleteLineLabelById(imageId: string, labelLineId: string) {
-        const imageData: ImageData = LabelsSelector.getImageDataById(imageId);
-        const newImageData = {
+        const imageData: ImageLabelData = LabelsSelector.getImageLabelDataById(imageId);
+        const newImageLabelData = {
             ...imageData,
             labelLines: filter(imageData.labelLines, (currentLabel: LabelLine) => {
                 return currentLabel.id !== labelLineId;
             })
         };
-        store.dispatch(updateImageDataById(imageData.id, newImageData));
+        store.dispatch(updateImageLabelDataById(imageData.id, newImageLabelData));
     }
 
     public static deletePolygonLabelById(imageId: string, labelPolygonId: string) {
-        const imageData: ImageData = LabelsSelector.getImageDataById(imageId);
-        const newImageData = {
+        const imageData: ImageLabelData = LabelsSelector.getImageLabelDataById(imageId);
+        const newImageLabelData = {
             ...imageData,
             labelPolygons: filter(imageData.labelPolygons, (currentLabel: LabelPolygon) => {
                 return currentLabel.id !== labelPolygonId;
             })
         };
-        store.dispatch(updateImageDataById(imageData.id, newImageData));
+        store.dispatch(updateImageLabelDataById(imageData.id, newImageLabelData));
     }
 
     public static removeLabelNames(labelNamesIds: string[]) {
-        const imagesData: ImageData[] = LabelsSelector.getImagesData();
-        const newImagesData: ImageData[] = imagesData.map((imageData: ImageData) => {
-            return LabelActions.removeLabelNamesFromImageData(imageData, labelNamesIds);
+        const imagesData: ImageLabelData[] = LabelsSelector.getImagesData();
+        const newImagesData: ImageLabelData[] = imagesData.map((imageData: ImageLabelData) => {
+            return LabelActions.removeLabelNamesFromImageLabelData(imageData, labelNamesIds);
         });
-        store.dispatch(updateImageData(newImagesData))
+        store.dispatch(updateImageLabelData(newImagesData))
     }
 
-    private static removeLabelNamesFromImageData(imageData: ImageData, labelNamesIds: string[]): ImageData {
+    private static removeLabelNamesFromImageLabelData(imageData: ImageLabelData, labelNamesIds: string[]): ImageLabelData {
         return {
             ...imageData,
             labelRects: imageData.labelRects.map((labelRect: LabelRect) => {

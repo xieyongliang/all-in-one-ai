@@ -1,12 +1,12 @@
 import {PoseDetector} from '../../ai/PoseDetector';
 import {Keypoint, Pose} from '@tensorflow-models/posenet';
-import {ImageData, LabelName, LabelPoint} from '../../store/labels/types';
+import {ImageLabelData, LabelName, LabelPoint} from '../../store/labels/types';
 import {LabelsSelector} from '../../store/selectors/LabelsSelector';
 import {ImageRepository} from '../imageRepository/ImageRepository';
 import {LabelStatus} from '../../data/enums/LabelStatus';
 import { v4 as uuidv4 } from 'uuid';
 import {store} from '../../index';
-import {updateImageDataById} from '../../store/labels/actionCreators';
+import {updateImageLabelDataById} from '../../store/labels/actionCreators';
 import {findLast} from 'lodash';
 import {AISelector} from '../../store/selectors/AISelector';
 import {AIActions} from './AIActions';
@@ -17,12 +17,12 @@ import {NumberUtil} from '../../utils/NumberUtil';
 
 export class AIPoseDetectionActions {
     public static detectPoseForActiveImage(): void {
-        const activeImageData: ImageData = LabelsSelector.getActiveImageData();
-        AIPoseDetectionActions.detectPoses(activeImageData.id, ImageRepository.getById(activeImageData.id))
+        const activeImageLabelData: ImageLabelData = LabelsSelector.getActiveImageLabelData();
+        AIPoseDetectionActions.detectPoses(activeImageLabelData.id, ImageRepository.getById(activeImageLabelData.id))
     }
 
     public static detectPoses(imageId: string, image: HTMLImageElement): void {
-        if (LabelsSelector.getImageDataById(imageId).isVisitedByPoseDetector || !AISelector.isAIPoseDetectorModelLoaded())
+        if (LabelsSelector.getImageLabelDataById(imageId).isVisitedByPoseDetector || !AISelector.isAIPoseDetectorModelLoaded())
             return;
 
         store.dispatch(updateActivePopupType(PopupWindowType.LOADER));
@@ -41,17 +41,17 @@ export class AIPoseDetectionActions {
     }
 
     public static savePosePredictions(imageId: string, predictions: Pose[], image: HTMLImageElement) {
-        const imageData: ImageData = LabelsSelector.getImageDataById(imageId);
+        const imageData: ImageLabelData = LabelsSelector.getImageLabelDataById(imageId);
         const predictedLabels: LabelPoint[] = AIPoseDetectionActions
             .mapPredictionsToPointLabels(predictions)
             .filter((labelPoint: LabelPoint) => NumberUtil.isValueInRange(labelPoint.point.x, 0, image.width))
             .filter((labelPoint: LabelPoint) => NumberUtil.isValueInRange(labelPoint.point.y, 0, image.height))
-        const nextImageData: ImageData = {
+        const nextImageLabelData: ImageLabelData = {
             ...imageData,
             labelPoints: imageData.labelPoints.concat(predictedLabels),
             isVisitedByPoseDetector: true
         };
-        store.dispatch(updateImageDataById(imageData.id, nextImageData));
+        store.dispatch(updateImageLabelDataById(imageData.id, nextImageLabelData));
     }
 
     private static mapPredictionsToPointLabels(predictions: Pose[]): LabelPoint[] {
@@ -93,8 +93,8 @@ export class AIPoseDetectionActions {
             }, [])
     }
 
-    public static acceptAllSuggestedPointLabels(imageData: ImageData) {
-        const newImageData: ImageData = {
+    public static acceptAllSuggestedPointLabels(imageData: ImageLabelData) {
+        const newImageLabelData: ImageLabelData = {
             ...imageData,
             labelPoints: imageData.labelPoints.map((labelPoint: LabelPoint) => {
                 const labelName: LabelName = findLast(LabelsSelector.getLabelNames(), {name: labelPoint.suggestedLabel});
@@ -105,14 +105,14 @@ export class AIPoseDetectionActions {
                 }
             })
         };
-        store.dispatch(updateImageDataById(newImageData.id, newImageData));
+        store.dispatch(updateImageLabelDataById(newImageLabelData.id, newImageLabelData));
     }
 
-    public static rejectAllSuggestedPointLabels(imageData: ImageData) {
-        const newImageData: ImageData = {
+    public static rejectAllSuggestedPointLabels(imageData: ImageLabelData) {
+        const newImageLabelData: ImageLabelData = {
             ...imageData,
             labelPoints: imageData.labelPoints.filter((labelPoint: LabelPoint) => labelPoint.status === LabelStatus.ACCEPTED)
         };
-        store.dispatch(updateImageDataById(newImageData.id, newImageData));
+        store.dispatch(updateImageLabelDataById(newImageLabelData.id, newImageLabelData));
     }
 }

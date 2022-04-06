@@ -5,10 +5,12 @@ import {aiReducer} from './ai/reducer';
 import {notificationsReducer} from './notifications/reducer';
 import { pipelineReducer } from './pipelines/reducer';
 import { industrialModelReducer } from './industrialmodels/reducer';
+import { textsReducer } from './texts/reducer';
 
 export const rootReducer = combineReducers({
     general: generalReducer,
     labels: labelsReducer,
+    texts: textsReducer,
     ai: aiReducer,
     notifications: notificationsReducer,
     pipeline: pipelineReducer,

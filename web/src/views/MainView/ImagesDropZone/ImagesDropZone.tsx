@@ -2,21 +2,21 @@ import React, {PropsWithChildren} from 'react';
 import './ImagesDropZone.scss';
 import {useDropzone,DropzoneOptions} from 'react-dropzone';
 import {TextButton} from '../../Common/TextButton/TextButton';
-import {ImageData} from '../../../store/labels/types';
+import {ImageLabelData} from '../../../store/labels/types';
 import {connect} from 'react-redux';
-import {addImageData, updateActiveImageIndex} from '../../../store/labels/actionCreators';
+import {addImageLabelData, updateActiveLabelImageIndex} from '../../../store/labels/actionCreators';
 import {AppState} from '../../../store';
 import {ProjectType} from '../../../data/enums/ProjectType';
 import {PopupWindowType} from '../../../data/enums/PopupWindowType';
 import {updateActivePopupType, updateProjectData} from '../../../store/general/actionCreators';
 import {AcceptedFileType} from '../../../data/enums/AcceptedFileType';
 import {ProjectData} from '../../../store/general/types';
-import {ImageDataUtil} from '../../../utils/ImageDataUtil';
+import {ImageLabelDataUtil} from '../../../utils/ImageLabelDataUtil';
 import { sortBy } from 'lodash';
 
 interface IProps {
-    updateActiveImageIndexAction: (activeImageIndex: number) => any;
-    addImageDataAction: (imageData: ImageData[]) => any;
+    updateActiveLabelImageIndexAction: (activeImageIndex: number) => any;
+    addImageLabelDataAction: (imageData: ImageLabelData[]) => any;
     updateProjectDataAction: (projectData: ProjectData) => any;
     updateActivePopupTypeAction: (activePopupType: PopupWindowType) => any;
     projectData: ProjectData;
@@ -34,9 +34,9 @@ const ImagesDropZone: React.FC<IProps> = (props: PropsWithChildren<IProps>) => {
                 ...props.projectData,
                 type: projectType
             });
-            props.updateActiveImageIndexAction(0);
-            props.addImageDataAction(files.map((file:File) => ImageDataUtil
-                .createImageDataFromFileData(file)));
+            props.updateActiveLabelImageIndexAction(0);
+            props.addImageLabelDataAction(files.map((file:File) => ImageLabelDataUtil
+                .createImageLabelDataFromFileData(file)));
             props.updateActivePopupTypeAction(PopupWindowType.INSERT_LABEL_NAMES);
         }
     };
@@ -101,8 +101,8 @@ const ImagesDropZone: React.FC<IProps> = (props: PropsWithChildren<IProps>) => {
 };
 
 const mapDispatchToProps = {
-    updateActiveImageIndexAction: updateActiveImageIndex,
-    addImageDataAction: addImageData,
+    updateActiveLabelImageIndexAction: updateActiveLabelImageIndex,
+    addImageLabelDataAction: addImageLabelData,
     updateProjectDataAction: updateProjectData,
     updateActivePopupTypeAction: updateActivePopupType
 };

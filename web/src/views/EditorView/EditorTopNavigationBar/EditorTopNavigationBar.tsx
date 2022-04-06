@@ -22,8 +22,8 @@ import axios from 'axios';
 import { useParams } from 'react-router-dom';
 import { PathParams } from '../../../components/Interfaces/PathParams';
 import { SelectOption } from 'aws-northstar/components/Select';
-import { ImageData, LabelName } from '../../../store/labels/types';
-import { addImageData, updateActiveImageIndex, updateActiveLabelNameId, updateActiveLabelType, updateFirstLabelCreatedFlag, updateImageData, updateLabelNames } from '../../../store/labels/actionCreators';
+import { ImageLabelData, LabelName } from '../../../store/labels/types';
+import { addImageLabelData, updateActiveLabelImageIndex, updateActiveLabelNameId, updateActiveLabelType, updateFirstLabelCreatedFlag, updateImageLabelData, updateLabelNames } from '../../../store/labels/actionCreators';
 import { ProjectData } from '../../../store/general/types';
 import { PopupWindowType } from '../../../data/enums/PopupWindowType';
 import { ImporterSpecData } from '../../../data/ImporterSpecData';
@@ -78,18 +78,18 @@ interface IProps {
     activeContext: ContextType;
     updateImageDragModeStatusAction: (imageDragMode: boolean) => any;
     updateCrossHairVisibleStatusAction: (crossHairVisible: boolean) => any;
-    updateActiveImageIndexAction: (activeImageIndex: number) => any;
-    addImageDataAction: (imageData: ImageData[]) => any;
+    updateActiveLabelImageIndexAction: (activeImageIndex: number) => any;
+    addImageLabelDataAction: (imageData: ImageLabelData[]) => any;
     updateProjectDataAction: (projectData: ProjectData) => any;
     updateActivePopupTypeAction: (activePopupType: PopupWindowType) => any;
-    updateImageDataAction: (imageData: ImageData[]) => any;
+    updateImageLabelDataAction: (imageData: ImageLabelData[]) => any;
     updateLabelNamesAction: (labels: LabelName[]) => any;
     updateActiveLabelTypeAction: (activeLabelType: LabelType) => any;
     updatePerClassColorationStatusAction: (updatePerClassColoration: boolean) => any;
-    updateActiveImageIndex: (activeImageIndex: number) => any;
+    updateActiveLabelImageIndex: (activeImageIndex: number) => any;
     updateActiveLabelNameId: (activeLabelId: string) => any;
     updateLabelNames: (labelNames: LabelName[]) => any;
-    updateImageData: (imageData: ImageData[]) => any;
+    updateImageLabelData: (imageData: ImageLabelData[]) => any;
     updateFirstLabelCreatedFlag: (firstLabelCreatedFlag: boolean) => any;
     updateProjectData: (projectData: ProjectData) => any;
     updateLabels: (labels: LabelName[]) => any;
@@ -109,7 +109,7 @@ const EditorTopNavigationBar: React.FC<IProps> = (
         activeContext,
         updateImageDragModeStatusAction,
         updateCrossHairVisibleStatusAction,
-        updateImageDataAction,
+        updateImageLabelDataAction,
         updateLabelNamesAction,
         updateActiveLabelTypeAction,
         updateLabels,
@@ -166,8 +166,8 @@ const EditorTopNavigationBar: React.FC<IProps> = (
         updateCrossHairVisibleStatusAction(!crossHairVisible);
     }
 
-    const onAnnotationLoadSuccess = useCallback((imagesData: ImageData[], labelNames: LabelName[]) => {
-        updateImageDataAction(imagesData);
+    const onAnnotationLoadSuccess = useCallback((imagesData: ImageLabelData[], labelNames: LabelName[]) => {
+        updateImageLabelDataAction(imagesData);
         updateLabelNamesAction(labelNames);
         updateActiveLabelTypeAction(LabelType.RECT);
     
@@ -179,7 +179,7 @@ const EditorTopNavigationBar: React.FC<IProps> = (
         });
 
         updateLabels(labelNames);
-    }, [ computedAnnotations, imageColors, imageLabels, updateActiveLabelTypeAction, updateImageDataAction, updateLabelNamesAction, updateLabels]);
+    }, [ computedAnnotations, imageColors, imageLabels, updateActiveLabelTypeAction, updateImageLabelDataAction, updateLabelNamesAction, updateLabels]);
 
     const onAnnotationsLoadFailure = (error?:Error) => {    
         console.log(error)
@@ -350,7 +350,7 @@ const EditorTopNavigationBar: React.FC<IProps> = (
                         'accept-all',
                         false,
                         undefined,
-                        () => AIActions.acceptAllSuggestedLabels(LabelsSelector.getActiveImageData())
+                        () => AIActions.acceptAllSuggestedLabels(LabelsSelector.getActiveImageLabelData())
                     )
                 }
                 {
@@ -361,7 +361,7 @@ const EditorTopNavigationBar: React.FC<IProps> = (
                         'reject-all',
                         false,
                         undefined,
-                        () => AIActions.rejectAllSuggestedLabels(LabelsSelector.getActiveImageData())
+                        () => AIActions.rejectAllSuggestedLabels(LabelsSelector.getActiveImageLabelData())
                     )
                 }
             </div>}
@@ -372,19 +372,19 @@ const EditorTopNavigationBar: React.FC<IProps> = (
 const mapDispatchToProps = {
     updateImageDragModeStatusAction: updateImageDragModeStatus,
     updateCrossHairVisibleStatusAction: updateCrossHairVisibleStatus,
-    updateActiveImageIndexAction: updateActiveImageIndex,
-    addImageDataAction: addImageData,
+    updateActiveLabelImageIndexAction: updateActiveLabelImageIndex,
+    addImageLabelDataAction: addImageLabelData,
     updateProjectDataAction: updateProjectData,
     updateActivePopupTypeAction: updateActivePopupType,
-    updateImageDataAction: updateImageData,
+    updateImageLabelDataAction: updateImageLabelData,
     updateLabelNamesAction: updateLabelNames,
     updateActiveLabelTypeAction: updateActiveLabelType,
     updatePerClassColorationStatusAction: updatePerClassColorationStatus,
     updateActiveLabelNameId,
     updateLabelNames,
     updateProjectData,
-    updateActiveImageIndex,
-    updateImageData,
+    updateActiveLabelImageIndex,
+    updateImageLabelData,
     updateFirstLabelCreatedFlag,
     updateLabels: updateLabelNames
 };

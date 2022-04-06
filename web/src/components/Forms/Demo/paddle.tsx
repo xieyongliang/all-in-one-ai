@@ -1,10 +1,10 @@
 import { FunctionComponent } from 'react';
 import { Stack, Container, RadioButton, RadioGroup } from 'aws-northstar';
 import InferenceForm from '../Inference';
-import TransformJobList from '../../Lists/TransformJob';
 import SampleForm from '../Sample';
 import { useParams, useLocation, useHistory } from 'react-router-dom';
 import { PathParams } from '../../Interfaces/PathParams';
+import { ProjectType } from '../../../data/enums/ProjectType';
 
 const PaddleDemoForm: FunctionComponent = () => {
     const history = useHistory();
@@ -37,7 +37,7 @@ const PaddleDemoForm: FunctionComponent = () => {
                 {renderDemoOptions()}
             </Container>
             {demoType === 'uploaded' && <InferenceForm/>}
-            {demoType === 'sample' && <SampleForm/>}
+            {demoType === 'sample' && <SampleForm type={ProjectType.TEXT_RECOGNITION}/>}
         </Stack>
     )
 }

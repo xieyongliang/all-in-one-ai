@@ -1,9 +1,9 @@
 import {DetectedObject} from '@tensorflow-models/coco-ssd';
-import {ImageData, LabelName, LabelRect} from '../../store/labels/types';
+import {ImageLabelData, LabelName, LabelRect} from '../../store/labels/types';
 import {LabelsSelector} from '../../store/selectors/LabelsSelector';
 import { v4 as uuidv4 } from 'uuid';
 import {store} from '../../index';
-import {updateImageDataById} from '../../store/labels/actionCreators';
+import {updateImageLabelDataById} from '../../store/labels/actionCreators';
 import {ObjectDetector} from '../../ai/ObjectDetector';
 import {ImageRepository} from '../imageRepository/ImageRepository';
 import {LabelStatus} from '../../data/enums/LabelStatus';
@@ -16,12 +16,12 @@ import {AIActions} from './AIActions';
 
 export class AIObjectDetectionActions {
     public static detectRectsForActiveImage(): void {
-        const activeImageData: ImageData = LabelsSelector.getActiveImageData();
-        AIObjectDetectionActions.detectRects(activeImageData.id, ImageRepository.getById(activeImageData.id))
+        const activeImageLabelData: ImageLabelData = LabelsSelector.getActiveImageLabelData();
+        AIObjectDetectionActions.detectRects(activeImageLabelData.id, ImageRepository.getById(activeImageLabelData.id))
     }
 
     public static detectRects(imageId: string, image: HTMLImageElement): void {
-        if (LabelsSelector.getImageDataById(imageId).isVisitedByObjectDetector || !AISelector.isAIObjectDetectorModelLoaded())
+        if (LabelsSelector.getImageLabelDataById(imageId).isVisitedByObjectDetector || !AISelector.isAIObjectDetectorModelLoaded())
             return;
 
         store.dispatch(updateActivePopupType(PopupWindowType.LOADER));
@@ -40,14 +40,14 @@ export class AIObjectDetectionActions {
     }
 
     public static saveRectPredictions(imageId: string, predictions: DetectedObject[]) {
-        const imageData: ImageData = LabelsSelector.getImageDataById(imageId);
+        const imageData: ImageLabelData = LabelsSelector.getImageLabelDataById(imageId);
         const predictedLabels: LabelRect[] = AIObjectDetectionActions.mapPredictionsToRectLabels(predictions);
-        const nextImageData: ImageData = {
+        const nextImageLabelData: ImageLabelData = {
             ...imageData,
             labelRects: imageData.labelRects.concat(predictedLabels),
             isVisitedByObjectDetector: true
         };
-        store.dispatch(updateImageDataById(imageData.id, nextImageData));
+        store.dispatch(updateImageLabelDataById(imageData.id, nextImageLabelData));
     }
 
     private static mapPredictionsToRectLabels(predictions: DetectedObject[]): LabelRect[] {
@@ -78,8 +78,8 @@ export class AIObjectDetectionActions {
         }, [])
     }
 
-    public static acceptAllSuggestedRectLabels(imageData: ImageData) {
-        const newImageData: ImageData = {
+    public static acceptAllSuggestedRectLabels(imageData: ImageLabelData) {
+        const newImageLabelData: ImageLabelData = {
             ...imageData,
             labelRects: imageData.labelRects.map((labelRect: LabelRect) => {
                 const labelName: LabelName = findLast(LabelsSelector.getLabelNames(), {name: labelRect.suggestedLabel});
@@ -90,14 +90,14 @@ export class AIObjectDetectionActions {
                 }
             })
         };
-        store.dispatch(updateImageDataById(newImageData.id, newImageData));
+        store.dispatch(updateImageLabelDataById(newImageLabelData.id, newImageLabelData));
     }
 
-    public static rejectAllSuggestedRectLabels(imageData: ImageData) {
-        const newImageData: ImageData = {
+    public static rejectAllSuggestedRectLabels(imageData: ImageLabelData) {
+        const newImageLabelData: ImageLabelData = {
             ...imageData,
             labelRects: imageData.labelRects.filter((labelRect: LabelRect) => labelRect.status === LabelStatus.ACCEPTED)
         };
-        store.dispatch(updateImageDataById(newImageData.id, newImageData));
+        store.dispatch(updateImageLabelDataById(newImageLabelData.id, newImageLabelData));
     }
 }

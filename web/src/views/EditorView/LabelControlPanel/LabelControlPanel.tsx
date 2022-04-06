@@ -8,9 +8,9 @@ import classNames from "classnames";
 import {LabelName, LabelPoint, LabelRect} from "../../../store/labels/types";
 import {ImageButton} from "../../Common/ImageButton/ImageButton";
 import {LabelActions} from "../../../logic/actions/LabelActions";
-import {ImageData} from "../../../store/labels/types";
+import {ImageLabelData} from "../../../store/labels/types";
 import {LabelStatus} from "../../../data/enums/LabelStatus";
-import {updateImageDataById} from "../../../store/labels/actionCreators";
+import {updateImageLabelDataById} from "../../../store/labels/actionCreators";
 import {findLast} from "lodash";
 import {LabelsSelector} from "../../../store/selectors/LabelsSelector";
 
@@ -20,11 +20,11 @@ interface IProps {
     activeLabelId: string;
     highlightedLabelId: string;
     labelData: LabelRect | LabelPoint;
-    imageData: ImageData;
-    updateImageDataById: (id: string, newImageData: ImageData) => any;
+    imageData: ImageLabelData;
+    updateImageLabelDataById: (id: string, newImageLabelData: ImageLabelData) => any;
 }
 
-const LabelControlPanel: React.FC<IProps> = ({position, updatePreventCustomCursorStatus, activeLabelId, highlightedLabelId, labelData, imageData, updateImageDataById}) => {
+const LabelControlPanel: React.FC<IProps> = ({position, updatePreventCustomCursorStatus, activeLabelId, highlightedLabelId, labelData, imageData, updateImageLabelDataById}) => {
     const [isActive, setIsActiveStatus] = useState(false);
 
     const onMouseEnter = () => {
@@ -38,7 +38,7 @@ const LabelControlPanel: React.FC<IProps> = ({position, updatePreventCustomCurso
     };
 
     const onAccept = () => {
-        const newImageData = {
+        const newImageLabelData = {
             ...imageData,
             labelRects: imageData.labelRects.map((labelRect: LabelRect) => {
                 if (labelRect.id === labelData.id) {
@@ -65,7 +65,7 @@ const LabelControlPanel: React.FC<IProps> = ({position, updatePreventCustomCurso
                 }
             })
         };
-        updateImageDataById(imageData.id, newImageData);
+        updateImageLabelDataById(imageData.id, newImageLabelData);
         updatePreventCustomCursorStatus(false);
     };
 
@@ -119,7 +119,7 @@ const LabelControlPanel: React.FC<IProps> = ({position, updatePreventCustomCurso
 
 const mapDispatchToProps = {
     updatePreventCustomCursorStatus,
-    updateImageDataById
+    updateImageLabelDataById
 };
 
 const mapStateToProps = (state: AppState) => ({

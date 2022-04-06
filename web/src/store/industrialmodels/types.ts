@@ -12,4 +12,4 @@ interface Updateindustrialmodels {
     }
 }
 
-export type PipelineActionTypes = Updateindustrialmodels
+export type IndustrialModelActionTypes = Updateindustrialmodels

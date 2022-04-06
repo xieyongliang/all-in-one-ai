@@ -18,6 +18,7 @@ import Pagination from '@mui/material/Pagination';
 import { AppState } from '../../../store';
 import { connect } from 'react-redux';
 import { IIndustrialModel } from '../../../store/industrialmodels/reducer';
+import { ProjectType } from '../../../data/enums/ProjectType';
 
 interface TransformJobItem {
     transformJobName: string;
@@ -321,7 +322,7 @@ const TransformJobList: FunctionComponent<IProps> = (props) => {
                                     </ImageListItem>
                                 ))}
                             </ImageList>
-                            <Pagination page={imagePage} onChange={onChange} count={Math.floor(transformJobResult.count / 20)} />
+                            <Pagination page={imagePage} onChange={onChange} count={Math.ceil(transformJobResult.count / 20)} />
                         </Container>
                     }
                 </Stack>            
@@ -365,6 +366,7 @@ const TransformJobList: FunctionComponent<IProps> = (props) => {
                 imageLabels={imageLabels} 
                 imageColors={COLORS}
                 imageAnnotations={imageAnnotations}
+                type={ProjectType.OBJECT_DETECTION_RECT}
                 visible={visibleImagePreview} 
                 onClose={onImageClose}
             />

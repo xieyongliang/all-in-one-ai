@@ -4,7 +4,7 @@ import {Direction} from "../../../data/enums/Direction";
 import {ISize} from "../../../interfaces/ISize";
 import {Settings} from "../../../settings/Settings";
 import {AppState} from "../../../store";
-import {ImageData} from "../../../store/labels/types";
+import {ImageLabelData} from "../../../store/labels/types";
 import ImagesList from "../SideNavigationBar/ImagesList/ImagesList";
 import LabelsToolkit from "../SideNavigationBar/LabelsToolkit/LabelsToolkit";
 import {SideNavigationBar} from "../SideNavigationBar/SideNavigationBar";
@@ -16,11 +16,15 @@ import {ContextType} from "../../../data/enums/ContextType";
 import EditorBottomNavigationBar from "../EditorBottomNavigationBar/EditorBottomNavigationBar";
 import EditorTopNavigationBar from "../EditorTopNavigationBar/EditorTopNavigationBar";
 import {ProjectType} from "../../../data/enums/ProjectType";
+import TextsToolkit from '../SideNavigationBar/TextsToolkit/TextsToolkit';
+import { ImageTextData } from '../../../store/texts/types';
 
 interface IProps {
     windowSize: ISize;
-    activeImageIndex: number;
-    imagesData: ImageData[];
+    activeLabelImageIndex: number;
+    activeTextImageIndex: number;
+    imagesLabelData: ImageLabelData[];
+    imagesTextData: ImageTextData[];
     activeContext: ContextType;
     projectType: ProjectType;
     imageBucket?: string;
@@ -34,8 +38,10 @@ interface IProps {
 const EditorContainer: React.FC<IProps> = (
     {
         windowSize,
-        activeImageIndex,
-        imagesData,
+        activeLabelImageIndex,
+        activeTextImageIndex,
+        imagesLabelData,
+        imagesTextData,
         activeContext,
         projectType,
         imageBucket,
@@ -109,9 +115,15 @@ const EditorContainer: React.FC<IProps> = (
     };
 
     const rightSideBarRender = () => {
-        return <LabelsToolkit/>
+        if(projectType === ProjectType.TEXT_RECOGNITION) 
+            return <TextsToolkit/>
+        else
+            return <LabelsToolkit/>
     };
 
+    var imagesData = projectType === ProjectType.TEXT_RECOGNITION ? imagesTextData : imagesLabelData
+    var activeImageIndex = projectType === ProjectType.TEXT_RECOGNITION ? activeTextImageIndex : activeLabelImageIndex
+ 
     return (
         <div className="EditorContainer">
             <SideNavigationBar
@@ -128,6 +140,7 @@ const EditorContainer: React.FC<IProps> = (
             >
                 {
                     (
+                        projectType === ProjectType.TEXT_RECOGNITION ||
                         projectType === ProjectType.OBJECT_DETECTION ||
                         projectType === ProjectType.OBJECT_DETECTION_RECT || 
                         projectType === ProjectType.OBJECT_DETECTION_POINT ||
@@ -170,8 +183,10 @@ const EditorContainer: React.FC<IProps> = (
 
 const mapStateToProps = (state: AppState) => ({
     windowSize: state.general.windowSize,
-    activeImageIndex: state.labels.activeImageIndex,
-    imagesData: state.labels.imagesData,
+    activeLabelImageIndex: state.labels.activeImageIndex,
+    activeTextImageIndex: state.texts.activeImageIndex,
+    imagesLabelData: state.labels.imagesData,
+    imagesTextData: state.texts.imagesData,
     activeContext: state.general.activeContext,
     projectType: state.general.projectData.type
 });

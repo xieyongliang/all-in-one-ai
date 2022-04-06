@@ -2,26 +2,26 @@ import React from 'react'
 import './LoadMoreImagesPopup.scss'
 import {AppState} from "../../../store";
 import {connect} from "react-redux";
-import {addImageData} from "../../../store/labels/actionCreators";
+import {addImageLabelData} from "../../../store/labels/actionCreators";
 import {GenericYesNoPopup} from "../GenericYesNoPopup/GenericYesNoPopup";
 import {useDropzone} from "react-dropzone";
-import {ImageData} from "../../../store/labels/types";
+import {ImageLabelData} from "../../../store/labels/types";
 import {AcceptedFileType} from "../../../data/enums/AcceptedFileType";
 import {PopupActions} from "../../../logic/actions/PopupActions";
-import {ImageDataUtil} from "../../../utils/ImageDataUtil";
+import {ImageLabelDataUtil} from "../../../utils/ImageLabelDataUtil";
 
 interface IProps {
-    addImageData: (imageData: ImageData[]) => any;
+    addImageLabelData: (imageData: ImageLabelData[]) => any;
 }
 
-const LoadMoreImagesPopup: React.FC<IProps> = ({addImageData}) => {
+const LoadMoreImagesPopup: React.FC<IProps> = ({addImageLabelData}) => {
     const {acceptedFiles, getRootProps, getInputProps} = useDropzone({
         accept: AcceptedFileType.IMAGE
     });
 
     const onAccept = () => {
         if (acceptedFiles.length > 0) {
-            addImageData(acceptedFiles.map((fileData:File) => ImageDataUtil.createImageDataFromFileData(fileData)));
+            addImageLabelData(acceptedFiles.map((fileData:File) => ImageLabelDataUtil.createImageLabelDataFromFileData(fileData)));
             PopupActions.close();
         }
     };
@@ -86,7 +86,7 @@ const LoadMoreImagesPopup: React.FC<IProps> = ({addImageData}) => {
 };
 
 const mapDispatchToProps = {
-    addImageData
+    addImageLabelData
 };
 
 const mapStateToProps = (state: AppState) => ({});

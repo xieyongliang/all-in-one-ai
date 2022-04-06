@@ -12,6 +12,7 @@ import { PathParams } from '../../Interfaces/PathParams';
 import { AppState } from '../../../store';
 import { connect } from 'react-redux';
 import { IIndustrialModel } from '../../../store/industrialmodels/reducer';
+import { ProjectType } from '../../../data/enums/ProjectType';
 
 interface FileMetadata {
     name: string;
@@ -97,7 +98,15 @@ const InferenceForm: FunctionComponent<IProps> = (props) => {
 
         console.log(imageUri)
         return (
-            <ImageAnnotate imageUri={imageUri} imageLabels={labelsData} imageColors={COLORS} imageId={curImageItem} visible={visibleImagePreview} onClose={onImageClose}/>
+            <ImageAnnotate 
+                imageUri={imageUri} 
+                imageLabels={labelsData} 
+                imageColors={COLORS} 
+                imageId={curImageItem} 
+                type={ProjectType.OBJECT_DETECTION_RECT}
+                visible={visibleImagePreview} 
+                onClose={onImageClose}
+            />
         )
     }
 

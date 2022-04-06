@@ -8,7 +8,7 @@ import {RectUtil} from '../../utils/RectUtil';
 import {IPoint} from '../../interfaces/IPoint';
 import {PointUtil} from '../../utils/PointUtil';
 import {SizeUtil} from '../../utils/SizeUtil';
-import {EditorActions} from './EditorActions';
+import {LabelEditorActions} from './LabelEditorActions';
 import {Direction} from '../../data/enums/Direction';
 import {DirectionUtil} from '../../utils/DirectionUtil';
 import {GeneralSelector} from '../../store/selectors/GeneralSelector';
@@ -130,7 +130,7 @@ export class ViewPortActions {
         ViewPortActions.setScrollPosition(nextScrollPosition);
         EditorModel.mousePositionOnViewPortContent = PointUtil
             .add(EditorModel.mousePositionOnViewPortContent, translationVector);
-        EditorActions.fullRender();
+        LabelEditorActions.fullRender();
     }
 
     public static zoomIn() {
@@ -142,7 +142,7 @@ export class ViewPortActions {
         ViewPortActions.setZoom(currentZoom + ViewPointSettings.ZOOM_STEP);
         ViewPortActions.resizeViewPortContent();
         ViewPortActions.setScrollPosition(ViewPortActions.calculateAbsoluteScrollPosition(nextRelativeScrollPosition));
-        EditorActions.fullRender();
+        LabelEditorActions.fullRender();
     }
 
     public static zoomOut() {
@@ -154,7 +154,7 @@ export class ViewPortActions {
         ViewPortActions.resizeViewPortContent();
         ViewPortActions.setScrollPosition(ViewPortActions
             .calculateAbsoluteScrollPosition(currentRelativeScrollPosition));
-        EditorActions.fullRender();
+        LabelEditorActions.fullRender();
     }
 
     public static setDefaultZoom() {
@@ -163,7 +163,7 @@ export class ViewPortActions {
         ViewPortActions.resizeViewPortContent();
         ViewPortActions.setScrollPosition(ViewPortActions
             .calculateAbsoluteScrollPosition(currentRelativeScrollPosition));
-        EditorActions.fullRender();
+        LabelEditorActions.fullRender();
     }
 
     public static setOneForOneZoom() {
@@ -174,7 +174,7 @@ export class ViewPortActions {
         ViewPortActions.setZoom(nextZoom);
         ViewPortActions.resizeViewPortContent();
         ViewPortActions.setScrollPosition(ViewPortActions.calculateAbsoluteScrollPosition(nextRelativeScrollPosition));
-        EditorActions.fullRender();
+        LabelEditorActions.fullRender();
     }
 
     public static setZoom(value: number) {

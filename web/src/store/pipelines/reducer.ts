@@ -122,7 +122,6 @@ export function pipelineReducer(
             }
         }
         case Action.UPDATE_PIPELINE_GREENGRASS_COMPONENT_NAME: {
-            console.log(action.payload.greengrassComponentName)
             return {
                 ...state,
                 greengrassComponentName: action.payload.greengrassComponentName

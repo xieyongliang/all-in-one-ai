@@ -1,6 +1,5 @@
 import React, {useState} from 'react';
 import './MainView.scss';
-import {TextButton} from '../Common/TextButton/TextButton';
 import classNames from 'classnames';
 import {ISize} from '../../interfaces/ISize';
 import {ImageButton} from '../Common/ImageButton/ImageButton';

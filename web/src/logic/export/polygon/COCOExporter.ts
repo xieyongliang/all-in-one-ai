@@ -1,4 +1,4 @@
-import {ImageData, LabelName, LabelPolygon} from "../../../store/labels/types";
+import {ImageLabelData, LabelName, LabelPolygon} from "../../../store/labels/types";
 import {LabelsSelector} from "../../../store/selectors/LabelsSelector";
 import {GeneralSelector} from "../../../store/selectors/GeneralSelector";
 import {ImageRepository} from "../../imageRepository/ImageRepository";
@@ -18,7 +18,7 @@ export type LabelDataMap = { [key: string]: number; }
 
 export class COCOExporter {
     public static export(): void {
-        const imagesData: ImageData[] = LabelsSelector.getImagesData();
+        const imagesData: ImageLabelData[] = LabelsSelector.getImagesData();
         const labelNames: LabelName[] = LabelsSelector.getLabelNames();
         const projectName: string = GeneralSelector.getProjectName();
         const COCOObject: COCOObject = COCOExporter.mapImagesDataToCOCOObject(imagesData, labelNames, projectName);
@@ -28,7 +28,7 @@ export class COCOExporter {
     }
 
     private static mapImagesDataToCOCOObject(
-        imagesData: ImageData[],
+        imagesData: ImageLabelData[],
         labelNames: LabelName[],
         projectName: string
     ): COCOObject {
@@ -55,11 +55,11 @@ export class COCOExporter {
         })
     }
 
-    public static getImagesComponent(imagesData: ImageData[]): COCOImage[] {
+    public static getImagesComponent(imagesData: ImageLabelData[]): COCOImage[] {
         return imagesData
-            .filter((imagesData: ImageData) => imagesData.loadStatus)
-            .filter((imagesData: ImageData) => imagesData.labelPolygons.length !== 0)
-            .map((imageData: ImageData, index: number) => {
+            .filter((imagesData: ImageLabelData) => imagesData.loadStatus)
+            .filter((imagesData: ImageLabelData) => imagesData.labelPolygons.length !== 0)
+            .map((imageData: ImageLabelData, index: number) => {
                 const image: HTMLImageElement = ImageRepository.getById(imageData.id);
                 return {
                     "id": index + 1,
@@ -70,13 +70,13 @@ export class COCOExporter {
             })
     }
 
-    public static getAnnotationsComponent(imagesData: ImageData[], labelNames: LabelName[]): COCOAnnotation[] {
+    public static getAnnotationsComponent(imagesData: ImageLabelData[], labelNames: LabelName[]): COCOAnnotation[] {
         const labelsMap: LabelDataMap = COCOExporter.mapLabelsData(labelNames);
         let id = 0;
         const annotations: COCOAnnotation[][] = imagesData
-            .filter((imagesData: ImageData) => imagesData.loadStatus)
-            .filter((imagesData: ImageData) => imagesData.labelPolygons.length !== 0)
-            .map((imageData: ImageData, index: number) => {
+            .filter((imagesData: ImageLabelData) => imagesData.loadStatus)
+            .filter((imagesData: ImageLabelData) => imagesData.labelPolygons.length !== 0)
+            .map((imageData: ImageLabelData, index: number) => {
                 return imageData.labelPolygons.map((labelPolygon: LabelPolygon) => {
                     return {
                         "id": id++,

@@ -5,6 +5,7 @@ import TransformJobList from '../../Lists/TransformJob';
 import SampleForm from '../Sample';
 import { useParams, useLocation, useHistory } from 'react-router-dom';
 import { PathParams } from '../../Interfaces/PathParams';
+import { ProjectType } from '../../../data/enums/ProjectType';
 
 const DemoForm: FunctionComponent = () => {
     const history = useHistory();
@@ -39,7 +40,7 @@ const DemoForm: FunctionComponent = () => {
             </Container>
             {demoType === 'transformjob' && <TransformJobList/>}
             {demoType === 'uploaded' && <InferenceForm/>}
-            {demoType === 'sample' && <SampleForm/>}
+            {demoType === 'sample' && <SampleForm type={ProjectType.OBJECT_DETECTION_RECT}/>}
         </Stack>
     )
 }

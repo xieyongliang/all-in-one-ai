@@ -1,5 +1,5 @@
 import {AnnotationFormatType} from '../../data/enums/AnnotationFormatType';
-import {ImageData, LabelName, LabelRect} from '../../store/labels/types';
+import {ImageLabelData, LabelName, LabelRect} from '../../store/labels/types';
 import {ImageRepository} from '../imageRepository/ImageRepository';
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
@@ -32,7 +32,7 @@ export class RectLabelsExporter {
     private static exportAsYOLO(): void {
         const zip = new JSZip();
         LabelsSelector.getImagesData()
-            .forEach((imageData: ImageData) => {
+            .forEach((imageData: ImageLabelData) => {
                 const fileContent: string = RectLabelsExporter.wrapRectLabelsIntoYOLO(imageData);
                 if (fileContent) {
                     const fileName : string = imageData.fileData.name.replace(/\.[^/.]+$/, '.txt');
@@ -80,7 +80,7 @@ export class RectLabelsExporter {
         return [classIdx, ...processedBBox].join(' ')
     }
 
-    private static wrapRectLabelsIntoYOLO(imageData: ImageData): string {
+    private static wrapRectLabelsIntoYOLO(imageData: ImageLabelData): string {
         if (imageData.labelRects.length === 0 || !imageData.loadStatus)
             return null;
 
@@ -95,7 +95,7 @@ export class RectLabelsExporter {
 
     private static exportAsVOC(): void {
         const zip = new JSZip();
-        LabelsSelector.getImagesData().forEach((imageData: ImageData) => {
+        LabelsSelector.getImagesData().forEach((imageData: ImageLabelData) => {
                 const fileContent: string = RectLabelsExporter.wrapImageIntoVOC(imageData);
                 if (fileContent) {
                     const fileName : string = imageData.fileData.name.replace(/\.[^/.]+$/, '.xml');
@@ -119,7 +119,7 @@ export class RectLabelsExporter {
         }
     }
 
-    private static wrapRectLabelsIntoVOC(imageData: ImageData): string {
+    private static wrapRectLabelsIntoVOC(imageData: ImageLabelData): string {
         if (imageData.labelRects.length === 0 || !imageData.loadStatus)
             return null;
 
@@ -145,7 +145,7 @@ export class RectLabelsExporter {
         return labelRectsString.join('\n');
     }
 
-    private static wrapImageIntoVOC(imageData: ImageData): string {
+    private static wrapImageIntoVOC(imageData: ImageLabelData): string {
         const labels: string = RectLabelsExporter.wrapRectLabelsIntoVOC(imageData);
         const projectName: string = XMLSanitizerUtil.sanitize(GeneralSelector.getProjectName());
 
@@ -174,7 +174,7 @@ export class RectLabelsExporter {
 
     private static exportAsCSV(): void {
         const content: string = LabelsSelector.getImagesData()
-            .map((imageData: ImageData) => {
+            .map((imageData: ImageLabelData) => {
                 return RectLabelsExporter.wrapRectLabelsIntoCSV(imageData)})
             .filter((imageLabelData: string) => {
                 return !!imageLabelData})
@@ -183,7 +183,7 @@ export class RectLabelsExporter {
         ExporterUtil.saveAs(content, fileName);
     }
 
-    private static wrapRectLabelsIntoCSV(imageData: ImageData): string {
+    private static wrapRectLabelsIntoCSV(imageData: ImageLabelData): string {
         if (imageData.labelRects.length === 0 || !imageData.loadStatus)
             return null;
 
