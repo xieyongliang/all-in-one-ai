@@ -27,6 +27,7 @@ import axios from 'axios';
 import { store } from '.';
 import { Action } from './store/Actions';
 import GluonCV from './components/Algorithms/GluonCV';
+import PaddleOCR from './components/Algorithms/PaddleOCR';
 
 const App : FunctionComponent = () => {
     const withLayout = (Component : any, props? : any) => {
@@ -71,6 +72,7 @@ const App : FunctionComponent = () => {
                     <Route sensitive={true} exact path="/scenarios">{withLayout(PPE)}</Route>
                     <Route sensitive={true} exact path="/algorithms/yolov5">{withLayout(Yolov5)}</Route>
                     <Route sensitive={true} exact path="/algorithms/gluoncv">{withLayout(GluonCV)}</Route>
+                    <Route sensitive={true} exact path="/algorithms/paddleocr">{withLayout(PaddleOCR)}</Route>
                     <Route sensitive={true} exact path="/imodels/:id">{withLayout(IndustrialModels)}</Route>
                     <Route sensitive={true} exact path="/imodels">{withLayout(IndustrialModelOverview)}</Route>
                     <Route sensitive={true} exact path="/">{withLayout(Dashboard)}</Route>

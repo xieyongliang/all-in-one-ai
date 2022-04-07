@@ -12,12 +12,13 @@ const GluonCV: FunctionComponent = () => {
                 <Text> 
                     GluonCV features:
                 </Text>
-                <Text>
-                    <ul> 1. training scripts that reproduce SOTA results reported in latest papers </ul>
-                    <ul> 2. a large set of pre-trained models </ul>
-                    <ul> 3. carefully designed APIs and easy to understand implementations </ul>
-                    <ul> 4. community support </ul>
-                </Text>
+                <ol dir="auto">
+                    <li>Training scripts that reproduce SOTA results reported in latest papers </li>
+                    <li>Supports both PyTorch and MXNet</li>
+                    <li>A large set of pre-trained models</li>
+                    <li>Carefully designed APIs and easy to understand implementations</li>
+                    <li>Community support</li>
+                </ol>                
                 <img src='/gluoncv.gif' alt=''></img>
                 </Stack>
             </Container>

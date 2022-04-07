@@ -62,7 +62,8 @@ const AppLayout: FunctionComponent = ( {children} ) => {
                         'text': 'Algorithms',
                         'items': [
                             { text: 'Yolov5', type: SideNavigationItemType.LINK, href: '/algorithms/yolov5' }, 
-                            { text: 'GluonCV', type: SideNavigationItemType.LINK, href: '/algorithms/gluoncv' }
+                            { text: 'GluonCV', type: SideNavigationItemType.LINK, href: '/algorithms/gluoncv' },
+                            { text: 'PaddleOCR', type: SideNavigationItemType.LINK, href: '/algorithms/paddleocr' }
                         ]
                     }
                 ]}
