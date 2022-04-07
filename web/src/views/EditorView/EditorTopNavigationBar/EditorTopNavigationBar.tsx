@@ -28,6 +28,13 @@ import { ProjectData } from '../../../store/general/types';
 import { PopupWindowType } from '../../../data/enums/PopupWindowType';
 import { ImporterSpecData } from '../../../data/ImporterSpecData';
 import { AnnotationFormatType } from '../../../data/enums/AnnotationFormatType';
+import { ProjectType } from '../../../data/enums/ProjectType';
+import { ImageTextData, TextRect } from '../../../store/texts/types';
+import { TextsSelector } from '../../../store/selectors/TextsSelector';
+import { TextUtil } from '../../../utils/TextUtil';
+import { updateActiveTextId } from '../../../store/texts/actionCreators';
+import { store } from '../../..';
+import { IRect } from 'konva/lib/types';
 
 const BUTTON_SIZE: ISize = {width: 30, height: 30};
 const BUTTON_PADDING: number = 10;
@@ -96,6 +103,7 @@ interface IProps {
     imageDragMode: boolean;
     crossHairVisible: boolean;
     activeLabelType: LabelType;
+    projectType: ProjectType;
     imageBucket?: string;
     imageKey?: string;
     imageId?: string;
@@ -116,6 +124,7 @@ const EditorTopNavigationBar: React.FC<IProps> = (
         imageDragMode,
         crossHairVisible,
         activeLabelType,
+        projectType,
         imageBucket,
         imageKey,
         imageId,
@@ -188,7 +197,16 @@ const EditorTopNavigationBar: React.FC<IProps> = (
     const getInference = async () => {
         var response = undefined
         if(imageBucket !== undefined && imageKey!== undefined)
-            response = await axios.get('/inference/sample', { params : { endpoint_name: selectedEndpoint.value, bucket: imageBucket, key: imageKey } })
+            if(projectType === ProjectType.TEXT_RECOGNITION) {
+                var buffer = {
+                    'bucket': imageBucket,
+                    'image_uri': imageKey,
+                    'content_type': 'application/json'
+                }
+                response = await axios.post('/inference', buffer, { params : { endpoint_name: selectedEndpoint.value} })
+            }
+            else
+                response = await axios.get('/inference/sample', { params : { endpoint_name: selectedEndpoint.value, bucket: imageBucket, key: imageKey } })
         else if(imageId !== undefined)
             response = await axios.get(`/inference/image/${imageId}`, { params : { endpoint_name: selectedEndpoint.value, bucket: imageBucket, key: imageKey } })
         if(response === undefined)
@@ -219,32 +237,58 @@ const EditorTopNavigationBar: React.FC<IProps> = (
     const inferenceOnClick = () => {
         var promise = getInference()
         if(promise !== undefined)
-            promise.then(data => {
-                var imageBboxs : number[][] = [];
-                var imageIds : number[] = [];
-                for(let item of data) {
-                    var numbers = item.split(' ');
-                    imageIds.push(parseInt(item[0]));
-                    var box : number[] = [];
-                    box.push(parseFloat(numbers[1]));
-                    box.push(parseFloat(numbers[2]));
-                    box.push(parseFloat(numbers[3]));
-                    box.push(parseFloat(numbers[4]));
-                    imageBboxs.push(box);
-                }
-                var index = 0;
-                computedAnnotations.slice(0, computedAnnotations.length)
-                imageBboxs.forEach(item => {
-                    var annotation : string = imageIds[index] + ' ' + item[0] + ' ' + item[1] + ' ' + item[2] + ' ' + item[3] + '\r';
-                    computedAnnotations.push(annotation);
-                    index++;
+            if(projectType === ProjectType.TEXT_RECOGNITION) {
+                promise.then(data => {
+                    console.log(data)
+                    const imageData: ImageTextData = TextsSelector.getActiveImageData();
+                    var index = 0;
+                    data.bbox.forEach((item) => {
+                        var minx = Math.min(item[0][0], item[1][0], item[2][0], item[3][0])
+                        var miny = Math.min(item[0][1], item[1][1], item[2][1], item[3][1])
+                        var maxx = Math.max(item[0][0], item[1][0], item[2][0], item[3][0])
+                        var maxy = Math.max(item[0][1], item[1][1], item[2][1], item[3][1])
+                        var rect : IRect = {
+                            x: minx,
+                            y: miny,
+                            width: maxx - minx,
+                            height: maxy - miny
+                        }
+                        const textRect: TextRect = TextUtil.createTextRect(data.label[index], rect);
+                        imageData.textRects.push(textRect);
+                        store.dispatch(updateActiveTextId(textRect.id));
+                        index++;
+                    })
+                }, (error) => {
+                    console.log(error);
                 });
-                
-                importAnnotations();
+            }
+            else
+                promise.then(data => {
+                    var imageBboxs : number[][] = [];
+                    var imageIds : number[] = [];
+                    for(let item of data) {
+                        var numbers = item.split(' ');
+                        imageIds.push(parseInt(item[0]));
+                        var box : number[] = [];
+                        box.push(parseFloat(numbers[1]));
+                        box.push(parseFloat(numbers[2]));
+                        box.push(parseFloat(numbers[3]));
+                        box.push(parseFloat(numbers[4]));
+                        imageBboxs.push(box);
+                    }
+                    var index = 0;
+                    computedAnnotations.slice(0, computedAnnotations.length)
+                    imageBboxs.forEach(item => {
+                        var annotation : string = imageIds[index] + ' ' + item[0] + ' ' + item[1] + ' ' + item[2] + ' ' + item[3] + '\r';
+                        computedAnnotations.push(annotation);
+                        index++;
+                    });
+                    
+                    importAnnotations();
 
-            }, (error) => {
-                console.log(error);
-            });
+                }, (error) => {
+                    console.log(error);
+                });
     }
 
     return (
@@ -393,7 +437,8 @@ const mapStateToProps = (state: AppState) => ({
     activeContext: state.general.activeContext,
     imageDragMode: state.general.imageDragMode,
     crossHairVisible: state.general.crossHairVisible,
-    activeLabelType: state.labels.activeLabelType
+    activeLabelType: state.labels.activeLabelType,
+    projectType: state.general.projectData.type
 });
 
 export default connect(
