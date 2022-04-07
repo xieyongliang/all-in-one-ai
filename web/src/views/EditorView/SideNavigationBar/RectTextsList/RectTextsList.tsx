@@ -4,12 +4,12 @@ import Scrollbars from 'react-custom-scrollbars';
 import './RectTextsList.scss';
 import {AppState} from "../../../../store";
 import {connect} from "react-redux";
-import {LabelActions} from "../../../../logic/actions/LabelActions";
 import TextInputField from '../TextInputField/TextInputField';
 import {ImageTextData, TextRect} from "../../../../store/texts/types";
 import {
     updateImageTextDataById
 } from "../../../../store/texts/actionCreators";
+import { TextActions } from '../../../../logic/actions/TextActions';
 
 interface IProps {
     size: ISize;
@@ -18,7 +18,7 @@ interface IProps {
     updateImageTextDataById: (id: string, newImageData: ImageTextData) => any;
 }
 
-const RectLabelsList: React.FC<IProps> = ({size, imageData, activeTextId, updateImageTextDataById}) => {
+const RectTextsList: React.FC<IProps> = ({size, imageData, activeTextId, updateImageTextDataById}) => {
     const textInputFieldHeight = 40;
     const listStyle: React.CSSProperties = {
         width: size.width,
@@ -29,8 +29,8 @@ const RectLabelsList: React.FC<IProps> = ({size, imageData, activeTextId, update
         height: imageData.textRects.length * textInputFieldHeight
     };
 
-    const deleteRectLabelById = (textRectId: string) => {
-        LabelActions.deleteRectLabelById(imageData.id, textRectId);
+    const deleteRectTextById = (textRectId: string) => {
+        TextActions.deleteRectTextById(imageData.id, textRectId)
     };
 
     const updateRectText = (textRectId: string, textNameId: string) => {
@@ -58,7 +58,7 @@ const RectLabelsList: React.FC<IProps> = ({size, imageData, activeTextId, update
                 id={textRect.id}
                 key={textRect.id}
                 isActive={textRect.id === activeTextId}
-                onDelete={deleteRectLabelById}
+                onDelete={deleteRectTextById}
                 value={textRect.text}
                 onChange={updateRectText}
             />
@@ -94,4 +94,4 @@ const mapStateToProps = (state: AppState) => ({
 export default connect(
     mapStateToProps,
     mapDispatchToProps
-)(RectLabelsList);
+)(RectTextsList);

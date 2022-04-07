@@ -10,7 +10,11 @@ import {ViewPortActions} from "../actions/ViewPortActions";
 import {Direction} from "../../data/enums/Direction";
 import {PlatformUtil} from "../../utils/PlatformUtil";
 import {LabelActions} from "../actions/LabelActions";
+import {TextActions} from '../actions/TextActions';
 import {LineRenderEngine} from "../render/LineRenderEngine";
+import { store } from '../../';
+import { ProjectType } from "../../data/enums/ProjectType";
+import { TextEditorActions } from "../actions/TextEditorActions";
 
 export class EditorContext extends BaseContext {
     public static actions: HotKeyAction[] = [
@@ -21,7 +25,10 @@ export class EditorContext extends BaseContext {
                     const editorData: EditorData = LabelEditorActions.getEditorData();
                     (EditorModel.supportRenderingEngine as PolygonRenderEngine).addLabelAndFinishCreation(editorData);
                 }
-                LabelEditorActions.fullRender();
+                if(store.getState().general.projectData.type === ProjectType.TEXT_RECOGNITION)
+                    TextEditorActions.fullRender();
+                else
+                    LabelEditorActions.fullRender();
             }
         },
         {
@@ -37,7 +44,10 @@ export class EditorContext extends BaseContext {
                             break;
                     }
                 }
-                LabelEditorActions.fullRender();
+                if(store.getState().general.projectData.type === ProjectType.TEXT_RECOGNITION)
+                    TextEditorActions.fullRender();
+                else
+                    LabelEditorActions.fullRender();
             }
         },
         {
@@ -95,77 +105,110 @@ export class EditorContext extends BaseContext {
         {
             keyCombo: PlatformUtil.isMac(window.navigator.userAgent) ? ["Backspace"] : ["Delete"],
             action: (event: KeyboardEvent) => {
-                LabelActions.deleteActiveLabel();
+                if(store.getState().general.projectData.type === ProjectType.TEXT_RECOGNITION)
+                    TextActions.deleteActiveText();
+                else
+                    LabelActions.deleteActiveLabel();
             }
         },
         {
             keyCombo: PlatformUtil.isMac(window.navigator.userAgent) ? ["Alt", "0"] : ["Control", "0"],
             action: (event: KeyboardEvent) => {
                 ImageActions.setActiveLabelOnActiveImage(0);
-                LabelEditorActions.fullRender();
+                if(store.getState().general.projectData.type === ProjectType.TEXT_RECOGNITION)
+                    TextEditorActions.fullRender();
+                else
+                    LabelEditorActions.fullRender();
             }
         },
         {
             keyCombo: PlatformUtil.isMac(window.navigator.userAgent) ? ["Alt", "1"] : ["Control", "1"],
             action: (event: KeyboardEvent) => {
                 ImageActions.setActiveLabelOnActiveImage(1);
-                LabelEditorActions.fullRender();
+                if(store.getState().general.projectData.type === ProjectType.TEXT_RECOGNITION)
+                    TextEditorActions.fullRender();
+                else
+                    LabelEditorActions.fullRender();
             }
         },
         {
             keyCombo: PlatformUtil.isMac(window.navigator.userAgent) ? ["Alt", "2"] : ["Control", "2"],
             action: (event: KeyboardEvent) => {
                 ImageActions.setActiveLabelOnActiveImage(2);
-                LabelEditorActions.fullRender();
+                if(store.getState().general.projectData.type === ProjectType.TEXT_RECOGNITION)
+                    TextEditorActions.fullRender();
+                else
+                    LabelEditorActions.fullRender();
             }
         },
         {
             keyCombo: PlatformUtil.isMac(window.navigator.userAgent) ? ["Alt", "3"] : ["Control", "3"],
             action: (event: KeyboardEvent) => {
                 ImageActions.setActiveLabelOnActiveImage(3);
-                LabelEditorActions.fullRender();
+                if(store.getState().general.projectData.type === ProjectType.TEXT_RECOGNITION)
+                    TextEditorActions.fullRender();
+                else
+                    LabelEditorActions.fullRender();
             }
         },
         {
             keyCombo: PlatformUtil.isMac(window.navigator.userAgent) ? ["Alt", "4"] : ["Control", "4"],
             action: (event: KeyboardEvent) => {
                 ImageActions.setActiveLabelOnActiveImage(4);
-                LabelEditorActions.fullRender();
+                if(store.getState().general.projectData.type === ProjectType.TEXT_RECOGNITION)
+                    TextEditorActions.fullRender();
+                else
+                    LabelEditorActions.fullRender();
             }
         },
         {
             keyCombo: PlatformUtil.isMac(window.navigator.userAgent) ? ["Alt", "5"] : ["Control", "5"],
             action: (event: KeyboardEvent) => {
                 ImageActions.setActiveLabelOnActiveImage(5);
-                LabelEditorActions.fullRender();
+                if(store.getState().general.projectData.type === ProjectType.TEXT_RECOGNITION)
+                    TextEditorActions.fullRender();
+                else
+                    LabelEditorActions.fullRender();
             }
         },
         {
             keyCombo: PlatformUtil.isMac(window.navigator.userAgent) ? ["Alt", "6"] : ["Control", "6"],
             action: (event: KeyboardEvent) => {
                 ImageActions.setActiveLabelOnActiveImage(6);
-                LabelEditorActions.fullRender();
+                if(store.getState().general.projectData.type === ProjectType.TEXT_RECOGNITION)
+                    TextEditorActions.fullRender();
+                else
+                    LabelEditorActions.fullRender();
             }
         },
         {
             keyCombo: PlatformUtil.isMac(window.navigator.userAgent) ? ["Alt", "7"] : ["Control", "7"],
             action: (event: KeyboardEvent) => {
                 ImageActions.setActiveLabelOnActiveImage(7);
-                LabelEditorActions.fullRender();
+                if(store.getState().general.projectData.type === ProjectType.TEXT_RECOGNITION)
+                    TextEditorActions.fullRender();
+                else
+                    LabelEditorActions.fullRender();
             }
         },
         {
             keyCombo: PlatformUtil.isMac(window.navigator.userAgent) ? ["Alt", "8"] : ["Control", "8"],
             action: (event: KeyboardEvent) => {
                 ImageActions.setActiveLabelOnActiveImage(8);
-                LabelEditorActions.fullRender();
+                if(store.getState().general.projectData.type === ProjectType.TEXT_RECOGNITION)
+                    TextEditorActions.fullRender();
+                else
+                    LabelEditorActions.fullRender();
             }
         },
         {
             keyCombo: PlatformUtil.isMac(window.navigator.userAgent) ? ["Alt", "9"] : ["Control", "9"],
             action: (event: KeyboardEvent) => {
                 ImageActions.setActiveLabelOnActiveImage(9);
-                LabelEditorActions.fullRender();
+                if(store.getState().general.projectData.type === ProjectType.TEXT_RECOGNITION)
+                    TextEditorActions.fullRender();
+                else
+                    LabelEditorActions.fullRender();
             }
         }
     ];

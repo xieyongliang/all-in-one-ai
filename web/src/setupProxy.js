@@ -159,7 +159,6 @@ module.exports = function(app) {
                     delete body.model_id
                     axios.post(baseUrl + `/industrialmodel/${model_id}`, body, options)
                         .then((response) => {
-                            console.log(response)
                             res.send(response.data);
                         }, (error) => {
                                 res.status(400);

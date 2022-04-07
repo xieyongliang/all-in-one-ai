@@ -225,7 +225,7 @@ export class TextRenderEngine extends BaseRenderEngine {
 
     private addRectText = (rect: IRect) => {
         const imageData: ImageTextData = TextsSelector.getActiveImageData();
-        const textRect: TextRect = TextUtil.createTextRect('text', rect);
+        const textRect: TextRect = TextUtil.createTextRect('', rect);
         imageData.textRects.push(textRect);
         store.dispatch(updateActiveTextId(textRect.id));
     };

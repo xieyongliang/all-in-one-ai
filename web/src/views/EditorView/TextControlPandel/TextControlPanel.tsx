@@ -54,7 +54,7 @@ const TextControlPanel: React.FC<IProps> = ({position, updatePreventCustomCursor
     };
 
     const onReject = () => {
-        TextActions.deleteImageTextById(imageData.id, textData.id);
+        TextActions.deleteRectTextById(imageData.id, textData.id);
         updatePreventCustomCursorStatus(false);
     };
 

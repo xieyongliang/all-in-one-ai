@@ -6,13 +6,13 @@ import { TextsSelector } from '../../store/selectors/TextsSelector';
 import { updateImageTextData, updateImageTextDataById } from '../../store/texts/actionCreators';
 
 export class TextActions {
-    public static deleteActiveLabel() {
+    public static deleteActiveText() {
         const activeImageData: ImageTextData = TextsSelector.getActiveImageData();
         const activeLabelId: string = LabelsSelector.getActiveLabelId();
-        TextActions.deleteImageTextById(activeImageData.id, activeLabelId);
+        TextActions.deleteRectTextById(activeImageData.id, activeLabelId);
     }
 
-    public static deleteImageTextById(imageId: string, textId: string) {
+    public static deleteRectTextById(imageId: string, textId: string) {
         const imageData: ImageTextData = TextsSelector.getImageDataById(imageId);
         const newImageLabelData = {
             ...imageData,
