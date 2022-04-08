@@ -1,0 +1,10 @@
+{
+   "FP_DATA": "/opt/ml/input/data/cfg/data.yaml",
+   "FP_YOLO": "/opt/ml/input/data/cfg/yolov5x6.yaml",
+   "FP_HYP": "/opt/ml/input/data/cfg/hyp.finetune.yaml",    
+   "FP_WEIGHT": "/opt/ml/input/data/weights/yolov5x6.pt",
+   "NAME": "tutorial",
+   "IMG_SIZE": "1280",
+   "EPOCHS": "50",
+   "BATCH": "1"
+}

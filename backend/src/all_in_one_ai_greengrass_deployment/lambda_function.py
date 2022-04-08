@@ -37,8 +37,10 @@ def lambda_handler(event, context):
         )
 
         if('FunctionError' not in response):
+            payload = response["Payload"].read().decode("utf-8")
+            payload = json.loads(payload)
             return {
-                'statusCode': response['StatusCode'],
+                'statusCode': payload['statusCode'],
                 'body': response["Payload"].read().decode("utf-8")
             }
         else:

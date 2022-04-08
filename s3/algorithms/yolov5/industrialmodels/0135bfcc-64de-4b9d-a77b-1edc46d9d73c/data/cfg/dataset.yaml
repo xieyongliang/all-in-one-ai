@@ -1,0 +1,9 @@
+# train and val data
+train: ../FaceMaskDataset/images/train/
+val: ../FaceMaskDataset/images/val/
+
+# number of classes
+nc: 2
+
+# class names
+names: ['face mask', 'No face mask']

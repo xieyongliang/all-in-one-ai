@@ -12,7 +12,7 @@ def lambda_handler(event, context):
         
         target_arn = payload['target_arn']
         deployment_name = payload['deployment_name']
-        components = json.loads(payload['components'])
+        components = payload['components']
         iot_job_configurations = payload['iot_job_configurations']
         deployment_policies = payload['deployment_policies']
         

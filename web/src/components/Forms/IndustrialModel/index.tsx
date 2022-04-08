@@ -16,7 +16,7 @@ interface IProps {
 }
 
 const IndustrialModelForm: FunctionComponent<IProps> = (props) => {
-    const algorithmOptions = [{label: 'Yolov5', value: 'yolov5'}, {label: 'GluonCV', value:'gluoncv'}, {label: 'PaddleOCR', value: 'paddle'}]
+    const algorithmOptions = [{label: 'Yolov5', value: 'yolov5'}, {label: 'GluonCV', value:'gluoncv'}, {label: 'PaddleOCR', value: 'paddleocr'}]
     const [ selectedAlgorithm, setSelectedAlgorithm] = useState({label: 'Yolov5', value: 'yolov5'})
     const [ modelName, setModelName ] = useState('')
     const [ modelDescription, setModelDescription ] = useState('')

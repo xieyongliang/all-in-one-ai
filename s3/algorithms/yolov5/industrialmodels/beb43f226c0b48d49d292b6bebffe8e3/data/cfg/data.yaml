@@ -1,8 +1,0 @@
-train: /opt/ml/input/data/images/train/
-val: /opt/ml/input/data/images/val/
-
-# number of classes
-nc: 2
-
-# class names
-names: ['face mask', 'No face mask']

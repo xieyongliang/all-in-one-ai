@@ -14,6 +14,7 @@ import {updateSuggestedLabelList} from '../../store/ai/actionCreators';
 import {updateActivePopupType} from '../../store/general/actionCreators';
 import {PopupWindowType} from '../../data/enums/PopupWindowType';
 import {NumberUtil} from '../../utils/NumberUtil';
+import { ProjectType } from '../../data/enums/ProjectType';
 
 export class AIPoseDetectionActions {
     public static detectPoseForActiveImage(): void {
@@ -22,6 +23,9 @@ export class AIPoseDetectionActions {
     }
 
     public static detectPoses(imageId: string, image: HTMLImageElement): void {
+        if (store.getState().general.projectData.type === ProjectType.TEXT_RECOGNITION)
+            return;
+
         if (LabelsSelector.getImageLabelDataById(imageId).isVisitedByPoseDetector || !AISelector.isAIPoseDetectorModelLoaded())
             return;
 

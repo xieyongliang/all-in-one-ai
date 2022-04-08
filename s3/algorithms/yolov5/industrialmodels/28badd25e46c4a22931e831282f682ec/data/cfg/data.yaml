@@ -1,8 +1,0 @@
-train: /opt/ml/input/data/images/train/  # 128 images
-val: /opt/ml/input/data/images/test/  # 128 images
-
-# number of classes
-nc: 10
-
-# class names
-names: ['squat', 'aluminothermic weld (atw)', 'tri metal weld (tmw)', 'fishplate joint (fj)', 'grinding marks', 'head check error', 'insulated rail joint (irj)', 'flash butt weld (fbw)', 'corrugation', 'rail head anomaly']

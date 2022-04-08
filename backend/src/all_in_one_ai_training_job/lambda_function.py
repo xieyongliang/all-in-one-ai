@@ -46,13 +46,22 @@ def lambda_handler(event, context):
         )
 
         if('FunctionError' not in response):
-            params = {}
-            params['industrial_model'] = industrial_model
-            params['training_job_name'] = request['training_job_name']
-            ddbh.put_item(params)
+            payload = response["Payload"].read().decode("utf-8")
+            payload = json.loads(payload)
+            if(payload['statusCode'] == 200):
+                try:
+                    params = {}
+                    params['industrial_model'] = industrial_model
+                    params['training_job_name'] = request['training_job_name']
+                    ddbh.put_item(params)
+                except Exception as e:
+                    return {
+                        'statusCode': 400,
+                        'body': str(e)
+                    }
 
             return {
-                'statusCode': response['StatusCode'],
+                'statusCode': payload['statusCode'],
                 'body': response["Payload"].read().decode("utf-8")
             }
         else:

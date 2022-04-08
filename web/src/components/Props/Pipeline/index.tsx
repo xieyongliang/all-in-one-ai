@@ -22,12 +22,14 @@ const PipelineProp: FunctionComponent = () => {
     useEffect(() => {
         axios.get(`/pipeline`, {params: {'industrial_model': params.id, 'pipeline_execution_arn': id}})
             .then((response) => {
-            setPipelineType(response.data.pipeline_type)
-            setTraingJobName(response.data.training_job_name)
-            setModelName(response.data.model_name)
-            setEndpointName(response.data.endpoint_name)
-            setComponentVersionArn(response.data.component_version_arn)
-            setDeploymentId(response.data.deployment_id)
+            if(response.data.length > 0) {
+                setPipelineType(response.data[0].pipeline_type)
+                setTraingJobName(response.data[0].training_job_name)
+                setModelName(response.data[0].model_name)
+                setEndpointName(response.data[0].endpoint_name)
+                setComponentVersionArn(response.data[0].component_version_arn)
+                setDeploymentId(response.data[0].deployment_id)
+            }
         }, (error) => {
             console.log(error);
         });

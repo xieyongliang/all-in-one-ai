@@ -4,7 +4,7 @@ const fs = require('fs');
 const { default: axios } = require('axios');
 const url = require('url');
 
-const baseUrl = 'https://19x0g4n1kd.execute-api.ap-northeast-1.amazonaws.com/Prod'
+const baseUrl = 'https://s8upvi47qg.execute-api.ap-southeast-1.amazonaws.com/Prod'
 
 module.exports = function(app) {
     app.post('/image', (req, res) => {

@@ -1,7 +1,7 @@
 import { FunctionComponent, useState } from 'react';
 import { BrowserRouter, useHistory, useParams } from 'react-router-dom';
 import { connect } from 'react-redux';
-import { Wizard, FormField, Input } from 'aws-northstar/components';
+import { Wizard, FormField, Input, LoadingIndicator, Modal } from 'aws-northstar/components';
 import { Container, Stack } from 'aws-northstar/layouts';
 import axios from 'axios';
 import TrainingJobForm from '../TrainingJob';
@@ -13,11 +13,12 @@ import RadioButton from 'aws-northstar/components/RadioButton';
 import RadioGroup from 'aws-northstar/components/RadioGroup';
 import { AppState } from '../../../store';
 import { PathParams } from '../../Interfaces/PathParams';
-import { UpdatePipelineType } from '../../../store/pipelines/actionCreators';
+import { UpdateModelAlgorithm, UpdatePipelineType } from '../../../store/pipelines/actionCreators';
 import { IIndustrialModel } from '../../../store/industrialmodels/reducer';
 
 interface IProps {
     updatePipelineTypeAction: (pipelineType : string) => any;
+    updateModelAlgorithmAction: (modelAlgorithm: string) => any;
     pipelineType: string;
     trainingjobInstanceType : string;
     trainingjobInstanceCount : number;
@@ -47,10 +48,16 @@ interface IProps {
 const PipelineForm: FunctionComponent<IProps> = (props) => {
     const [ pipelineType, setPipelineType ] = useState('0')
     const [ pipelineName, setPipelineName ] = useState('')
+    const [ processing, setProcessing ] = useState(false)
 
     const history = useHistory();
 
     var params : PathParams = useParams();
+
+    var index = props.industrialModels.findIndex((item) => item.id === params.id)
+    var algorithm = props.industrialModels[index].algorithm
+
+    props.updateModelAlgorithmAction(algorithm)
 
     const onChange = (id: string, event: any) => {
         if(id === 'formFieldIdPipelineName')
@@ -101,13 +108,15 @@ const PipelineForm: FunctionComponent<IProps> = (props) => {
 
         if(pipelineType === '2')
             body['model_data_url'] = props.modelDataUrl
-
+        
+        setProcessing(true)
         axios.post('/pipeline', body,  { headers: {'content-type': 'application/json' }}) 
         .then((response) => {
             history.goBack()
         }, (error) => {
             alert('Error occured, please check and try it again');
             console.log(error);
+            setProcessing(false)
         });
     }
 
@@ -247,6 +256,11 @@ const PipelineForm: FunctionComponent<IProps> = (props) => {
         return (
             <BrowserRouter>
                 <Container>
+                    {
+                        processing && <Modal visible={true} title={'Submitting pipeline execution job'} onClose={()=>{setProcessing(false)}} width={"100"}>
+                            <LoadingIndicator label='Processing...'/>
+                        </Modal>
+                    }
                     <Wizard steps={steps} onSubmitButtonClick={onSubmit} onCancelButtonClick={onCancel}/>
                 </Container>
             </BrowserRouter>
@@ -256,6 +270,11 @@ const PipelineForm: FunctionComponent<IProps> = (props) => {
         return (
             <BrowserRouter>
                 <Container>
+                    {
+                        processing && <Modal visible={true} title={'Submitting pipeline execution job'} onClose={()=>{setProcessing(false)}} width={"100"}>
+                            <LoadingIndicator label='Processing...'/>
+                        </Modal>
+                    }
                     <Wizard steps={steps1} onSubmitButtonClick={onSubmit} onCancelButtonClick={onCancel}/>
                 </Container>
             </BrowserRouter>
@@ -265,6 +284,11 @@ const PipelineForm: FunctionComponent<IProps> = (props) => {
         return (
             <BrowserRouter>
                 <Container>
+                    {
+                        processing && <Modal visible={true} title={'Submitting pipeline execution job'} onClose={()=>{setProcessing(false)}} width={"100"}>
+                            <LoadingIndicator label='Processing...'/>
+                        </Modal>
+                    }
                     <Wizard steps={steps2} onSubmitButtonClick={onSubmit} onCancelButtonClick={onCancel}/>
                 </Container>
             </BrowserRouter>
@@ -274,6 +298,11 @@ const PipelineForm: FunctionComponent<IProps> = (props) => {
         return (
             <BrowserRouter>
                 <Container>
+                    {
+                        processing && <Modal visible={true} title={'Submitting pipeline execution job'} onClose={()=>{setProcessing(false)}} width={"100"}>
+                            <LoadingIndicator label='Processing...'/>
+                        </Modal>
+                    }
                     <Wizard steps={steps3} onSubmitButtonClick={onSubmit} onCancelButtonClick={onCancel}/>
                 </Container>
             </BrowserRouter>
@@ -283,6 +312,7 @@ const PipelineForm: FunctionComponent<IProps> = (props) => {
 
 const mapDispatchToProps = {
     updatePipelineTypeAction: UpdatePipelineType,
+    updateModelAlgorithmAction: UpdateModelAlgorithm
 };
 
 const mapStateToProps = (state: AppState) => ({

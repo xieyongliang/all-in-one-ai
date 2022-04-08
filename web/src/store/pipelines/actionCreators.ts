@@ -82,6 +82,14 @@ export function UpdateTrainingjobOutputS3Uri(trainingjobOutputS3Uri: string): Pi
     };
 }
 
+export function UpdateModelAlgorithm(modelAlgorithm: string): PipelineActionTypes {
+    return {
+        type: Action.UPDATE_PIPELINE_MODEL_ALGORITHM,
+        payload: {
+            modelAlgorithm,
+        },
+    };
+}
 export function UpdateModelModelPackageGroupName(modelModelPackageGroupName: string): PipelineActionTypes {
     return {
         type: Action.UPDATE_PIPELINE_MODEL_MODELPACKAGE_GROUP_NAME,

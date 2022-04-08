@@ -1,4 +1,4 @@
-import {TextsActionTypes, ImageTextData} from './types';
+import {TextsActionTypes, ImageTextData, Text } from './types';
 import { Action } from '../Actions';
 
 export function updateActiveTextImageIndex(activeImageIndex: number): TextsActionTypes {
@@ -6,6 +6,24 @@ export function updateActiveTextImageIndex(activeImageIndex: number): TextsActio
         type: Action.UPDATE_TEXT_ACTIVE_IMAGE_INDEX,
         payload: {
             activeImageIndex,
+        },
+    };
+}
+
+export function updateActiveTextId(activeTextId: string): TextsActionTypes {
+    return {
+        type: Action.UPDATE_TEXT_ACTIVE_TEXT_ID,
+        payload: {
+            activeTextId,
+        },
+    };
+}
+
+export function updateHighlightedTextId(highlightedTextId: string): TextsActionTypes {
+    return {
+        type: Action.UPDATE_TEXT_HIGHLIGHTED_TEXT_ID,
+        payload: {
+            highlightedTextId,
         },
     };
 }
@@ -38,21 +56,11 @@ export function updateImageTextData(imageData: ImageTextData[]): TextsActionType
     };
 }
 
-export function updateActiveTextId(activeTextId: string): TextsActionTypes {
+export function updateTexts(texts: Text[]): TextsActionTypes {
     return {
-        type: Action.UPDATE_TEXT_ACTIVE_TEXT_ID,
+        type: Action.UPDATE_TEXTS,
         payload: {
-            activeTextId,
+            texts,
         },
     };
 }
-
-export function updateHighlightedTextId(highlightedTextId: string): TextsActionTypes {
-    return {
-        type: Action.UPDATE_TEXT_HIGHLIGHTED_TEXT_ID,
-        payload: {
-            highlightedTextId,
-        },
-    };
-}
-

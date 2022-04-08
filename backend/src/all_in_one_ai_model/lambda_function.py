@@ -45,7 +45,9 @@ def lambda_handler(event, context):
         )
 
         if('FunctionError' not in response):
-            if(response['StatusCode'] == 200):
+            payload = response["Payload"].read().decode("utf-8")
+            payload = json.loads(payload)
+            if(payload['statusCode'] == 200):
                 try:
                     params = {}
                     params['model_name'] = request['model_name']
@@ -58,7 +60,7 @@ def lambda_handler(event, context):
                     }
                     
             return {
-                'statusCode': response['StatusCode'],
+                'statusCode': payload['statusCode'],
                 'body': response["Payload"].read().decode("utf-8")
             }
         else:

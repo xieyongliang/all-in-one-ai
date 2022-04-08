@@ -24,6 +24,7 @@ interface IProps {
     modelModelPackageGroupName: string;
     modelModelPackageArn: string;
     modelDataUrl: string;
+    modelAlgorithm: string;
     industrialModels : IIndustrialModel[];
     wizard?: boolean;
 }
@@ -47,6 +48,8 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
     const [ invalidModelPackageName, setInvalidModelPackageName ] = useState(false)
     const [ forceRefreshed, setForceRefreshed ] = useState(false)
     const [ processing, setProcessing ] = useState(false)
+    const [ processingModelPackage, setProcessingModelPackage ] = useState(false);
+    const [ processingModelPackageGroup, setProcessingModelPackageGroup ] = useState(false);
 
     const history = useHistory();
 
@@ -379,6 +382,7 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
             var body = {
                 'model_package_group_name': modelPackageGroupName
             }
+            setProcessingModelPackageGroup(true)
             axios.post('/modelpackage/group', body,  { headers: {'content-type': 'application/json' }}) 
             .then((response) => {
                 modelPackageGroupItems.push({name: modelPackageGroupName, creation_time: response.data.creation_time, versions: []})
@@ -387,9 +391,11 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
                     arns: []
                 }
                 setForcedRefresh(!forcedRefresh);
+                setProcessingModelPackageGroup(false);
             }, (error) => {
                 alert('Error occured, please check and try it again');
                 console.log(error);
+                setProcessingModelPackageGroup(false);
             });
         }
     }
@@ -401,7 +407,7 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
                     <Input type='text' required={true} value={modelPackageGroupName} invalid={invalidModelPackageName} onChange={(event)=>{onChange('formFieldIdModelPackageGroup', event)}} />
                 </FormField>
                 <FormField controlId='formfieldIdCreateModelPackageGroup'>
-                    <Button onClick={onCreateModelPackageGroup}>Create model package group</Button>
+                    <Button onClick={onCreateModelPackageGroup} loading={processingModelPackageGroup}>Create model package group</Button>
                 </FormField>
             </Stack>
         )
@@ -411,12 +417,22 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
         if(modelDataUrl === '')
             setInvalidModelDataUrl(true)
         else{
+            var algorithm;
+            if(!wizard) {
+                var index = props.industrialModels.findIndex((item) => item.id === params.id)
+                algorithm = props.industrialModels[index].algorithm
+            } else {
+                algorithm = props.modelAlgorithm
+            }
+
             var body = {
+                'model_algorithm': algorithm,
                 'container_image': containerIamge,
                 'model_data_url': modelDataUrl,
-                'supported_content_types': 'image/png image/jpg image/jpeg',
+                'supported_content_types': 'image/png;image/jpg;image/jpeg',
                 'supported_response_mime_types': 'application/json'
             }
+            setProcessingModelPackage(true)
             axios.post(`/modelpackage/${selectedModelPackage['name']}`, body,  { headers: {'content-type': 'application/json' }}) 
             .then((response) => {
                 getModelPackageVersions(selectedModelPackage['name']).then(value => {
@@ -432,10 +448,12 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
                         arns: arns
                     }
                     setForcedRefresh(!forcedRefresh);
+                    setProcessingModelPackage(false);
                 })                
             }, (error) => {
                 alert('Error occured, please check and try it again');
                 console.log(error);
+                setProcessingModelPackage(false)
             });
         }
     }
@@ -450,7 +468,7 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
                     <Input type='text' required={true} value={modelDataUrl} invalid={invalidModelDataUrl} onChange={(event)=>{onChange('formFieldIdModelDataUrl', event)}} />
                 </FormField>
                 <FormField controlId='formfieldIdCreateModelPackage'>
-                    <Button onClick={onCreateModelPackage}>Create model package</Button>
+                    <Button onClick={onCreateModelPackage} loading={processingModelPackage}>Create model package</Button>
                 </FormField>
             </Stack>
         )
@@ -532,6 +550,7 @@ const mapStateToProps = (state: AppState) => ({
     modelModelPackageGroupName : state.pipeline.modelModelPackageGroupName,
     modelModelPackageArn: state.pipeline.modelModelPackageArn,
     modelDataUrl: state.pipeline.modelDataUrl,
+    modelAlgorithm: state.pipeline.modelAlgorithm,
     industrialModels : state.industrialmodel.industrialModels
 });
 

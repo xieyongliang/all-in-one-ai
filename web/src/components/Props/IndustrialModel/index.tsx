@@ -18,14 +18,13 @@ interface IProps {
 
 const InustrialModelProp: FunctionComponent<IProps> = (props) => {
     var labels = ''
-    console.log(props.industrialModel)
     if(props.industrialModel.labels !== undefined) {
         props.industrialModel.labels.forEach((label) => {
             labels += label + '\n'
         })
         labels = labels.substring(0, labels.length - 1)
     }
-    const algorithmOptions = [{label: 'Yolov5', value: 'yolov5'}, {label: 'GluonCV', value:'gluoncv'}, {label: 'PaddleOCR', value: 'paddle'}]
+    const algorithmOptions = [{label: 'Yolov5', value: 'yolov5'}, {label: 'GluonCV', value:'gluoncv'}, {label: 'PaddleOCR', value: 'paddleocr'}]
     const selectedAlgorithm = algorithmOptions.find((item) => item.value === props.industrialModel.algorithm)
     const [ modelName, setModelName ] = useState(props.industrialModel.name)
     const [ modelDescription, setModelDescription ] = useState(props.industrialModel.description)

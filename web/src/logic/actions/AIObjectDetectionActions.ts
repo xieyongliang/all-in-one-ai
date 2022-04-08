@@ -13,6 +13,7 @@ import {PopupWindowType} from '../../data/enums/PopupWindowType';
 import {updateActivePopupType} from '../../store/general/actionCreators';
 import {AISelector} from '../../store/selectors/AISelector';
 import {AIActions} from './AIActions';
+import { ProjectType } from '../../data/enums/ProjectType';
 
 export class AIObjectDetectionActions {
     public static detectRectsForActiveImage(): void {
@@ -21,6 +22,9 @@ export class AIObjectDetectionActions {
     }
 
     public static detectRects(imageId: string, image: HTMLImageElement): void {
+        if (store.getState().general.projectData.type === ProjectType.TEXT_RECOGNITION)
+            return;
+
         if (LabelsSelector.getImageLabelDataById(imageId).isVisitedByObjectDetector || !AISelector.isAIObjectDetectorModelLoaded())
             return;
 

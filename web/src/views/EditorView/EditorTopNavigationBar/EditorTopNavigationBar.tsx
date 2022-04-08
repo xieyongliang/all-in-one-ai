@@ -100,6 +100,8 @@ interface IProps {
     updateFirstLabelCreatedFlag: (firstLabelCreatedFlag: boolean) => any;
     updateProjectData: (projectData: ProjectData) => any;
     updateLabels: (labels: LabelName[]) => any;
+    onProcessing: (message: string) => any;
+    onProcessed: () => any;
     imageDragMode: boolean;
     crossHairVisible: boolean;
     activeLabelType: LabelType;
@@ -121,6 +123,8 @@ const EditorTopNavigationBar: React.FC<IProps> = (
         updateLabelNamesAction,
         updateActiveLabelTypeAction,
         updateLabels,
+        onProcessing,
+        onProcessed,
         imageDragMode,
         crossHairVisible,
         activeLabelType,
@@ -203,12 +207,17 @@ const EditorTopNavigationBar: React.FC<IProps> = (
                     'image_uri': imageKey,
                     'content_type': 'application/json'
                 }
+                onProcessing('Perform text recogition')
                 response = await axios.post('/inference', buffer, { params : { endpoint_name: selectedEndpoint.value} })
             }
-            else
+            else {
+                onProcessing('Perform image recognition')
                 response = await axios.get('/inference/sample', { params : { endpoint_name: selectedEndpoint.value, bucket: imageBucket, key: imageKey } })
-        else if(imageId !== undefined)
+            }
+        else if(imageId !== undefined) {
+            onProcessing('Perform image recognition')
             response = await axios.get(`/inference/image/${imageId}`, { params : { endpoint_name: selectedEndpoint.value, bucket: imageBucket, key: imageKey } })
+        }
         if(response === undefined)
             return response
         else
@@ -239,7 +248,6 @@ const EditorTopNavigationBar: React.FC<IProps> = (
         if(promise !== undefined)
             if(projectType === ProjectType.TEXT_RECOGNITION) {
                 promise.then(data => {
-                    console.log(data)
                     const imageData: ImageTextData = TextsSelector.getActiveImageData();
                     var index = 0;
                     data.bbox.forEach((item) => {
@@ -258,6 +266,7 @@ const EditorTopNavigationBar: React.FC<IProps> = (
                         store.dispatch(updateActiveTextId(textRect.id));
                         index++;
                     })
+                    onProcessed();
                 }, (error) => {
                     console.log(error);
                 });
@@ -285,7 +294,7 @@ const EditorTopNavigationBar: React.FC<IProps> = (
                     });
                     
                     importAnnotations();
-
+                    onProcessed();
                 }, (error) => {
                     console.log(error);
                 });

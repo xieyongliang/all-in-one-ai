@@ -155,7 +155,7 @@ const IndustrialModels: FunctionComponent<IProps> = (
             <Tabs tabs={tabs} variant='container' activeId={tab} onChange={onChange}/>
         )
     } 
-    else if(algorithm === 'paddle') {
+    else if(algorithm === 'paddleocr') {
         if(hash === 'form' || hash === 'review') {
             switch(tab) {
                 case 'model':

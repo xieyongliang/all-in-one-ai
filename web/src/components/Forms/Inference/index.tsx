@@ -96,7 +96,6 @@ const InferenceForm: FunctionComponent<IProps> = (props) => {
             labelsData.push(label + '\r');
         })
 
-        console.log(imageUri)
         return (
             <ImageAnnotate 
                 imageUri={imageUri} 

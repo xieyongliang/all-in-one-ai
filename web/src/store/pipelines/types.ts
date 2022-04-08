@@ -10,6 +10,7 @@ export type PipelineState = {
     trainingjobWeightsS3Uri: string;
     trainingjobCfgS3Uri: string;
     trainingjobOutputS3Uri: string;
+    modelAlgorithm: string;
     modelModelPackageGroupName: string;
     modelModelPackageArn: string;
     endpointInstanceType: string;
@@ -85,6 +86,13 @@ interface UpdateTrainingjobOutputS3Uri {
     type: typeof Action.UPDATE_PIPELINE_TRAINING_JOB_OUTPUT_S3URI;
     payload: {
         trainingjobOutputS3Uri: string;
+    }
+}
+
+interface UpdateModelAlgorithm {
+    type: typeof Action.UPDATE_PIPELINE_MODEL_ALGORITHM;
+    payload: {
+        modelAlgorithm: string;
     }
 }
 
@@ -188,6 +196,7 @@ export type PipelineActionTypes = UpdatePipelineType
     | UpdateTrainingjobWeightsS3Uri
     | UpdateTrainingjobCfgS3Uri
     | UpdateTrainingjobOutputS3Uri
+    | UpdateModelAlgorithm
     | UpdateModelModelPackageGroupName
     | UpdateModelModelPackageArn
     | UpdateEndpointInstanceType

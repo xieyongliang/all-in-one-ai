@@ -39,9 +39,10 @@ def lambda_handler(event, context):
         
         if('FunctionError' not in response):
             statusCode = response['StatusCode']
-            body = response["Payload"].read().decode("utf-8")
+            payload = response["Payload"].read().decode("utf-8")
             if(statusCode == 200):
-                payload = json.loads(body)
+                payload = json.loads(payload)
+                payload = json.loads(payload['body'])
                 prediction = payload['predictions'][0]
                 response = es.index(
                     index = index,

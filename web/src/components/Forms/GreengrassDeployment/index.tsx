@@ -163,7 +163,7 @@ const GreengrassDeploymentForm: FunctionComponent<IProps> = (props) => {
             var body = {
                 'deployment_name': deployment_name,
                 'target_arn': target_arn,
-                'components': components,
+                'components': JSON.stringify(components),
                 'industrial_model': params.id
             }
             setProcessing(true)

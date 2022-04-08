@@ -11,6 +11,7 @@ const initialState: PipelineState = {
     trainingjobWeightsS3Uri: '',
     trainingjobCfgS3Uri: '',
     trainingjobOutputS3Uri: '',
+    modelAlgorithm: '',
     modelModelPackageGroupName: '',
     modelModelPackageArn: '',
     endpointInstanceType: '',
@@ -83,6 +84,12 @@ export function pipelineReducer(
             return {
                 ...state,
                 trainingjobOutputS3Uri: action.payload.trainingjobOutputS3Uri
+            }
+        }
+        case Action.UPDATE_PIPELINE_MODEL_ALGORITHM: {
+            return {
+                ...state,
+                modelAlgorithm: action.payload.modelAlgorithm
             }
         }
         case Action.UPDATE_PIPELINE_MODEL_MODELPACKAGE_GROUP_NAME: {

@@ -20,6 +20,18 @@ export function textsReducer(
                 activeImageIndex: action.payload.activeImageIndex
             }
         }
+        case Action.UPDATE_TEXT_ACTIVE_TEXT_ID: {
+            return {
+                ...state,
+                activeTextId: action.payload.activeTextId
+            }
+        }
+        case Action.UPDATE_TEXT_HIGHLIGHTED_TEXT_ID: {
+            return {
+                ...state,
+                highlightedTextId: action.payload.highlightedTextId
+            }
+        }
         case Action.UPDATE_TEXT_IMAGE_DATA_BY_ID: {
             return {
                 ...state,
@@ -40,16 +52,10 @@ export function textsReducer(
                 imagesData: action.payload.imageData
             }
         }
-        case Action.UPDATE_TEXT_ACTIVE_TEXT_ID: {
+        case Action.UPDATE_TEXTS: {
             return {
                 ...state,
-                activeTextId: action.payload.activeTextId
-            }
-        }
-        case Action.UPDATE_TEXT_HIGHLIGHTED_TEXT_ID: {
-            return {
-                ...state,
-                highlightedTextId: action.payload.highlightedTextId
+                texts: action.payload.texts
             }
         }
         default:

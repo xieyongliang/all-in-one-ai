@@ -36,6 +36,20 @@ interface UpdateActiveImageIndex {
     }
 }
 
+interface UpdateActiveTextId {
+    type: typeof Action.UPDATE_TEXT_ACTIVE_TEXT_ID;
+    payload: {
+        activeTextId: string;
+    }
+}
+
+interface UpdateHighlightedTextId {
+    type: typeof Action.UPDATE_TEXT_HIGHLIGHTED_TEXT_ID;
+    payload: {
+        highlightedTextId: string;
+    }
+}
+
 interface UpdateImageTextDataById {
     type: typeof Action.UPDATE_TEXT_IMAGE_DATA_BY_ID;
     payload: {
@@ -58,22 +72,17 @@ interface UpdateImageTextData {
     }
 }
 
-interface UpdateActiveTextId {
-    type: typeof Action.UPDATE_TEXT_ACTIVE_TEXT_ID;
+interface UpdateTexts {
+    type: typeof Action.UPDATE_TEXTS;
     payload: {
-        activeTextId: string;
+        texts: Text[];
     }
 }
 
-interface UpdateHighlightedTextId {
-    type: typeof Action.UPDATE_TEXT_HIGHLIGHTED_TEXT_ID;
-    payload: {
-        highlightedTextId: string;
-    }
-}
 export type TextsActionTypes = UpdateActiveImageIndex |
+    UpdateActiveTextId      |
+    UpdateHighlightedTextId |
     UpdateImageTextDataById |
     AddImageTextData        |
     UpdateImageTextData     |
-    UpdateActiveTextId      |
-    UpdateHighlightedTextId
+    UpdateTexts

@@ -2,20 +2,32 @@ import json
 import boto3
 from decimal import Decimal
 from datetime import date, datetime
+import traceback
 
 sagemaker_client = boto3.client('sagemaker')
 
 def lambda_handler(event, context):
     response = None
     if event['httpMethod'] == 'POST':
-        request = json.loads(event['body'])
-        
-        model_package_group_name = request['model_package_group_name']
-        model_package_group_input_dict = {
-            "ModelPackageGroupName" : model_package_group_name
+        try:
+            request = json.loads(event['body'])
+            
+            model_package_group_name = request['model_package_group_name']
+            model_package_group_input_dict = {
+                "ModelPackageGroupName" : model_package_group_name
+            }
+            response = sagemaker_client.create_model_package_group(**model_package_group_input_dict)
+            response['creation_time'] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            return {
+                'statusCode': 200,
+                'body': response
+            }
+        except Exception as e:
+            traceback.print_exc()
+            return {
+                'statusCode': 400,
+                'body': str(e)
         }
-        response = sagemaker_client.create_model_package_group(**model_package_group_input_dict)
-        response['creation_time'] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     else:
         payload = []
         paginator = sagemaker_client.get_paginator("list_model_package_groups")

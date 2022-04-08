@@ -18,6 +18,7 @@ import EditorTopNavigationBar from "../EditorTopNavigationBar/EditorTopNavigatio
 import {ProjectType} from "../../../data/enums/ProjectType";
 import TextsToolkit from '../SideNavigationBar/TextsToolkit/TextsToolkit';
 import { ImageTextData } from '../../../store/texts/types';
+import { LoadingIndicator, Modal } from 'aws-northstar';
 
 interface IProps {
     windowSize: ISize;
@@ -51,8 +52,10 @@ const EditorContainer: React.FC<IProps> = (
         imageColors,
         imageAnnotations
     }) => {
-    const [leftTabStatus, setLeftTabStatus] = useState(true);
-    const [rightTabStatus, setRightTabStatus] = useState(true);
+    const [ leftTabStatus, setLeftTabStatus ] = useState(true);
+    const [ rightTabStatus, setRightTabStatus ] = useState(true);
+    const [ processing, setProcessing ] = useState(false);
+    const [ message, setMessage ] = useState('');
 
     const calculateEditorSize = (): ISize => {
         if (windowSize) {
@@ -124,6 +127,16 @@ const EditorContainer: React.FC<IProps> = (
     var imagesData = projectType === ProjectType.TEXT_RECOGNITION ? imagesTextData : imagesLabelData
     var activeImageIndex = projectType === ProjectType.TEXT_RECOGNITION ? activeTextImageIndex : activeLabelImageIndex
  
+    const onProcessing = (message) => {
+        setMessage(message)
+        setProcessing(true);
+    }
+
+    const onProcessed = () => {
+        setProcessing(false);
+        setMessage('');
+    }
+
     return (
         <div className="EditorContainer">
             <SideNavigationBar
@@ -154,8 +167,15 @@ const EditorContainer: React.FC<IProps> = (
                         imageColors={imageColors} 
                         imageLabels={imageLabels}
                         imageAnnotations={imageAnnotations}
+                        onProcessing = {onProcessing}
+                        onProcessed = {onProcessed}
                         key="editor-top-navigation-bar"
                     />
+                }
+                {
+                    processing && <Modal visible={true} title={message} onClose={()=>{onProcessed()}} width={"100"}>
+                        <LoadingIndicator label='Processing...'/>
+                    </Modal>
                 }
                 <Editor
                     size={calculateEditorSize()}

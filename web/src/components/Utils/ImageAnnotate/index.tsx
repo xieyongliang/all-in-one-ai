@@ -4,39 +4,35 @@ import {ProjectType} from '../../../data/enums/ProjectType';
 import {AppState} from '../../../store';
 import {connect} from 'react-redux';
 import PopupView from '../../../views/PopupView/PopupView';
-import {ISize} from '../../../interfaces/ISize';
+import { ISize } from '../../../interfaces/ISize';
 import { ProjectData } from '../../../store/general/types';
-import { PopupWindowType } from '../../../data/enums/PopupWindowType';
 import { addImageLabelData, updateActiveLabelImageIndex, updateActiveLabelType, updateImageLabelData, updateLabelNames, updateActiveLabelNameId, updateFirstLabelCreatedFlag } from '../../../store/labels/actionCreators';
 import { updatePerClassColorationStatus } from '../../../store/general/actionCreators';
 import { updateActivePopupType, updateProjectData } from '../../../store/general/actionCreators';
 import {ImageLabelData, LabelName} from '../../../store/labels/types';
 import { ImageLabelDataUtil } from '../../../utils/ImageLabelDataUtil';
-import {ImageTextData} from '../../../store/texts/types';
+import { ImageTextData, Text } from '../../../store/texts/types';
 import { ImageTextDataUtil } from '../../../utils/ImageTextDataUtil';
 import axios from 'axios';
 import { LabelType } from '../../../data/enums/LabelType';
 import { LoadingIndicator, Modal } from 'aws-northstar';
-import { addImageTextData, updateActiveTextImageIndex } from '../../../store/texts/actionCreators';
+import { addImageTextData, updateActiveTextId, updateActiveTextImageIndex, updateImageTextData, updateTexts } from '../../../store/texts/actionCreators';
 
 interface IProps {
+    updateActiveLabelNameIdAction: (activeLabelNameId: string) => any;
+    updateActiveTextIdAction: (activeTextId: string) => any;
+    updateLabelNamesAction: (labels: LabelName[]) => any;
+    updateTextsAction: (texts: Text[]) => any;
+    updateProjectDataAction: (projectData: ProjectData) => any;
     updateActiveLabelImageIndexAction: (activeImageIndex: number) => any;
     updateActiveTextImageIndexAction: (activeImageIndex: number) => any;
     addImageLabelDataAction: (imageData: ImageLabelData[]) => any;
     addImageTextDataAction: (imageData: ImageTextData[]) => any;
-    updateProjectDataAction: (projectData: ProjectData) => any;
-    updateActivePopupTypeAction: (activePopupType: PopupWindowType) => any;
     updateImageLabelDataAction: (imageLabelData: ImageLabelData[]) => any;
-    updateLabelNamesAction: (labels: LabelName[]) => any;
+    updateImageTextDataAction: (imageTextData: ImageTextData[]) => any;
     updateActiveLabelTypeAction: (activeLabelType: LabelType) => any;
+    updateFirstLabelCreatedFlagAction: (firstLabelCreatedFlag: boolean) => any;
     updatePerClassColorationStatusAction: (updatePerClassColoration: boolean) => any;
-    updateActiveLabelImageIndex: (activeImageIndex: number) => any;
-    updateActiveLabelNameId: (activeLabelId: string) => any;
-    updateLabelNames: (labelNames: LabelName[]) => any;
-    updateImageLabelData: (imageLabelData: ImageLabelData[]) => any;
-    updateFirstLabelCreatedFlag: (firstLabelCreatedFlag: boolean) => any;
-    updateProjectData: (projectData: ProjectData) => any;
-    updateLabels: (labels: LabelName[]) => any;
     projectType: ProjectType;
     windowSize: ISize;
     ObjectDetectorLoaded: boolean;
@@ -67,19 +63,20 @@ const ImageAnnotate: React.FC<IProps> = (
         imageBucket,
         imageId,
         imageKey,
-        onClose,
-        updateActiveLabelNameId,
-        updateLabelNames,
-        updateProjectData,
-        updateActiveLabelImageIndex,
-        updateImageLabelData,
-        updateFirstLabelCreatedFlag,
-        updatePerClassColorationStatusAction,
+        updateActiveLabelNameIdAction,
+        updateActiveTextIdAction,
+        updateLabelNamesAction,
+        updateTextsAction,
         updateProjectDataAction,
         updateActiveLabelImageIndexAction,
         updateActiveTextImageIndexAction,
+        updateImageLabelDataAction,
+        updateImageTextDataAction,
+        updateFirstLabelCreatedFlagAction, 
+        updatePerClassColorationStatusAction,
         addImageLabelDataAction,
         addImageTextDataAction,
+        onClose,
     }) => {
     const [imageReady, setImageReady] = useState(false)
 
@@ -88,12 +85,16 @@ const ImageAnnotate: React.FC<IProps> = (
 
     useEffect(() => {
         var imageFile : File;
-        updateActiveLabelNameId(null);
-        updateLabelNames([]);
-        updateProjectData({type: null, name: 'my-project-name'});
-        updateActiveLabelImageIndex(null);
-        updateImageLabelData([]);
-        updateFirstLabelCreatedFlag(false);
+        updateActiveLabelNameIdAction(null);
+        updateActiveTextIdAction(null);
+        updateLabelNamesAction([]);
+        updateTextsAction([]);
+        updateProjectDataAction({type: null, name: 'my-project-name'});
+        updateActiveLabelImageIndexAction(null);
+        updateActiveTextImageIndexAction(null);
+        updateImageLabelDataAction([]);
+        updateImageTextDataAction([]);
+        updateFirstLabelCreatedFlagAction(false);
         updatePerClassColorationStatusAction(true)
 
         axios.get('/file/download', {params : {'uri' : encodeURIComponent(imageUri)} , responseType: 'blob'})
@@ -147,6 +148,10 @@ const ImageAnnotate: React.FC<IProps> = (
 };
 
 const mapDispatchToProps = {
+    updateActiveLabelNameIdAction: updateActiveLabelNameId,
+    updateActiveTextIdAction: updateActiveTextId,
+    updateLabelNamesAction: updateLabelNames,
+    updateTextsAction: updateTexts,
     updateActiveLabelImageIndexAction: updateActiveLabelImageIndex,
     updateActiveTextImageIndexAction: updateActiveTextImageIndex,
     addImageLabelDataAction: addImageLabelData,
@@ -154,16 +159,10 @@ const mapDispatchToProps = {
     updateProjectDataAction: updateProjectData,
     updateActivePopupTypeAction: updateActivePopupType,
     updateImageLabelDataAction: updateImageLabelData,
-    updateLabelNamesAction: updateLabelNames,
+    updateImageTextDataAction: updateImageTextData,
     updateActiveLabelTypeAction: updateActiveLabelType,
+    updateFirstLabelCreatedFlagAction: updateFirstLabelCreatedFlag,
     updatePerClassColorationStatusAction: updatePerClassColorationStatus,
-    updateActiveLabelNameId,
-    updateLabelNames,
-    updateProjectData,
-    updateActiveLabelImageIndex,
-    updateImageLabelData,
-    updateFirstLabelCreatedFlag,
-    updateLabels: updateLabelNames
 };
 
 const mapStateToProps = (state: AppState) => ({

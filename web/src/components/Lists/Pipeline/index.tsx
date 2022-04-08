@@ -3,7 +3,6 @@ import Table from 'aws-northstar/components/Table';
 import StatusIndicator from 'aws-northstar/components/StatusIndicator';
 import Button from 'aws-northstar/components/Button';
 import Inline from 'aws-northstar/layouts/Inline';
-import ButtonDropdown from 'aws-northstar/components/ButtonDropdown';
 import {Column} from 'react-table'
 import { useHistory, useParams } from 'react-router-dom';
 import { PathParams } from '../../Interfaces/PathParams';
@@ -119,10 +118,6 @@ const PipelineList: FunctionComponent = () => {
     const tableActions = (
         <Inline>
             <Button variant="icon" icon="refresh" size="small" onClick={onRefresh}/>
-            <ButtonDropdown
-                content='Action'
-                    items={[{ text: 'Clone' }, { text: 'Delete' }, { text: 'Add/Edit tags' }]}
-            />        
             <Button variant='primary' onClick={onCreate}>
                 Create
             </Button>

@@ -7,6 +7,7 @@ import uuid
 from boto3.dynamodb.conditions import Key
 from decimal import Decimal
 from datetime import date, datetime
+import traceback
 
 ssmh = helper.ssm_helper()
 pipeline_table = ssmh.get_parameter('/all_in_one_ai/config/meta/pipeline_table')
@@ -108,14 +109,6 @@ def lambda_handler(event, context):
                     items = ddbh.scan(FilterExpression=Key('industrial_model').eq(industrial_model))
                 else:
                     items = ddbh.scan()
-                
-                for item in items:
-                    process_item(item, industrial_model)
-
-                return {
-                    'statusCode': 200,
-                    'body': json.dumps(items, default = defaultencode)
-                }
             else:
                 params = {}
                 params['pipeline_execution_arn'] = pipeline_execution_arn
@@ -124,15 +117,23 @@ def lambda_handler(event, context):
                 
                 item = ddbh.get_item(params)
         
-                process_item(item, industrial_model)
-        
-                return {
-                   'statusCode': 200,
-                    'body': json.dumps(item, default = defaultencode)
-                }
+                if item == None:
+                    items = []
+                else:
+                    items = [ item ]
+
+            result = []
+            for item in items:
+                if(process_item(item, industrial_model)):
+                    result.append(item)
+
+            return {
+                'statusCode': 200,
+                'body': json.dumps(result, default = defaultencode)
+            }
         
         except Exception as e:
-            print(e)
+            traceback.print_exc()
             return {
                 'statusCode': 400,
                 'body': str(e)
@@ -158,11 +159,14 @@ def process_item(item, industrial_model):
         if('FunctionError' not in response):
             payload = response['Payload'].read().decode('utf-8')
             payload = json.loads(payload)
-            payload = json.loads(payload)
-            
-            item.update(payload)
+            if(payload['statusCode'] == 200):
+                item.update(json.loads(payload['body']))
+                return True
+            else:
+                return False
         else:
-            raise Exception(response['FunctionError'])
+            traceback.print_exc()
+            return False
         
 def defaultencode(o):
     if isinstance(o, Decimal):
