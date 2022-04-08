@@ -23,7 +23,6 @@ web/public
 .DS_Store
 ./backend/.DS_Store
 
-backend/deployment/s3-assets-code
 backend/build
 
 npm-debug.log*
