@@ -1,5 +1,5 @@
-#FROM paddlepaddle/paddle:2.0.0rc1-gpu-cuda10.1-cudnn7
-FROM paddlepaddle/paddle:2.2.2
+FROM paddlepaddle/paddle:2.0.0rc1-gpu-cuda10.1-cudnn7
+#FROM paddlepaddle/paddle:2.2.2
 
 
 ENV LANG=en_US.utf8
@@ -17,8 +17,8 @@ RUN pip3.7 install --upgrade pip
 ## install flask
 RUN pip3.7 install networkx==2.3 flask gevent gunicorn boto3
 
-#RUN pip3.7 install paddlepaddle-gpu==2.0rc1
-RUN pip3.7 install paddlepaddle
+RUN pip3.7 install paddlepaddle-gpu==2.0rc1
+#RUN pip3.7 install paddlepaddle
 
 #add folder
 RUN git clone https://github.com/jackie930/PaddleOCR.git /opt/program/

@@ -36,7 +36,7 @@ const PaddleDemoForm: FunctionComponent = () => {
             <Container title = 'Demo type'>
                 {renderDemoOptions()}
             </Container>
-            {demoType === 'uploaded' && <InferenceForm/>}
+            {demoType === 'uploaded' && <InferenceForm type={ProjectType.TEXT_RECOGNITION}/>}
             {demoType === 'sample' && <SampleForm type={ProjectType.TEXT_RECOGNITION}/>}
         </Stack>
     )

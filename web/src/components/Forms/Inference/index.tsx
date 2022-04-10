@@ -23,6 +23,7 @@ interface FileMetadata {
 
 interface IProps {
     industrialModels: IIndustrialModel[];
+    type: ProjectType;
 }
 
 const InferenceForm: FunctionComponent<IProps> = (props) => {
@@ -96,13 +97,14 @@ const InferenceForm: FunctionComponent<IProps> = (props) => {
             labelsData.push(label + '\r');
         })
 
+        console.log(props.type)
         return (
             <ImageAnnotate 
                 imageUri={imageUri} 
                 imageLabels={labelsData} 
                 imageColors={COLORS} 
                 imageId={curImageItem} 
-                type={ProjectType.OBJECT_DETECTION_RECT}
+                type={props.type}
                 visible={visibleImagePreview} 
                 onClose={onImageClose}
             />

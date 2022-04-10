@@ -1,6 +1,6 @@
 import { FunctionComponent, useEffect, useState } from 'react';
 import { useHistory, useLocation, useParams } from 'react-router-dom';
-import { KeyValuePair, Button, Form, FormSection, Flashbar } from 'aws-northstar';
+import { KeyValuePair, Button, Form, FormSection, LoadingIndicator } from 'aws-northstar';
 import axios from 'axios';
 import Grid from '@mui/material/Grid';
 import { PathParams } from '../../Interfaces/PathParams';
@@ -44,17 +44,6 @@ const GreengrassComponentProp: FunctionComponent = () => {
 
     const onClose = () => {
         history.goBack()
-    }
-
-    const renderFlashbar = () => {
-        return (
-            <Flashbar items={[{
-                header: 'Loading Greengrass component information...',
-                content: 'This may take up to an minute. Please wait a bit...',
-                dismissible: true,
-                loading: loading
-            }]} />
-        )
     }
 
     const renderGreengrassComponentSummary = () => {
@@ -111,7 +100,7 @@ const GreengrassComponentProp: FunctionComponent = () => {
                     <Button variant='primary' onClick={onClose}>Close</Button>
                 </div>
             }>   
-            { loading && renderFlashbar() }
+            { loading && <LoadingIndicator label='Loading...'/> }
             { !loading && renderGreengrassComponentSummary() }
             { !loading && renderGreengrassComponentStatus() }
         </Form>

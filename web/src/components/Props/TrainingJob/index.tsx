@@ -1,9 +1,8 @@
 import { FunctionComponent, useEffect, useState } from 'react';
-import { useHistory, useLocation, useParams } from 'react-router-dom';
-import { KeyValuePair, StatusIndicator, Button, Form, FormSection, Link, Flashbar } from 'aws-northstar';
+import { useHistory, useLocation } from 'react-router-dom';
+import { KeyValuePair, StatusIndicator, Button, Form, FormSection, LoadingIndicator } from 'aws-northstar';
 import axios from 'axios';
 import Grid from '@mui/material/Grid';
-import { PathParams } from '../../Interfaces/PathParams';
 import { getUtcDate } from '../../Utils/Helper';
 
 const TrainingJobProp: FunctionComponent = () => {
@@ -25,14 +24,13 @@ const TrainingJobProp: FunctionComponent = () => {
 
     const history = useHistory();
 
-    var params : PathParams = useParams();
-
     var localtion = useLocation();
 
     var id = localtion.hash.substring(9);
 
     useEffect(() => {
-        axios.get(`/trainingjob/${id}`, {params: {'industrial_model': params.id}})
+        setLoading(true)
+        axios.get(`/trainingjob/${id}`)
             .then((response) => {
             if(response.data.length > 0) {
                 setTrainingJobName(response.data[0].TrainingJobName)
@@ -54,7 +52,7 @@ const TrainingJobProp: FunctionComponent = () => {
         }, (error) => {
             console.log(error);
         });
-    }, [id, params.id])
+    }, [id])
 
     const getStatus = (status: string) => {
         switch(status) {
@@ -69,29 +67,11 @@ const TrainingJobProp: FunctionComponent = () => {
                 return <StatusIndicator  statusType='warning'>{status}</StatusIndicator>;
             default:
                 return null;
-}
-    }
-
-    const getLink = (link: string) => {
-        if(link !== undefined)
-            return <Link href={link}> {link} </Link>
-        else
-            return ''
+        }
     }
 
     const onClose = () => {
         history.goBack()
-    }
-
-    const renderFlashbar = () => {
-        return (
-            <Flashbar items={[{
-                header: 'Loading training job information...',
-                content: 'This may take up to an minute. Please wait a bit...',
-                dismissible: true,
-                loading: loading
-            }]} />
-        )
     }
 
     const renderJobSummary = () => {
@@ -171,7 +151,7 @@ const TrainingJobProp: FunctionComponent = () => {
                                     <KeyValuePair label='S3 data distribution type' value={channelConfig['DataSource']['S3DataSource']['S3DataDistributionType']}></KeyValuePair>
                                 </Grid>                    
                                 <Grid item xs={6} sm={6} md={6}>
-                                    <KeyValuePair label='URI' value={getLink(channelConfig['DataSource']['S3DataSource']['S3Uri'])}></KeyValuePair>
+                                    <KeyValuePair label='URI' value={channelConfig['DataSource']['S3DataSource']['S3Uri']}></KeyValuePair>
                                 </Grid>                    
                             </Grid>
                         )
@@ -186,7 +166,7 @@ const TrainingJobProp: FunctionComponent = () => {
             <FormSection header='Output data configuration'>
                 <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }}>
                     <Grid item xs={6} sm={6} md={6}>
-                        <KeyValuePair label='S3 output path' value={getLink(outputDataConfig['S3OutputPath'])}></KeyValuePair>
+                        <KeyValuePair label='S3 output path' value={outputDataConfig['S3OutputPath']}></KeyValuePair>
                     </Grid>
                 </Grid>
             </FormSection>
@@ -200,7 +180,7 @@ const TrainingJobProp: FunctionComponent = () => {
                     <Grid item xs={6} sm={6} md={6}>
                         { 
                             modelArtifacts !== undefined &&
-                            <KeyValuePair label='S3 model artifact' value={getLink(modelArtifacts['S3ModelArtifacts'])}></KeyValuePair> 
+                            <KeyValuePair label='S3 model artifact' value={modelArtifacts['S3ModelArtifacts']}></KeyValuePair> 
                         }
                     </Grid>
                 </Grid>
@@ -217,7 +197,7 @@ const TrainingJobProp: FunctionComponent = () => {
                     <Button variant='primary' onClick={onClose}>Close</Button>
                 </div>
             }>   
-            { loading && renderFlashbar() }
+            { loading && <LoadingIndicator label='Loading...'/> }
             { !loading && renderJobSummary() }
             { !loading && renderAlgorithmSpecifications() }
             { !loading && renderInputDataConfiguration() }

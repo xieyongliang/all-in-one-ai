@@ -32,7 +32,7 @@ def lambda_handler(event, context):
     if('FunctionError' not in response):
         payload = response['Payload'].read().decode('utf-8')
         payload = json.loads(payload)
-        payload = json.loads(payload)
+        payload = json.loads(payload['body'])
         
         input_s3uri = payload['TransformInput']['DataSource']['S3DataSource']['S3Uri']
         output_s3uri = payload['TransformOutput'] ['S3OutputPath']
@@ -56,8 +56,8 @@ def lambda_handler(event, context):
                     input_filename = output_filename[0 : output_filename.rfind('.')]
                     print(input_filename)
                     if(index >= (page_num * page_size) and index < (page_num + 1) * page_size):
-                        input.append(get_presigned_url(input_bucket, input_key + '/' + input_filename))
-                        output.append(get_presigned_url(output_bucket, output_key + '/' + output_filename))
+                        input.append(get_presigned_url(input_bucket, input_key  + input_filename))
+                        output.append(get_presigned_url(output_bucket, output_key  + output_filename))
                     index += 1
                     
         return {

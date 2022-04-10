@@ -88,7 +88,7 @@ def lambda_handler(event, context):
             payload = json.loads(payload)
             return {
                 'statusCode': payload['statusCode'],
-                'body': response["Payload"].read().decode("utf-8")
+                'body': payload['body']
             }
         else:
             return {

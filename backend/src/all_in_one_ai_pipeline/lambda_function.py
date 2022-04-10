@@ -127,6 +127,7 @@ def lambda_handler(event, context):
                 if(process_item(item, industrial_model)):
                     result.append(item)
 
+
             return {
                 'statusCode': 200,
                 'body': json.dumps(result, default = defaultencode)

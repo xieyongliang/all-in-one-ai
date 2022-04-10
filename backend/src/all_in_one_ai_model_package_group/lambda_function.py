@@ -7,6 +7,7 @@ import traceback
 sagemaker_client = boto3.client('sagemaker')
 
 def lambda_handler(event, context):
+    print(event)
     response = None
     if event['httpMethod'] == 'POST':
         try:
@@ -20,7 +21,7 @@ def lambda_handler(event, context):
             response['creation_time'] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             return {
                 'statusCode': 200,
-                'body': response
+                'body': json.dumps(response)
             }
         except Exception as e:
             traceback.print_exc()

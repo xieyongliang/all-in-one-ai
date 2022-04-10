@@ -1,9 +1,8 @@
 import { FunctionComponent, useEffect, useState } from 'react';
-import { useHistory, useLocation, useParams } from 'react-router-dom';
-import { KeyValuePair, Button, Form, FormSection, Flashbar } from 'aws-northstar';
+import { useHistory, useLocation } from 'react-router-dom';
+import { KeyValuePair, Button, Form, FormSection, LoadingIndicator } from 'aws-northstar';
 import axios from 'axios';
 import Grid from '@mui/material/Grid';
-import { PathParams } from '../../Interfaces/PathParams';
 
 const ModelProp: FunctionComponent = () => {
     const [ modelName, setModelName ] = useState('')
@@ -14,13 +13,11 @@ const ModelProp: FunctionComponent = () => {
 
     const history = useHistory();
 
-    var params : PathParams = useParams();
-
     var localtion = useLocation();
     var id = localtion.hash.substring(9);
 
     useEffect(() => {
-        axios.get(`/model/${id}`, {params: {'industrial_model': params.id}})
+        axios.get(`/model/${id}`)
             .then((response) => {
             if(response.data.length > 0) {
                 setModelName(response.data[0].ModelName);
@@ -32,21 +29,10 @@ const ModelProp: FunctionComponent = () => {
         }, (error) => {
             console.log(error);
         });
-    }, [id, params.id])
+    }, [id])
 
     const onClose = () => {
         history.goBack()
-    }
-
-    const renderFlashbar = () => {
-        return (
-            <Flashbar items={[{
-                header: 'Loading model information...',
-                content: 'This may take up to an minute. Please wait a bit...',
-                dismissible: true,
-                loading: loading
-            }]} />
-        )
     }
 
     const renderModelSummary = () => {
@@ -102,7 +88,7 @@ const ModelProp: FunctionComponent = () => {
                     <Button variant='primary' onClick={onClose}>Close</Button>
                 </div>
             }>   
-            { loading && renderFlashbar() }
+            { loading && <LoadingIndicator label='Loading...'/> }
             { !loading && renderModelSummary() }
             { !loading && renderContainerDefinition() }
         </Form>

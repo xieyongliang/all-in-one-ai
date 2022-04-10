@@ -20,10 +20,17 @@ const ModelList: FunctionComponent = () => {
     const [ sampleCode, setSampleCode ] = useState('')
     const [ sampleConsole, setSampleConsole ] = useState('')
     const [ visibleSampleCode, setVisibleSampleCode ] = useState(false)
-    const [ deleteConfirmationDialogVisible, setDeleteConfirmationDialogVisiable ] = useState(false);
-    const [ isDeleteProcessing, setIsDeleteProcessing ] = useState(false);
     const [ selectedModel, setSelectedModel ] = useState<ModelItem>()
-    const [ deleteDisabled, setDeleteDisabled ] = useState(true)
+    const [ showAll, setShowAll ] = useState(false)
+    const [ visibleDeleteConfirmation, setVisibleDeleteConfirmation ] = useState(false);
+    const [ processingDelete, setProcessingDelete ] = useState(false);
+    const [ disabledDelete, setDisabledDelete ] = useState(true)
+    const [ visibleAttachConfirmation, setVisibleAttachConfirmation ] = useState(false)
+    const [ processingAttach, setProcessingAttach ] = useState(false);
+    const [ disabledAttach, setDisabledAttach ] = useState(true)
+    const [ visibleDetachConfirmation, setVisibleDetachConfirmation ] = useState(false)
+    const [ processingDetach, setProcessingDetach ] = useState(false);
+    const [ disabledDetach, setDisabledDetach ] = useState(true)    
 
     const history = useHistory();
 
@@ -58,8 +65,9 @@ const ModelList: FunctionComponent = () => {
 
     const onRefresh = useCallback(() => {
         setLoading(true)
-        axios.get('/model', {params : {'industrial_model': params.id}})
-            .then((response) => {
+        var request = showAll ? axios.get('/model', {params : {'action': 'list'}}) : axios.get('/model', {params : {'industrial_model': params.id}})
+        request.then(
+            (response) => {
                 var items = []
                 for(let item of response.data) {
                     items.push({modelName: item.ModelName, creationTime: getUtcDate(item.CreationTime)})
@@ -69,30 +77,13 @@ const ModelList: FunctionComponent = () => {
                 setLoading(false);
             }, (error) => {
                 console.log(error);
-            });
-        }, [params.id])
+            }
+        );
+    }, [params.id, showAll])
     
     useEffect(() => {
-        setLoading(true)
-        axios.get('/model', {params : {'industrial_model': params.id}})
-            .then((response) => {
-                var items = []
-                if(response.data.length === 0) {
-                    setModelItems(items)
-                    setLoading(false)
-                }
-                else
-                    for(let item of response.data) {
-                        items.push({modelName: item.ModelName, creationTime: getUtcDate(item.CreationTime)})
-                        if(items.length === response.data.length) {
-                            setModelItems(items)
-                            setLoading(false);
-                        }
-                    }
-            }, (error) => {
-                console.log(error);
-            });
-        }, [params.id]);
+        onRefresh()
+    }, [onRefresh]);
 
     const getRowId = useCallback(data => data.modelName, []);
 
@@ -101,7 +92,15 @@ const ModelList: FunctionComponent = () => {
     }
 
     const onDelete = () => {
-        setDeleteConfirmationDialogVisiable(true)
+        setVisibleDeleteConfirmation(true)
+    }
+
+    const onAttach = () => {
+        setVisibleAttachConfirmation(true)
+    }
+
+    const onDetach = () => {
+        setVisibleDetachConfirmation(true)
     }
 
     const columnDefinitions : Column<ModelItem>[]= [
@@ -127,26 +126,25 @@ const ModelList: FunctionComponent = () => {
 
     const tableActions = (
         <Inline>
-            <Button variant="icon" icon="refresh" size="small" onClick={onRefresh}/>
+            <Toggle label='Show all' checked={showAll} onChange={(checked)=>setShowAll(checked)}/>
+            <Button icon="refresh" onClick={onRefresh} loading={loading}>Refresh</Button>
             <ButtonDropdown
-                content='Action'
-                    items={[{ text: 'Delete', onClick: onDelete, disabled: deleteDisabled }, { text: 'Add/Edit tags', disabled: true }]}
-            />        
-            <Button variant='primary' onClick={onCreate}>
-                Create
-            </Button>
+                content='Actions'
+                    items={[{ text: 'Delete', onClick: onDelete, disabled: disabledDelete }, { text: 'Attach', onClick: onAttach, disabled: disabledAttach }, { text: 'Detach', onClick: onDetach, disabled: disabledDetach }, { text: 'Add/Edit tags', disabled: true }]}
+                />        
+            <Button variant='primary' onClick={onCreate}>Create</Button>
         </Inline>
     );
-    
+
     const renderDeleteConfirmationDialog = () => {
         return (
             <DeleteConfirmationDialog
                 variant="confirmation"
-                visible={deleteConfirmationDialogVisible}
+                visible={visibleDeleteConfirmation}
                 title={`Delete ${selectedModel.modelName}`}
-                onCancelClicked={() => setDeleteConfirmationDialogVisiable(false)}
+                onCancelClicked={() => setVisibleDeleteConfirmation(false)}
                 onDeleteClicked={deleteModel}
-                loading={isDeleteProcessing}
+                loading={processingDelete}
             >
                 <Text>This will permanently delete your model and cannot be undone. This may affect other resources.</Text>
             </DeleteConfirmationDialog>
@@ -154,18 +152,85 @@ const ModelList: FunctionComponent = () => {
     }
 
     const deleteModel = () => {
-        setIsDeleteProcessing(true)
-        axios.delete(`/model/${selectedModel.modelName}`, {params: {industrial_model: params.id}}).then((data) => {
-            setModelItems(modelItems.filter((item) => item.modelName !== selectedModel.modelName))
-            setDeleteConfirmationDialogVisiable(false)
-            setIsDeleteProcessing(false)
-        })
+        setProcessingDelete(true)
+        axios.delete(`/model/${selectedModel.modelName}`).then((data) => {
+            setModelItems(modelItems.filter((item) => item.modelName !== selectedModel.modelName));
+            setVisibleDeleteConfirmation(false);
+            setProcessingDelete(false);
+        }, (error) => {
+                alert('Error occured, please check and try it again');
+                console.log(error);
+                setProcessingDelete(false);
+            }
+        )
     }
 
+    const renderAttachConfirmationDialog = () => {
+        return (
+            <DeleteConfirmationDialog
+                variant="confirmation"
+                visible={visibleAttachConfirmation}
+                title={`Attach ${selectedModel.modelName}`}
+                onCancelClicked={() => setVisibleAttachConfirmation(false)}
+                onDeleteClicked={attachModel}
+                loading={processingAttach}
+                deleteButtonText='Attach'
+            >
+                <Text>This will attach this model to current industrial model.</Text>
+            </DeleteConfirmationDialog>
+        )
+    }
+
+    const attachModel = () => {
+        setProcessingAttach(true)
+        axios.get(`/model/${selectedModel.modelName}`, {params: {industrial_model: params.id, action: 'attach'}}).then((data) => {
+            onRefresh();
+            setVisibleAttachConfirmation(false);
+            setProcessingAttach(false);
+        }, (error) => {
+                alert('Error occured, please check and try it again');
+                console.log(error);
+                setProcessingAttach(false)
+            }        
+        )
+    }
+
+    const renderDetachConfirmationDialog = () => {
+        return (
+            <DeleteConfirmationDialog
+                variant="confirmation"
+                visible={visibleDetachConfirmation}
+                title={`Detach ${selectedModel.modelName}`}
+                onCancelClicked={() => setVisibleDetachConfirmation(false)}
+                onDeleteClicked={detachModel}
+                loading={processingDetach}
+                deleteButtonText='Detach'
+            >
+                <Text>This will dettach this model from current industrial model.</Text>
+            </DeleteConfirmationDialog>
+        )
+    }
+
+    const detachModel = () => {
+        setProcessingDetach(true)
+        axios.get(`/model/${selectedModel.modelName}`, {params: {industrial_model: params.id, action: 'detach'}}).then((data) => {
+            onRefresh();
+            setVisibleDetachConfirmation(false);
+            setProcessingDetach(false);
+        }, (error) => {
+                alert('Error occured, please check and try it again');
+                console.log(error);
+                setProcessingDetach(false);
+            }        
+        )
+    }
+    
     const onSelectionChange = (selectedItems: ModelItem[]) => {
         if(selectedItems.length > 0) {
             setSelectedModel(selectedItems[0])
-            setDeleteDisabled(false)
+            setDisabledDelete(false)
+            setDisabledAttach(false)
+            setDisabledDetach(false)
         }
     }
 
@@ -180,6 +245,7 @@ const ModelList: FunctionComponent = () => {
                 loading={loading}
                 onSelectionChange={onSelectionChange}
                 getRowId={getRowId}
+                selectedRowIds={selectedModel !== undefined ? [selectedModel.modelName] : []}
             />
         )
     }
@@ -201,6 +267,8 @@ const ModelList: FunctionComponent = () => {
     return (
         <Stack>
             { selectedModel  !== undefined && renderDeleteConfirmationDialog() }
+            { selectedModel  !== undefined && renderAttachConfirmationDialog() }
+            { selectedModel  !== undefined && renderDetachConfirmationDialog() }
             { renderModelList() }
             { renderSampleCode() }
         </Stack>

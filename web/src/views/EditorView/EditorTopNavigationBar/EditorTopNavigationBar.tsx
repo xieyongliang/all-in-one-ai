@@ -100,7 +100,7 @@ interface IProps {
     updateFirstLabelCreatedFlag: (firstLabelCreatedFlag: boolean) => any;
     updateProjectData: (projectData: ProjectData) => any;
     updateLabels: (labels: LabelName[]) => any;
-    onProcessing: (message: string) => any;
+    onProcessing: () => any;
     onProcessed: () => any;
     imageDragMode: boolean;
     crossHairVisible: boolean;
@@ -199,6 +199,8 @@ const EditorTopNavigationBar: React.FC<IProps> = (
     };
 
     const getInference = async () => {
+        onProcessing()
+
         var response = undefined
         if(imageBucket !== undefined && imageKey!== undefined)
             if(projectType === ProjectType.TEXT_RECOGNITION) {
@@ -207,15 +209,12 @@ const EditorTopNavigationBar: React.FC<IProps> = (
                     'image_uri': imageKey,
                     'content_type': 'application/json'
                 }
-                onProcessing('Perform text recogition')
                 response = await axios.post('/inference', buffer, { params : { endpoint_name: selectedEndpoint.value} })
             }
             else {
-                onProcessing('Perform image recognition')
                 response = await axios.get('/inference/sample', { params : { endpoint_name: selectedEndpoint.value, bucket: imageBucket, key: imageKey } })
             }
         else if(imageId !== undefined) {
-            onProcessing('Perform image recognition')
             response = await axios.get(`/inference/image/${imageId}`, { params : { endpoint_name: selectedEndpoint.value, bucket: imageBucket, key: imageKey } })
         }
         if(response === undefined)
@@ -300,6 +299,10 @@ const EditorTopNavigationBar: React.FC<IProps> = (
                 });
     }
 
+    const onChange = (event) => {
+        setSelectedEndpoint({label: event.target.value, value: event.target.value})
+    }
+
     return (
         <div className={getClassName()}>
             <div className='ButtonWrapper'>
@@ -376,6 +379,7 @@ const EditorTopNavigationBar: React.FC<IProps> = (
                     <Select 
                         placeholder='Choose an endpoint'
                         selectedOption={selectedEndpoint}
+                        onChange={onChange}
                         options={endpointOptions}
                     >
                     </Select>

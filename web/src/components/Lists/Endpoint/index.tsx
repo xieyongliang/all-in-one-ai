@@ -24,10 +24,17 @@ const EndpointList: FunctionComponent = () => {
     const [ sampleCode, setSampleCode ] = useState('')
     const [ sampleConsole, setSampleConsole ] = useState('')
     const [ visibleSampleCode, setVisibleSampleCode ] = useState(false)
-    const [ deleteConfirmationDialogVisible, setDeleteConfirmationDialogVisiable ] = useState(false);
-    const [ isDeleteProcessing, setIsDeleteProcessing ] = useState(false);
     const [ selectedEndpoint, setSelectedEndpoint ] = useState<EndpointItem>()
-    const [ deleteDisabled, setDeleteDisabled ] = useState(true)
+    const [ showAll, setShowAll ] = useState(false)
+    const [ visibleDeleteConfirmation, setVisibleDeleteConfirmation ] = useState(false);
+    const [ processingDelete, setProcessingDelete ] = useState(false);
+    const [ disabledDelete, setDisabledDelete ] = useState(true)
+    const [ visibleAttachConfirmation, setVisibleAttachConfirmation ] = useState(false)
+    const [ processingAttach, setProcessingAttach ] = useState(false);
+    const [ disabledAttach, setDisabledAttach ] = useState(true)
+    const [ visibleDetachConfirmation, setVisibleDetachConfirmation ] = useState(false)
+    const [ processingDetach, setProcessingDetach ] = useState(false);
+    const [ disabledDetach, setDisabledDetach ] = useState(true)
 
     const history = useHistory();
 
@@ -65,30 +72,40 @@ const EndpointList: FunctionComponent = () => {
     }
 
     const onDelete = () => {
-        setDeleteConfirmationDialogVisiable(true)
+        setVisibleDeleteConfirmation(true)
     }
-    
+
+    const onAttach = () => {
+        setVisibleAttachConfirmation(true)
+    }
+
+    const onDetach = () => {
+        setVisibleDetachConfirmation(true)
+    }
+
     const onRefresh = useCallback(() => {
         setLoading(true)
-        axios.get('/endpoint', {params : {'industrial_model': params.id}})
-        .then((response) => {
-            var items = []
-            if(response.data.length === 0) {
-                setEndpointItems(items);
-                setLoading(false);
-            }
-            else
-                for(let item of response.data) {
-                    items.push({endpointName: item.EndpointName, endpointStatus: item.EndpointStatus, creationTime: getUtcDate(item.CreationTime), lastModifiedTime: getUtcDate(item.LastModifiedTime)})
-                    if(items.length ===  response.data.length) {
-                        setEndpointItems(items);
-                        setLoading(false);
-                    }
+        var request = showAll ? axios.get('/endpoint', {params : {'action': 'list'}}) : axios.get('/endpoint', {params : {'industrial_model': params.id}})
+        request.then(
+            (response) => {
+                var items = []
+                if(response.data.length === 0) {
+                    setEndpointItems(items);
+                    setLoading(false);
                 }
-        }, (error) => {
-            console.log(error);
-        });
-    }, [params.id])
+                else
+                    for(let item of response.data) {
+                        items.push({endpointName: item.EndpointName, endpointStatus: item.EndpointStatus, creationTime: getUtcDate(item.CreationTime), lastModifiedTime: getUtcDate(item.LastModifiedTime)})
+                        if(items.length ===  response.data.length) {
+                            setEndpointItems(items);
+                            setLoading(false);
+                        }
+                    }
+            }, (error) => {
+                console.log(error);
+            }
+        );
+    }, [params.id, showAll])
 
     useEffect(() => {
         onRefresh()
@@ -153,14 +170,13 @@ const EndpointList: FunctionComponent = () => {
     
     const tableActions = (
         <Inline>
-            <Button variant="icon" icon="refresh" size="small" onClick={onRefresh}/>
+            <Toggle label='Show all' checked={showAll} onChange={(checked)=>setShowAll(checked)}/>
+            <Button icon="refresh" onClick={onRefresh} loading={loading}>Refresh</Button>
             <ButtonDropdown
-                content='Action'
-                    items={[{ text: 'Delete', onClick: onDelete, disabled: deleteDisabled }, { text: 'Add/Edit tags', disabled: true }]}
+                content='Actions'
+                    items={[{ text: 'Delete', onClick: onDelete, disabled: disabledDelete }, { text: 'Attach', onClick: onAttach, disabled: disabledAttach }, { text: 'Detach', onClick: onDetach, disabled: disabledDetach }, { text: 'Add/Edit tags', disabled: true }]}
             />        
-            <Button variant='primary' onClick={onCreate}>
-                Create
-            </Button>
+            <Button variant='primary' onClick={onCreate}>Create</Button>
         </Inline>
     );
 
@@ -168,11 +184,11 @@ const EndpointList: FunctionComponent = () => {
         return (
             <DeleteConfirmationDialog
                 variant="confirmation"
-                visible={deleteConfirmationDialogVisible}
+                visible={visibleDeleteConfirmation}
                 title={`Delete ${selectedEndpoint.endpointName}`}
-                onCancelClicked={() => setDeleteConfirmationDialogVisiable(false)}
+                onCancelClicked={() => setVisibleDeleteConfirmation(false)}
                 onDeleteClicked={deleteEndpoint}
-                loading={isDeleteProcessing}
+                loading={processingDelete}
             >
                 <Text>This will permanently delete your model and cannot be undone. This may affect other resources.</Text>
             </DeleteConfirmationDialog>
@@ -180,18 +196,85 @@ const EndpointList: FunctionComponent = () => {
     }
 
     const deleteEndpoint = () => {
-        setIsDeleteProcessing(true)
+        setProcessingDelete(true)
         axios.delete(`/endpoint/${selectedEndpoint.endpointName}`, {params: {industrial_model: params.id}}).then((data) => {
-            onRefresh()    
-            setDeleteConfirmationDialogVisiable(false)
-            setIsDeleteProcessing(false)
-        })
+            onRefresh();
+            setVisibleDeleteConfirmation(false);
+            setProcessingDelete(false);
+        }, (error) => {
+                alert('Error occured, please check and try it again');
+                console.log(error);
+                setProcessingDelete(false);
+            }        
+        )
+    }    
+
+    const renderAttachConfirmationDialog = () => {
+        return (
+            <DeleteConfirmationDialog
+                variant="confirmation"
+                visible={visibleAttachConfirmation}
+                title={`Attach ${selectedEndpoint.endpointName}`}
+                onCancelClicked={() => setVisibleAttachConfirmation(false)}
+                onDeleteClicked={attachEndpoint}
+                loading={processingAttach}
+                deleteButtonText='Attach'
+            >
+                <Text>This will attach this endpoint to current industrial model.</Text>
+            </DeleteConfirmationDialog>
+        )
     }
+
+    const attachEndpoint = () => {
+        setProcessingAttach(true)
+        axios.get(`/endpoint/${selectedEndpoint.endpointName}`, {params: {industrial_model: params.id, action: 'attach'}}).then((data) => {
+            onRefresh();
+            setVisibleAttachConfirmation(false);
+            setProcessingAttach(false);
+        }, (error) => {
+                alert('Error occured, please check and try it again');
+                console.log(error);
+                setProcessingAttach(false);
+            }        
+        )
+    }    
+
+    const renderDetachConfirmationDialog = () => {
+        return (
+            <DeleteConfirmationDialog
+                variant="confirmation"
+                visible={visibleDetachConfirmation}
+                title={`Detach ${selectedEndpoint.endpointName}`}
+                onCancelClicked={() => setVisibleDetachConfirmation(false)}
+                onDeleteClicked={detachEndpoint}
+                loading={processingDetach}
+                deleteButtonText='Detach'
+            >
+                <Text>This will dettach this endpoint from current industrial model.</Text>
+            </DeleteConfirmationDialog>
+        )
+    }
+
+    const detachEndpoint = () => {
+        setProcessingDetach(true)
+        axios.get(`/endpoint/${selectedEndpoint.endpointName}`, {params: {industrial_model: params.id, action: 'detach'}}).then((data) => {
+            onRefresh();
+            setVisibleDetachConfirmation(false);
+            setProcessingDetach(false);
+        }, (error) => {
+                alert('Error occured, please check and try it again');
+                console.log(error);
+                setProcessingDetach(false);
+            }        
+        )
+    }    
 
     const onSelectionChange = (selectedItems: EndpointItem[]) => {
         if(selectedItems.length > 0) {
             setSelectedEndpoint(selectedItems[0])
-            setDeleteDisabled(false)
+            setDisabledDelete(false)
+            setDisabledAttach(false)
+            setDisabledDetach(false)
         }
     }
 
@@ -205,6 +288,7 @@ const EndpointList: FunctionComponent = () => {
                 items={endpointItems}
                 loading={loading}
                 onSelectionChange={onSelectionChange}
+                selectedRowIds={selectedEndpoint !== undefined ? [selectedEndpoint.endpointName] : []}
                 getRowId={getRowId}
             />
         )
@@ -227,6 +311,8 @@ const EndpointList: FunctionComponent = () => {
     return (
         <Stack>
             { selectedEndpoint !== undefined && renderDeleteConfirmationDialog() }
+            { selectedEndpoint !== undefined && renderAttachConfirmationDialog() }
+            { selectedEndpoint !== undefined && renderDetachConfirmationDialog() }
             { renderEndpointList() }
             { renderSampleCode() }
         </Stack>

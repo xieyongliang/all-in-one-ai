@@ -2,7 +2,7 @@ import { PipelineActionTypes, PipelineState } from './types';
 import { Action } from '../Actions';
 
 const initialState: PipelineState = {
-    pipelineType: '',
+    pipelineType: '0',
     trainingjobInstanceType: '',
     trainingjobInstanceCount: 1,
     trainingjobVolumeSizeInGB: 30,

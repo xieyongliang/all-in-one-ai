@@ -33,8 +33,8 @@ def lambda_handler(event, context):
                         "ModelDataUrl": model_data_url
                      }
                   ],
-                  "SupportedContentTypes": supported_content_types.split(' '),
-                  "SupportedResponseMIMETypes": supported_response_mime_types.split(' ')
+                  "SupportedContentTypes": supported_content_types.split(';'),
+                  "SupportedResponseMIMETypes": supported_response_mime_types.split(';')
                }
             }
     

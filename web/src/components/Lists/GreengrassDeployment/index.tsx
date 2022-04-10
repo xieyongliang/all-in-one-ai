@@ -149,14 +149,12 @@ const GreengrassDeploymentList: FunctionComponent = () => {
     
     const tableActions = (
         <Inline>
-            <Button variant="icon" icon="refresh" size="small" onClick={onRefresh}/>
+            <Button icon="refresh" onClick={onRefresh} loading={loading}>Refresh</Button>
             <ButtonDropdown
                 content='Action'
                     items={[{ text: 'Clone' }, { text: 'Create rest api' }, { text: 'Stop', disabled: true }, { text: 'Add/Edit tags' }]}
             />        
-            <Button variant='primary' onClick={onCreate}>
-                Create
-            </Button>
+            <Button variant='primary' onClick={onCreate}>Create</Button>
         </Inline>
     );
     

@@ -18,7 +18,8 @@ import EditorTopNavigationBar from "../EditorTopNavigationBar/EditorTopNavigatio
 import {ProjectType} from "../../../data/enums/ProjectType";
 import TextsToolkit from '../SideNavigationBar/TextsToolkit/TextsToolkit';
 import { ImageTextData } from '../../../store/texts/types';
-import { LoadingIndicator, Modal } from 'aws-northstar';
+import { Box, Dialog } from '@material-ui/core';
+import { LoadingIndicator } from 'aws-northstar';
 
 interface IProps {
     windowSize: ISize;
@@ -55,7 +56,6 @@ const EditorContainer: React.FC<IProps> = (
     const [ leftTabStatus, setLeftTabStatus ] = useState(true);
     const [ rightTabStatus, setRightTabStatus ] = useState(true);
     const [ processing, setProcessing ] = useState(false);
-    const [ message, setMessage ] = useState('');
 
     const calculateEditorSize = (): ISize => {
         if (windowSize) {
@@ -127,14 +127,12 @@ const EditorContainer: React.FC<IProps> = (
     var imagesData = projectType === ProjectType.TEXT_RECOGNITION ? imagesTextData : imagesLabelData
     var activeImageIndex = projectType === ProjectType.TEXT_RECOGNITION ? activeTextImageIndex : activeLabelImageIndex
  
-    const onProcessing = (message) => {
-        setMessage(message)
+    const onProcessing = () => {
         setProcessing(true);
     }
 
     const onProcessed = () => {
         setProcessing(false);
-        setMessage('');
     }
 
     return (
@@ -173,9 +171,12 @@ const EditorContainer: React.FC<IProps> = (
                     />
                 }
                 {
-                    processing && <Modal visible={true} title={message} onClose={()=>{onProcessed()}} width={"100"}>
-                        <LoadingIndicator label='Processing...'/>
-                    </Modal>
+                    processing && <Dialog open={true}>
+                        <Box p={3}>
+                            <LoadingIndicator label='Processing...'/>
+                        </Box>
+                    </Dialog>
+
                 }
                 <Editor
                     size={calculateEditorSize()}

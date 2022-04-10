@@ -1,9 +1,8 @@
 import { FunctionComponent, useEffect, useState } from 'react';
-import { useHistory, useLocation, useParams } from 'react-router-dom';
-import { KeyValuePair, StatusIndicator, Button, Form, FormSection, Flashbar, Stack } from 'aws-northstar';
+import { useHistory, useLocation } from 'react-router-dom';
+import { KeyValuePair, StatusIndicator, Button, Form, FormSection, Stack, LoadingIndicator } from 'aws-northstar';
 import axios from 'axios';
 import Grid from '@mui/material/Grid';
-import { PathParams } from '../../Interfaces/PathParams';
 import { getUtcDate } from '../../Utils/Helper';
 
 const EndpointProp: FunctionComponent = () => {
@@ -17,13 +16,11 @@ const EndpointProp: FunctionComponent = () => {
 
     const history = useHistory();
 
-    var params : PathParams = useParams();
-
     var localtion = useLocation();
     var id = localtion.hash.substring(9);
 
     useEffect(() => {
-        axios.get('/endpoint/' + id, {params: {'industrial_model': params.id}})
+        axios.get('/endpoint/' + id)
             .then((response) => {
             if(response.data.length > 0) {
                 setEndpointName(response.data[0].EndpointName)
@@ -37,7 +34,7 @@ const EndpointProp: FunctionComponent = () => {
         }, (error) => {
             console.log(error);
         });
-    }, [id, params.id])
+    }, [id])
 
     const getStatus = (status: string) => {
         switch(status) {
@@ -60,17 +57,6 @@ const EndpointProp: FunctionComponent = () => {
 
     const onClose = () => {
         history.goBack()
-    }
-
-    const renderFlashbar = () => {
-        return (
-            <Flashbar items={[{
-                header: 'Loading endpoint information...',
-                content: 'This may take up to an minute. Please wait a bit...',
-                dismissible: true,
-                loading: loading
-            }]} />
-        )
     }
 
     const renderEndpointSummary = () => {
@@ -160,7 +146,7 @@ const EndpointProp: FunctionComponent = () => {
                     <Button variant='primary' onClick={onClose}>Close</Button>
                 </div>
             }>   
-            { loading && renderFlashbar() }
+            { loading && <LoadingIndicator label='Loading...'/> }
             { !loading && renderEndpointSummary() }
             { !loading && renderEndpointRuntimeSettings() }
             { !loading && renderEndpointConfigurationSettings() }

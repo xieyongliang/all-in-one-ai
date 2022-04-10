@@ -17,6 +17,7 @@ import axios from 'axios';
 import { LabelType } from '../../../data/enums/LabelType';
 import { LoadingIndicator, Modal } from 'aws-northstar';
 import { addImageTextData, updateActiveTextId, updateActiveTextImageIndex, updateImageTextData, updateTexts } from '../../../store/texts/actionCreators';
+import { Box, Dialog } from '@material-ui/core';
 
 interface IProps {
     updateActiveLabelNameIdAction: (activeLabelNameId: string) => any;
@@ -118,18 +119,19 @@ const ImageAnnotate: React.FC<IProps> = (
     
                 setImageReady(true);    
             })
-      }, [imageUri]); // eslint-disable-line react-hooks/exhaustive-deps
+        }, [imageUri]); // eslint-disable-line react-hooks/exhaustive-deps
     
-      return (
-            <Modal title="Image preview" visible={visible} onClose={()=>{setImageReady(false); onClose()}} width={"100"}>
-                {
-                    !imageReady && 
-                    <LoadingIndicator 
-                        label='Loading...'
-                    />
-                }
-                { 
-                    imageReady && 
+        if(!imageReady)
+            return (
+                <Dialog open={true}>
+                    <Box p={3}>
+                        <LoadingIndicator label='Loading...'/>
+                    </Box>
+                </Dialog>
+            )
+        else
+            return (
+                <Modal title="Image preview" visible={visible} onClose={()=>{setImageReady(false); onClose()}} width={"100"}>
                     <EditorView 
                         imageColors={imageColors} 
                         imageLabels={imageLabels} 
@@ -138,13 +140,9 @@ const ImageAnnotate: React.FC<IProps> = (
                         imageKey={imageKey} 
                         imageId={imageId}
                     /> 
-                }
-                { 
-                    imageReady && 
                     <PopupView/>
-                }
-            </Modal>
-    );
+                </Modal>
+            );
 };
 
 const mapDispatchToProps = {

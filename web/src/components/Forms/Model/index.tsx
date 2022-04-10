@@ -9,6 +9,7 @@ import { connect } from 'react-redux';
 import { UpdateModelModelPackageGroupName, UpdateModelModelPackageArn, UpdateModelDataUrl } from '../../../store/pipelines/actionCreators';
 import { IIndustrialModel } from '../../../store/industrialmodels/reducer';
 import { PathParams } from '../../Interfaces/PathParams';
+import { getUtcDate } from '../../Utils/Helper';
 
 interface ModelPackageItem {
     name: string;
@@ -98,7 +99,7 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
                         setLoading(false)
                     }
                 })
-                modelPackageGroupItems.push({name: item.ModelPackageGroupName, creation_time: item.CreationTime, versions: []})
+                modelPackageGroupItems.push({name: item.ModelPackageGroupName, creation_time: getUtcDate(item.CreationTime), versions: []})
                 if(Object.keys(modelPackageGroupItems).length === data.length) {
                     setModelPackGroupItems(modelPackageGroupItems)
                 }
@@ -180,6 +181,7 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
                     }, (error) => {
                         alert('Error occured, please check and try it again');
                         console.log(error);
+                        setProcessing(false)
                     });
             }
         }
@@ -199,12 +201,14 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
                 }
                 if(tags.length > 1 || (tags.length === 1 && tags[0].key !== '' && tags[0].value !== ''))
                     body['tags'] = tags
+                setProcessing(true)
                 axios.post('/model', body,  { headers: {'content-type': 'application/json' }}) 
                 .then((response) => {
                     history.goBack()
                 }, (error) => {
                     alert('Error occured, please check and try it again');
                     console.log(error);
+                    setProcessing(false)
                 });
             }
         }
@@ -333,12 +337,14 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
                             options={options}
                             selectedOption={selectedModelPackageVersions[row.original.name]}
                             onChange={(event) => onChange(row.original.name, event, 'versions')}
+                            disabled={wizard && (props.pipelineType === '0' || props.pipelineType === '1')}
                         />
                     )
                 }
                 return null;
             }
-        },
+        }
+        ,
         {
             id: 'creation_time',
             width: 400,

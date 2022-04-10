@@ -68,6 +68,7 @@ const optionsInstance : SelectOption[]= [
 
 const TrainingJobForm: FunctionComponent<IProps> = (props) => {
     const [ trainingJobName, setTrainingJobName ] = useState('')
+    const [ trainingImage, setTrainingImage ] = useState('')
     const [ selectedInstanceType, setSelectedInstanceType ] = useState<SelectOption>(props.wizard ? {label: props.trainingjobInstanceType, value: props.trainingjobInstanceType} : {})
     const [ instanceCount, setInstanceCount ] = useState(props.wizard ? props.trainingjobInstanceCount : 1)
     const [ volumeSizeInGB, setVolumeSizeInGB ] = useState(props.wizard ? props.trainingjobVolumeSizeInGB : 30)
@@ -99,6 +100,8 @@ const TrainingJobForm: FunctionComponent<IProps> = (props) => {
             if(props.wizard)
                 props.updateTrainingjobInstanceTypeAction(event.target.value);
         }
+        if(id === 'formFieldIdTrainingImage')
+            setTrainingImage(event);
         if(id === 'formFieldIdInstanceCount') {
             setInstanceCount(parseInt(event));
             if(props.wizard)
@@ -157,6 +160,7 @@ const TrainingJobForm: FunctionComponent<IProps> = (props) => {
 
             var body = {
                 'training_job_name' : trainingJobName,
+                'training_image': trainingImage,
                 'industrial_model': params.id,
                 'model_algorithm': algorithm,
                 'instance_type': selectedInstanceType.value,
@@ -213,6 +217,16 @@ const TrainingJobForm: FunctionComponent<IProps> = (props) => {
         }
         else
             return ''
+    }
+
+    const renderAlgorithmOptions = () => {
+        return (
+            <FormSection header='Algorithm options'>
+                <FormField label='Container' controlId='formFieldIdTrainingImage' hintText='The registry path where the training image is stored in Amazon ECR.'>
+                    <Input type='text' placeholder='default' required={true} onChange={(event) => onChange('formFieldIdTrainingImage', event)}/>
+                </FormField>
+            </FormSection>
+        )
     }
 
     const renderTrainingJobTag = () => {
@@ -301,9 +315,10 @@ const TrainingJobForm: FunctionComponent<IProps> = (props) => {
     if(wizard) {
         return (
             <Stack>
-                {renderTrainingJobSetting()}
-                {renderTrainingJobContent()}
-                {renderTrainingJobTag()}
+                { renderTrainingJobSetting() }
+                { renderAlgorithmOptions() }
+                { renderTrainingJobContent() }
+                { renderTrainingJobTag() }
             </Stack>
         )
     }
@@ -318,9 +333,10 @@ const TrainingJobForm: FunctionComponent<IProps> = (props) => {
                         <Button variant='primary' onClick={onSubmit} loading={processing}>Submit</Button>
                     </div>
                 }>            
-                {renderTrainingJobSetting()}
-                {renderTrainingJobContent()}
-                {renderTrainingJobTag()}
+                { renderTrainingJobSetting() }
+                { renderAlgorithmOptions() }
+                { renderTrainingJobContent() }
+                { renderTrainingJobTag() }
             </Form>
         )
     }

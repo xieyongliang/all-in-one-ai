@@ -1,7 +1,7 @@
 import { FunctionComponent, useState } from 'react';
 import { BrowserRouter, useHistory, useParams } from 'react-router-dom';
 import { connect } from 'react-redux';
-import { Wizard, FormField, Input, LoadingIndicator, Modal } from 'aws-northstar/components';
+import { Wizard, FormField, Input, LoadingIndicator } from 'aws-northstar/components';
 import { Container, Stack } from 'aws-northstar/layouts';
 import axios from 'axios';
 import TrainingJobForm from '../TrainingJob';
@@ -15,6 +15,7 @@ import { AppState } from '../../../store';
 import { PathParams } from '../../Interfaces/PathParams';
 import { UpdateModelAlgorithm, UpdatePipelineType } from '../../../store/pipelines/actionCreators';
 import { IIndustrialModel } from '../../../store/industrialmodels/reducer';
+import { Box, Dialog } from '@material-ui/core';
 
 interface IProps {
     updatePipelineTypeAction: (pipelineType : string) => any;
@@ -257,9 +258,11 @@ const PipelineForm: FunctionComponent<IProps> = (props) => {
             <BrowserRouter>
                 <Container>
                     {
-                        processing && <Modal visible={true} title={'Submitting pipeline execution job'} onClose={()=>{setProcessing(false)}} width={"100"}>
-                            <LoadingIndicator label='Processing...'/>
-                        </Modal>
+                        processing && <Dialog open={true}>
+                            <Box p={3}>
+                                <LoadingIndicator label='Processing...'/>
+                            </Box>
+                        </Dialog>
                     }
                     <Wizard steps={steps} onSubmitButtonClick={onSubmit} onCancelButtonClick={onCancel}/>
                 </Container>
@@ -271,9 +274,11 @@ const PipelineForm: FunctionComponent<IProps> = (props) => {
             <BrowserRouter>
                 <Container>
                     {
-                        processing && <Modal visible={true} title={'Submitting pipeline execution job'} onClose={()=>{setProcessing(false)}} width={"100"}>
-                            <LoadingIndicator label='Processing...'/>
-                        </Modal>
+                        processing && <Dialog open={true}>
+                            <Box p={3}>
+                                <LoadingIndicator label='Processing...'/>
+                            </Box>
+                        </Dialog>
                     }
                     <Wizard steps={steps1} onSubmitButtonClick={onSubmit} onCancelButtonClick={onCancel}/>
                 </Container>
@@ -285,9 +290,11 @@ const PipelineForm: FunctionComponent<IProps> = (props) => {
             <BrowserRouter>
                 <Container>
                     {
-                        processing && <Modal visible={true} title={'Submitting pipeline execution job'} onClose={()=>{setProcessing(false)}} width={"100"}>
-                            <LoadingIndicator label='Processing...'/>
-                        </Modal>
+                        processing && <Dialog open={true}>
+                            <Box p={3}>
+                                <LoadingIndicator label='Processing...'/>
+                            </Box>
+                         </Dialog>
                     }
                     <Wizard steps={steps2} onSubmitButtonClick={onSubmit} onCancelButtonClick={onCancel}/>
                 </Container>
@@ -299,9 +306,11 @@ const PipelineForm: FunctionComponent<IProps> = (props) => {
             <BrowserRouter>
                 <Container>
                     {
-                        processing && <Modal visible={true} title={'Submitting pipeline execution job'} onClose={()=>{setProcessing(false)}} width={"100"}>
-                            <LoadingIndicator label='Processing...'/>
-                        </Modal>
+                        processing && <Dialog open={true}>
+                            <Box p={3}>
+                                <LoadingIndicator label='Processing...'/>
+                            </Box>
+                        </Dialog>
                     }
                     <Wizard steps={steps3} onSubmitButtonClick={onSubmit} onCancelButtonClick={onCancel}/>
                 </Container>

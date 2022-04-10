@@ -59,4 +59,16 @@ export abstract class BaseRenderEngine {
             return isActive ? RenderEngineSettings.ACTIVE_ANCHOR_COLOR : RenderEngineSettings.INACTIVE_ANCHOR_COLOR;
         }
     }
+
+    protected static resolveTextLineColor(text): string {
+        var color = '#';
+        for (var i = 0; i < 6; i++) {
+          color += text[Math.floor(Math.random() * 16)];
+        }
+        return color;    
+    }
+
+    protected static resolveTextAnchorColor(isActive: boolean): string {
+        return isActive ? RenderEngineSettings.ACTIVE_ANCHOR_COLOR : RenderEngineSettings.INACTIVE_ANCHOR_COLOR;
+    }
 }

@@ -148,7 +148,7 @@ export class TextRenderEngine extends BaseRenderEngine {
                 height: mousePositionSnapped.y - this.startCreateRectPoint.y
             };
             const activeRectBetweenPixels = RenderEngineUtil.setRectBetweenPixels(activeRect);
-            const lineColor: string = BaseRenderEngine.resolveLabelLineColor(null, true)
+            const lineColor: string = BaseRenderEngine.resolveTextLineColor('')
             DrawUtil.drawRect(this.canvas, activeRectBetweenPixels, lineColor, RenderEngineSettings.LINE_THICKNESS);
         }
     }
@@ -157,8 +157,8 @@ export class TextRenderEngine extends BaseRenderEngine {
         const rectOnImage: IRect = RenderEngineUtil.transferRectFromViewPortContentToImage(textRect.rect, data)
         const highlightedTextId: string = TextsSelector.getHighlightedTextId()
         const displayAsActive: boolean = textRect.id === highlightedTextId;
-        const lineColor: string = BaseRenderEngine.resolveLabelLineColor(textRect.id, displayAsActive)
-        const anchorColor: string = BaseRenderEngine.resolveLabelAnchorColor(displayAsActive);
+        const lineColor: string = BaseRenderEngine.resolveTextLineColor(textRect.text)
+        const anchorColor: string = BaseRenderEngine.resolveTextAnchorColor(displayAsActive);
         this.renderRect(rectOnImage, displayAsActive, lineColor, anchorColor);
     }
 
@@ -171,23 +171,14 @@ export class TextRenderEngine extends BaseRenderEngine {
             rect = RectUtil.resizeRect(rect, this.startResizeRectAnchor.type, delta);
         }
         const rectOnImage: IRect = RectUtil.translate(rect, data.viewPortContentImageRect);
-        const lineColor: string = BaseRenderEngine.resolveLabelLineColor(textRect.text, true)
-        const anchorColor: string = BaseRenderEngine.resolveLabelAnchorColor(true);
+        const lineColor: string = BaseRenderEngine.resolveTextLineColor(textRect.text)
+        const anchorColor: string = BaseRenderEngine.resolveTextAnchorColor(true);
         this.renderRect(rectOnImage, true, lineColor, anchorColor);
     }
 
     private renderRect(rectOnImage: IRect, isActive: boolean, lineColor: string, anchorColor: string) {
         const rectBetweenPixels = RenderEngineUtil.setRectBetweenPixels(rectOnImage);
-        DrawUtil.drawRectWithFill(this.canvas, rectBetweenPixels, DrawUtil.hexToRGB(lineColor, 0.2));
         DrawUtil.drawRect(this.canvas, rectBetweenPixels, lineColor, RenderEngineSettings.LINE_THICKNESS);
-        if (isActive) {
-            const handleCenters: IPoint[] = RectUtil.mapRectToAnchors(rectOnImage).map((rectAnchor: RectAnchor) => rectAnchor.position);
-            handleCenters.forEach((center: IPoint) => {
-                const handleRect: IRect = RectUtil.getRectWithCenterAndSize(center, RenderEngineSettings.anchorSize);
-                const handleRectBetweenPixels: IRect = RenderEngineUtil.setRectBetweenPixels(handleRect);
-                DrawUtil.drawRectWithFill(this.canvas, handleRectBetweenPixels, anchorColor);
-            })
-        }
     }
 
     private updateCursorStyle(data: EditorData) {

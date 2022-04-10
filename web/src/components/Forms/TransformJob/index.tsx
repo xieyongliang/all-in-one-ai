@@ -55,7 +55,7 @@ const instanceTypeOptions : SelectOption[]= [
         ]
     },
     {
-        label: 'Compute optimized', 
+        label: 'Accelerated computing', 
         options: [ 
             { label: 'ml.p2.xlarge', value: 'ml.p2.xlarge' },
             { label: 'ml.p2.8xlarge', value: 'ml.p2.8xlarge' },

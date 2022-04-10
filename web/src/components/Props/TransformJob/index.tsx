@@ -1,9 +1,8 @@
 import { FunctionComponent, useEffect, useState } from 'react';
-import { useHistory, useLocation, useParams } from 'react-router-dom';
-import { KeyValuePair, StatusIndicator, Button, Form, FormSection, Link, Flashbar } from 'aws-northstar';
+import { useHistory, useLocation } from 'react-router-dom';
+import { KeyValuePair, StatusIndicator, Button, Form, FormSection, Link, LoadingIndicator } from 'aws-northstar';
 import axios from 'axios';
 import Grid from '@mui/material/Grid';
-import { PathParams } from '../../Interfaces/PathParams';
 import { getDurationByDates } from '../../Utils/Helper';
 
 const TransformJobProp: FunctionComponent = () => {
@@ -21,13 +20,11 @@ const TransformJobProp: FunctionComponent = () => {
 
     const history = useHistory();
 
-    var params : PathParams = useParams();
-
     var localtion = useLocation();
     var id = localtion.hash.substring(9);
 
     useEffect(() => {
-        axios.get(`/transformjob/${id}`, {params: {'industrial_model': params.id}})
+        axios.get(`/transformjob/${id}`)
             .then((response) => {
             if(response.data.length > 0) {
                 setTransformJobName(response.data[0].TransformJobName);
@@ -45,7 +42,7 @@ const TransformJobProp: FunctionComponent = () => {
         }, (error) => {
             console.log(error);
         });
-    }, [id, params.id])
+    }, [id])
 
     const getStatus = (status: string) => {
         switch(status) {
@@ -71,17 +68,6 @@ const TransformJobProp: FunctionComponent = () => {
 
     const onClose = () => {
         history.goBack()
-    }
-
-    const renderFlashbar = () => {
-        return (
-            <Flashbar items={[{
-                header: 'Loading batch transform job information...',
-                content: 'This may take up to an minute. Please wait a bit...',
-                dismissible: true,
-                loading: loading
-            }]} />
-        )
     }
 
     const renderTransformJobSummary = () => {
@@ -173,7 +159,7 @@ const TransformJobProp: FunctionComponent = () => {
                     <Button variant='primary' onClick={onClose}>Close</Button>
                 </div>
             }>   
-            { loading && renderFlashbar() }
+            { loading && <LoadingIndicator label='Loading...'/> }
             { !loading && renderTransformJobSummary() }
             { !loading && renderTransformJobConfiguration() }
             { !loading && renderInputDataConfiguration() }

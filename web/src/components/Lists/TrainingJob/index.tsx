@@ -24,10 +24,17 @@ const TrainingJobList: FunctionComponent = () => {
     const [ sampleCode, setSampleCode ] = useState('')
     const [ sampleConsole, setSampleConsole ] = useState('')
     const [ visibleSampleCode, setVisibleSampleCode ] = useState(false)
-    const [ stopConfirmationDialogVisible, setStopConfirmationDialogVisiable ] = useState(false);
-    const [ isStopProcessing, setIsStopProcessing ] = useState(false);
     const [ selectedTrainingJob, setSelectedTrainingJob ] = useState<TrainingJobItem>()
-    const [ stopDisabled, setStopDisabled ] = useState(true)
+    const [ showAll, setShowAll ] = useState(false)
+    const [ visibleStopConfirmation, setVisibleStopConfirmation ] = useState(false);
+    const [ processingStop, setProcessingStop ] = useState(false);
+    const [ disabledStop, setDisabledStop ] = useState(true)
+    const [ visibleAttachConfirmation, setVisibleAttachConfirmation ] = useState(false)
+    const [ processingAttach, setProcessingAttach ] = useState(false);
+    const [ disabledAttach, setDisabledAttach ] = useState(true)
+    const [ visibleDetachConfirmation, setVisibleDetachConfirmation ] = useState(false)
+    const [ processingDetach, setProcessingDetach ] = useState(false);
+    const [ disabledDetach, setDisabledDetach ] = useState(true)    
 
     const history = useHistory();
 
@@ -62,25 +69,27 @@ const TrainingJobList: FunctionComponent = () => {
 
     const onRefresh = useCallback(() => {
         setLoading(true)
-        axios.get('/trainingjob', {params : {'industrial_model': params.id}})
-        .then((response) => {
-            var items = []
-            if(response.data.length === 0) {
-                setTrainingJobItems(items)
-                setLoading(false);
-            }
-            else
-                for(let item of response.data) {
-                    items.push({trainingJobName: item.TrainingJobName, trainingJobStatus : item.TrainingJobStatus, duration: getDurationBySeconds(parseInt(item.TrainingTimeInSeconds)), creationTime: getUtcDate(item.CreationTime)})
-                    if(items.length === response.data.length) {
-                        setTrainingJobItems(items)
-                        setLoading(false);
-                    }
+        var request = showAll ? axios.get('/trainingjob', {params : {'action': 'list'}}) : axios.get('/trainingjob', {params : {'industrial_model': params.id}})
+        request.then(
+            (response) => {
+                var items = []
+                if(response.data.length === 0) {
+                    setTrainingJobItems(items)
+                    setLoading(false);
                 }
-        }, (error) => {
-            console.log(error);
-        });
-    }, [params.id])
+                else
+                    for(let item of response.data) {
+                        items.push({trainingJobName: item.TrainingJobName, trainingJobStatus : item.TrainingJobStatus, duration: getDurationBySeconds(parseInt(item.TrainingTimeInSeconds)), creationTime: getUtcDate(item.CreationTime)})
+                        if(items.length === response.data.length) {
+                            setTrainingJobItems(items)
+                            setLoading(false);
+                        }
+                    }
+            }, (error) => {
+                console.log(error);
+            }
+        );
+    }, [params.id, showAll])
 
     useEffect(() => {
         onRefresh()
@@ -92,41 +101,108 @@ const TrainingJobList: FunctionComponent = () => {
     }
     
     const onStop = () => {
-        setStopConfirmationDialogVisiable(true)
+        setVisibleStopConfirmation(true)
+    }
+
+    const onAttach = () => {
+        setVisibleAttachConfirmation(true)
+    }
+
+    const onDetach = () => {
+        setVisibleDetachConfirmation(true)
     }
 
     const renderStopConfirmationDialog = () => {
         return (
             <DeleteConfirmationDialog
                 variant="confirmation"
-                visible={stopConfirmationDialogVisible}
+                visible={visibleStopConfirmation}
                 title={`Delete ${selectedTrainingJob.trainingJobName}`}
-                onCancelClicked={() => setStopConfirmationDialogVisiable(false)}
+                onCancelClicked={() => setVisibleStopConfirmation(false)}
                 onDeleteClicked={stopTrainingJob}
-                loading={isStopProcessing}
+                loading={processingStop}
+                deleteButtonText='Stop'
             >
-                <Text>This will permanently delete your model and cannot be undone. This may affect other resources.</Text>
+                <Text>This will permanently stop your training job and cannot be undone. This may affect other resources.</Text>
             </DeleteConfirmationDialog>
         )
     }
 
     const stopTrainingJob = () => {
         axios.get('/trainingjob', {params : {industrial_model: params.id, training_job_name: selectedTrainingJob, action: 'stop'}})
-        .then((response) => {
-            onRefresh()
-            setStopConfirmationDialogVisiable(false)
-            setIsStopProcessing(false)
-        }, (error) => {
-            console.log(error);
-        });        
+            .then((response) => {
+                onRefresh();
+                setVisibleStopConfirmation(false);
+                setProcessingStop(false);
+            }, (error) => {
+                alert('Error occured, please check and try it again');
+                console.log(error);
+                setProcessingStop(false);
+            }
+        );        
     }
 
-    const onSelectionChange = (selectedItems: TrainingJobItem[]) => {
-        if(selectedItems.length > 0) {
-            setSelectedTrainingJob(selectedItems[0])
-            setStopDisabled(false)
-        }
+    const renderAttachConfirmationDialog = () => {
+        return (
+            <DeleteConfirmationDialog
+                variant="confirmation"
+                visible={visibleAttachConfirmation}
+                title={`Attach ${selectedTrainingJob.trainingJobName}`}
+                onCancelClicked={() => setVisibleAttachConfirmation(false)}
+                onDeleteClicked={attachTrainingJob}
+                loading={processingAttach}
+                deleteButtonText='Attach'
+            >
+                <Text>This will attach this training job to current industrial model.</Text>
+            </DeleteConfirmationDialog>
+        )
     }
+
+    const attachTrainingJob = () => {
+        setProcessingAttach(true)
+        axios.get(`/trainingjob/${selectedTrainingJob.trainingJobName}`, {params: {industrial_model: params.id, action: 'attach'}})
+            .then((data) => {
+                onRefresh();
+                setVisibleAttachConfirmation(false);
+                setProcessingAttach(false);
+            }, (error) => {
+                alert('Error occured, please check and try it again');
+                console.log(error);
+                setProcessingAttach(false);
+            }        
+        );
+    }    
+
+    const renderDetachConfirmationDialog = () => {
+        return (
+            <DeleteConfirmationDialog
+                variant="confirmation"
+                visible={visibleDetachConfirmation}
+                title={`Detach ${selectedTrainingJob.trainingJobName}`}
+                onCancelClicked={() => setVisibleDetachConfirmation(false)}
+                onDeleteClicked={detachTrainingJob}
+                loading={processingDetach}
+                deleteButtonText='Detach'
+            >
+                <Text>This will dettach this training job from current industrial model.</Text>
+            </DeleteConfirmationDialog>
+        )
+    }
+
+    const detachTrainingJob = () => {
+        setProcessingDetach(true)
+        axios.get(`/trainingjob/${selectedTrainingJob.trainingJobName}`, {params: {industrial_model: params.id, action: 'detach'}})
+            .then((data) => {
+                onRefresh();
+                setVisibleDetachConfirmation(false);
+                setProcessingDetach(false);
+            }, (error) => {
+                alert('Error occured, please check and try it again');
+                console.log(error);
+                setProcessingDetach(false);
+            }
+        );
+    }    
 
     const getRowId = useCallback(data => data.trainingJobName, []);
 
@@ -184,16 +260,24 @@ const TrainingJobList: FunctionComponent = () => {
     
     const tableActions = (
         <Inline>
-            <Button variant="icon" icon="refresh" size="small" onClick={onRefresh}/>
+            <Toggle label='Show all' checked={showAll} onChange={(checked)=>setShowAll(checked)}/>
+            <Button icon="refresh" onClick={onRefresh} loading={loading}>Refresh</Button>
             <ButtonDropdown
-                content='Action'
-                    items={[{ text: 'Stop', onClick: onStop, disabled: stopDisabled }, { text: 'Add/Edit tags', disabled: true }]}
+                content='Actions'
+                    items={[{ text: 'Stop', onClick: onStop, disabled: disabledStop }, { text: 'Attach', onClick: onAttach, disabled: disabledAttach }, { text: 'Detach', onClick: onDetach, disabled: disabledDetach }, { text: 'Add/Edit tags', disabled: true }]}
             />        
-            <Button variant='primary' onClick={onCreate}>
-                Create
-            </Button>
+            <Button variant='primary' onClick={onCreate}>Create</Button>
         </Inline>
     );
+
+    const onSelectionChange = (selectedItems: TrainingJobItem[]) => {
+        if(selectedItems.length > 0) {
+            setSelectedTrainingJob(selectedItems[0])
+            setDisabledStop(false)
+            setDisabledAttach(false)
+            setDisabledDetach(false)
+        }
+    }
     
     const renderTrainingJobList = () => {
         return (
@@ -206,6 +290,7 @@ const TrainingJobList: FunctionComponent = () => {
                 loading={loading}
                 onSelectionChange={onSelectionChange}
                 getRowId={getRowId}
+                selectedRowIds={selectedTrainingJob !== undefined ? [selectedTrainingJob.trainingJobName] : []}
             />
         )    
     }
@@ -228,6 +313,8 @@ const TrainingJobList: FunctionComponent = () => {
     return (
         <Stack>
             { selectedTrainingJob !== undefined && renderStopConfirmationDialog() }
+            { selectedTrainingJob !== undefined && renderAttachConfirmationDialog() }
+            { selectedTrainingJob !== undefined && renderDetachConfirmationDialog() }
             {renderTrainingJobList()}
             {renderSampleCode()}
         </Stack>

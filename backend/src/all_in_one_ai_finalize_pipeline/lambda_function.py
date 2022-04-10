@@ -39,9 +39,10 @@ def lambda_handler(event, context):
             )
             if('FunctionError' not in response):
                 payload = response["Payload"].read().decode("utf-8")
+                print(payload)
                 payload = json.loads(payload)
-                payload = json.loads(payload)
-                
+                print(payload)
+                payload = json.loads(payload['body'])
                 model_package_name = payload['Containers'][0]['ModelPackageName']
                             
                 request = {

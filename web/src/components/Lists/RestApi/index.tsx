@@ -1,8 +1,7 @@
-import React, { FunctionComponent, useEffect, useState } from 'react';
+import React, { FunctionComponent, useCallback, useEffect, useState } from 'react';
 import Table from 'aws-northstar/components/Table';
 import Button from 'aws-northstar/components/Button';
 import Inline from 'aws-northstar/layouts/Inline';
-import ButtonDropdown from 'aws-northstar/components/ButtonDropdown';
 import {Column} from 'react-table'
 import { useHistory, useParams } from 'react-router-dom';
 import { PathParams } from '../../Interfaces/PathParams';
@@ -24,7 +23,7 @@ const RestApiList: FunctionComponent = () => {
 
     var params : PathParams = useParams();
 
-    useEffect(() => {
+    const onRefresh = useCallback(() => {
         axios.get('/api', {params : {'industrial_model': params.id}})
             .then((response) => {
             var items = []
@@ -42,8 +41,12 @@ const RestApiList: FunctionComponent = () => {
                 }
         }, (error) => {
             console.log(error);
-        });
-    }, [params.id]);
+        });        
+    }, [params.id])
+
+    useEffect(() => {
+        onRefresh()
+    }, [onRefresh]);
 
     const onCreate = () => {
         history.push(`/imodels/${params.id}?tab=restapi#form`)
@@ -86,13 +89,8 @@ const RestApiList: FunctionComponent = () => {
     
     const tableActions = (
         <Inline>
-            <ButtonDropdown
-                content='Action'
-                    items={[{ text: 'Clone' }, { text: 'Delete' }, { text: 'Add/Edit tags' }]}
-            />        
-            <Button variant='primary' onClick={onCreate}>
-                Create
-            </Button>
+            <Button icon="refresh" onClick={onRefresh} loading={loading}>Refresh</Button>
+            <Button variant='primary' onClick={onCreate}>Create</Button>
         </Inline>
     );
     

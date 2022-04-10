@@ -39,7 +39,7 @@ const DemoForm: FunctionComponent = () => {
                 {renderDemoOptions()}
             </Container>
             {demoType === 'transformjob' && <TransformJobList/>}
-            {demoType === 'uploaded' && <InferenceForm/>}
+            {demoType === 'uploaded' && <InferenceForm type={ProjectType.OBJECT_DETECTION_RECT}/>}
             {demoType === 'sample' && <SampleForm type={ProjectType.OBJECT_DETECTION_RECT}/>}
         </Stack>
     )

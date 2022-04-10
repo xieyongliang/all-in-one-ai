@@ -5,6 +5,7 @@ import boto3
 import os
 import warnings
 import numpy as np
+import uuid
 from paddleocr import PaddleOCR
 from inference import *
 import cv2
@@ -43,10 +44,6 @@ class MyEncoder(json.JSONEncoder):
             return super(MyEncoder, self).default(obj)
 
 def bbox_main(imgpath, detect='paddle'):
-    # 主函数：输入图像路径返回key-val匹配后的字典，字典key为名称，val为的bbox的四个顶点
-    # input：str，图像路径
-    # output：dict，dict，保存key-val
-
     (filepath, tempfilename) = os.path.split(imgpath)
     (filename, extension) = os.path.splitext(tempfilename)
 
@@ -118,19 +115,26 @@ def invocations():
     #parse json in request
     print ("<<<< flask.request.content_type", flask.request.content_type)
 
-    data = flask.request.data.decode('utf-8')
-    data = json.loads(data)
+    if flask.request.content_type != 'application/json':
+        content_type=flask.request.content_type
+        download_file_name = '/tmp/{0}.{1}'.format(str(uuid.uuid4()), content_type[content_type.rfind("/") + 1: ]) 
+        image = open(download_file_name, "wb")
+        image.write(flask.request.data)
+        image.close()
+        print ("<<<<download_file_name ", download_file_name)
+    else:
+        data = flask.request.data.decode('utf-8')
+        data = json.loads(data)
 
-    bucket = data['bucket']
-    image_uri = data['image_uri']
+        bucket = data['bucket']
+        image_uri = data['image_uri']
 
-    download_file_name = image_uri.split('/')[-1]
-    print ("<<<<download_file_name ", download_file_name)
+        download_file_name = image_uri.split('/')[-1]
+        print ("<<<<download_file_name ", download_file_name)
 
-    #local test
-    #download_file_name = './test.jpg'
-
-    s3_client.download_file(bucket, image_uri, download_file_name)
+        #local test
+        #download_file_name = './test.jpg'
+        s3_client.download_file(bucket, image_uri, download_file_name)
 
     print('Download finished!')
     # inference and send result to RDS and SQS
