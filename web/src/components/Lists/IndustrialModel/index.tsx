@@ -136,9 +136,7 @@ const IndustrialModelList: FunctionComponent<IProps> = (props) => {
             }, (error) => {
                     alert(error)
                 }
-            ).catch((e) => {
-                console.log(e);
-            })
+            )
     }
 
     const renderDeleteConfirmationDialog = () => {

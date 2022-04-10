@@ -45,7 +45,7 @@ const TransformJobList: FunctionComponent<IProps> = (props) => {
     const [ sampleConsole, setSampleConsole ] = useState('')
     const [ visibleSampleCode, setVisibleSampleCode ] = useState(false)
     const [ visibleImagePreview, setVisibleImagePreview ] = useState(false)
-    const [ imagePage, setImagePage ] = useState(0)
+    const [ imagePage, setImagePage ] = useState(1)
     const [ selectedTransformJob, setSelectedTransformJob ] = useState<TransformJobItem>()
     const [ showAll, setShowAll ] = useState(false)
     const [ visibleStopConfirmation, setVisibleStopConfirmation ] = useState(false);

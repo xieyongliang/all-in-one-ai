@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: 2010-09-09
-Description: Template for Lambda and API gateway resources. (Global)
+Description: Template for Lambda and API gateway resources
 
 Parameters:
   S3Bucket:
@@ -59,7 +59,7 @@ Resources:
         - python3.9
       Content:
         S3Bucket: !Ref S3Bucket
-        S3Key: !Sub ${S3Key}code/all_in_one_ai_helper.zip
+        S3Key: !Sub ${S3Key}codes/all_in_one_ai_helper.zip
       Description: Helper layer for DynamoDB, SSM, ane ES
       LayerName: all_in_one_ai_helper
       LicenseInfo: MIT
@@ -71,7 +71,7 @@ Resources:
         - python3.9
       Content:
         S3Bucket: !Ref S3Bucket
-        S3Key: !Sub ${S3Key}code/all_in_one_ai_sagemaker.zip
+        S3Key: !Sub ${S3Key}codes/all_in_one_ai_sagemaker.zip
       Description: SageMaker layer for SageMaker
       LayerName: all_in_one_ai_sagemaker
       LicenseInfo: MIT
@@ -210,7 +210,7 @@ Resources:
     Properties:
       Code:
         S3Bucket: !Ref S3Bucket
-        S3Key: !Sub ${S3Key}code/all_in_one_ai_api.zip
+        S3Key: !Sub ${S3Key}codes/all_in_one_ai_api.zip
       FunctionName: all_in_one_ai_api
       Tags:
         - Value: Name
@@ -421,7 +421,7 @@ Resources:
     Properties:
       Code:
         S3Bucket: !Ref S3Bucket
-        S3Key: !Sub ${S3Key}code/all_in_one_ai_endpoint.zip
+        S3Key: !Sub ${S3Key}codes/all_in_one_ai_endpoint.zip
       FunctionName: all_in_one_ai_endpoint
       Tags:
         - Value: Name
@@ -593,7 +593,7 @@ Resources:
     Properties:
       Code:
         S3Bucket: !Ref S3Bucket
-        S3Key: !Sub ${S3Key}code/all_in_one_ai_function.zip
+        S3Key: !Sub ${S3Key}codes/all_in_one_ai_function.zip
       FunctionName: all_in_one_ai_function
       Tags:
         - Value: Name
@@ -776,7 +776,7 @@ Resources:
     Properties:
       Code:
         S3Bucket: !Ref S3Bucket
-        S3Key: !Sub ${S3Key}code/all_in_one_ai_greengrass_component_version.zip
+        S3Key: !Sub ${S3Key}codes/all_in_one_ai_greengrass_component_version.zip
       FunctionName: all_in_one_ai_greengrass_component_version
       Tags:
         - Value: Name
@@ -970,7 +970,7 @@ Resources:
     Properties:
       Code:
         S3Bucket: !Ref S3Bucket
-        S3Key: !Sub ${S3Key}code/all_in_one_ai_greengrass_core_devices.zip
+        S3Key: !Sub ${S3Key}codes/all_in_one_ai_greengrass_core_devices.zip
       FunctionName: all_in_one_ai_greengrass_core_devices
       Tags:
         - Value: Name
@@ -1126,7 +1126,7 @@ Resources:
     Properties:
       Code:
         S3Bucket: !Ref S3Bucket
-        S3Key: !Sub ${S3Key}code/all_in_one_ai_greengrass_deployment.zip
+        S3Key: !Sub ${S3Key}codes/all_in_one_ai_greengrass_deployment.zip
       FunctionName: all_in_one_ai_greengrass_deployment
       Tags:
         - Value: Name
@@ -1272,7 +1272,7 @@ Resources:
     Properties:
       Code:
         S3Bucket: !Ref S3Bucket
-        S3Key: !Sub ${S3Key}code/all_in_one_ai_greengrass_thing_groups.zip
+        S3Key: !Sub ${S3Key}codes/all_in_one_ai_greengrass_thing_groups.zip
       FunctionName: all_in_one_ai_greengrass_thing_groups
       Tags:
         - Value: Name
@@ -1458,7 +1458,7 @@ Resources:
     Properties:
       Code:
         S3Bucket: !Ref S3Bucket
-        S3Key: !Sub ${S3Key}code/all_in_one_ai_industrial_model.zip
+        S3Key: !Sub ${S3Key}codes/all_in_one_ai_industrial_model.zip
       FunctionName: all_in_one_ai_industrial_model
       Tags:
         - Value: Name
@@ -1643,7 +1643,7 @@ Resources:
     Properties:
       Code:
         S3Bucket: !Ref S3Bucket
-        S3Key: !Sub ${S3Key}code/all_in_one_ai_inference.zip
+        S3Key: !Sub ${S3Key}codes/all_in_one_ai_inference.zip
       FunctionName: all_in_one_ai_inference
       Tags:
         - Value: Name
@@ -1812,7 +1812,7 @@ Resources:
     Properties:
       Code:
         S3Bucket: !Ref S3Bucket
-        S3Key: !Sub ${S3Key}code/all_in_one_ai_model.zip
+        S3Key: !Sub ${S3Key}codes/all_in_one_ai_model.zip
       FunctionName: all_in_one_ai_model
       Tags:
         - Value: Name
@@ -2067,7 +2067,7 @@ Resources:
     Properties:
       Code:
         S3Bucket: !Ref S3Bucket
-        S3Key: !Sub ${S3Key}code/all_in_one_ai_model_package.zip
+        S3Key: !Sub ${S3Key}codes/all_in_one_ai_model_package.zip
       FunctionName: all_in_one_ai_model_package
       Tags:
         - Value: Name
@@ -2188,7 +2188,7 @@ Resources:
     Properties:
       Code:
         S3Bucket: !Ref S3Bucket
-        S3Key: !Sub ${S3Key}code/all_in_one_ai_model_package_group.zip
+        S3Key: !Sub ${S3Key}codes/all_in_one_ai_model_package_group.zip
       FunctionName: all_in_one_ai_model_package_group
       Tags:
         - Value: Name
@@ -2313,7 +2313,7 @@ Resources:
     Properties:
       Code:
         S3Bucket: !Ref S3Bucket
-        S3Key: !Sub ${S3Key}code/all_in_one_ai_s3.zip
+        S3Key: !Sub ${S3Key}codes/all_in_one_ai_s3.zip
       FunctionName: all_in_one_ai_s3
       Tags:
         - Value: Name
@@ -2428,7 +2428,7 @@ Resources:
     Properties:
       Code:
         S3Bucket: !Ref S3Bucket
-        S3Key: !Sub ${S3Key}code/all_in_one_ai_search_by_image.zip
+        S3Key: !Sub ${S3Key}codes/all_in_one_ai_search_by_image.zip
       FunctionName: all_in_one_ai_search_by_image
       Tags:
         - Value: Name
@@ -2536,7 +2536,7 @@ Resources:
     Properties:
       Code:
         S3Bucket: !Ref S3Bucket
-        S3Key: !Sub ${S3Key}code/all_in_one_ai_import_opensearch.zip
+        S3Key: !Sub ${S3Key}codes/all_in_one_ai_import_opensearch.zip
       FunctionName: all_in_one_ai_import_opensearch
       Tags:
         - Value: Name
@@ -2693,7 +2693,7 @@ Resources:
     Properties:
       Code:
         S3Bucket: !Ref S3Bucket
-        S3Key: !Sub ${S3Key}code/all_in_one_ai_training_job.zip
+        S3Key: !Sub ${S3Key}codes/all_in_one_ai_training_job.zip
       FunctionName: all_in_one_ai_training_job
       Tags:
         - Value: Name
@@ -2887,7 +2887,7 @@ Resources:
     Properties:
       Code:
         S3Bucket: !Ref S3Bucket
-        S3Key: !Sub ${S3Key}code/all_in_one_ai_transform_job.zip
+        S3Key: !Sub ${S3Key}codes/all_in_one_ai_transform_job.zip
       FunctionName: all_in_one_ai_transform_job
       Tags:
         - Value: Name
@@ -3044,7 +3044,7 @@ Resources:
     Properties:
       Code:
         S3Bucket: !Ref S3Bucket
-        S3Key: !Sub ${S3Key}code/all_in_one_ai_transform_job_review.zip
+        S3Key: !Sub ${S3Key}codes/all_in_one_ai_transform_job_review.zip
       FunctionName: all_in_one_ai_transform_job_review
       Tags:
         - Value: Name
@@ -3134,7 +3134,7 @@ Resources:
     Properties:
       Code:
         S3Bucket: !Ref S3Bucket
-        S3Key: !Sub ${S3Key}code/all_in_one_ai_create_api.zip
+        S3Key: !Sub ${S3Key}codes/all_in_one_ai_create_api.zip
       FunctionName: all_in_one_ai_create_api
       Tags:
         - Value: Name
@@ -3193,7 +3193,7 @@ Resources:
     Properties:
       Code:
         S3Bucket: !Ref S3Bucket
-        S3Key: !Sub ${S3Key}code/all_in_one_ai_create_endpoint.zip
+        S3Key: !Sub ${S3Key}codes/all_in_one_ai_create_endpoint.zip
       FunctionName: all_in_one_ai_create_endpoint
       Tags:
         - Value: Name
@@ -3252,7 +3252,7 @@ Resources:
     Properties:
       Code:
         S3Bucket: !Ref S3Bucket
-        S3Key: !Sub ${S3Key}code/all_in_one_ai_create_model.zip
+        S3Key: !Sub ${S3Key}codes/all_in_one_ai_create_model.zip
       FunctionName: all_in_one_ai_create_model
       Tags:
         - Value: Name
@@ -3364,7 +3364,7 @@ Resources:
     Properties:
       Code:
         S3Bucket: !Ref S3Bucket
-        S3Key: !Sub ${S3Key}code/all_in_one_ai_pipeline.zip
+        S3Key: !Sub ${S3Key}codes/all_in_one_ai_pipeline.zip
       FunctionName: all_in_one_ai_pipeline
       Tags:
         - Value: Name
@@ -3485,7 +3485,7 @@ Resources:
     Properties:
       Code:
         S3Bucket: !Ref S3Bucket
-        S3Key: !Sub ${S3Key}code/all_in_one_ai_create_pipeline.zip
+        S3Key: !Sub ${S3Key}codes/all_in_one_ai_create_pipeline.zip
       FunctionName: all_in_one_ai_create_pipeline
       Tags:
         - Value: Name
@@ -3546,7 +3546,7 @@ Resources:
     Properties:
       Code:
         S3Bucket: !Ref S3Bucket
-        S3Key: !Sub ${S3Key}code/all_in_one_ai_create_pipeline_helper.zip
+        S3Key: !Sub ${S3Key}codes/all_in_one_ai_create_pipeline_helper.zip
       FunctionName: all_in_one_ai_create_pipeline_helper
       Tags:
         - Value: Name
@@ -3605,7 +3605,7 @@ Resources:
     Properties:
       Code:
         S3Bucket: !Ref S3Bucket
-        S3Key: !Sub ${S3Key}code/all_in_one_ai_create_training_job_yolov5.zip
+        S3Key: !Sub ${S3Key}codes/all_in_one_ai_create_training_job_yolov5.zip
       FunctionName: all_in_one_ai_create_training_job_yolov5
       Tags:
         - Value: Name
@@ -3664,7 +3664,7 @@ Resources:
     Properties:
       Code:
         S3Bucket: !Ref S3Bucket
-        S3Key: !Sub ${S3Key}code/all_in_one_ai_create_transform_job.zip
+        S3Key: !Sub ${S3Key}codes/all_in_one_ai_create_transform_job.zip
       FunctionName: all_in_one_ai_create_transform_job
       Tags:
         - Value: Name
@@ -3723,7 +3723,7 @@ Resources:
     Properties:
       Code:
         S3Bucket: !Ref S3Bucket
-        S3Key: !Sub ${S3Key}code/all_in_one_ai_delete_endpoint.zip
+        S3Key: !Sub ${S3Key}codes/all_in_one_ai_delete_endpoint.zip
       FunctionName: all_in_one_ai_delete_endpoint
       Tags:
         - Value: Name
@@ -3782,7 +3782,7 @@ Resources:
     Properties:
       Code:
         S3Bucket: !Ref S3Bucket
-        S3Key: !Sub ${S3Key}code/all_in_one_ai_delete_model.zip
+        S3Key: !Sub ${S3Key}codes/all_in_one_ai_delete_model.zip
       FunctionName: all_in_one_ai_delete_model
       Tags:
         - Value: Name
@@ -3841,7 +3841,7 @@ Resources:
     Properties:
       Code:
         S3Bucket: !Ref S3Bucket
-        S3Key: !Sub ${S3Key}code/all_in_one_ai_describe_endpoint.zip
+        S3Key: !Sub ${S3Key}codes/all_in_one_ai_describe_endpoint.zip
       FunctionName: all_in_one_ai_describe_endpoint
       Tags:
         - Value: Name
@@ -3900,7 +3900,7 @@ Resources:
     Properties:
       Code:
         S3Bucket: !Ref S3Bucket
-        S3Key: !Sub ${S3Key}code/all_in_one_ai_describe_model.zip
+        S3Key: !Sub ${S3Key}codes/all_in_one_ai_describe_model.zip
       FunctionName: all_in_one_ai_describe_model
       Tags:
         - Value: Name
@@ -3959,7 +3959,7 @@ Resources:
     Properties:
       Code:
         S3Bucket: !Ref S3Bucket
-        S3Key: !Sub ${S3Key}code/all_in_one_ai_describe_pipeline_execution.zip
+        S3Key: !Sub ${S3Key}codes/all_in_one_ai_describe_pipeline_execution.zip
       FunctionName: all_in_one_ai_describe_pipeline_execution
       Tags:
         - Value: Name
@@ -4018,7 +4018,7 @@ Resources:
     Properties:
       Code:
         S3Bucket: !Ref S3Bucket
-        S3Key: !Sub ${S3Key}code/all_in_one_ai_describe_training_job.zip
+        S3Key: !Sub ${S3Key}codes/all_in_one_ai_describe_training_job.zip
       FunctionName: all_in_one_ai_describe_training_job
       Tags:
         - Value: Name
@@ -4077,7 +4077,7 @@ Resources:
     Properties:
       Code:
         S3Bucket: !Ref S3Bucket
-        S3Key: !Sub ${S3Key}code/all_in_one_ai_describe_transform_job.zip
+        S3Key: !Sub ${S3Key}codes/all_in_one_ai_describe_transform_job.zip
       FunctionName: all_in_one_ai_describe_transform_job
       Tags:
         - Value: Name
@@ -4144,7 +4144,7 @@ Resources:
     Properties:
       Code:
         S3Bucket: !Ref S3Bucket
-        S3Key: !Sub ${S3Key}code/all_in_one_ai_finalize_pipeline.zip
+        S3Key: !Sub ${S3Key}codes/all_in_one_ai_finalize_pipeline.zip
       FunctionName: all_in_one_ai_finalize_pipeline
       Tags:
         - Value: Name
@@ -4213,7 +4213,7 @@ Resources:
     Properties:
       Code:
         S3Bucket: !Ref S3Bucket
-        S3Key: !Sub ${S3Key}code/all_in_one_ai_greengrass_create_component_version.zip
+        S3Key: !Sub ${S3Key}codes/all_in_one_ai_greengrass_create_component_version.zip
       FunctionName: all_in_one_ai_greengrass_create_component_version
       Tags:
         - Value: Name
@@ -4280,7 +4280,7 @@ Resources:
     Properties:
       Code:
         S3Bucket: !Ref S3Bucket
-        S3Key: !Sub ${S3Key}code/all_in_one_ai_greengrass_create_deployment.zip
+        S3Key: !Sub ${S3Key}codes/all_in_one_ai_greengrass_create_deployment.zip
       FunctionName: all_in_one_ai_greengrass_create_deployment
       Tags:
         - Value: Name
@@ -4343,7 +4343,7 @@ Resources:
     Properties:
       Code:
         S3Bucket: !Ref S3Bucket
-        S3Key: !Sub ${S3Key}code/all_in_one_ai_import_opensearch_handler.zip
+        S3Key: !Sub ${S3Key}codes/all_in_one_ai_import_opensearch_handler.zip
       FunctionName: all_in_one_ai_import_opensearch_handler
       Tags:
         - Value: Name
@@ -4408,7 +4408,7 @@ Resources:
     Properties:
       Code:
         S3Bucket: !Ref S3Bucket
-        S3Key: !Sub ${S3Key}code/all_in_one_ai_import_opensearch_helper.zip
+        S3Key: !Sub ${S3Key}codes/all_in_one_ai_import_opensearch_helper.zip
       FunctionName: all_in_one_ai_import_opensearch_helper
       Tags:
         - Value: Name
@@ -4473,7 +4473,7 @@ Resources:
     Properties:
       Code:
         S3Bucket: !Ref S3Bucket
-        S3Key: !Sub ${S3Key}code/all_in_one_ai_invoke_endpoint.zip
+        S3Key: !Sub ${S3Key}codes/all_in_one_ai_invoke_endpoint.zip
       FunctionName: all_in_one_ai_invoke_endpoint
       Tags:
         - Value: Name
@@ -4532,7 +4532,7 @@ Resources:
     Properties:
       Code:
         S3Bucket: !Ref S3Bucket
-        S3Key: !Sub ${S3Key}code/all_in_one_ai_list_endpoints.zip
+        S3Key: !Sub ${S3Key}codes/all_in_one_ai_list_endpoints.zip
       FunctionName: all_in_one_ai_list_endpoints
       Tags:
         - Value: Name
@@ -4591,7 +4591,7 @@ Resources:
     Properties:
       Code:
         S3Bucket: !Ref S3Bucket
-        S3Key: !Sub ${S3Key}code/all_in_one_ai_list_models.zip
+        S3Key: !Sub ${S3Key}codes/all_in_one_ai_list_models.zip
       FunctionName: all_in_one_ai_list_models
       Tags:
         - Value: Name
@@ -4650,7 +4650,7 @@ Resources:
     Properties:
       Code:
         S3Bucket: !Ref S3Bucket
-        S3Key: !Sub ${S3Key}code/all_in_one_ai_list_training_jobs.zip
+        S3Key: !Sub ${S3Key}codes/all_in_one_ai_list_training_jobs.zip
       FunctionName: all_in_one_ai_list_training_jobs
       Tags:
         - Value: Name
@@ -4709,7 +4709,7 @@ Resources:
     Properties:
       Code:
         S3Bucket: !Ref S3Bucket
-        S3Key: !Sub ${S3Key}code/all_in_one_ai_list_transform_jobs.zip
+        S3Key: !Sub ${S3Key}codes/all_in_one_ai_list_transform_jobs.zip
       FunctionName: all_in_one_ai_list_transform_jobs
       Tags:
         - Value: Name
@@ -4768,7 +4768,7 @@ Resources:
     Properties:
       Code:
         S3Bucket: !Ref S3Bucket
-        S3Key: !Sub ${S3Key}code/all_in_one_ai_stop_training_job.zip
+        S3Key: !Sub ${S3Key}codes/all_in_one_ai_stop_training_job.zip
       FunctionName: all_in_one_ai_stop_training_job
       Tags:
         - Value: Name
@@ -4827,7 +4827,7 @@ Resources:
     Properties:
       Code:
         S3Bucket: !Ref S3Bucket
-        S3Key: !Sub ${S3Key}code/all_in_one_ai_stop_transform_job.zip
+        S3Key: !Sub ${S3Key}codes/all_in_one_ai_stop_transform_job.zip
       FunctionName: all_in_one_ai_stop_transform_job
       Tags:
         - Value: Name
@@ -4903,9 +4903,9 @@ Outputs:
       - Globally
       - !Sub https://${ApiGatewayRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod
       - !Sub https://${ApiGatewayRestApi}.execute-api.${AWS::Region}.amazonaws.com.cn/Prod
-  CreatePipelineHelperFunction:
+  CreatePipelineHelperFunctionArn:
     Description: Arn of AllInOneAICreatePipelineHelperFunction
     Value: !GetAtt AllInOneAICreatePipelineHelperFunction.Arn
-  ImportOpensearchHelperFunction:
+  ImportOpensearchHelperFunctionArn:
     Description: Arn of AllInOneAIImportOpensearchHelperFunction
     Value: !GetAtt AllInOneAIImportOpensearchHelperFunction.Arn

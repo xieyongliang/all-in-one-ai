@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: 2010-09-09
-Description: Template for DynamoDB (Global)
+Description: Template for DynamoDB
 
 Resources: 
   IndustrialModelDynamoDBTable: 

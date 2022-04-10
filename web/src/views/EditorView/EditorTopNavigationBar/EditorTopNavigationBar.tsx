@@ -244,7 +244,7 @@ const EditorTopNavigationBar: React.FC<IProps> = (
 
     const inferenceOnClick = () => {
         var promise = getInference()
-        if(promise !== undefined)
+        if(promise !== undefined) {}
             if(projectType === ProjectType.TEXT_RECOGNITION) {
                 promise.then(data => {
                     const imageData: ImageTextData = TextsSelector.getActiveImageData();
@@ -275,8 +275,9 @@ const EditorTopNavigationBar: React.FC<IProps> = (
                     var imageBboxs : number[][] = [];
                     var imageIds : number[] = [];
                     for(let item of data) {
+                
                         var numbers = item.split(' ');
-                        imageIds.push(parseInt(item[0]));
+                        imageIds.push(parseInt(numbers[0]));
                         var box : number[] = [];
                         box.push(parseFloat(numbers[1]));
                         box.push(parseFloat(numbers[2]));

@@ -29,7 +29,7 @@ const SampleForm: FunctionComponent<IProps> = (props) => {
     const [ sampleCode, setSampleCode ] = useState('')
     const [ sampleConsole, setSampleConsole ] = useState('')
     const [ visibleSampleCode, setVisibleSampleCode ] = useState(false)
-    const [ imagePage, setImagePage ] = useState(0)
+    const [ imagePage, setImagePage ] = useState(1)
     const [ imageCount, setImageCount ] = useState(0)
     const [ loading, setLoading ] = useState(true);
     const [ visibleImagePreview, setVisibleImagePreview ] = useState(false)

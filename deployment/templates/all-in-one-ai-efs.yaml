@@ -74,9 +74,6 @@ Resources:
         Path: "/mnt/efs"
 
 Outputs:
-  ElasticFileSystem:
-    Value: !Ref ElasticFileSystem
-
   EfsAccessPointArn:
     Value: !GetAtt EfsAccessPoint.Arn
     Description: Arn of the created Amazon EFS Access Point

@@ -7,7 +7,7 @@ set -e
 #
 # Get reference for all important folders
 template_dir="$PWD"
-build_dist_dir="$template_dir/build/code"
+build_dist_dir="$template_dir/build/codes"
 source_dir="$template_dir/src"
 build_dir="$template_dir/build/tmp"
 
