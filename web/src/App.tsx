@@ -28,6 +28,7 @@ import { store } from '.';
 import { Action } from './store/Actions';
 import GluonCV from './components/Algorithms/GluonCV';
 import PaddleOCR from './components/Algorithms/PaddleOCR';
+import Track from './components/Scenarios/Track';
 
 const App : FunctionComponent = () => {
     const withLayout = (Component : any, props? : any) => {
@@ -69,7 +70,8 @@ const App : FunctionComponent = () => {
         <NorthStarThemeProvider>
             <Router>
                 <Switch>
-                    <Route sensitive={true} exact path="/scenarios">{withLayout(PPE)}</Route>
+                    <Route sensitive={true} exact path="/scenarios/ppe">{withLayout(PPE)}</Route>
+                    <Route sensitive={true} exact path="/scenarios/track">{withLayout(Track)}</Route>
                     <Route sensitive={true} exact path="/algorithms/yolov5">{withLayout(Yolov5)}</Route>
                     <Route sensitive={true} exact path="/algorithms/gluoncv">{withLayout(GluonCV)}</Route>
                     <Route sensitive={true} exact path="/algorithms/paddleocr">{withLayout(PaddleOCR)}</Route>

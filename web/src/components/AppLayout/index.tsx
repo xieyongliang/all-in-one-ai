@@ -48,8 +48,8 @@ const AppLayout: FunctionComponent = ( {children} ) => {
                         'type': SideNavigationItemType.SECTION,
                         'text': 'Scenarios',
                         'items': [
-                            { text: 'PPE Detector', type: SideNavigationItemType.LINK, href: '/scenarios/ppe' },
-                            { text: 'Track maintenance', type: SideNavigationItemType.LINK, href: '/scenarios/ppe' }
+                            { text: 'PPE detector', type: SideNavigationItemType.LINK, href: '/scenarios/ppe' },
+                            { text: 'Track maintenance', type: SideNavigationItemType.LINK, href: '/scenarios/track' }
                         ]
                     },
                     {
