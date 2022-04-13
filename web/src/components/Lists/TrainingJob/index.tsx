@@ -274,8 +274,9 @@ const TrainingJobList: FunctionComponent = () => {
         if(selectedItems.length > 0) {
             setSelectedTrainingJob(selectedItems[0])
             setDisabledStop(false)
-            setDisabledAttach(false)
-            setDisabledDetach(false)
+            var index = trainingJobItems.findIndex((item) => item.name === selectedItems[0].trainingJobName)
+            setDisabledAttach(index < 0)
+            setDisabledDetach(index >= 0)
         }
     }
     

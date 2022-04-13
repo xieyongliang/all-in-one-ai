@@ -259,7 +259,7 @@ const GluonCVDemoForm: FunctionComponent<IProps> = (
                             </FormField>
                         </Grid>
                         <Grid item xs={12}>
-                            <Image src={`/image/${curImagePreviewItem}`} width={"100%"} height={"100%"} current=''/>
+                            <Image src={`/image/${curImagePreviewItem}`} width={"100%"} height={"100%"} current='' onClick={onImageClick}/>
                         </Grid>
                     </Grid>
                 </Container>

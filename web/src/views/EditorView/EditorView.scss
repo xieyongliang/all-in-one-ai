@@ -1,6 +1,10 @@
 @import '../../settings/_Settings';
 
 .EditorView {
+	--leading-color: #{$secondaryColor};
+	--button-text-color: #{white};
+	--hue-value: 172deg;
+
   height: 100vh;
   width: 99vw;
   margin: 0;

@@ -169,6 +169,7 @@ const TransformJobForm: FunctionComponent<IProps> = (props) => {
                 }, (error) => {
                     alert('Error occured, please check and try it again');
                     console.log(error);
+                    setProcessing(false);
                 });
         }
     }

@@ -31,7 +31,7 @@ interface IProps {
 }
 
 const ModelForm: FunctionComponent<IProps> = (props) => {
-    const [ modelPackageGroupItems, setModelPackGroupItems ] = useState([])
+    const [ modelPackageGroupItems, setModelPackageGroupItems ] = useState([])
     const [ modelPackageVersionItems, setModelPackageVersionItems ] = useState({})
     const [ modelPackageGroupName, setModelPackageGroupName ] = useState('')
     const [ loading, setLoading ] = useState(true);
@@ -41,13 +41,12 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
     const [ containerInputType, setContainerInputType ] = useState(props.wizard  ? '1' : '0')
     const [ containerModelType, setContainerModelType ] = useState('SingleModel')
     const [ selectedModelPackage, setSelectedModelPackage ] = useState({});
-    const [ selectedModelPackageVersions ] = useState([]);
-    const [ tags ] = useState([{key:'', value:''}])
-    const [ forcedRefresh, setForcedRefresh ] = useState(false)
+    const [ selectedModelPackageVersions, setSelectedModelPackageVersions ] = useState([]);
+    const [ tags, setTags ] = useState([{key:'', value:''}])
+    const [ environment, setEnvironment ] = useState([{key:'', value:''}])
     const [ invalidModelName, setInvalidModelName ] = useState(false)
     const [ invalidModelDataUrl, setInvalidModelDataUrl ] = useState(false)
     const [ invalidModelPackageName, setInvalidModelPackageName ] = useState(false)
-    const [ forceRefreshed, setForceRefreshed ] = useState(false)
     const [ processing, setProcessing ] = useState(false)
     const [ processingModelPackage, setProcessingModelPackage ] = useState(false);
     const [ processingModelPackageGroup, setProcessingModelPackageGroup ] = useState(false);
@@ -101,7 +100,7 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
                 })
                 modelPackageGroupItems.push({name: item.ModelPackageGroupName, creation_time: getUtcDate(item.CreationTime), versions: []})
                 if(Object.keys(modelPackageGroupItems).length === data.length) {
-                    setModelPackGroupItems(modelPackageGroupItems)
+                    setModelPackageGroupItems(modelPackageGroupItems)
                 }
             }
         }, (error) => {
@@ -121,9 +120,16 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
         else if(id === 'formFieldIdModelPackageGroup')
             setModelPackageGroupName(event)
         else if(option === 'versions') {
-            selectedModelPackageVersions[id] = {label: event.target.value, value: event.target.value};
-            setForceRefreshed(!forceRefreshed)
+            var copySelectedModelPackageVersions = JSON.parse(JSON.stringify(selectedModelPackageVersions));
+            copySelectedModelPackageVersions[id] = {label: event.target.value, value: event.target.value};
+            setSelectedModelPackageVersions(copySelectedModelPackageVersions)
         }
+    }
+
+    const onChangeEnvironment = (id: string, event: any, index : number) => {
+        var copyEnvironment = JSON.parse(JSON.stringify(environment));
+        copyEnvironment[index][id] = event
+        setEnvironment(copyEnvironment)
     }
 
     const onChangeOptions = (event, value) => {
@@ -163,7 +169,6 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
             else if(modelDataUrl === '')
                 setInvalidModelDataUrl(true)
             else {
-    
                 body = {
                     'model_name' : modelName,
                     'industrial_model': params.id,
@@ -173,7 +178,17 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
                     'mode': containerModelType
                 }
                 if(tags.length > 1 || (tags.length === 1 && tags[0].key !== '' && tags[0].value !== ''))
-                    body['tags'] = tags
+                    body['tags'] = tags;
+                if(environment.length > 0) {
+                    body['environment'] = {};
+                    environment.forEach((item) => {
+                        if(item['key'] === '') {
+                            alert('key in environment variables cannot be empty');
+                            return;
+                        }
+                        body['environment'][item['key']] = item['value'];
+                    })
+                }
                 setProcessing(true)
                 axios.post('/model', body,  { headers: {'content-type': 'application/json' }}) 
                     .then((response) => {
@@ -219,13 +234,15 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
     }
 
     const onAddTag = () => {
-        tags.push({key:'', value:''});
-        setForcedRefresh(!forcedRefresh);
+        var copyTags = JSON.parse(JSON.stringify(tags));
+        copyTags.push({key:'', value:''});
+        setTags(copyTags);
     }
 
     const onRemoveTag = (index) => {
-        tags.splice(index, 1);
-        setForcedRefresh(!forcedRefresh);
+        var copyTags = JSON.parse(JSON.stringify(tags));
+        copyTags.splice(index, 1);
+        setTags(copyTags);
     }
 
     const renderModelSetting = () => {
@@ -242,7 +259,13 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
             return ''
     }
 
-    const renderModelTag = () => {
+    const onChangeTags = (id: string, event: any, index : number) => {
+        var copyTags = JSON.parse(JSON.stringify(tags));
+        copyTags[index][id] = event
+        setTags(copyTags)
+    }    
+
+    const renderModelTags = () => {
         if(!wizard) {
             return (
                 <FormSection header='Tags - optional'>
@@ -264,10 +287,10 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
                         tags.map((tag, index) => (
                             <Grid container spacing={{ xs: 1, md: 1 }} columns={{ xs: 4, sm: 8, md: 12 }}>
                                 <Grid item xs={2} sm={4} md={4}>
-                                    <Input type='text' value={tag.key}/>
+                                    <Input type='text' value={tag.key} onChange={(event) => onChangeTags('key', event, index)}/>
                                 </Grid>
                                 <Grid item xs={2} sm={4} md={4}>
-                                    <Input type='text' value={tag.value}/>
+                                    <Input type='text' value={tag.value} onChange={(event) => onChangeTags('value', event, index)}/>
                                 </Grid>
                                 <Grid item xs={2} sm={4} md={4}>
                                     <Button onClick={() => onRemoveTag(index)}>Remove</Button>
@@ -390,19 +413,21 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
             }
             setProcessingModelPackageGroup(true)
             axios.post('/modelpackage/group', body,  { headers: {'content-type': 'application/json' }}) 
-            .then((response) => {
-                modelPackageGroupItems.push({name: modelPackageGroupName, creation_time: response.data.creation_time, versions: []})
-                modelPackageVersionItems[modelPackageGroupName] = {
-                    versions: [],
-                    arns: []
+                .then((response) => {
+                    var copyModelPackageGroupItems = JSON.parse(JSON.stringify(modelPackageGroupItems))
+                    copyModelPackageGroupItems.push({name: modelPackageGroupName, creation_time: response.data.creation_time, versions: []})
+                    copyModelPackageGroupItems[modelPackageGroupName] = {
+                        versions: [],
+                        arns: []
+                    }
+                    setModelPackageGroupItems(copyModelPackageGroupItems)
+                    setProcessingModelPackageGroup(false);
+                }, (error) => {
+                    alert('Error occured, please check and try it again');
+                    console.log(error);
+                    setProcessingModelPackageGroup(false);
                 }
-                setForcedRefresh(!forcedRefresh);
-                setProcessingModelPackageGroup(false);
-            }, (error) => {
-                alert('Error occured, please check and try it again');
-                console.log(error);
-                setProcessingModelPackageGroup(false);
-            });
+            );
         }
     }
 
@@ -448,12 +473,13 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
                         versions.push(modelPackage['ModelPackageVersion'])
                         arns.push(modelPackage['ModelPackageArn'])
                     })
-                    modelPackageGroupItems.find(({name}) => name === selectedModelPackage['name'])['versions'] = versions
-                    modelPackageVersionItems[selectedModelPackage['name']] = {
+                    var copyModelPackageGroupItems = JSON.parse(JSON.stringify(modelPackageGroupItems))
+                    copyModelPackageGroupItems.find(({name}) => name === selectedModelPackage['name'])['versions'] = versions
+                    copyModelPackageGroupItems[selectedModelPackage['name']] = {
                         versions: versions,
                         arns: arns
                     }
-                    setForcedRefresh(!forcedRefresh);
+                    setModelPackageGroupItems(copyModelPackageGroupItems)
                     setProcessingModelPackage(false);
                 })                
             }, (error) => {
@@ -480,6 +506,54 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
         )
     }
 
+    const onAddEnvironmentVairable = () => {
+        var copyEnvironmentVaraibles = JSON.parse(JSON.stringify(environment));
+        copyEnvironmentVaraibles.push({key:'', value:''});
+        setEnvironment(copyEnvironmentVaraibles);
+    }
+
+    const onRemoveEnvironmentVariable = (index) => {
+        var copyEnvironmentVaraibles = JSON.parse(JSON.stringify(environment));
+        copyEnvironmentVaraibles.splice(index, 1);
+        setEnvironment(copyEnvironmentVaraibles);
+    }
+
+    const renderEnvironment = () => {
+        return (
+            <ExpandableSection header="Environment variables - optional">
+                <Stack>
+                    {
+                        environment.length>0 && 
+                        <Grid container spacing={{ xs: 1, md: 1 }} columns={{ xs: 4, sm: 8, md: 12 }}>
+                            <Grid item xs={2} sm={4} md={4}>
+                                <Text> Key </Text>
+                            </Grid>
+                            <Grid item xs={2} sm={4} md={4}>
+                                <Text> Value </Text> 
+                            </Grid>
+                        </Grid>
+                    }
+                    {
+                        environment.map((item, index) => (
+                            <Grid container spacing={{ xs: 1, md: 1 }} columns={{ xs: 4, sm: 8, md: 12 }}>
+                                <Grid item xs={2} sm={4} md={4}>
+                                    <Input type='text' value={item.key} onChange={(event) => onChangeEnvironment('key', event, index)}/>
+                                </Grid>
+                                <Grid item xs={2} sm={4} md={4}>
+                                    <Input type='text' value={item.value} onChange={(event) => onChangeEnvironment('value', event, index)}/>
+                                </Grid>
+                                <Grid item xs={2} sm={4} md={4}>
+                                    <Button onClick={() => onRemoveEnvironmentVariable(index)}>Remove</Button>
+                                </Grid>
+                            </Grid>
+                        ))
+                    }
+                    <Button variant='link' size='large' onClick={onAddEnvironmentVairable}>Add environment variable</Button>
+                </Stack>
+            </ExpandableSection>  
+        )
+    }
+
     const renderModelFormContent = () => {
         if(containerInputType === '0')
             return (
@@ -497,7 +571,10 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
                                 <Input type='text' required={true} value={modelDataUrl} invalid={invalidModelDataUrl} onChange={(event)=>{onChange('formFieldIdModelDataUrl', event)}} />
                             </FormField>
                         </Stack>
-                    </ExpandableSection>  
+                    </ExpandableSection>
+                    {
+                        renderEnvironment()
+                    }
                 </FormSection>    
             )
         else
@@ -513,6 +590,9 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
                         (props.pipelineType === '2' || props.pipelineType === '3') &&
                         <ExpandableSection header="Create a new model package">{renderModelPackageForm()}</ExpandableSection>
                     }
+                    {
+                        renderEnvironment()
+                    }
                 </FormSection>
             )
     }
@@ -522,7 +602,7 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
             <Stack>
                 {renderModelSetting()}
                 {renderModelFormContent()}
-                {renderModelTag()}
+                {renderModelTags()}
             </Stack>
         )
     }
@@ -539,7 +619,7 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
                 }>            
                 {renderModelSetting()}
                 {renderModelFormContent()}
-                {renderModelTag()}
+                {renderModelTags()}
             </Form>
         )
     }

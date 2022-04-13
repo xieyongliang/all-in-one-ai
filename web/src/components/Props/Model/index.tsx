@@ -1,6 +1,6 @@
 import { FunctionComponent, useEffect, useState } from 'react';
 import { useHistory, useLocation } from 'react-router-dom';
-import { KeyValuePair, Button, Form, FormSection, LoadingIndicator } from 'aws-northstar';
+import { KeyValuePair, Button, Form, FormSection, LoadingIndicator, Text } from 'aws-northstar';
 import axios from 'axios';
 import Grid from '@mui/material/Grid';
 
@@ -75,6 +75,34 @@ const ModelProp: FunctionComponent = () => {
                         </Grid>
                     </Grid>
                 }
+                {
+                    primaryContainer['Environment'] !== undefined && 
+                    <Grid container spacing={{ xs: 1, md: 1 }} columns={{ xs: 4, sm: 8, md: 12 }}>
+                        <Grid item xs={12} sm={12} md={12}>
+                            <Text> Environment variables </Text>
+                        </Grid>
+                        <Grid item xs={6} sm={6} md={6}>
+                            <Text> Key </Text>
+                        </Grid>
+                        <Grid item xs={6} sm={6} md={6}>
+                            <Text> Value </Text> 
+                        </Grid>
+                    </Grid>
+                }
+                {
+                    primaryContainer['Environment'] !== undefined && 
+                    Object.keys(primaryContainer['Environment']).map((key) => (
+                        <Grid container spacing={{ xs: 1, md: 1 }} columns={{ xs: 4, sm: 8, md: 12 }}>
+                            <Grid item xs={6} sm={6} md={6}>
+                                <Text>{key}</Text>
+                            </Grid>
+                            <Grid item xs={6} sm={6} md={6}>
+                                <Text>{primaryContainer['Environment'][key]}</Text>
+                            </Grid>
+                        </Grid>
+                    ))
+                }
+
             </FormSection>
         )
     }

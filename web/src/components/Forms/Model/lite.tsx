@@ -1,6 +1,6 @@
 import { FunctionComponent, useState } from 'react';
 import { useHistory, useParams } from 'react-router-dom'; 
-import { FormSection, FormField, Input, Button, Text, Stack, RadioButton, RadioGroup, Form } from 'aws-northstar';
+import { FormSection, FormField, Input, Button, Text, Stack, RadioButton, RadioGroup, Form, ExpandableSection } from 'aws-northstar';
 import Grid from '@mui/material/Grid';
 import axios from 'axios';
 import { AppState } from '../../../store';
@@ -21,6 +21,7 @@ const LiteModelForm: FunctionComponent<IProps> = (props) => {
     const [ tags, setTags ] = useState([{key:'', value:''}])
     const [ invalidModelName, setInvalidModelName ] = useState(false)
     const [ processing, setProcessing ] = useState(false)
+    const [ environment, setEnvironment ] = useState([{key:'', value:''}])
 
     const history = useHistory();
 
@@ -76,13 +77,15 @@ const LiteModelForm: FunctionComponent<IProps> = (props) => {
     }
 
     const onAddTag = () => {
-        tags.push({key:'', value:''});
-        setTags(tags)
+        var copyTags = JSON.parse(JSON.stringify(tags))
+        copyTags.push({key:'', value:''});
+        setTags(copyTags)
     }
 
     const onRemoveTag = (index) => {
-        tags.splice(index, 1);
-        setTags(tags)
+        var copyTags = JSON.parse(JSON.stringify(tags))
+        copyTags.splice(index, 1);
+        setTags(copyTags)
     }
 
     const onChangeOptions = (event, value) => {
@@ -96,6 +99,61 @@ const LiteModelForm: FunctionComponent<IProps> = (props) => {
                     <Input type='text' required={true} value={modelName} invalid={invalidModelName} onChange={(event)=>onChange('formFieldIdModelName', event)}/>
                 </FormField>
             </FormSection>
+        )
+    }
+
+    const onAddEnvironmentVairable = () => {
+        var copyEnvironmentVaraibles = JSON.parse(JSON.stringify(environment));
+        copyEnvironmentVaraibles.push({key:'', value:''});
+        setEnvironment(copyEnvironmentVaraibles);
+    }
+
+    const onRemoveEnvironmentVariable = (index) => {
+        var copyEnvironmentVaraibles = JSON.parse(JSON.stringify(environment));
+        copyEnvironmentVaraibles.splice(index, 1);
+        setEnvironment(copyEnvironmentVaraibles);
+    }
+
+    const onChangeEnvironment = (id: string, event: any, index : number) => {
+        var copyEnvironment = JSON.parse(JSON.stringify(environment));
+        copyEnvironment[index][id] = event
+        setEnvironment(copyEnvironment)
+    }
+
+    const renderEnvironment = () => {
+        return (
+            <ExpandableSection header="Environment variables - optional">
+                <Stack>
+                    {
+                        environment.length > 0 && 
+                        <Grid container spacing={{ xs: 1, md: 1 }} columns={{ xs: 4, sm: 8, md: 12 }}>
+                            <Grid item xs={2} sm={4} md={4}>
+                                <Text> Key </Text>
+                            </Grid>
+                            <Grid item xs={2} sm={4} md={4}>
+                                <Text> Value </Text> 
+                            </Grid>
+                        </Grid>
+                    }
+                    {
+                        environment.length > 0 && 
+                        environment.map((item, index) => (
+                            <Grid container spacing={{ xs: 1, md: 1 }} columns={{ xs: 4, sm: 8, md: 12 }}>
+                                <Grid item xs={2} sm={4} md={4}>
+                                    <Input type='text' value={item.key} onChange={(event) => onChangeEnvironment('key', event, index)}/>
+                                </Grid>
+                                <Grid item xs={2} sm={4} md={4}>
+                                    <Input type='text' value={item.value} onChange={(event) => onChangeEnvironment('value', event, index)}/>
+                                </Grid>
+                                <Grid item xs={2} sm={4} md={4}>
+                                    <Button onClick={() => onRemoveEnvironmentVariable(index)}>Remove</Button>
+                                </Grid>
+                            </Grid>
+                        ))
+                    }
+                    <Button variant='link' size='large' onClick={onAddEnvironmentVairable}>Add environment variable</Button>
+                </Stack>            
+            </ExpandableSection>  
         )
     }
 
@@ -113,11 +171,20 @@ const LiteModelForm: FunctionComponent<IProps> = (props) => {
                 <FormField label='Container image' controlId='formFieldIdContainerImage'>
                     <Input type='text' required={true} value={containerIamge} onChange={(event)=>onChange('formFieldIdContainerImage', event)}/>
                 </FormField>
+                {
+                    renderEnvironment()
+                }
             </FormSection>
         )
     }
 
-    const renderModelTag = () => {
+    const onChangeTags = (id: string, event: any, index : number) => {
+        var copyTags = JSON.parse(JSON.stringify(tags));
+        copyTags[index][id] = event
+        setTags(copyTags)
+    }
+    
+    const renderModelTags = () => {
         if(!wizard) {
             return (
                 <FormSection header='Tags - optional'>
@@ -139,10 +206,10 @@ const LiteModelForm: FunctionComponent<IProps> = (props) => {
                         tags.map((tag, index) => (
                             <Grid container spacing={{ xs: 1, md: 1 }} columns={{ xs: 4, sm: 8, md: 12 }}>
                                 <Grid item xs={2} sm={4} md={4}>
-                                    <Input type='text' value={tag.key}/>
+                                    <Input type='text' value={tag.key} onChange={(event) => onChangeTags('key', event, index)}/>
                                 </Grid>
                                 <Grid item xs={2} sm={4} md={4}>
-                                    <Input type='text' value={tag.value}/>
+                                    <Input type='text' value={tag.value} onChange={(event) => onChangeTags('value', event, index)}/>
                                 </Grid>
                                 <Grid item xs={2} sm={4} md={4}>
                                     <Button onClick={() => onRemoveTag(index)}>Remove</Button>
@@ -163,7 +230,7 @@ const LiteModelForm: FunctionComponent<IProps> = (props) => {
         return (
             <Stack>
                 { renderContainerDefinition() }
-                { renderModelTag() }
+                { renderModelTags() }
             </Stack>
         )
     }
@@ -180,7 +247,7 @@ const LiteModelForm: FunctionComponent<IProps> = (props) => {
                 }>            
                 { renderModelSetting() }
                 { renderContainerDefinition() }
-                { renderModelTag() }
+                { renderModelTags() }
             </Form>
         )
     }

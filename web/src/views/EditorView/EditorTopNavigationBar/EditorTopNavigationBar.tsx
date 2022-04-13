@@ -275,7 +275,6 @@ const EditorTopNavigationBar: React.FC<IProps> = (
                     var imageBboxs : number[][] = [];
                     var imageIds : number[] = [];
                     for(let item of data) {
-                
                         var numbers = item.split(' ');
                         imageIds.push(parseInt(numbers[0]));
                         var box : number[] = [];

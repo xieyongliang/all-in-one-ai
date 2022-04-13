@@ -149,7 +149,8 @@ const IndustrialModelForm: FunctionComponent<IProps> = (props) => {
                 props.updateindustrialmodelsAction(industrialModels)
                 props.onClose();
             }).catch((error) => {
-                console.log(error)
+                console.log(error);
+                setProcessing(false);
             })
     };
     

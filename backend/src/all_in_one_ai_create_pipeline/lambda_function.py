@@ -77,6 +77,7 @@ def lambda_handler(event, context):
     industrial_model = event['body']['industrial_model']
     model_algorithm = event['body']['model_algorithm']
     inference_image = event['body']['inference_image']
+    model_environment = event['body']['environment']
     model_package_group_inference_instances = event['body']['model_package_group_inference_instances']
     model_name = event['body']['model_name']
     endpoint_config_name = event['body']['endpoint_config_name']
@@ -127,6 +128,7 @@ def lambda_handler(event, context):
     param_model_algorithm = ParameterString(name = 'model_algorithm')
     param_inference_image = ParameterString(name = 'inference_image')
     param_model_package_group_inference_instances = ParameterString(name = 'model_package_group_inference_instances')
+    param_model_environment = ParameterString(name = 'model_environment')
     param_model_name = ParameterString(name = 'model_name')
     param_endpoint_config_name = ParameterString(name = 'endpoint_config_name')
     param_endpoint_name = ParameterString(name = 'endpoint_name')
@@ -183,8 +185,8 @@ def lambda_handler(event, context):
             'industrial_model': param_industrial_model,
             'role_arn': role,
             'model_name': param_model_name,
+            'model_environment': param_model_environment,
             'model_package_arn': step_register_model.steps[0].properties.ModelPackageArn,
-            'model_name': param_model_name,
             'endpoint_name': param_endpoint_name,
             'instance_type': param_endpoint_instance_type,
             'initial_instance_count': param_endpoint_initial_instance_count,
@@ -214,6 +216,7 @@ def lambda_handler(event, context):
             'industrial_model': param_industrial_model,
             'role_arn': role,
             'model_name': param_model_name,
+            'model_environment': param_model_environment,
             'model_package_arn': step_register_model.steps[0].properties.ModelPackageArn,
             'model_name': param_model_name,
             'endpoint_name': param_endpoint_name,
@@ -234,6 +237,7 @@ def lambda_handler(event, context):
             'industrial_model': param_industrial_model,
             'role_arn': role,
             'model_name': param_model_name,
+            'model_environment': param_model_environment,
             'model_package_arn': param_model_package_arn,
             'endpoint_name': param_endpoint_name,
             'instance_type': param_endpoint_instance_type,
@@ -264,6 +268,7 @@ def lambda_handler(event, context):
             'industrial_model': param_industrial_model,
             'role_arn': role,
             'model_name': param_model_name,
+            'model_environment': param_model_environment,
             'model_package_arn': param_model_package_arn,
             'endpoint_name': param_endpoint_name,
             'instance_type': param_endpoint_instance_type,
@@ -313,6 +318,7 @@ def lambda_handler(event, context):
         param_inference_image,
         param_model_package_group_inference_instances,
         param_model_name,
+        param_model_environment,
         param_endpoint_config_name,
         param_endpoint_name,
         param_endpoint_instance_type,
@@ -395,6 +401,7 @@ def lambda_handler(event, context):
         'inference_image': inference_image,
         'model_package_group_inference_instances': model_package_group_inference_instances,
         'model_name': model_name,
+        'model_environment': model_environment,
         'endpoint_config_name': endpoint_config_name,
         'endpoint_name': endpoint_name,
         'endpoint_instance_type': endpoint_instance_type,

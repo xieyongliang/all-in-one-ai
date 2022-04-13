@@ -2,132 +2,113 @@
 import sys
 import json
 import os
-import warnings
 import flask
 import boto3
-import io
 import uuid
 import os
 import imghdr
 
-from PIL import Image
-
 import sys
+
 sys.path.append('/opt/yolov5')
 
-import argparse
-import time
 from pathlib import Path
 
-import cv2
 import torch
 import torch.backends.cudnn as cudnn
-
-from models.experimental import attempt_load
-from utils.datasets import LoadStreams, LoadImages
-from utils.general import check_img_size, check_requirements, check_imshow, non_max_suppression, apply_classifier, \
-    scale_coords, xyxy2xywh, strip_optimizer, set_logging, increment_path
-from utils.plots import colors
+from models.common import DetectMultiBackend
+from utils.datasets import IMG_FORMATS, VID_FORMATS, LoadImages, LoadStreams
+from utils.general import check_img_size, non_max_suppression, scale_coords, xyxy2xywh, set_logging
 from utils.torch_utils import select_device, time_sync
-
 
 # The flask app for serving predictions
 app = flask.Flask(__name__)
 
 s3_client = boto3.client('s3')
 
-name = 'tutorial'
-weights = '/opt/ml/model/{}/weights/best.pt'.format(name)
-imgsz = 640
-conf_thres = 0.02
-iou_thres = 0.45
-max_det = 1000
-device = 'cpu'
-classes = None
-agnostic_nms = False
-augment = False
-half = False
+print(os.environ)
+name = os.environ['name'] if('name' in os.environ) else 'tutorial'
+weights = os.environ['weights'] if ('weights' in os.environ) else '/opt/ml/model/{}/weights/best.pt'.format(name)
+imgsz = int(os.environ['imgsz']) if('imgsz' in os.environ) else 640 
+conf_thres = float(os.environ['conf_thres']) if('conf_thres' in os.environ) else 0.25
+iou_thres = float(os.environ['iou_thres']) if('iou_thres' in os.environ) else 0.45
+max_det = int(os.environ['max_det']) if('max_det' in os.environ) else 1000
+device = os.environ['device'] if('device' in os.environ) else 'cpu'
+classes = os.environ['classes'] if('classes' in os.environ) else None
+agnostic_nms = bool(os.environ['agnostic_nms']) if('agnostic_nms' in os.environ) else False
+augment = bool(os.environ['augment']) if('augment' in os.environ) else False
+half = bool(os.environ['half']) if('half' in os.environ) else False
 
 def init(weights='yolov5s.pt',  # model.pt path(s)
-           source='data/images',  # file/dir/URL/glob, 0 for webcam
-           imgsz=640,  # inference size (pixels)
-           conf_thres=0.25,  # confidence threshold
-           iou_thres=0.45,  # NMS IOU threshold
-           max_det=1000,  # maximum detections per image
-           device='',  # cuda device, i.e. 0 or 0,1,2,3 or cpu
-           view_img=False,  # show results
-           save_txt=False,  # save results to *.txt
-           save_conf=False,  # save confidences in --save-txt labels
-           save_crop=False,  # save cropped prediction boxes
-           nosave=False,  # do not save images/videos
-           classes=None,  # filter by class: --class 0, or --class 0 2 3
-           agnostic_nms=False,  # class-agnostic NMS
-           augment=False,  # augmented inference
-           update=False,  # update all models
-           project='runs/detect',  # save results to project/name
-           name='exp',  # save results to project/name
-           exist_ok=False,  # existing project/name ok, do not increment
-           line_thickness=3,  # bounding box thickness (pixels)
-           hide_labels=False,  # hide labels
-           hide_conf=False,  # hide confidences
-           half=False,  # use FP16 half-precision inference
-        ):
+        data='data/coco128.yaml',  # dataset.yaml path
+        source='data/images',  # file/dir/URL/glob, 0 for webcam
+        imgsz=640,  # inference size (pixels)
+        device='',  # cuda device, i.e. 0 or 0,1,2,3 or cpu
+        half=False,  # use FP16 half-precision inference
+        dnn=False,  # use OpenCV DNN for ONNX inference
+    ):
     # Initialize
     set_logging()
     device = select_device(device)
     half &= device.type != 'cpu'  # half precision only supported on CUDA
+    is_file = Path(source).suffix[1:] in (IMG_FORMATS + VID_FORMATS)
+    is_url = source.lower().startswith(('rtsp://', 'rtmp://', 'http://', 'https://'))
+    webcam = source.isnumeric() or source.endswith('.txt') or (is_url and not is_file)
 
     # Load model
-    model = attempt_load(weights, map_location=device)  # load FP32 model
-    stride = int(model.stride.max())  # model stride
+    model = DetectMultiBackend(weights, device=device, dnn=dnn, data=data, fp16=half)
+    stride, names, pt = model.stride, model.names, model.pt
     imgsz = check_img_size(imgsz, s=stride)  # check image size
-    names = model.module.names if hasattr(model, 'module') else model.names  # get class names
-    if half:
-        model.half()  # to FP16
-        
+
+    if webcam:
+        cudnn.benchmark = True  # set True to speed up constant image size inference
+        dataset = LoadStreams(source, img_size=imgsz, stride=stride, auto=pt)
+        bs = len(dataset)  # batch_size
+    else:
+        dataset = LoadImages(source, img_size=imgsz, stride=stride, auto=pt)
+        bs = 1  # batch_size
+
     # Run inference
-    if device.type != 'cpu':
-        model(torch.zeros(1, 3, imgsz, imgsz).to(device).type_as(next(model.parameters())))  # run once
-        
-    return model, names
+    model.warmup(imgsz=(1 if pt else bs, 3, *imgsz))  # warmup
 
+    return model, names, stride, webcam
 
-model, names = init(weights=weights, imgsz=imgsz, conf_thres=conf_thres, iou_thres=iou_thres, max_det=max_det, device=device, classes=classes, agnostic_nms=agnostic_nms, augment=augment, half=half)
-
+model, names, stride, webcam = init(weights=weights, imgsz=[imgsz, imgsz], device=device, half=half)
 
 def detect(source):
-    stride = int(model.stride.max())  # model stride
-    
-    dataset = LoadImages(source, img_size=imgsz, stride=stride)
-    
-    t0 = time.time()
-    for path, img, im0s, vid_cap, s in dataset:
-        img = torch.from_numpy(img).to(device)
-        img = img.half() if half else img.float()  # uint8 to fp16/32
-        img /= 255.0  # 0 - 255 to 0.0 - 1.0
-        if img.ndimension() == 3:
-            img = img.unsqueeze(0)
+    dataset = LoadImages(source, img_size=[imgsz, imgsz], stride=stride)
+
+    for path, im, im0s, vid_cap, s in dataset:
+        im = torch.from_numpy(im).to(device)
+        im = im.half() if model.fp16 else im.float()  # uint8 to fp16/32
+        im /= 255  # 0 - 255 to 0.0 - 1.0
+        if len(im.shape) == 3:
+            im = im[None]  # expand for batch dim
 
         # Inference
         t1 = time_sync()
-        pred = model(img, augment=augment)[0]
+        pred = model(im, augment=augment)
 
         # Apply NMS
         pred = non_max_suppression(pred, conf_thres, iou_thres, classes, agnostic_nms, max_det=max_det)
         t2 = time_sync()
-
+        
         # Process detections
         result = []
         for i, det in enumerate(pred):  # detections per image
-            p, s, im0, frame = path, '', im0s.copy(), getattr(dataset, 'frame', 0)
+            if webcam:  # batch_size >= 1
+                p, im0, frame = path[i], im0s[i].copy(), dataset.count
+                s += f'{i}: '
+            else:
+                p, im0, frame = path, im0s.copy(), getattr(dataset, 'frame', 0)
 
             p = Path(p)  # to Path
-            s += '%gx%g ' % img.shape[2:]  # print string
+            s += '%gx%g ' % im.shape[2:]  # print string
             gn = torch.tensor(im0.shape)[[1, 0, 1, 0]]  # normalization gain whwh
             imc = im0  # for save_crop
             if len(det):
                 # Rescale boxes from img_size to im0 size
-                det[:, :4] = scale_coords(img.shape[2:], det[:, :4], im0.shape).round()
+                det[:, :4] = scale_coords(im.shape[2:], det[:, :4], im0.shape).round()
 
                 # Print results
                 for c in det[:, -1].unique():
@@ -195,7 +176,6 @@ def invocations():
 
         print('Download finished!')
     
-    #s3_client.upload_file(download_file_name, 'spot-bot-assets-us-west-2', f'abc/{download_file_name}')
     if imghdr.what(download_file_name) != None:
         inference_result = detect(download_file_name)
     else:
@@ -206,3 +186,4 @@ def invocations():
     os.remove(download_file_name)
   
     return flask.Response(response=_payload, status=200, mimetype='application/json')
+

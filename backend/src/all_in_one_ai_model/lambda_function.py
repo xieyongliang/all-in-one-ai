@@ -36,6 +36,8 @@ def lambda_handler(event, context):
                 if('model_data_url' in request):
                     payload['model_data_url'] = request['model_data_url']
                 payload['mode'] = request['mode']
+            if('environment' in request):
+                payload['environment'] = request['environment']
             if('tags' in request):
                 payload['tags'] = request['tags']
 

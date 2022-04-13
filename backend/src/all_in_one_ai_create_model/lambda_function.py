@@ -9,15 +9,20 @@ def lambda_handler(event, context):
         model_name = event['body']['model_name']
         role_arn = event['body']['role_arn']
         tags = event['body']['tags'] if('tags' in event['body']) else []
+        environment = event['body']['environment'] if('environment' in event['body']) else {}
         response = None
     
         if('model_package_arn' in event['body']):
             model_package_arn = event['body']['model_package_arn']
-            container = { "ModelPackageName" : model_package_arn }
             response = sagemaker_client.create_model(
                 ModelName = model_name, 
                 ExecutionRoleArn = role_arn, 
-                Containers=[container],
+                Containers = [
+                    {
+                        'ModelPackageName' : model_package_arn, 
+                        'Environment' : environment 
+                    }
+                ],
                 Tags = tags
             )
         else:
@@ -34,7 +39,8 @@ def lambda_handler(event, context):
                         'ContainerHostname': 'Container1',
                         'Image': container_image,
                         'Mode': mode,
-                        'ModelDataUrl': model_data_url
+                        'ModelDataUrl': model_data_url,
+                        'Environment' : environment
                     },
                     ExecutionRoleArn = role_arn,
                     EnableNetworkIsolation = False,
@@ -46,10 +52,12 @@ def lambda_handler(event, context):
                     PrimaryContainer={
                         'ContainerHostname': 'Container1',
                         'Image': container_image,
-                        'Mode': mode
+                        'Mode': mode,
+                        'Environment' : environment
                     },
                     ExecutionRoleArn = role_arn,
                     EnableNetworkIsolation = False,
+                    Environment =  environment,
                     Tags = tags
                 )
                 

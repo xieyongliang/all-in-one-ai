@@ -181,13 +181,14 @@ const TransformJobList: FunctionComponent<IProps> = (props) => {
         );
     }
 
-    const onSelectionChange = ((event: any) => {
-        if(event.length > 0) {
-            setSelectedTransformJob(event[0])
+    const onSelectionChange = ((selectedItems: TransformJobItem[]) => {
+        if(selectedItems.length > 0) {
+            setSelectedTransformJob(selectedItems[0])
             setDisabledStop(false)
             setDisabledReview(false)
-            setDisabledAttach(false)
-            setDisabledDetach(false)
+            var index = transformJobItems.findIndex((item) => item.name === selectedItems[0].transformJobName)
+            setDisabledAttach(index < 0)
+            setDisabledDetach(index >= 0)
         } 
     })
 

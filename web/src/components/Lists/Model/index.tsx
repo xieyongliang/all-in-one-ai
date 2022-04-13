@@ -229,8 +229,9 @@ const ModelList: FunctionComponent = () => {
         if(selectedItems.length > 0) {
             setSelectedModel(selectedItems[0])
             setDisabledDelete(false)
-            setDisabledAttach(false)
-            setDisabledDetach(false)
+            var index = modelItems.findIndex((item) => item.name === selectedItems[0].modelName)
+            setDisabledAttach(index < 0)
+            setDisabledDetach(index >= 0)
         }
     }
 
