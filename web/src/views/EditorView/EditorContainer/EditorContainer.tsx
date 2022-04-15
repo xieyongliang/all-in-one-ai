@@ -119,9 +119,24 @@ const EditorContainer: React.FC<IProps> = (
 
     const rightSideBarRender = () => {
         if(projectType === ProjectType.TEXT_RECOGNITION) 
-            return <TextsToolkit/>
+            return <TextsToolkit 
+                imageBucket={imageBucket}
+                imageKey={imageKey}
+                imageId={imageId}
+                onProcessing={onProcessing} 
+                onProcessed={onProcessed}
+            />
         else
-            return <LabelsToolkit/>
+            return <LabelsToolkit
+                imageBucket={imageBucket}
+                imageKey={imageKey}
+                imageId={imageId}
+                imageColors={imageColors}
+                imageLabels={imageLabels}
+                imageAnnotations={imageAnnotations}
+                onProcessing={onProcessing} 
+                onProcessed={onProcessed}
+            />
     };
 
     var imagesData = projectType === ProjectType.TEXT_RECOGNITION ? imagesTextData : imagesLabelData
@@ -159,14 +174,6 @@ const EditorContainer: React.FC<IProps> = (
                         projectType === ProjectType.OBJECT_DETECTION_POLYGON
                     )   && 
                     <EditorTopNavigationBar 
-                        imageBucket={imageBucket} 
-                        imageKey={imageKey} 
-                        imageId={imageId} 
-                        imageColors={imageColors} 
-                        imageLabels={imageLabels}
-                        imageAnnotations={imageAnnotations}
-                        onProcessing = {onProcessing}
-                        onProcessed = {onProcessed}
                         key="editor-top-navigation-bar"
                     />
                 }

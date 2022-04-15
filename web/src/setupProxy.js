@@ -3,11 +3,12 @@ const uuid = require('uuid');
 const fs = require('fs');
 const { default: axios } = require('axios');
 const url = require('url');
+var Jimp = require('jimp');
 
 const baseUrl = 'https://s8upvi47qg.execute-api.ap-southeast-1.amazonaws.com/Prod'
 
 module.exports = function(app) {
-    app.post('/image', (req, res) => {
+    app.post('/_image', (req, res) => {
         var data = [];
         req.on('data', chunk => {
             data.push(chunk);
@@ -24,19 +25,160 @@ module.exports = function(app) {
             }
         })
     })
-    app.get('/image/:file_name', (req, res) => {
+    app.get('/_image/:file_name', (req, res) => {
         var file_name = req.params.file_name;
         var buffer = fs.readFileSync('images/' + file_name + '.jpg');
         res.send(buffer);
     })
-    app.get('/inference/image/:file_name', (req, res) => {
+    app.get('/_inference/image/:file_name', (req, res) => {
         try {
             var endpoint_name = req.query['endpoint_name'];
             var file_name = req.params.file_name;
-            var buffer = fs.readFileSync('images/' + file_name + '.jpg');
-            options = { headers: {'content-type': 'image/jpg'}, params : {endpoint_name: endpoint_name}};
-            axios.post(baseUrl + '/inference', buffer, options)
+            var crop = req.query['crop'];
+
+            if(crop === undefined) {
+                var buffer = fs.readFileSync('images/' + file_name + '.jpg');
+                var options = { headers: {'content-type': 'image/jpg'}, params : {endpoint_name: endpoint_name}};
+                axios.post(baseUrl + '/inference', buffer, options)
+                    .then((response) => {
+                        res.send(response.data);
+                    }, (error) => {
+                            res.status(400);
+                            res.send(res.data);
+                            console.log(error);
+                        }
+                    ).catch((e) => {
+                        console.log(e);
+                    }
+                );
+            }
+            else {
+                Jimp.read('images/' + file_name + '.jpg', function (err, image) {
+                    var rect = JSON.parse(crop)
+                    var width = image.bitmap.width
+                    var height = image.bitmap.height
+                    var x = parseInt((rect.x - rect.w/2) * width)
+                    var y = parseInt((rect.y - rect.h/2) * height)
+                    var w = parseInt(rect.w * width)
+                    var h = parseInt(rect.h * height)
+                    image.crop(x, y, w, h);
+                    var options = { headers: {'content-type': 'image/jpg'}, params : {endpoint_name: endpoint_name}};
+                    image.write('./images/crop.png')
+                    image.getBuffer(Jimp.MIME_PNG, (err, buffer) => {
+                        axios.post(baseUrl + '/inference', buffer, options)
+                            .then((response) => {
+                                response.data.bbox.forEach((item) => {
+                                    item[0][0] += x;
+                                    item[0][1] += y;
+                                    item[1][0] += x;
+                                    item[1][1] += y;
+                                    item[2][0] += x;
+                                    item[2][1] += y;
+                                    item[3][0] += x;
+                                    item[3][1] += y;
+                                });
+                                res.send(response.data);
+                            }, (error) => {
+                                    res.status(400);
+                                    res.send(res.data);
+                                    console.log(error);
+                                }
+                            ).catch((e) => {
+                                console.log(e);
+                            }
+                            );     
+                        }
+                    );
+                })
+            }
+        }
+        catch (error) {
+            console.log(error)
+        }
+    })
+    app.get('/_inference/sample', (req, res) => {
+        try {
+            var endpoint_name = req.query['endpoint_name'];
+            var bucket = req.query['bucket'];
+            var key = req.query['key'];
+            var crop = req.query['crop'];
+            
+            if(crop === undefined) {
+                var buffer = {
+                    'bucket': bucket,
+                    'image_uri': key,
+                    'content_type': 'application/json'
+                }
+                options = {headers: {'content-type': 'application/json'}, params : {endpoint_name: endpoint_name}};
+                axios.post(baseUrl + '/inference', buffer, options)
+                    .then((response) => {
+                        res.send(response.data)
+                    }, (error) => {
+                            res.status(400);
+                            res.send(res.data);
+                            console.log(error);
+                        }
+                    ).catch((e) => {
+                        console.log(e);
+                    }
+                );
+            }
+            else {
+                var s3uri = `s3://${bucket}/${key}`
+                axios.get(baseUrl + '/s3', {params : { s3uri : s3uri}})
+                    .then((response) => {
+                        var httpuri = response.data.payload;
+                        Jimp.read(httpuri, function (err, image) {
+                            var rect = JSON.parse(crop)
+                            var width = image.bitmap.width
+                            var height = image.bitmap.height
+                            var x = parseInt((rect.x - rect.w/2) * width)
+                            var y = parseInt((rect.y - rect.h/2) * height)
+                            var w = parseInt(rect.w * width)
+                            var h = parseInt(rect.h * height)
+                            image.crop(x, y, w, h);
+                            var options = { headers: {'content-type': 'image/jpg'}, params : {endpoint_name: endpoint_name}};
+                            image.write('./images/crop.png')
+                            image.getBuffer(Jimp.MIME_PNG, (err, buffer) => {
+                                axios.post(baseUrl + '/inference', buffer, options)
+                                    .then((response) => {
+                                        response.data.bbox.forEach((item) => {
+                                            item[0][0] += x;
+                                            item[0][1] += y;
+                                            item[1][0] += x;
+                                            item[1][1] += y;
+                                            item[2][0] += x;
+                                            item[2][1] += y;
+                                            item[3][0] += x;
+                                            item[3][1] += y;
+                                        });
+                                        res.send(response.data);
+                                    }, (error) => {
+                                            res.status(400);
+                                            res.send(res.data);
+                                            console.log(error);
+                                        }
+                                    ).catch((e) => {
+                                        console.log(e);
+                                    }
+                                    );     
+                                }
+                            );
+                        })
+                    }
+                )
+            }
+        }
+        catch (error) {
+            console.log(error)
+        }
+    })
+    app.get('/_file/download', (req, res) => {
+        try {
+            var uri = decodeURIComponent(req.query['uri']);
+            axios({ url: uri, method: 'GET', responseType: 'arraybuffer'})
                 .then((response) => {
+                    res.setHeader('content-type', response.headers['content-type']);
                     res.send(response.data);
                 }, (error) => {
                         res.status(400);
@@ -52,62 +194,14 @@ module.exports = function(app) {
             console.log(error)
         }
     })
-    app.get('/inference/sample', (req, res) => {
-        try {
-            var endpoint_name = req.query['endpoint_name'];
-            var bucket = req.query['bucket'];
-            var key = req.query['key'];
-            var buffer = {
-                'bucket': bucket,
-                'image_uri': key
-            }
-            options = {headers: {'content-type': 'application/json'}, params : {endpoint_name: endpoint_name}};
-            axios.post(baseUrl + '/inference', buffer, options)
-                .then((response) => {
-                    res.send(response.data)
-                }, (error) => {
-                        res.status(400);
-                        res.send(res.data);
-                        console.log(error);
-                    }
-                ).catch((e) => {
-                    console.log(e);
-                }
-            );
-        }
-        catch (error) {
-            console.log(error)
-        }
-    })
-    app.get('/file/download', (req, res) => {
-        try {
-            var uri = decodeURIComponent(req.query['uri']);
-            axios({ url: uri, method: 'GET', responseType: 'arraybuffer'})
-                .then((response) => {
-                        res.setHeader('content-type', response.headers['content-type']);
-                        res.send(response.data);
-                }, (error) => {
-                        res.status(400);
-                        res.send(res.data);
-                        console.log(error);
-                    }
-                ).catch((e) => {
-                    console.log(e);
-                }
-            );
-        }
-        catch (error) {
-            console.log(error)
-        }
-    })
-    app.get('/search/image', (req, res) => {
+    app.get('/_search/image', (req, res) => {
         try {
                 var endpoint_name = req.query['endpoint_name'];
                 var industrial_model = req.query['industrial_model']
                 var file_name = req.query['file_name'];
                 var data = fs.readFileSync('images/' + file_name + '.jpg');
         
-                options = {headers: {'content-type': 'image/jpg'}, params: {endpoint_name: endpoint_name, industrial_model: industrial_model}};
+                var options = {headers: {'content-type': 'image/jpg'}, params: {endpoint_name: endpoint_name, industrial_model: industrial_model}};
                 axios.post(baseUrl + '/search/image', data, options)
                 .then((response) => {
                     res.send(response.data);
@@ -125,24 +219,23 @@ module.exports = function(app) {
             console.log(error)
         }
     })
-    app.post('/industrialmodel', (req, res) => {
-        var body = [];
+    app.post('/_industrialmodel', (req, res) => {
+        var data = [];
         req.on('data', chunk => {
-            body += chunk
+            data = data.concat(chunk)
         })
         req.on('end', () => {
             try {
-                data = JSON.parse(body);
-                var model_id = data.model_id
-                var file_name = data.file_name;
+                var body = JSON.parse(data);
+                var model_id = body.model_id
+                var file_name = body.file_name;
                 if(file_name !== '') {
                     var buffer = fs.readFileSync('images/' + file_name + '.jpg');
-                    data['file_content'] = buffer;
+                    body['file_content'] = buffer;
                 }
 
                 options = {headers: {'content-type': 'application/json'}};
                 if(model_id === undefined) {
-                    body = JSON.stringify(data)
                     axios.post(baseUrl + '/industrialmodel', body, options)
                         .then((response) => {
                             res.send(response.data);

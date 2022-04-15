@@ -16,7 +16,7 @@ interface IProps {
 }
 
 const IndustrialModelForm: FunctionComponent<IProps> = (props) => {
-    const algorithmOptions = [{label: 'Yolov5', value: 'yolov5'}, {label: 'GluonCV', value:'gluoncv'}, {label: 'PaddleOCR', value: 'paddleocr'}]
+    const algorithmOptions = [{label: 'Yolov5', value: 'yolov5'}, {label: 'GluonCV', value:'gluoncv'}, {label: 'PaddleOCR', value: 'paddleocr'}, {label: 'Yolov5PaddleOCR', value: 'yolov5paddleocr'}]
     const [ selectedAlgorithm, setSelectedAlgorithm] = useState({label: 'Yolov5', value: 'yolov5'})
     const [ modelName, setModelName ] = useState('')
     const [ modelDescription, setModelDescription ] = useState('')
@@ -39,7 +39,7 @@ const IndustrialModelForm: FunctionComponent<IProps> = (props) => {
     }
 
     const onFileChange = (files: (File | FileMetadata)[]) => {
-        axios.post('/image', files[0])
+        axios.post('/_image', files[0])
         .then((response) => {
             var filename : string = response.data;
             setFileName(filename);
@@ -67,7 +67,7 @@ const IndustrialModelForm: FunctionComponent<IProps> = (props) => {
                             onChange={onFileChange}
                         />
                         <FormField controlId='button'>
-                            <Image src={`/image/${fileName}`} width={128} height={128} current={""} public={true}/>
+                            <Image src={`/_image/${fileName}`} width={128} height={128} current={""} public={true}/>
                         </FormField>          
                     </Container>
                 </Stack> 
@@ -140,7 +140,7 @@ const IndustrialModelForm: FunctionComponent<IProps> = (props) => {
             'model_samples': modelSamples,
             'file_name': fileName
         }
-        axios.post('/industrialmodel', buffer)
+        axios.post('/_industrialmodel', buffer)
             .then((response) => {
                 var modelId = response.data.id;
                 var modelIcon = response.data.icon;

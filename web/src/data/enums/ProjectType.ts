@@ -7,3 +7,7 @@ export enum ProjectType {
     OBJECT_DETECTION_POLYGON = 'OBJECT_DETECTION_POLYGON',
     TEXT_RECOGNITION = 'TEXT_RECOGNITION'
 }
+
+export enum ProjectSubType {
+    OBJECT_DETECTION = 'OBJECT_DETECTION'
+}

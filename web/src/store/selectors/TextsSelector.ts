@@ -6,6 +6,7 @@ export class TextsSelector {
     public static getTexts(): Text[] {
         return store.getState().texts.texts;
     }
+
     public static getTextById(id: string): Text | undefined {
         const texts: Text[] = TextsSelector.getTexts()
         return find(texts, {id});

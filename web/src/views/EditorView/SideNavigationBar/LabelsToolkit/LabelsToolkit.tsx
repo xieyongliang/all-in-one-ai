@@ -7,9 +7,6 @@ import {connect} from "react-redux";
 import {LabelType} from "../../../../data/enums/LabelType";
 import {ProjectType} from "../../../../data/enums/ProjectType";
 import {ISize} from "../../../../interfaces/ISize";
-import classNames from "classnames";
-import {find} from "lodash";
-import {ILabelToolkit, LabelToolkitData} from "../../../../data/info/LabelToolkitData";
 import {Settings} from "../../../../settings/Settings";
 import RectLabelsList from "../RectLabelsList/RectLabelsList";
 import PointLabelsList from "../PointLabelsList/PointLabelsList";
@@ -25,6 +22,14 @@ interface IProps {
     activeLabelType: LabelType;
     imagesData: ImageLabelData[];
     projectType: ProjectType;
+    onProcessing: () => any;
+    onProcessed: () => any;
+    imageBucket?: string;
+    imageKey?: string;
+    imageId?: string;
+    imageLabels: string[];
+    imageColors: string[];
+    imageAnnotations?: string[];
     updateImageLabelDataById: (id: string, newImageLabelData: ImageLabelData) => any;
     updateActiveLabelType: (activeLabelType: LabelType) => any;
     updateActiveLabelId: (highlightedLabelId: string) => any;
@@ -106,98 +111,73 @@ class LabelsToolkit extends React.Component<IProps, IState> {
         })
     };
 
-    private headerClickHandler = (activeTab: LabelType) => {
-        this.props.updateActiveLabelType(activeTab);
-        this.props.updateActiveLabelId(null);
-    };
-
     private renderChildren = () => {
         const {size} = this.state;
         const {activeImageIndex, imagesData, activeLabelType} = this.props;
-        return this.tabs.reduce((children, labelType: LabelType, index: number) => {
-            const isActive: boolean = labelType === activeLabelType;
-            const tabData: ILabelToolkit = find(LabelToolkitData, {labelType});
-            const activeTabContentHeight: number = size.height - this.tabs.length * Settings.TOOLKIT_TAB_HEIGHT_PX;
-            const getClassName = (baseClass: string) => classNames(
-                baseClass,
+
+        const activeContentHeight: number = size.height - Settings.TOOLKIT_TAB_HEIGHT_PX;
+
+        const content =
+                <div
+                    key={"Content_" + 0}
+                    className={'Content'}
+                    style={{height: activeContentHeight}}
+                >
                 {
-                    "active": isActive,
+                    activeLabelType === LabelType.RECT && 
+                    <RectLabelsList
+                        size={{
+                            width: size.width - 20,
+                            height: activeContentHeight - 20
+                        }}
+                        imageData={imagesData[activeImageIndex]}
+                        imageBucket={this.props.imageBucket}
+                        imageKey={this.props.imageKey}
+                        imageId={this.props.imageId}
+                        imageColors={this.props.imageColors}
+                        imageLabels={this.props.imageLabels}
+                        imageAnnotations={this.props.imageAnnotations}
+                        onProcessing={this.props.onProcessing}
+                        onProcessed={this.props.onProcessed}
+                    />
                 }
-            );
-
-            const header =
-                <div
-                    key={"Header_" + index}
-                    className={getClassName("Header")}
-                    onClick={() => this.headerClickHandler(labelType)}
-                    style={{height: Settings.TOOLKIT_TAB_HEIGHT_PX}}
-                >
-                    <div className="Marker"/>
-                    <div className="HeaderGroupWrapper">
-                        <img
-                            draggable={false}
-                            className="Ico"
-                            src={tabData.imageSrc}
-                            alt={tabData.imageAlt}
-                        />
-                        {tabData.headerText}
-                    </div>
-                    <div className="HeaderGroupWrapper">
-                        <img
-                            draggable={false}
-                            className="Arrow"
-                            src={"/ico/down.png"}
-                            alt={"down_arrow"}
-                        />
-                    </div>
-                </div>;
-
-            const content =
-                <div
-                    key={"Content_" + index}
-                    className={getClassName("Content")}
-                    style={{height: isActive ? activeTabContentHeight : 0}}
-                >
-                    {labelType === LabelType.RECT && <RectLabelsList
+                {
+                    activeLabelType === LabelType.POINT && <PointLabelsList
                         size={{
                             width: size.width - 20,
-                            height: activeTabContentHeight - 20
+                            height: activeContentHeight - 20
                         }}
                         imageData={imagesData[activeImageIndex]}
-                    />}
-                    {labelType === LabelType.POINT && <PointLabelsList
+                    />
+                }
+                {
+                    activeLabelType === LabelType.LINE && <LineLabelsList
                         size={{
                             width: size.width - 20,
-                            height: activeTabContentHeight - 20
+                            height: activeContentHeight - 20
                         }}
                         imageData={imagesData[activeImageIndex]}
-                    />}
-                    {labelType === LabelType.LINE && <LineLabelsList
+                    />
+                }
+                {
+                    activeLabelType === LabelType.POLYGON && <PolygonLabelsList
                         size={{
                             width: size.width - 20,
-                            height: activeTabContentHeight - 20
+                            height: activeContentHeight - 20
                         }}
                         imageData={imagesData[activeImageIndex]}
-                    />}
-                    {labelType === LabelType.POLYGON && <PolygonLabelsList
+                    />
+                }
+                {
+                    activeLabelType === LabelType.IMAGE_RECOGNITION && <TagLabelsList
                         size={{
                             width: size.width - 20,
-                            height: activeTabContentHeight - 20
+                            height: activeContentHeight - 20
                         }}
-                        imageData={imagesData[activeImageIndex]}
-                    />}
-                    {labelType === LabelType.IMAGE_RECOGNITION && <TagLabelsList
-                        size={{
-                            width: size.width - 20,
-                            height: activeTabContentHeight - 20
-                        }}
-                        imageData={imagesData[activeImageIndex]}
-                    />}
-                </div>;
-
-            children.push([header, content]);
-            return children;
-        }, [])
+                    imageData={imagesData[activeImageIndex]}
+                />}
+            </div>
+        return content;
     };
 
     public render() {

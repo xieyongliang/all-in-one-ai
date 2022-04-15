@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import EditorView from '../../../views/EditorView/EditorView';
-import {ProjectType} from '../../../data/enums/ProjectType';
+import {ProjectSubType, ProjectType} from '../../../data/enums/ProjectType';
 import {AppState} from '../../../store';
 import {connect} from 'react-redux';
 import PopupView from '../../../views/PopupView/PopupView';
@@ -34,7 +34,6 @@ interface IProps {
     updateActiveLabelTypeAction: (activeLabelType: LabelType) => any;
     updateFirstLabelCreatedFlagAction: (firstLabelCreatedFlag: boolean) => any;
     updatePerClassColorationStatusAction: (updatePerClassColoration: boolean) => any;
-    projectType: ProjectType;
     windowSize: ISize;
     ObjectDetectorLoaded: boolean;
     PoseDetectionLoaded: boolean;
@@ -48,6 +47,7 @@ interface IProps {
     imageColors: string[];
     imageLabels: string[];
     type: ProjectType;
+    subType: ProjectSubType;
     visible?: boolean;
     onClose?: () => any;
 }
@@ -57,6 +57,7 @@ const ImageAnnotate: React.FC<IProps> = (
         imageUri,
         projectData,
         type,
+        subType,
         visible,
         imageColors,
         imageLabels,
@@ -90,7 +91,7 @@ const ImageAnnotate: React.FC<IProps> = (
         updateActiveTextIdAction(null);
         updateLabelNamesAction([]);
         updateTextsAction([]);
-        updateProjectDataAction({type: null, name: 'my-project-name'});
+        updateProjectDataAction({type: null, subType: null, name: 'my-project-name'});
         updateActiveLabelImageIndexAction(null);
         updateActiveTextImageIndexAction(null);
         updateImageLabelDataAction([]);
@@ -98,14 +99,15 @@ const ImageAnnotate: React.FC<IProps> = (
         updateFirstLabelCreatedFlagAction(false);
         updatePerClassColorationStatusAction(true)
 
-        axios.get('/file/download', {params : {'uri' : encodeURIComponent(imageUri)} , responseType: 'blob'})
+        axios.get('/_file/download', {params : {'uri' : encodeURIComponent(imageUri)} , responseType: 'blob'})
             .then((response) => {
                 var data = response.data;
                 imageFile = new File([data], 'image.png');
                             
                 updateProjectDataAction({
                     ...projectData,
-                    type: type
+                    type: type,
+                    subType: subType
                 });
 
                 if(type === ProjectType.TEXT_RECOGNITION) {
@@ -164,7 +166,6 @@ const mapDispatchToProps = {
 };
 
 const mapStateToProps = (state: AppState) => ({
-    projectType: state.general.projectData.type,
     windowSize: state.general.windowSize,
     ObjectDetectorLoaded: state.ai.isObjectDetectorLoaded,
     PoseDetectionLoaded: state.ai.isPoseDetectorLoaded,

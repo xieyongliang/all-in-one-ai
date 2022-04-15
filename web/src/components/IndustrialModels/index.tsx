@@ -1,8 +1,8 @@
-import { FunctionComponent } from 'react';
+import { FunctionComponent, useState } from 'react';
 import Tabs from 'aws-northstar/components/Tabs';
 import { useHistory, useLocation, useParams } from 'react-router-dom';
 import { PathParams } from '../Interfaces/PathParams';
-import DemoForm from '../Forms/Demo';
+import Yolov5DemoForm from '../Forms/Demo/Single/yolov5';
 import TrainingJobList from '../Lists/TrainingJob';
 import ModelList from '../Lists/Model';
 import EndpointList from '../Lists/Endpoint';
@@ -30,9 +30,10 @@ import { AppState } from '../../store';
 import { connect } from 'react-redux';
 import { IIndustrialModel } from '../../store/industrialmodels/reducer';
 import LiteModelForm from '../Forms/Model/lite'
-import GluonCVDemoForm from '../Forms/Demo/gluoncv'
+import GluonCVDemoForm from '../Forms/Demo/Single/gluoncv'
 import { LoadingIndicator } from 'aws-northstar';
-import PaddleDemoForm from '../Forms/Demo/paddle';
+import PaddleOCRDemoForm from '../Forms/Demo/Single/paddleocr';
+import Yolov5PaddleOCRDemoForm from '../Forms/Demo/Mixed/yolov5&paddleocr';
 
 interface IProps {
     industrialModels : IIndustrialModel[];
@@ -42,7 +43,10 @@ const IndustrialModels: FunctionComponent<IProps> = (
     {
         industrialModels
     }) => {
+    const [ advancedMode, setAdvancedMode ] = useState(false)
+    
     var params : PathParams = useParams();
+
     const history = useHistory();
 
     var localtion = useLocation();
@@ -63,8 +67,14 @@ const IndustrialModels: FunctionComponent<IProps> = (
         return (
             <LoadingIndicator label='Loading...'/>
         )
-    
-    var algorithm = industrialModels[index].algorithm
+
+    const onAdvancedModeChange = (checked) => {
+        setAdvancedMode(checked)
+    }
+        
+    var algorithm = industrialModels[index].algorithm;
+
+    var tabs;
 
     if(algorithm === 'yolov5') {
         if(hash === 'form' || hash === 'review') {
@@ -109,48 +119,57 @@ const IndustrialModels: FunctionComponent<IProps> = (
             }
         }
 
-        const tabs = [
-            {
-                label: 'Demo',
-                id: 'demo',
-                content: <DemoForm/>
-            },
-            {
-                label: 'ML pipelines',
-                id: 'pipeline',
-                content: <PipelineList />
-            },
-            {
-                label: 'Training jobs',
-                id: 'trainingjob',
-                content: <TrainingJobList />
-            },
-            {
-                label: 'Models',
-                id: 'model',
-                content: <ModelList/>
-            },
-            {
-                label: 'Endpoints',
-                id: 'endpoint',
-                content: <EndpointList/>
-            },
-            {
-                label: 'Rest apis',
-                id: 'restapi',
-                content: <RestApiList/>
-            },
-            {
-                label: 'Greengrass components',
-                id: 'greengrasscomponent',
-                content: <GreengrassComponentList/>
-            },
-            {
-                label: 'Greengrass deployments',
-                id: 'greengrassdeployment',
-                content: <GreengrassDeploymentList/>
-            }
-        ];
+        if(advancedMode)
+            tabs = [
+                {
+                    label: 'Demo',
+                    id: 'demo',
+                    content: <Yolov5DemoForm advancedMode={advancedMode} onAdvancedModeChange={onAdvancedModeChange}/>
+                },
+                {
+                    label: 'ML pipelines',
+                    id: 'pipeline',
+                    content: <PipelineList />
+                },
+                {
+                    label: 'Training jobs',
+                    id: 'trainingjob',
+                    content: <TrainingJobList />
+                },
+                {
+                    label: 'Models',
+                    id: 'model',
+                    content: <ModelList/>
+                },
+                {
+                    label: 'Endpoints',
+                    id: 'endpoint',
+                    content: <EndpointList/>
+                },
+                {
+                    label: 'Rest apis',
+                    id: 'restapi',
+                    content: <RestApiList/>
+                },
+                {
+                    label: 'Greengrass components',
+                    id: 'greengrasscomponent',
+                    content: <GreengrassComponentList/>
+                },
+                {
+                    label: 'Greengrass deployments',
+                    id: 'greengrassdeployment',
+                    content: <GreengrassDeploymentList/>
+                }
+            ]; 
+        else
+            tabs = [
+                {
+                    label: 'Demo',
+                    id: 'demo',
+                    content: <Yolov5DemoForm advancedMode={advancedMode} onAdvancedModeChange={onAdvancedModeChange} />
+                }
+            ]   
         return (
             <Tabs tabs={tabs} variant='container' activeId={tab} onChange={onChange}/>
         )
@@ -174,32 +193,41 @@ const IndustrialModels: FunctionComponent<IProps> = (
             }
         }
 
-        const tabs = [
-            {
-                label: 'Demo',
-                id: 'demo',
-                content: <PaddleDemoForm/>
-            },
-            {
-                label: 'Models',
-                id: 'model',
-                content: <ModelList/>
-            },
-            {
-                label: 'Endpoints',
-                id: 'endpoint',
-                content: <EndpointList/>
-            }
-        ];
+        if(advancedMode)
+            tabs = [
+                {
+                    label: 'Demo',
+                    id: 'demo',
+                    content: <PaddleOCRDemoForm advancedMode={advancedMode} onAdvancedModeChange={onAdvancedModeChange}/>
+                },
+                {
+                    label: 'Models',
+                    id: 'model',
+                    content: <ModelList/>
+                },
+                {
+                    label: 'Endpoints',
+                    id: 'endpoint',
+                    content: <EndpointList/>
+                }
+            ];
+        else
+            tabs = [
+                {
+                    label: 'Demo',
+                    id: 'demo',
+                    content: <PaddleOCRDemoForm advancedMode={advancedMode} onAdvancedModeChange={onAdvancedModeChange}/>
+                }
+            ]
         return (
             <Tabs tabs={tabs} variant='container' activeId={tab} onChange={onChange}/>
         )
     }
-    else {
+    else if(algorithm === 'gluoncv'){
         if(hash === 'form') {
             switch(tab) {
                 case 'demo':
-                    return <GluonCVDemoForm/>;
+                    return <GluonCVDemoForm advancedMode={advancedMode} onAdvancedModeChange={onAdvancedModeChange}/>;
                 case 'model':
                     return <LiteModelForm/>;
                 case 'endpoint':
@@ -216,21 +244,42 @@ const IndustrialModels: FunctionComponent<IProps> = (
             }
         }
 
+        if(advancedMode)
+            tabs = [
+                {
+                    label: 'Demo',
+                    id: 'demo',
+                    content: <GluonCVDemoForm advancedMode={advancedMode} onAdvancedModeChange={onAdvancedModeChange}/>
+                },
+                {
+                    label: 'Models',
+                    id: 'model',
+                    content: <ModelList/>
+                },
+                {
+                    label: 'Endpoints',
+                    id: 'endpoint',
+                    content: <EndpointList/>
+                }
+            ];
+        else
+            tabs = [
+                {
+                    label: 'Demo',
+                    id: 'demo',
+                    content: <GluonCVDemoForm advancedMode={advancedMode} onAdvancedModeChange={onAdvancedModeChange}/>
+                }
+            ]
+        return (
+            <Tabs tabs={tabs} variant='container' activeId={tab} onChange={onChange}/>
+        )
+    }
+    else {
         const tabs = [
             {
                 label: 'Demo',
                 id: 'demo',
-                content: <GluonCVDemoForm/>
-            },
-            {
-                label: 'Models',
-                id: 'model',
-                content: <ModelList/>
-            },
-            {
-                label: 'Endpoints',
-                id: 'endpoint',
-                content: <EndpointList/>
+                content: <Yolov5PaddleOCRDemoForm/>
             }
         ];
         return (

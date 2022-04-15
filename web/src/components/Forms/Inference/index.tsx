@@ -12,7 +12,7 @@ import { PathParams } from '../../Interfaces/PathParams';
 import { AppState } from '../../../store';
 import { connect } from 'react-redux';
 import { IIndustrialModel } from '../../../store/industrialmodels/reducer';
-import { ProjectType } from '../../../data/enums/ProjectType';
+import { ProjectSubType, ProjectType } from '../../../data/enums/ProjectType';
 
 interface FileMetadata {
     name: string;
@@ -24,6 +24,7 @@ interface FileMetadata {
 interface IProps {
     industrialModels: IIndustrialModel[];
     type: ProjectType;
+    subType?: ProjectSubType;
 }
 
 const InferenceForm: FunctionComponent<IProps> = (props) => {
@@ -37,7 +38,7 @@ const InferenceForm: FunctionComponent<IProps> = (props) => {
     var params : PathParams = useParams();
 
     const getSourceCode = async (uri) => {
-        const response = await axios.get('/file/download', {params: {uri: encodeURIComponent(uri)}, responseType: 'blob'})
+        const response = await axios.get('/_file/download', {params: {uri: encodeURIComponent(uri)}, responseType: 'blob'})
         return response.data
     }
 
@@ -75,7 +76,7 @@ const InferenceForm: FunctionComponent<IProps> = (props) => {
     }, [params.id, industrialModels]);
 
     const onFileChange = (files: (File | FileMetadata)[]) => {
-        axios.post('/image', files[0])
+        axios.post('/_image', files[0])
         .then((response) => {
             var filename : string = response.data;
             setCurImageItem(filename);
@@ -90,7 +91,7 @@ const InferenceForm: FunctionComponent<IProps> = (props) => {
     }
 
     const renderImagePreview = () => {
-        var imageUri = `/image/${curImageItem}`
+        var imageUri = `/_image/${curImageItem}`
 
         var labelsData : string[] = [];
         imageLabels.forEach(label => {
@@ -104,6 +105,7 @@ const InferenceForm: FunctionComponent<IProps> = (props) => {
                 imageColors={COLORS} 
                 imageId={curImageItem} 
                 type={props.type}
+                subType={props.subType}
                 visible={visibleImagePreview} 
                 onClose={onImageClose}
             />

@@ -37,7 +37,7 @@ const ModelList: FunctionComponent = () => {
     var params : PathParams = useParams();
 
     const getSourceCode = async (uri) => {
-        const response = await axios.get('/file/download', {params: {uri: encodeURIComponent(uri)}, responseType: 'blob'})
+        const response = await axios.get('/_file/download', {params: {uri: encodeURIComponent(uri)}, responseType: 'blob'})
         return response.data
     }
 

@@ -15,10 +15,11 @@ import '../../Utils/Image/index.scss'
 import { AppState } from '../../../store';
 import { connect } from 'react-redux';
 import { IIndustrialModel } from '../../../store/industrialmodels/reducer';
-import { ProjectType } from '../../../data/enums/ProjectType';
+import { ProjectSubType, ProjectType } from '../../../data/enums/ProjectType';
 
 interface IProps {
     type: ProjectType;
+    subType?: ProjectSubType;
     industrialModels: IIndustrialModel[];
 }
 
@@ -37,7 +38,7 @@ const SampleForm: FunctionComponent<IProps> = (props) => {
     var params : PathParams = useParams();
 
     const getSourceCode = async (uri) => {
-        const response = await axios.get('/file/download', {params: {uri: encodeURIComponent(uri)}, responseType: 'blob'})
+        const response = await axios.get('/_file/download', {params: {uri: encodeURIComponent(uri)}, responseType: 'blob'})
         return response.data
     }
 
@@ -115,6 +116,7 @@ const SampleForm: FunctionComponent<IProps> = (props) => {
                 imageBucket={imageBucket} 
                 imageKey={imageKey} 
                 type={props.type}
+                subType={props.subType}
                 visible={visibleImagePreview} 
                 onClose={onImageClose}
             />

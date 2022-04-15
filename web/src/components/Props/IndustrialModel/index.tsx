@@ -24,7 +24,7 @@ const InustrialModelProp: FunctionComponent<IProps> = (props) => {
         })
         labels = labels.substring(0, labels.length - 1)
     }
-    const algorithmOptions = [{label: 'Yolov5', value: 'yolov5'}, {label: 'GluonCV', value:'gluoncv'}, {label: 'PaddleOCR', value: 'paddleocr'}]
+    const algorithmOptions = [{label: 'Yolov5', value: 'yolov5'}, {label: 'GluonCV', value:'gluoncv'}, {label: 'PaddleOCR', value: 'paddleocr'}, {label: 'Yolov5PaddleOCR', value: 'yolov5paddleocr'}]
     const selectedAlgorithm = algorithmOptions.find((item) => item.value === props.industrialModel.algorithm)
     const [ modelName, setModelName ] = useState(props.industrialModel.name)
     const [ modelDescription, setModelDescription ] = useState(props.industrialModel.description)
@@ -46,11 +46,11 @@ const InustrialModelProp: FunctionComponent<IProps> = (props) => {
     }
 
     const onFileChange = (files: (File | FileMetadata)[]) => {
-        axios.post('/image', files[0])
+        axios.post('/_image', files[0])
         .then((response) => {
             var filename : string = response.data;
             setFileName(filename);
-            setIconHttpUri(`/image/${fileName}`)
+            setIconHttpUri(`/_image/${fileName}`)
         }, (error) => {
             console.log(error);
         });
@@ -161,7 +161,8 @@ const InustrialModelProp: FunctionComponent<IProps> = (props) => {
             'file_name': fileName
         }
         setProcessing(true)
-        axios.post('/industrialmodel', buffer)
+        console.log(buffer)
+        axios.post('/_industrialmodel', buffer)
             .then((response) => {
                 var modelId = response.data.id;
                 var modelIcon = response.data.icon;
@@ -176,6 +177,7 @@ const InustrialModelProp: FunctionComponent<IProps> = (props) => {
             }).catch((error) => {
                 alert(error)
                 console.log(error)
+                setProcessing(false)
             })
     };
 

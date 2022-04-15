@@ -14,6 +14,7 @@ const initialState: GeneralState = {
     enablePerClassColoration: true,
     projectData: {
         type: null,
+        subType: null,
         name: 'my-project-name',
     },
     zoom: ViewPointSettings.MIN_ZOOM

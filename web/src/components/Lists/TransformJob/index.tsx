@@ -18,7 +18,7 @@ import Pagination from '@mui/material/Pagination';
 import { AppState } from '../../../store';
 import { connect } from 'react-redux';
 import { IIndustrialModel } from '../../../store/industrialmodels/reducer';
-import { ProjectType } from '../../../data/enums/ProjectType';
+import { ProjectSubType, ProjectType } from '../../../data/enums/ProjectType';
 
 interface TransformJobItem {
     transformJobName: string;
@@ -63,7 +63,7 @@ const TransformJobList: FunctionComponent<IProps> = (props) => {
     var params : PathParams = useParams();
 
     const getSourceCode = async (uri) => {
-        const response = await axios.get('/file/download', {params: {uri: encodeURIComponent(uri)}, responseType: 'blob'})
+        const response = await axios.get('/_file/download', {params: {uri: encodeURIComponent(uri)}, responseType: 'blob'})
         return response.data
     }
 
@@ -134,7 +134,7 @@ const TransformJobList: FunctionComponent<IProps> = (props) => {
         
         var annotationUri = transformJobResult.output[transformJobResult.input.indexOf(src)];
     
-        axios.get('/file/download', {params : {'uri' : encodeURIComponent(annotationUri)}})
+        axios.get('/_file/download', {params : {'uri' : encodeURIComponent(annotationUri)}})
         .then((response) => {
             var imageBboxs : number[][] = [];
             var imageIds = [];
@@ -449,7 +449,8 @@ const TransformJobList: FunctionComponent<IProps> = (props) => {
                 imageLabels={imageLabels} 
                 imageColors={COLORS}
                 imageAnnotations={imageAnnotations}
-                type={ProjectType.OBJECT_DETECTION_RECT}
+                type={ProjectType.TEXT_RECOGNITION}
+                subType={ProjectSubType.OBJECT_DETECTION}
                 visible={visibleImagePreview} 
                 onClose={onImageClose}
             />

@@ -94,7 +94,7 @@ const IndustrialModelList: FunctionComponent<IProps> = (props) => {
                             itemsModels.map((item) => { 
                                 return (
                                     <Grid item xs={2} sm={4} md={4}>
-                                        <Box>
+                                        <Box height={300}>
                                             <Card title={item.name} subtitle={item.description} withHover onClick={()=>{history.push(`/imodels/${item.id}?tab=demo#sample`)}}>
                                             <Stack direction='row' spacing={5}>
                                                     <Image width={128} height={128} src={item.httpuri} current='' public={true} />

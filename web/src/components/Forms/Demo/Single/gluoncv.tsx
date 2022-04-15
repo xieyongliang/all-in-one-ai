@@ -1,30 +1,34 @@
 import { FunctionComponent, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Container, Link, Toggle, Select, Stack, FormField, Button, Grid, ProgressBar, LoadingIndicator } from 'aws-northstar';
+import { Container, Link, Toggle, Select, Stack, FormField, Button, Grid, ProgressBar, LoadingIndicator, Text } from 'aws-northstar';
 import ImageList from '@mui/material/ImageList';
 import ImageListItem from '@mui/material/ImageListItem';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { github } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 import JSZip from 'jszip';import axios from 'axios';
-import Image from '../../Utils/Image';
-import { PathParams } from '../../Interfaces/PathParams';
+import Image from '../../../Utils/Image';
+import { PathParams } from '../../../Interfaces/PathParams';
 import Pagination from '@mui/material/Pagination';  
-import '../../Utils/Image/index.scss'
-import { AppState } from '../../../store';
+import '../../../Utils/Image/index.scss'
+import { AppState } from '../../../../store';
 import { connect } from 'react-redux';
-import { IIndustrialModel } from '../../../store/industrialmodels/reducer';
+import { IIndustrialModel } from '../../../../store/industrialmodels/reducer';
 import { SelectOption } from 'aws-northstar/components/Select';
 import FileUpload from 'aws-northstar/components/FileUpload';
 import { FileMetadata } from 'aws-northstar/components/FileUpload/types';
-import ImagePreview from '../../Utils/ImagePreview';
+import ImagePreview from '../../../Utils/ImagePreview';
 
 interface IProps {
     industrialModels: IIndustrialModel[];
+    advancedMode: boolean;
+    onAdvancedModeChange: (checked) => any;
 }
 
 const GluonCVDemoForm: FunctionComponent<IProps> = (
     {
-        industrialModels
+        industrialModels,
+        advancedMode,
+        onAdvancedModeChange
     }) => {
     const [ originImageItems, setOriginImageItems ] = useState([])
     const [ searchImageItems, setSearchSearchItems ] = useState([])
@@ -51,7 +55,7 @@ const GluonCVDemoForm: FunctionComponent<IProps> = (
     var industrialModel = industrialModels.find((item) => item.id === params.id)
 
     const getSourceCode = async (uri) => {
-        const response = await axios.get('/file/download', {params: {uri: encodeURIComponent(uri)}, responseType: 'blob'})
+        const response = await axios.get('/_file/download', {params: {uri: encodeURIComponent(uri)}, responseType: 'blob'})
         return response.data
     }
 
@@ -192,7 +196,7 @@ const GluonCVDemoForm: FunctionComponent<IProps> = (
     }
 
     const onFileChange = (files: (File | FileMetadata)[]) => {
-        axios.post('/image', files[0])
+        axios.post('/_image', files[0])
             .then((response) => {
                 var file_name : string = response.data;
                 setCurImagePreviewItem(file_name);
@@ -206,7 +210,7 @@ const GluonCVDemoForm: FunctionComponent<IProps> = (
 
     const onSearch = () => {
         setProcessing(true)
-        axios.get('/search/image', { params: {industrial_model: industrialModel.id, endpoint_name: selectedEndpoint.value, file_name: curImagePreviewItem}})
+        axios.get('/_search/image', { params: {industrial_model: industrialModel.id, endpoint_name: selectedEndpoint.value, file_name: curImagePreviewItem}})
             .then((response) => {
                 setSearchSearchItems(response.data);
                 setVisibleSearchImage(true);
@@ -259,7 +263,7 @@ const GluonCVDemoForm: FunctionComponent<IProps> = (
                             </FormField>
                         </Grid>
                         <Grid item xs={12}>
-                            <Image src={`/image/${curImagePreviewItem}`} width={"100%"} height={"100%"} current='' onClick={onImageClick}/>
+                            <Image src={`/_image/${curImagePreviewItem}`} width={"100%"} height={"100%"} current='' onClick={onImageClick}/>
                         </Grid>
                     </Grid>
                 </Container>
@@ -303,10 +307,13 @@ const GluonCVDemoForm: FunctionComponent<IProps> = (
         )
     }
 
-    const renderEndpoint = () => {
-        return (
-            <Container headingVariant='h4' title='Select endpoint to inference'>
+    return (
+        <Stack>
+            <Container title = 'Demo options'>
                 <FormField controlId='formFieldIdChooseEndpoint'>
+                    <Text>
+                        Select endpoint to inference
+                    </Text>
                     <Select
                         placeholder='Choose endpoint'
                         options={endpointOptions}
@@ -314,13 +321,10 @@ const GluonCVDemoForm: FunctionComponent<IProps> = (
                         onChange={(event) => onChange('formFieldIdEndpoint', event)}
                     />
                 </FormField>
+                <FormField controlId='Advanced mode'>
+                    <Toggle label='Advanced mode' checked={advancedMode} onChange={onAdvancedModeChange}/>
+                </FormField>
             </Container>
-        )
-    }
-
-    return (
-        <Stack>
-            { renderEndpoint() }
             { renderImagePreview() }
             { renderOriginImageList() }
             { renderUploadImage() }

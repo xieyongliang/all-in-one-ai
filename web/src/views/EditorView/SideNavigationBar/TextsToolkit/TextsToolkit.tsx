@@ -15,7 +15,12 @@ interface IProps {
     activeImageIndex:number,
     imagesData: ImageTextData[];
     projectType: ProjectType;
+    imageBucket?: string;
+    imageKey?: string;
+    imageId?: string;
     updateImageTextDataById: (id: string, newImageData: ImageTextData) => any;
+    onProcessing: () => any;
+    onProcessed: () => any;
 }
 
 interface IState {
@@ -73,6 +78,11 @@ class TextsToolkit extends React.Component<IProps, IState> {
                         height: activeContentHeight - 20
                     }}
                     imageData={imagesData[activeImageIndex]}
+                    onProcessing={this.props.onProcessing}
+                    onProcessed={this.props.onProcessed}
+                    imageBucket={this.props.imageBucket}
+                    imageKey={this.props.imageKey}
+                    imageId={this.props.imageId}   
                 />
             </div>;
         return content;
