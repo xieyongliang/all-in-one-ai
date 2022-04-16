@@ -2,7 +2,7 @@ import React, { FunctionComponent, useState, useEffect, useCallback } from 'reac
 import { useHistory, useParams } from 'react-router-dom';
 import { Column } from 'react-table'
 import { Container, Stack, Inline } from 'aws-northstar';
-import { Table, Button, ButtonDropdown, Toggle, Link } from 'aws-northstar/components';
+import { Table, Button, Toggle, Link } from 'aws-northstar/components';
 import { PathParams } from '../../Interfaces/PathParams';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { github } from 'react-syntax-highlighter/dist/esm/styles/hljs';
@@ -94,7 +94,7 @@ const GreengrassComponentList: FunctionComponent = () => {
             accessor: 'name',
             Cell: ({ row  }) => {
                 if (row && row.original) {
-                    return <a href={`/imodels/${params.id}?tab=greengrasscomponent#prop:id=${row.original.arn}`}> {row.original.name} </a>;
+                    return <a href={`/imodels/${params.id}?tab=greengrasscomponentversion#prop:id=${row.original.arn}`}> {row.original.name} </a>;
                 }
                 return null;
             }
@@ -116,10 +116,6 @@ const GreengrassComponentList: FunctionComponent = () => {
     const tableActions = (
         <Inline>
             <Button icon="refresh" onClick={onRefresh} loading={loading}>Refresh</Button>
-            <ButtonDropdown
-                content='Action'
-                    items={[{ text: 'Clone' }, { text: 'Create endpoint' }, { text: 'Add/Edit tags' }]}
-            />        
             <Button variant='primary' onClick={onCreate}>Create</Button>
         </Inline>
     );    

@@ -17,6 +17,8 @@ import {AIActions} from '../../../logic/actions/AIActions';
 import withStyles from '@material-ui/core/styles/withStyles';
 import {Tooltip} from '@material-ui/core';
 import Fade from '@material-ui/core/Fade';
+import { AnnotationFormatType } from '../../../data/enums/AnnotationFormatType';
+import { RectLabelsExporter } from '../../../logic/export/RectLabelsExporter';
 
 const BUTTON_SIZE: ISize = {width: 30, height: 30};
 const BUTTON_PADDING: number = 10;
@@ -172,6 +174,17 @@ const EditorTopNavigationBar: React.FC<IProps> = (
                         crossHairVisible,
                         undefined,
                         crossHairOnClick
+                    )
+                }
+                {
+                    getButtonWithTooltip(
+                        'export-lables',
+                        'export labels with yolov5 format',
+                        '/ico/export-labels.png',
+                        'export-labels ',
+                        false,
+                        undefined,
+                        () => RectLabelsExporter.export(AnnotationFormatType.YOLO)
                     )
                 }
             </div>

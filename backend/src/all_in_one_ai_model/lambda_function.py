@@ -37,7 +37,7 @@ def lambda_handler(event, context):
                     payload['model_data_url'] = request['model_data_url']
                 payload['mode'] = request['mode']
             if('environment' in request):
-                payload['environment'] = request['environment']
+                payload['environment'] = json.loads(request['environment'])
             if('tags' in request):
                 payload['tags'] = request['tags']
 
@@ -86,10 +86,6 @@ def lambda_handler(event, context):
                 action = event['queryStringParameters']['action']
         
         try:
-            print(model_name)
-            print(industrial_model)
-            print(action)
-            
             if(action == 'attach' and event['httpMethod'] == 'GET'):
                 params = {}
                 params['model_name'] = model_name

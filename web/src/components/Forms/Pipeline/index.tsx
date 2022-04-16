@@ -31,13 +31,14 @@ interface IProps {
     trainingjobOutputS3Uri : string;
     modelModelPackageGroupName: string;
     modelModelPackageArn: string;
+    modelDataUrl: string;
+    modelEnvironment: Object;
     endpointInstanceType : string;
     endpointAcceleratorType: string;
     endpointInitialInstanceCount: number;
     endpointInitialVariantWeight: number;
     greengrassComponentName: string;
     greengrassComponentVersion: string;
-    modelDataUrl: string;
     greengrassDeploymentName: string;
     greengrassDeploymentTargetType: string;
     greengrassDeploymentTargetArn : string;
@@ -73,12 +74,14 @@ const PipelineForm: FunctionComponent<IProps> = (props) => {
     const onSubmit = () => {
         var index = props.industrialModels.findIndex((item) => item.id === params.id)
         var algorithm = props.industrialModels[index].algorithm
+        var environment = props.modelEnvironment
         
         var body = {}
         body['pipeline_name'] = pipelineName
         body['pipeline_type'] = pipelineType
         body['industrial_model'] = params.id
         body['model_algorithm'] = algorithm
+        body['environment'] = environment
         if(pipelineType === '0' || pipelineType === '1') {
             body['training_job_instance_type'] = props.trainingjobInstanceType
             body['training_job_instance_count'] = props.trainingjobInstanceCount
@@ -336,13 +339,14 @@ const mapStateToProps = (state: AppState) => ({
     trainingjobOutputS3Uri : state.pipeline.trainingjobOutputS3Uri,
     modelModelPackageGroupName : state.pipeline.modelModelPackageGroupName,
     modelModelPackageArn: state.pipeline.modelModelPackageArn,
+    modelDataUrl: state.pipeline.modelDataUrl,
+    modelEnvironment: state.pipeline.modelEnvironment,
     endpointInstanceType : state.pipeline.endpointInstanceType,
     endpointAcceleratorType: state.pipeline.endpointAcceleratorType,
     endpointInitialInstanceCount: state.pipeline.endpointInitialInstanceCount,
     endpointInitialVariantWeight: state.pipeline.endpointInitialVariantWeight,
     greengrassComponentName: state.pipeline.greengrassComponentName,
     greengrassComponentVersion : state.pipeline.greengrassComponentVersion,
-    modelDataUrl: state.pipeline.modelDataUrl,
     greengrassDeploymentName: state.pipeline.greengrassDeploymentName,
     greengrassDeploymentTargetType: state.pipeline.greengrassDeploymentTargetType,
     greengrassDeploymentTargetArn : state.pipeline.greengrassDeploymentTargetArn,

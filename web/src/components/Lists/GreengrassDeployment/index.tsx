@@ -2,19 +2,20 @@
 import { FunctionComponent, useCallback, useEffect, useState } from 'react';
 import { useHistory, useParams } from 'react-router-dom';
 import {Column} from 'react-table'
-import { Container, Link, Stack, Toggle, Button, ButtonDropdown, StatusIndicator, Table} from 'aws-northstar';
+import { Container, Link, Stack, Toggle, Button, StatusIndicator, Table} from 'aws-northstar';
 import Inline from 'aws-northstar/layouts/Inline';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { github } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 import axios from 'axios';
 import JSZip from 'jszip';
 import { PathParams } from '../../Interfaces/PathParams';
+import { getUtcDate } from '../../Utils/Helper';
 
 interface DataType {
-    target_arn: string;
-    revision_id: string;
-    deployment_id: string;
-    deployment_created: string;
+    targetArn: string;
+    revisionId: string;
+    deploymentId: string;
+    creationTime: string;
     status: string;
 }
 
@@ -72,7 +73,8 @@ const GreengrassDeploymentList: FunctionComponent = () => {
             }
             else
                 for(let item of response.data) {
-                    items.push({target_arn: item.targetArn, revision_id: item.revisionId, deployment_id : item.deploymentId, deployment_created: item.creationTimestamp, status: item.deploymentStatus})
+                    console.log(item)
+                    items.push({targetArn: item.targetArn, revisionId: item.revisionId, deploymentId : item.deploymentId, creationTime: item.creationTimestamp, status: item.deploymentStatus})
                     if(items.length === response.data.length) {
                         setGreengrassDeploymentItems(items);
                         setLoading(false);
@@ -87,17 +89,17 @@ const GreengrassDeploymentList: FunctionComponent = () => {
         history.push(`/imodels/${params.id}?tab=greengrassdeployment#form`)
     }
 
-    const getRowId = useCallback(data => data.name, []);
+    const getRowId = useCallback(data => data.targetArn + '-' + data.revisionId, []);
 
     const columnDefinitions : Column<DataType>[]= [
         {
             id: 'deployment_id',
             width: 400,
             Header: 'Deployment id',
-            accessor: 'deployment_id',
+            accessor: 'deploymentId',
             Cell: ({ row  }) => {
                 if (row && row.original) {
-                    return <a href={`/imodes/${params.id}?tab=greengrassdeployment#prop:id=${row.original.deployment_id}`}> {row.original.deployment_id} </a>;
+                    return <a href={`/imodels/${params.id}?tab=greengrassdeployment#prop:id=${row.original.deploymentId}`}> {row.original.deploymentId} </a>;
                 }
                 return null;
             }
@@ -106,13 +108,13 @@ const GreengrassDeploymentList: FunctionComponent = () => {
             id: 'target_arn',
             width: 550,
             Header: 'Target arn',
-            accessor: 'target_arn'
+            accessor: 'targetArn'
         },
         {
             id: 'revision_id',
             width: 200,
             Header: 'Revision id',
-            accessor: 'revision_id'
+            accessor: 'revisionId'
         },
         {
             id: 'status',
@@ -143,17 +145,19 @@ const GreengrassDeploymentList: FunctionComponent = () => {
             id: 'deployment_created',
             width: 250,
             Header: 'Deployment created',
-            accessor: 'deployment_created'
+            accessor: 'creationTime',
+            Cell: ({ row  }) => {
+                if (row && row.original) {
+                    return getUtcDate(row.original.creationTime)
+                }
+                return null;
+            }
         }
     ];
     
     const tableActions = (
         <Inline>
             <Button icon="refresh" onClick={onRefresh} loading={loading}>Refresh</Button>
-            <ButtonDropdown
-                content='Action'
-                    items={[{ text: 'Clone' }, { text: 'Create rest api' }, { text: 'Stop', disabled: true }, { text: 'Add/Edit tags' }]}
-            />        
             <Button variant='primary' onClick={onCreate}>Create</Button>
         </Inline>
     );

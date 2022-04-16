@@ -6,7 +6,7 @@ import Grid from '@mui/material/Grid';
 import axios from 'axios';
 import { AppState } from '../../../store';
 import { connect } from 'react-redux';
-import { UpdateModelModelPackageGroupName, UpdateModelModelPackageArn, UpdateModelDataUrl } from '../../../store/pipelines/actionCreators';
+import { UpdateModelModelPackageGroupName, UpdateModelModelPackageArn, UpdateModelDataUrl, UpdateModelEnvironment } from '../../../store/pipelines/actionCreators';
 import { IIndustrialModel } from '../../../store/industrialmodels/reducer';
 import { PathParams } from '../../Interfaces/PathParams';
 import { getUtcDate } from '../../Utils/Helper';
@@ -21,6 +21,7 @@ interface IProps {
     updateModelModelPackageGroupNameAction : (modelModelPackageGroupName: string) => any;
     updateModelModelPackageArnAction : (modelModelPackageArn: string) => any;
     updateModelDataUrlAction: (modelDataUrl: string) => any;
+    updateModelEnvironmentAction: (modelEnvironment: Object) => any;
     pipelineType: string;
     modelModelPackageGroupName: string;
     modelModelPackageArn: string;
@@ -40,10 +41,10 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
     const [ modelDataUrl, setModelDataUrl ] = useState('')
     const [ containerInputType, setContainerInputType ] = useState(props.wizard  ? '1' : '0')
     const [ containerModelType, setContainerModelType ] = useState('SingleModel')
-    const [ selectedModelPackage, setSelectedModelPackage ] = useState({});
-    const [ selectedModelPackageVersions, setSelectedModelPackageVersions ] = useState([]);
+    const [ selectedModelPackageGroup, setSelectedModelPackageGroup ] = useState({});
+    const [ selectedModelPackageGroupVersions, setSelectedModelPackageGroupVersions ] = useState({});
     const [ tags, setTags ] = useState([{key:'', value:''}])
-    const [ environment, setEnvironment ] = useState([{key:'', value:''}])
+    const [ environments, setEnvironments ] = useState([{key:'', value:''}])
     const [ invalidModelName, setInvalidModelName ] = useState(false)
     const [ invalidModelDataUrl, setInvalidModelDataUrl ] = useState(false)
     const [ invalidModelPackageName, setInvalidModelPackageName ] = useState(false)
@@ -87,6 +88,11 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
                     value.forEach(modelPackage => {
                         versions.push(modelPackage['ModelPackageVersion'])
                         arns.push(modelPackage['ModelPackageArn'])
+                        if(modelPackage['ModelPackageArn'] === props.modelModelPackageArn) {
+                            var selectedModelPackageGroupVersions = {}
+                            selectedModelPackageGroupVersions[item.ModelPackageGroupName] = {label: modelPackage['ModelPackageVersion'], value: modelPackage['ModelPackageVersion']}
+                            setSelectedModelPackageGroupVersions(selectedModelPackageGroupVersions)
+                        }
                     })
                     modelPackageGroupItems.find(({name}) => name === item.ModelPackageGroupName)['versions'] = versions
                     modelPackageVersionItems[item.ModelPackageGroupName] = {
@@ -106,7 +112,7 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
         }, (error) => {
             console.log(error);
         });
-    }, [])
+    }, [props.modelModelPackageArn])
 
     const onChange = (id: string, event: any, option?: string) => {
         if(id === 'formFieldIdModelName')
@@ -120,16 +126,16 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
         else if(id === 'formFieldIdModelPackageGroup')
             setModelPackageGroupName(event)
         else if(option === 'versions') {
-            var copySelectedModelPackageVersions = JSON.parse(JSON.stringify(selectedModelPackageVersions));
-            copySelectedModelPackageVersions[id] = {label: event.target.value, value: event.target.value};
-            setSelectedModelPackageVersions(copySelectedModelPackageVersions)
+            var copySelectedModelPackageGroupVersions = JSON.parse(JSON.stringify(selectedModelPackageGroupVersions));
+            copySelectedModelPackageGroupVersions[id] = {label: event.target.value, value: event.target.value};
+            setSelectedModelPackageGroupVersions(copySelectedModelPackageGroupVersions)
         }
     }
 
     const onChangeEnvironment = (id: string, event: any, index : number) => {
-        var copyEnvironment = JSON.parse(JSON.stringify(environment));
+        var copyEnvironment = JSON.parse(JSON.stringify(environments));
         copyEnvironment[index][id] = event
-        setEnvironment(copyEnvironment)
+        setEnvironments(copyEnvironment)
     }
 
     const onChangeOptions = (event, value) => {
@@ -141,12 +147,12 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
  
     const onSelectionChange = (selectedItems: ModelPackageItem[]) => {
         selectedItems.forEach((selectedItem) => {
-            setSelectedModelPackage(selectedItem)
+            setSelectedModelPackageGroup(selectedItem)
             if(wizard) {
                 var modelPackageGroupName = selectedItem.name
                 props.updateModelModelPackageGroupNameAction(modelPackageGroupName)
-                if(selectedModelPackageVersions[modelPackageGroupName] !==  undefined) {
-                    var modelPakcageVersion = selectedModelPackageVersions[modelPackageGroupName]['value']
+                if(selectedModelPackageGroupVersions[modelPackageGroupName] !==  undefined) {
+                    var modelPakcageVersion = selectedModelPackageGroupVersions[modelPackageGroupName]['value']
                     var index = modelPackageVersionItems[selectedItem.name]['versions'].findIndex((version) => version === modelPakcageVersion)
                     var modelPackageArn = modelPackageVersionItems[modelPackageGroupName]['arns'][index]
                     props.updateModelModelPackageArnAction(modelPackageArn)
@@ -179,15 +185,16 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
                 }
                 if(tags.length > 1 || (tags.length === 1 && tags[0].key !== '' && tags[0].value !== ''))
                     body['tags'] = tags;
-                if(environment.length > 0) {
-                    body['environment'] = {};
-                    environment.forEach((item) => {
+                if(environments.length > 0) {
+                    var environment = {}
+                    environments.forEach((item) => {
                         if(item['key'] === '') {
                             alert('key in environment variables cannot be empty');
                             return;
                         }
-                        body['environment'][item['key']] = item['value'];
+                        environment[item['key']] = item['value'];
                     })
+                    body['environment'] = JSON.stringify(environment)
                 }
                 setProcessing(true)
                 axios.post('/model', body,  { headers: {'content-type': 'application/json' }}) 
@@ -204,8 +211,8 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
             if(modelName === '')
                 setInvalidModelName(true)
             else {
-                var model_package_group_name = selectedModelPackage['name']
-                var model_package_version = selectedModelPackageVersions[model_package_group_name]['value']
+                var model_package_group_name = selectedModelPackageGroup['name']
+                var model_package_version = selectedModelPackageGroupVersions[model_package_group_name]['value']
                 index = modelPackageVersionItems[model_package_group_name]['versions'].findIndex((version) => version === model_package_version)
                 var model_package_arn = modelPackageVersionItems[model_package_group_name]['arns'][index]
                 body = {
@@ -358,7 +365,7 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
                         <Select
                             placeholder='Choose an option'
                             options={options}
-                            selectedOption={selectedModelPackageVersions[row.original.name]}
+                            selectedOption={selectedModelPackageGroupVersions[row.original.name]}
                             onChange={(event) => onChange(row.original.name, event, 'versions')}
                             disabled={wizard && (props.pipelineType === '0' || props.pipelineType === '1')}
                         />
@@ -464,9 +471,9 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
                 'supported_response_mime_types': 'application/json'
             }
             setProcessingModelPackage(true)
-            axios.post(`/modelpackage/${selectedModelPackage['name']}`, body,  { headers: {'content-type': 'application/json' }}) 
+            axios.post(`/modelpackage/${selectedModelPackageGroup['name']}`, body,  { headers: {'content-type': 'application/json' }}) 
             .then((response) => {
-                getModelPackageVersions(selectedModelPackage['name']).then(value => {
+                getModelPackageVersions(selectedModelPackageGroup['name']).then(value => {
                     var versions = []
                     var arns = []
                     value.forEach(modelPackage => {
@@ -474,12 +481,16 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
                         arns.push(modelPackage['ModelPackageArn'])
                     })
                     var copyModelPackageGroupItems = JSON.parse(JSON.stringify(modelPackageGroupItems))
-                    copyModelPackageGroupItems.find(({name}) => name === selectedModelPackage['name'])['versions'] = versions
-                    copyModelPackageGroupItems[selectedModelPackage['name']] = {
+                    copyModelPackageGroupItems.find(({name}) => name === selectedModelPackageGroup['name'])['versions'] = versions
+                    copyModelPackageGroupItems.find(({name}) => name === selectedModelPackageGroup['name'])['arns'] = arns
+                    setModelPackageGroupItems(copyModelPackageGroupItems)
+
+                    var copyModelPackageVersioItems = JSON.parse(JSON.stringify(modelPackageVersionItems))
+                    copyModelPackageVersioItems[selectedModelPackageGroup['name']] = {
                         versions: versions,
                         arns: arns
                     }
-                    setModelPackageGroupItems(copyModelPackageGroupItems)
+                    setModelPackageVersionItems(copyModelPackageVersioItems)
                     setProcessingModelPackage(false);
                 })                
             }, (error) => {
@@ -507,15 +518,26 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
     }
 
     const onAddEnvironmentVairable = () => {
-        var copyEnvironmentVaraibles = JSON.parse(JSON.stringify(environment));
+        var copyEnvironmentVaraibles = JSON.parse(JSON.stringify(environments));
         copyEnvironmentVaraibles.push({key:'', value:''});
-        setEnvironment(copyEnvironmentVaraibles);
+        setEnvironments(copyEnvironmentVaraibles);
+        var environment = {}
+        if(copyEnvironmentVaraibles.length > 0) {
+            copyEnvironmentVaraibles.forEach((item) => {
+                if(item['key'] === '') {
+                    alert('key in environment variables cannot be empty');
+                    return;
+                }
+                environment[item['key']] = item['value'];
+            })
+        }
+        props.updateModelEnvironmentAction(environment)
     }
 
     const onRemoveEnvironmentVariable = (index) => {
-        var copyEnvironmentVaraibles = JSON.parse(JSON.stringify(environment));
+        var copyEnvironmentVaraibles = JSON.parse(JSON.stringify(environments));
         copyEnvironmentVaraibles.splice(index, 1);
-        setEnvironment(copyEnvironmentVaraibles);
+        setEnvironments(copyEnvironmentVaraibles);
     }
 
     const renderEnvironment = () => {
@@ -523,7 +545,7 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
             <ExpandableSection header="Environment variables - optional">
                 <Stack>
                     {
-                        environment.length>0 && 
+                        environments.length>0 && 
                         <Grid container spacing={{ xs: 1, md: 1 }} columns={{ xs: 4, sm: 8, md: 12 }}>
                             <Grid item xs={2} sm={4} md={4}>
                                 <Text> Key </Text>
@@ -534,7 +556,7 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
                         </Grid>
                     }
                     {
-                        environment.map((item, index) => (
+                        environments.map((item, index) => (
                             <Grid container spacing={{ xs: 1, md: 1 }} columns={{ xs: 4, sm: 8, md: 12 }}>
                                 <Grid item xs={2} sm={4} md={4}>
                                     <Input type='text' value={item.key} onChange={(event) => onChangeEnvironment('key', event, index)}/>
@@ -628,7 +650,8 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
 const mapDispatchToProps = {
     updateModelModelPackageGroupNameAction: UpdateModelModelPackageGroupName,
     updateModelModelPackageArnAction: UpdateModelModelPackageArn,
-    updateModelDataUrlAction: UpdateModelDataUrl
+    updateModelDataUrlAction: UpdateModelDataUrl,
+    updateModelEnvironmentAction: UpdateModelEnvironment
 };
 
 const mapStateToProps = (state: AppState) => ({

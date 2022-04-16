@@ -108,17 +108,20 @@ const SampleForm: FunctionComponent<IProps> = (props) => {
             labelsData.push(label + '\r');
         })
 
+        var imageName = imageKey.substring(imageKey.lastIndexOf('/') + 1, imageKey.lastIndexOf('.'))
+
         return (
             <ImageAnnotate 
-                imageUri={curImageItem} 
-                imageLabels={labelsData} 
-                imageColors={COLORS} 
-                imageBucket={imageBucket} 
-                imageKey={imageKey} 
-                type={props.type}
-                subType={props.subType}
-                visible={visibleImagePreview} 
-                onClose={onImageClose}
+                imageUri = {curImageItem} 
+                imageLabels = {labelsData} 
+                imageColors = {COLORS} 
+                imageBucket = {imageBucket} 
+                imageKey = {imageKey}
+                imageName = {imageName}
+                type = {props.type}
+                subType = {props.subType}
+                visible = {visibleImagePreview} 
+                onClose = {onImageClose}
             />
         )
     }

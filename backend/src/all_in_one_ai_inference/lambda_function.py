@@ -7,9 +7,6 @@ def lambda_handler(event, context):
     if event['httpMethod'] == 'POST':
         payload = event['body']
 
-        print(event['headers'])
-        print(event['queryStringParameters'])
-
         if('Content-Type' in event['headers']):
             content_type = event['headers']['Content-Type']
         elif('content-type' in event['headers']):

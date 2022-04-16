@@ -70,7 +70,7 @@ const PipelineList: FunctionComponent = () => {
             }
             else 
                 for(let item of response.data) {
-                    items.push({pipelineExecutionArn : item.PipelineExecutionArn, pipelineName: item.PipelineExperimentConfig['ExperimentName'], pipelineExecutionStatus: item.PipelineExecutionStatus, creationTime: getUtcDate(item.CreationTime), lastModifiedTime: getUtcDate(item.LastModifiedTime)})
+                    items.push({pipelineExecutionArn : item.PipelineExecutionArn, pipelineName: item.PipelineExperimentConfig['ExperimentName'], pipelineExecutionStatus: item.PipelineExecutionStatus, creationTime: item.CreationTime, lastModifiedTime: item.LastModifiedTime})
                     if(items.length === response.data.length) {
                         setPipelineItems(items);
                         setLoading(false);
@@ -139,13 +139,25 @@ const PipelineList: FunctionComponent = () => {
             id: 'creationTime',
             width: 250,
             Header: 'Creation time',
-            accessor: 'creationTime'
+            accessor: 'creationTime',
+            Cell: ({ row  }) => {
+                if (row && row.original) {
+                    return getUtcDate(row.original.creationTime)
+                }
+                return null;
+            }
         },   
         {
             id: 'lastModifiedTime',
             width: 250,
             Header: 'Last updated',
-            accessor: 'lastModifiedTime'
+            accessor: 'lastModifiedTime',
+            Cell: ({ row  }) => {
+                if (row && row.original) {
+                    return getUtcDate(row.original.lastModifiedTime)
+                }
+                return null;
+            }
         }   
     ];
     

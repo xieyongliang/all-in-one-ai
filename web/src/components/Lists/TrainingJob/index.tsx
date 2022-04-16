@@ -79,7 +79,7 @@ const TrainingJobList: FunctionComponent = () => {
                 }
                 else
                     for(let item of response.data) {
-                        items.push({trainingJobName: item.TrainingJobName, trainingJobStatus : item.TrainingJobStatus, duration: getDurationBySeconds(parseInt(item.TrainingTimeInSeconds)), creationTime: getUtcDate(item.CreationTime)})
+                        items.push({trainingJobName: item.TrainingJobName, trainingJobStatus : item.TrainingJobStatus, duration: getDurationBySeconds(parseInt(item.TrainingTimeInSeconds)), creationTime: item.CreationTime})
                         if(items.length === response.data.length) {
                             setTrainingJobItems(items)
                             setLoading(false);
@@ -223,7 +223,13 @@ const TrainingJobList: FunctionComponent = () => {
             id: 'creationTime',
             width: 200,
             Header: 'Creation time',
-            accessor: 'creationTime'
+            accessor: 'creationTime',
+            Cell: ({ row  }) => {
+                if (row && row.original) {
+                    return getUtcDate(row.original.creationTime)
+                }
+                return null;
+            }
         },
         {
             id: 'duration',

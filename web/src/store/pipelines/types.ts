@@ -13,13 +13,14 @@ export type PipelineState = {
     modelAlgorithm: string;
     modelModelPackageGroupName: string;
     modelModelPackageArn: string;
+    modelEnvironment: Object;
+    modelDataUrl: string;
     endpointInstanceType: string;
     endpointAcceleratorType: string;
     endpointInitialInstanceCount: number;
     endpointInitialVariantWeight: number;
     greengrassComponentName: string;
     greengrassComponentVersion: string;
-    modelDataUrl: string;
     greengrassDeploymentName: string;
     greengrassDeploymentTargetType: string;
     greengrassDeploymentTargetArn: string;
@@ -96,6 +97,19 @@ interface UpdateModelAlgorithm {
     }
 }
 
+interface UpdateModelDataUrl {
+    type: typeof Action.UPDATE_PIPELINE_MODEL_DATA_URL;
+    payload: {
+        modelDataUrl: string;
+    }
+}
+
+interface UpdateModelEnvironment {
+    type: typeof Action.UPDATE_PIPELINE_MODEL_ENVIRONMENT;
+    payload: {
+        modelEnvironment: Object;
+    }
+}
 interface UpdateModelModelPackageGroupName {
     type: typeof Action.UPDATE_PIPELINE_MODEL_MODELPACKAGE_GROUP_NAME;
     payload: {
@@ -152,13 +166,6 @@ interface UpdateGreengrassComponentVersion {
     }
 }
 
-interface UpdateModelDataUrl {
-    type: typeof Action.UPDATE_PIPELINE_MODEL_DATA_URL;
-    payload: {
-        modelDataUrl: string;
-    }
-}
-
 interface UpdateGreengrassDeploymentName {
     type: typeof Action.UPDATE_PIPELINE_GREENGRASS_DEPLOYMENT_NAME;
     payload: {
@@ -199,13 +206,14 @@ export type PipelineActionTypes = UpdatePipelineType
     | UpdateModelAlgorithm
     | UpdateModelModelPackageGroupName
     | UpdateModelModelPackageArn
+    | UpdateModelDataUrl
+    | UpdateModelEnvironment
     | UpdateEndpointInstanceType
     | UpdateEndpointAcceleratorType
     | UpdateEndpointInitialInstanceCount
     | UpdateEndpointInitialVariantWeight
     | UpdateGreengrassComponentName
     | UpdateGreengrassComponentVersion
-    | UpdateModelDataUrl
     | UpdateGreengrassDeploymentName
     | UpdateGreengrassDeploymentTargetType
     | UpdateGreengrassDeploymentTargetArn

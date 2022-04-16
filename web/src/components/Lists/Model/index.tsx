@@ -70,7 +70,7 @@ const ModelList: FunctionComponent = () => {
             (response) => {
                 var items = []
                 for(let item of response.data) {
-                    items.push({modelName: item.ModelName, creationTime: getUtcDate(item.CreationTime)})
+                    items.push({modelName: item.ModelName, creationTime: item.CreationTime})
                     if(items.length === response.data.length)
                         setModelItems(items)
                 }
@@ -120,7 +120,13 @@ const ModelList: FunctionComponent = () => {
             id: 'creationTime',
             width: 400,
             Header: 'Creation time',
-            accessor: 'creationTime'
+            accessor: 'creationTime',
+            Cell: ({ row  }) => {
+                if (row && row.original) {
+                    return getUtcDate(row.original.creationTime)
+                }
+                return null;
+            }
         }
     ];
 

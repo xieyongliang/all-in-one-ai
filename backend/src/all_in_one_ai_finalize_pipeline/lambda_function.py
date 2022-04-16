@@ -25,8 +25,8 @@ def lambda_handler(event, context):
         pipeline_id = payload['pipeline_id']
         
         if(pipeline_type == '0' or pipeline_type == '2'):
-            component_version_arn = payload['component_version_arn'][1: len(payload['component_version_arn']) - 1]
-            deployment_id = payload['deployment_id'][1: len(payload['deployment_id'])]
+            component_version_arn = payload['component_version_arn']
+            deployment_id = payload['deployment_id']
         
         if(pipeline_type == '0' or pipeline_type == '1'):
             request = {
@@ -55,7 +55,9 @@ def lambda_handler(event, context):
                 )
                 print(response)
                 payload = response["Payload"].read().decode("utf-8")
+                print(payload)
                 payload = json.loads(payload)
+                print(payload)
                 payload = json.loads(payload['body'])
                 model_data_url = payload['InferenceSpecification']['Containers'][0]['ModelDataUrl']
                 strs = model_data_url.split('/')
@@ -73,7 +75,6 @@ def lambda_handler(event, context):
                     'statusCode': 400,
                     'body': response['FunctionError']
                 }
-
         items = ddbhPipeline.scan(FilterExpression=Key('pipeline_id').eq(pipeline_id))
         pipeline_execution_arn = items[0]['pipeline_execution_arn']
         params = {}
@@ -94,7 +95,6 @@ def lambda_handler(event, context):
                 'industrial_model': industrial_model
             }
             ddbhPipeline.update_item(key, params)
-    
         return {
             'statusCode': 200,
             'body': pipeline_execution_arn

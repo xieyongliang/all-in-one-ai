@@ -41,6 +41,7 @@ interface IProps {
     imageLabels: string[];
     imageColors: string[];
     imageAnnotations?: string[];
+    imageName: string;
     updateActiveLabelId: (activeLabelId: string) => any;
     updateActiveLabelNameId: (activeLabelId: string) => any;
     updateImageLabelDataById: (id: string, newImageLabelData: ImageLabelData) => any;
@@ -64,6 +65,7 @@ const RectLabelsList: React.FC<IProps> = (
     imageLabels,
     imageColors,
     imageAnnotations,
+    imageName,
     updateImageLabelDataById,
     updateActiveLabelNameId, 
     updateActiveLabelId,
@@ -190,7 +192,7 @@ const RectLabelsList: React.FC<IProps> = (
 
     const importAnnotations = useCallback(() => {
         var labelsFile = new File(imageLabels, 'labels.txt');
-        var annotationFile = new File(computedAnnotations, 'image.txt');
+        var annotationFile = new File(computedAnnotations, `${imageName}.txt`);
         
         const formatType = AnnotationFormatType.YOLO
         const labelType = LabelType.RECT

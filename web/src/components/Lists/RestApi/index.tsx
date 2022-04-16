@@ -11,7 +11,7 @@ import { getUtcDate } from '../../Utils/Helper';
 interface DataType {
     name: string;
     function: string;
-    created_date: string;
+    creationTime: string;
     url: string;
 }
 
@@ -33,7 +33,7 @@ const RestApiList: FunctionComponent = () => {
             }
             else
                 for(let item of response.data) {
-                    items.push({name: item.api_name, function: item.api_function, created_date: getUtcDate(item.created_date), url: item.api_url})
+                    items.push({name: item.api_name, function: item.api_function, creationTime: item.created_date, url: item.api_url})
                     if(items.length === response.data.length) {
                         setApiItems(items);
                         setLoading(false);
@@ -76,8 +76,14 @@ const RestApiList: FunctionComponent = () => {
         {
             id: 'created_date',
             width: 250,
-            Header: 'Created date',
-            accessor: 'created_date'
+            Header: 'Creation time',
+            accessor: 'creationTime',
+            Cell: ({ row  }) => {
+                if (row && row.original) {
+                    return getUtcDate(row.original.creationTime)
+                }
+                return null;
+            }
         },
         {
             id: 'url',

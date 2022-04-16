@@ -221,24 +221,22 @@ app.get('/_search/image', (req, res) => {
     }
 })
 app.post('/_industrialmodel', (req, res) => {
-    var body = [];
+    var data = [];
     req.on('data', chunk => {
-        body += chunk
+        data = data.concat(chunk)
     })
     req.on('end', () => {
         try {
-            console.log(body)
-            var data = JSON.parse(body);
-            var model_id = data.model_id
-            var file_name = data.file_name;
+            var body = JSON.parse(data);
+            var model_id = body.model_id
+            var file_name = body.file_name;
             if(file_name !== '') {
                 var buffer = fs.readFileSync('images/' + file_name + '.jpg');
-                data['file_content'] = buffer;
+                body['file_content'] = buffer;
             }
 
             options = {headers: {'content-type': 'application/json'}};
             if(model_id === undefined) {
-                var body = JSON.stringify(data)
                 axios.post(baseUrl + '/industrialmodel', body, options)
                     .then((response) => {
                         res.send(response.data);

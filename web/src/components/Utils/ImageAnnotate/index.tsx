@@ -18,6 +18,7 @@ import { LabelType } from '../../../data/enums/LabelType';
 import { LoadingIndicator, Modal } from 'aws-northstar';
 import { addImageTextData, updateActiveTextId, updateActiveTextImageIndex, updateImageTextData, updateTexts } from '../../../store/texts/actionCreators';
 import { Box, Dialog } from '@material-ui/core';
+import { LabelUtil } from '../../../utils/LabelUtil';
 
 interface IProps {
     updateActiveLabelNameIdAction: (activeLabelNameId: string) => any;
@@ -46,6 +47,7 @@ interface IProps {
     imageAnnotations?: string[];
     imageColors: string[];
     imageLabels: string[];
+    imageName: string;
     type: ProjectType;
     subType: ProjectSubType;
     visible?: boolean;
@@ -65,6 +67,7 @@ const ImageAnnotate: React.FC<IProps> = (
         imageBucket,
         imageId,
         imageKey,
+        imageName,
         updateActiveLabelNameIdAction,
         updateActiveTextIdAction,
         updateLabelNamesAction,
@@ -102,12 +105,13 @@ const ImageAnnotate: React.FC<IProps> = (
         axios.get('/_file/download', {params : {'uri' : encodeURIComponent(imageUri)} , responseType: 'blob'})
             .then((response) => {
                 var data = response.data;
-                imageFile = new File([data], 'image.png');
-                            
+                imageFile = new File([data], `${imageName}.png`);
+                
                 updateProjectDataAction({
                     ...projectData,
                     type: type,
-                    subType: subType
+                    subType: subType,
+                    name: imageName
                 });
 
                 if(type === ProjectType.TEXT_RECOGNITION) {
@@ -116,6 +120,11 @@ const ImageAnnotate: React.FC<IProps> = (
                 }
                 else {
                     updateActiveLabelImageIndexAction(0);
+                    var labelNames = []
+                    imageLabels.forEach((imageLabel)=>{
+                        labelNames.push(LabelUtil.createLabelName(imageLabel))
+                    })
+                    updateLabelNamesAction(labelNames);
                     addImageLabelDataAction([ImageLabelDataUtil.createImageLabelDataFromFileData(imageFile)]);
                 }
     
@@ -135,12 +144,13 @@ const ImageAnnotate: React.FC<IProps> = (
             return (
                 <Modal title="Image preview" visible={visible} onClose={()=>{setImageReady(false); onClose()}} width={"100"}>
                     <EditorView 
-                        imageColors={imageColors} 
-                        imageLabels={imageLabels} 
-                        imageAnnotations={imageAnnotations}
-                        imageBucket={imageBucket} 
-                        imageKey={imageKey} 
-                        imageId={imageId}
+                        imageColors = {imageColors} 
+                        imageLabels = {imageLabels} 
+                        imageAnnotations = {imageAnnotations}
+                        imageBucket = {imageBucket} 
+                        imageKey = {imageKey} 
+                        imageId = {imageId}
+                        imageName = {imageName}
                     /> 
                     <PopupView/>
                 </Modal>

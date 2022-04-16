@@ -13,7 +13,7 @@ import ImageAnnotate from '../../Utils/ImageAnnotate';
 import Image from '../../Utils/Image';
 import { PathParams } from '../../Interfaces/PathParams';
 import '../../Utils/Image/index.scss'
-import { getDurationByDates } from '../../Utils/Helper';
+import { getDurationByDates, getUtcDate } from '../../Utils/Helper';
 import Pagination from '@mui/material/Pagination';  
 import { AppState } from '../../../store';
 import { connect } from 'react-redux';
@@ -332,7 +332,13 @@ const TransformJobList: FunctionComponent<IProps> = (props) => {
             id: 'creationTime',
             width: 400,
             Header: 'Creation time',
-            accessor: 'creationTime'
+            accessor: 'creationTime',
+            Cell: ({ row  }) => {
+                if (row && row.original) {
+                    return getUtcDate(row.original.creationTime)
+                }
+                return null;
+            }
         },
         {
             id: 'duration',
@@ -443,16 +449,21 @@ const TransformJobList: FunctionComponent<IProps> = (props) => {
     }
 
     const renderImagePreview = () => {
+        var httpUri = curImageItem
+        httpUri = httpUri.substring(0, httpUri.lastIndexOf('?'))
+        var imageName = httpUri.substring(httpUri.lastIndexOf('/') + 1, httpUri.lastIndexOf('.'))
+
         return (
             <ImageAnnotate 
-                imageUri={curImageItem} 
-                imageLabels={imageLabels} 
-                imageColors={COLORS}
-                imageAnnotations={imageAnnotations}
-                type={ProjectType.TEXT_RECOGNITION}
-                subType={ProjectSubType.OBJECT_DETECTION}
-                visible={visibleImagePreview} 
-                onClose={onImageClose}
+                imageUri = {curImageItem} 
+                imageLabels = {imageLabels} 
+                imageColors = {COLORS}
+                imageAnnotations = {imageAnnotations}
+                imageName = {imageName}
+                type = {ProjectType.TEXT_RECOGNITION}
+                subType = {ProjectSubType.OBJECT_DETECTION}
+                visible = {visibleImagePreview} 
+                onClose = {onImageClose}
             />
         )
     }

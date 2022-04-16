@@ -26,14 +26,14 @@ const RestApiProp: FunctionComponent = () => {
     useEffect(() => {
         axios.get(`/api/${id}`, {params: {'industrial_model': params.id}})
             .then((response) => {
-            setApilName(response.data.api_name);
-            setRestApiName(response.data.rest_api_name);
-            setApiPath(response.data.api_path);
-            setApiStage(response.data.api_stage);
-            setApiMethod(response.data.api_method);
-            setApiFunction(response.data.api_function);
-            setCreatedDate(response.data.created_date);
-            setApiUrl(response.data.api_url);
+            setApilName(response.data[0].api_name);
+            setRestApiName(response.data[0].rest_api_name);
+            setApiPath(response.data[0].api_path);
+            setApiStage(response.data[0].api_stage);
+            setApiMethod(response.data[0].api_method);
+            setApiFunction(response.data[0].api_function);
+            setCreatedDate(response.data[0].created_date);
+            setApiUrl(response.data[0].api_url);
             setLoading(false);
         }, (error) => {
             console.log(error);

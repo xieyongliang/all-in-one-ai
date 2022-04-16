@@ -108,6 +108,23 @@ export function UpdateModelModelPackageArn(modelModelPackageArn: string): Pipeli
     };
 }
 
+export function UpdateModelDataUrl(modelDataUrl: string): PipelineActionTypes {
+    return {
+        type: Action.UPDATE_PIPELINE_MODEL_DATA_URL,
+        payload: {
+            modelDataUrl,
+        },
+    };
+}
+
+export function UpdateModelEnvironment(modelEnvironment: Object): PipelineActionTypes {
+    return {
+        type: Action.UPDATE_PIPELINE_MODEL_ENVIRONMENT,
+        payload: {
+            modelEnvironment,
+        },
+    };
+}
 export function UpdateEndpointInstanceType(endpointInstanceType: string): PipelineActionTypes {
     return {
         type: Action.UPDATE_PIPELINE_ENDPOINT_INSTANCE_TYPE,
@@ -158,15 +175,6 @@ export function UpdateGreengrassComponentVersion(greengrassComponentVersion: str
         type: Action.UPDATE_PIPELINE_GREENGRASS_COMPONENT_VERSION,
         payload: {
             greengrassComponentVersion,
-        },
-    };
-}
-
-export function UpdateModelDataUrl(modelDataUrl: string): PipelineActionTypes {
-    return {
-        type: Action.UPDATE_PIPELINE_MODEL_DATA_URL,
-        payload: {
-            modelDataUrl,
         },
     };
 }

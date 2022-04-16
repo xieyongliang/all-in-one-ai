@@ -74,7 +74,7 @@ const GreengrassDeploymentProp: FunctionComponent = () => {
             accessor: 'name',
             Cell: ({ row  }) => {
                 if (row && row.original) {
-                    return <a href={`/industrialmodel/${params.id}?tab=greengrasscomponent#prop:id=${row.original.arn}`}> {row.original.name} </a>;
+                    return <a href={`/imodels/${params.id}?tab=greengrasscomponentversion#prop:id=${row.original.arn}`}> {row.original.name} </a>;
                 }
                 return null;
             }

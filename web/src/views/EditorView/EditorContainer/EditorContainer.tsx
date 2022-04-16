@@ -35,6 +35,7 @@ interface IProps {
     imageLabels: string[];
     imageColors: string[];
     imageAnnotations?: string[];
+    imageName: string;
 }
 
 const EditorContainer: React.FC<IProps> = (
@@ -51,7 +52,8 @@ const EditorContainer: React.FC<IProps> = (
         imageId,
         imageLabels,
         imageColors,
-        imageAnnotations
+        imageAnnotations,
+        imageName
     }) => {
     const [ leftTabStatus, setLeftTabStatus ] = useState(true);
     const [ rightTabStatus, setRightTabStatus ] = useState(true);
@@ -120,22 +122,23 @@ const EditorContainer: React.FC<IProps> = (
     const rightSideBarRender = () => {
         if(projectType === ProjectType.TEXT_RECOGNITION) 
             return <TextsToolkit 
-                imageBucket={imageBucket}
-                imageKey={imageKey}
-                imageId={imageId}
-                onProcessing={onProcessing} 
-                onProcessed={onProcessed}
+                imageBucket = {imageBucket}
+                imageKey = {imageKey}
+                imageId = {imageId}
+                onProcessing = {onProcessing} 
+                onProcessed = {onProcessed}
             />
         else
             return <LabelsToolkit
-                imageBucket={imageBucket}
-                imageKey={imageKey}
-                imageId={imageId}
-                imageColors={imageColors}
-                imageLabels={imageLabels}
-                imageAnnotations={imageAnnotations}
-                onProcessing={onProcessing} 
-                onProcessed={onProcessed}
+                imageBucket = {imageBucket}
+                imageKey = {imageKey}
+                imageId = {imageId}
+                imageColors = {imageColors}
+                imageLabels = {imageLabels}
+                imageName = {imageName}
+                imageAnnotations = {imageAnnotations}
+                onProcessing = {onProcessing} 
+                onProcessed = {onProcessed}
             />
     };
 

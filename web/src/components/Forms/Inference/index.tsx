@@ -30,6 +30,7 @@ interface IProps {
 const InferenceForm: FunctionComponent<IProps> = (props) => {
     const [ curImageItem, setCurImageItem ] = useState('')
     const [ imageLabels, setImageLabels ] = useState([]);
+    const [ imageName, setImageName ] = useState('')
     const [ sampleCode, setSampleCode ] = useState('')
     const [ sampleConsole, setSampleConsole ] = useState('')
     const [ visibleSampleCode, setVisibleSampleCode ] = useState(false)
@@ -76,6 +77,7 @@ const InferenceForm: FunctionComponent<IProps> = (props) => {
     }, [params.id, industrialModels]);
 
     const onFileChange = (files: (File | FileMetadata)[]) => {
+        setImageName(files[0].name.substring(0, files[0].name.lastIndexOf('.')))
         axios.post('/_image', files[0])
         .then((response) => {
             var filename : string = response.data;
@@ -100,14 +102,15 @@ const InferenceForm: FunctionComponent<IProps> = (props) => {
 
         return (
             <ImageAnnotate 
-                imageUri={imageUri} 
-                imageLabels={labelsData} 
-                imageColors={COLORS} 
-                imageId={curImageItem} 
-                type={props.type}
-                subType={props.subType}
-                visible={visibleImagePreview} 
-                onClose={onImageClose}
+                imageUri = {imageUri} 
+                imageLabels = {labelsData} 
+                imageColors = {COLORS} 
+                imageId = {curImageItem} 
+                imageName = {imageName}
+                type = {props.type}
+                subType = {props.subType}
+                visible = {visibleImagePreview} 
+                onClose = {onImageClose}
             />
         )
     }

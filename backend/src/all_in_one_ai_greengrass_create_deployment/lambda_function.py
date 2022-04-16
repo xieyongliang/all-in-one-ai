@@ -35,7 +35,7 @@ def lambda_handler(event, context):
         print(response)
         return {
             'statusCode': 200,
-            'body': json.dumps(response, default = defaultencode)
+            'body': response['deploymentId']
         }
         
     except Exception as e:

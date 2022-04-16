@@ -1,6 +1,7 @@
 import { FunctionComponent, useState } from 'react';
 import Tabs from 'aws-northstar/components/Tabs';
 import { useHistory, useLocation, useParams } from 'react-router-dom';
+import { useCookies } from 'react-cookie';
 import { PathParams } from '../Interfaces/PathParams';
 import Yolov5DemoForm from '../Forms/Demo/Single/yolov5';
 import TrainingJobList from '../Lists/TrainingJob';
@@ -43,7 +44,8 @@ const IndustrialModels: FunctionComponent<IProps> = (
     {
         industrialModels
     }) => {
-    const [ advancedMode, setAdvancedMode ] = useState(false)
+    const [ cookies, setCookie ] = useCookies();
+    const [ advancedMode, setAdvancedMode ] = useState(cookies.advancedMode !== undefined? (cookies.advancedMode === 'true') : false)
     
     var params : PathParams = useParams();
 
@@ -70,6 +72,7 @@ const IndustrialModels: FunctionComponent<IProps> = (
 
     const onAdvancedModeChange = (checked) => {
         setAdvancedMode(checked)
+        setCookie('advancedMode', checked, { path: '/' });
     }
         
     var algorithm = industrialModels[index].algorithm;
@@ -110,7 +113,7 @@ const IndustrialModels: FunctionComponent<IProps> = (
                     return <EndpointProp />;
                 case 'restapi':
                     return <RestApiProp />;
-                case 'greengrasscomponent':
+                case 'greengrasscomponentversion':
                     return <GreengrassComponentProp/>;
                 case 'greengrassdeployment':
                     return <GreengrassDeploymentProp/>;
@@ -153,7 +156,7 @@ const IndustrialModels: FunctionComponent<IProps> = (
                 },
                 {
                     label: 'Greengrass components',
-                    id: 'greengrasscomponent',
+                    id: 'greengrasscomponentversion',
                     content: <GreengrassComponentList/>
                 },
                 {

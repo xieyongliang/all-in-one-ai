@@ -68,7 +68,7 @@ def lambda_handler(event, context):
                     'body': 'Error: {0} - {1}'.format('all_in_one_ai_greengrass_component_version', payload['body'])
                 }
                 
-            component_version_arn = payload['body'][1 : len(payload['body']) - 1]
+            component_version_arn = payload['body']
     
             response = lambda_client.invoke(
                 FunctionName = 'all_in_one_ai_greengrass_deployment',
@@ -90,7 +90,9 @@ def lambda_handler(event, context):
                     'body': 'Error: {0} - {1}'.format('all_in_one_ai_greengrass_deployment', payload['body'])
                 }
                 
-            deployment_id = payload['body'][1 : len(payload['body']) - 1]
+            deployment_id = payload['body']
+            print('123++')
+            print(deployment_id)
             
         if(event['pipeline_type'] == '0' or event['pipeline_type'] == '2'):
             event['component_version_arn'] = component_version_arn 

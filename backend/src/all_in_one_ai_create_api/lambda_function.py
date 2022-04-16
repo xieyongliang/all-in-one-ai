@@ -45,14 +45,13 @@ def lambda_handler(event, context):
         patchOperations = patchOperations
     )
     
+    resource_dict = {}
     paginator = api_client.get_paginator("get_resources")
     pages = paginator.paginate(restApiId = rest_api_id)
     for page in pages:
         print(page)
-        resource_dict = {}
         
         for item in page['items']:
-            print(item)
             if(item['path'] == '/'):
                 root_id = item['id']
             else:
@@ -62,7 +61,8 @@ def lambda_handler(event, context):
                 resource_dict[parent_id].append(item)
     
     parent_id = root_id
-    
+    print(root_id)
+    print(resource_dict)
     paths = api_path.split('/')
     
     for pathPart in paths:

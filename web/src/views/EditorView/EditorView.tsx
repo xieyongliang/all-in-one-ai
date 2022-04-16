@@ -14,6 +14,7 @@ interface IProps {
     imageColors: string[];
     imageLabels: string[];
     imageAnnotations?: string[];
+    imageName: string;
 }
 
 const EditorView: React.FC<IProps> = (
@@ -24,7 +25,8 @@ const EditorView: React.FC<IProps> = (
         imageId,
         imageColors,
         imageLabels,
-        imageAnnotations
+        imageAnnotations,
+        imageName
     }) => {
     const getClassName = () => {
         return classNames(
@@ -41,12 +43,13 @@ const EditorView: React.FC<IProps> = (
             draggable={false}
         >
             <EditorContainer 
-                imageBucket={imageBucket} 
-                imageKey={imageKey} 
-                imageId={imageId} 
-                imageColors={imageColors} 
-                imageLabels={imageLabels} 
-                imageAnnotations={imageAnnotations}
+                imageBucket = {imageBucket} 
+                imageKey = {imageKey} 
+                imageId = {imageId} 
+                imageColors = {imageColors} 
+                imageLabels= {imageLabels} 
+                imageAnnotations= {imageAnnotations}
+                imageName = {imageName}
             />
         </div>
     );

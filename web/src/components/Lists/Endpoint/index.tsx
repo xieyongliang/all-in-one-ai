@@ -95,7 +95,7 @@ const EndpointList: FunctionComponent = () => {
                 }
                 else
                     for(let item of response.data) {
-                        items.push({endpointName: item.EndpointName, endpointStatus: item.EndpointStatus, creationTime: getUtcDate(item.CreationTime), lastModifiedTime: getUtcDate(item.LastModifiedTime)})
+                        items.push({endpointName: item.EndpointName, endpointStatus: item.EndpointStatus, creationTime: item.CreationTime, lastModifiedTime: item.LastModifiedTime})
                         if(items.length ===  response.data.length) {
                             setEndpointItems(items);
                             setLoading(false);
@@ -158,13 +158,25 @@ const EndpointList: FunctionComponent = () => {
             id: 'creationTime',
             width: 250,
             Header: 'Creation time',
-            accessor: 'creationTime'
+            accessor: 'creationTime',
+            Cell: ({ row  }) => {
+                if (row && row.original) {
+                    return getUtcDate(row.original.creationTime)
+                }
+                return null;
+            }
         },
         {
             id: 'lastModifiedTime',
             width: 250,
             Header: 'Last updated',
-            accessor: 'lastModifiedTime'
+            accessor: 'lastModifiedTime',
+            Cell: ({ row  }) => {
+                if (row && row.original) {
+                    return getUtcDate(row.original.lastModifiedTime)
+                }
+                return null;
+            }
         }
     ];
     

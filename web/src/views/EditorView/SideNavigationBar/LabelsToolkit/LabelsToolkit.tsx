@@ -30,6 +30,7 @@ interface IProps {
     imageLabels: string[];
     imageColors: string[];
     imageAnnotations?: string[];
+    imageName: string;
     updateImageLabelDataById: (id: string, newImageLabelData: ImageLabelData) => any;
     updateActiveLabelType: (activeLabelType: LabelType) => any;
     updateActiveLabelId: (highlightedLabelId: string) => any;
@@ -130,15 +131,16 @@ class LabelsToolkit extends React.Component<IProps, IState> {
                             width: size.width - 20,
                             height: activeContentHeight - 20
                         }}
-                        imageData={imagesData[activeImageIndex]}
-                        imageBucket={this.props.imageBucket}
-                        imageKey={this.props.imageKey}
-                        imageId={this.props.imageId}
-                        imageColors={this.props.imageColors}
-                        imageLabels={this.props.imageLabels}
-                        imageAnnotations={this.props.imageAnnotations}
-                        onProcessing={this.props.onProcessing}
-                        onProcessed={this.props.onProcessed}
+                        imageData = {imagesData[activeImageIndex]}
+                        imageBucket = {this.props.imageBucket}
+                        imageKey = {this.props.imageKey}
+                        imageId = {this.props.imageId}
+                        imageColors = {this.props.imageColors}
+                        imageLabels = {this.props.imageLabels}
+                        imageAnnotations = {this.props.imageAnnotations}
+                        imageName = {this.props.imageName}
+                        onProcessing = {this.props.onProcessing}
+                        onProcessed = {this.props.onProcessed}
                     />
                 }
                 {

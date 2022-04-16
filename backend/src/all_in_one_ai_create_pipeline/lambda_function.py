@@ -77,9 +77,9 @@ def lambda_handler(event, context):
     industrial_model = event['body']['industrial_model']
     model_algorithm = event['body']['model_algorithm']
     inference_image = event['body']['inference_image']
-    model_environment = event['body']['environment']
-    model_package_group_inference_instances = event['body']['model_package_group_inference_instances']
     model_name = event['body']['model_name']
+    model_package_group_inference_instances = event['body']['model_package_group_inference_instances']
+    model_environment = event['body']['environment']
     endpoint_config_name = event['body']['endpoint_config_name']
     endpoint_name = event['body']['endpoint_name']
     endpoint_instance_type = event['body']['endpoint_instance_type']
@@ -185,7 +185,7 @@ def lambda_handler(event, context):
             'industrial_model': param_industrial_model,
             'role_arn': role,
             'model_name': param_model_name,
-            'model_environment': param_model_environment,
+            'environment': param_model_environment,
             'model_package_arn': step_register_model.steps[0].properties.ModelPackageArn,
             'endpoint_name': param_endpoint_name,
             'instance_type': param_endpoint_instance_type,
@@ -216,7 +216,7 @@ def lambda_handler(event, context):
             'industrial_model': param_industrial_model,
             'role_arn': role,
             'model_name': param_model_name,
-            'model_environment': param_model_environment,
+            'environment': param_model_environment,
             'model_package_arn': step_register_model.steps[0].properties.ModelPackageArn,
             'model_name': param_model_name,
             'endpoint_name': param_endpoint_name,
@@ -237,7 +237,7 @@ def lambda_handler(event, context):
             'industrial_model': param_industrial_model,
             'role_arn': role,
             'model_name': param_model_name,
-            'model_environment': param_model_environment,
+            'environment': param_model_environment,
             'model_package_arn': param_model_package_arn,
             'endpoint_name': param_endpoint_name,
             'instance_type': param_endpoint_instance_type,
@@ -268,7 +268,7 @@ def lambda_handler(event, context):
             'industrial_model': param_industrial_model,
             'role_arn': role,
             'model_name': param_model_name,
-            'model_environment': param_model_environment,
+            'environment': param_model_environment,
             'model_package_arn': param_model_package_arn,
             'endpoint_name': param_endpoint_name,
             'instance_type': param_endpoint_instance_type,

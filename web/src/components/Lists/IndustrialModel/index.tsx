@@ -1,19 +1,18 @@
-import { Badge, Box, Card, Container, DeleteConfirmationDialog, LoadingIndicator, Text } from 'aws-northstar';
+import { Container, DeleteConfirmationDialog, LoadingIndicator, Text } from 'aws-northstar';
 import { FunctionComponent, useCallback, useEffect, useState } from 'react';
 import Grid from '@mui/material/Grid';
-import { useHistory } from 'react-router-dom';
-import Image from '../../Utils/Image'
 import { connect } from 'react-redux';
 import { IIndustrialModel } from '../../../store/industrialmodels/reducer';
 import { AppState } from '../../../store';
 import axios from 'axios';
-import DeleteIcon from '@mui/icons-material/Delete';
-import EditIcon from '@mui/icons-material/Edit';
-import Stack from '@mui/material/Stack';
-import Button from '@mui/material/Button';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
 import IndustrialModelForm from '../../Forms/IndustrialModel'
 import IndustrialModelProp from '../../Props/IndustrialModel'
 import { Updateindustrialmodels } from '../../../store/industrialmodels/actionCreators';
+import MenuItem from "@material-ui/core/MenuItem";
+import { Edit, Delete } from '@mui/icons-material';
+import { ListItemIcon, ListItemText, Menu, MenuList, Button, IconButton, Typography, Stack, Card, CardHeader, CardMedia, CardContent, CardActions  } from '@mui/material';
+import { useHistory } from 'react-router-dom';
 
 interface IProps {
     updateIndustrialModelsAction: (industrialModels: IIndustrialModel[]) => any;
@@ -28,8 +27,11 @@ const IndustrialModelList: FunctionComponent<IProps> = (props) => {
     const [ visibleIndustrialModelProp, setVisibleIndustrialModelProp ] = useState(false)
     const [ visibleConfirmationDialog, setVisibleConfirmationDialog ] = useState(false)
     const [ processing, setProssing ] = useState(false)
+    const [anchorEl, setAnchorEl] = useState(null);
 
     const history = useHistory();
+    
+    const open = Boolean(anchorEl);
 
     const onCreate = () => {
         setVisibleIndustrialModelForm(true)
@@ -63,6 +65,14 @@ const IndustrialModelList: FunctionComponent<IProps> = (props) => {
         })
     }, [industrialModels])
 
+    const handleClose = () => {
+        setAnchorEl(null);
+      };
+
+    const handleClick = (event) => {
+        setAnchorEl(event.currentTarget);
+    };
+    
     useEffect(() => {
         onRefresh()
      }, [onRefresh])
@@ -71,12 +81,14 @@ const IndustrialModelList: FunctionComponent<IProps> = (props) => {
         setIndustrialModel(item)
         setVisibleConfirmationDialog(true)
         event.stopPropagation();
+        setAnchorEl(null);
     }
 
     const onEdit = (event, item) => {
         setIndustrialModel(item)
         setVisibleIndustrialModelProp(true)
         event.stopPropagation();
+        setAnchorEl(null);
     }
  
     const renderIndustrialModelTable = () => {
@@ -93,19 +105,58 @@ const IndustrialModelList: FunctionComponent<IProps> = (props) => {
                         {
                             itemsModels.map((item) => { 
                                 return (
-                                    <Grid item xs={2} sm={4} md={4}>
-                                        <Box height={300}>
-                                            <Card title={item.name} subtitle={item.description} withHover onClick={()=>{history.push(`/imodels/${item.id}?tab=demo#sample`)}}>
-                                            <Stack direction='row' spacing={5}>
-                                                    <Image width={128} height={128} src={item.httpuri} current='' public={true} />
-                                                    <Stack direction="column" spacing={2}>
-                                                        <Badge content={item.algorithm} color="blue" />
-                                                        <Button variant="contained" size="small" startIcon={<DeleteIcon />} onClick={(event)=>onDelete(event, item)}>Delete</Button>
-                                                        <Button variant="contained" size="small" startIcon={<EditIcon />} onClick={(event)=>onEdit(event, item)}>Edit</Button>
-                                                    </Stack>
-                                                </Stack>
-                                            </Card>
-                                        </Box>
+                                    <Grid item xs={3} sm={3} md={3}>
+                                        <Card sx ={{hegith: 450}} >
+                                        <CardHeader sx={{
+                                                height: 60
+                                            }}
+                                            action={
+                                            <IconButton aria-label="settings" onClick={handleClick}>
+                                                <MoreVertIcon />
+                                            </IconButton>
+                                            }
+                                            title={item.name}
+                                            subheader={item.algorithm}
+                                        />
+                                        <MenuList>
+                                        <Menu 
+                                            anchorEl={anchorEl} 
+                                            keepMounted onClose={handleClose} 
+                                            open={open}>    
+                                            <MenuItem
+                                                key='Edit' 
+                                                onClick={(event)=>onEdit(event, item)}>
+                                                <ListItemIcon>
+                                                    <Edit fontSize="small" />
+                                                </ListItemIcon>
+                                                <ListItemText>Edit</ListItemText>
+                                            </MenuItem>
+                                            <MenuItem
+                                                key='Delete' 
+                                                onClick={(event)=>onDelete(event, item)}>
+                                                <ListItemIcon>
+                                                    <Delete fontSize="small" />
+                                                </ListItemIcon>
+                                                <ListItemText>Delete</ListItemText>
+                                            </MenuItem>
+                                        </Menu>
+                                        </MenuList>
+                                        <CardMedia
+                                            component="img"
+                                            height = {'360px'}
+                                            width = {'auto'}
+                                            image={item.httpuri}
+                                            alt={item.description}
+                                        />
+                                        <CardContent >
+                                            <Typography variant="body2" color="text.secondary" sx ={{hegith: 90}}>
+                                            {item.description}
+                                            </Typography>
+                                        </CardContent>
+                                        <CardActions>
+                                            <Button size="large" variant="contained" onClick={()=>{history.push(`/imodels/${item.id}?tab=demo#sample`)}}>Try it</Button>
+                                        </CardActions>
+                                        </Card>
                                     </Grid>
                                 )
                             })       
