@@ -6,7 +6,7 @@ export interface ImageProps {
     alt?: string;
     width: number | string;
     height: number | string;
-    current: string;
+    current?: string;
     public?: boolean;
     onClick?: (src) => void;
 }
@@ -16,7 +16,7 @@ const Image: FunctionComponent<ImageProps> = (props) => {
         event.target.parentNode.className = 'watermarked'
     }
     if(props.public === true) {
-        if(props.current.endsWith(props.src))
+        if(props.current !==  undefined && props.current.endsWith(props.src))
             return (
                 <div onClick={(event)=>{if(props.onClick !== undefined) props.onClick(props.src)}}>
                     <img
@@ -42,7 +42,7 @@ const Image: FunctionComponent<ImageProps> = (props) => {
                 </div>
             )
     } else {
-        if(props.current.endsWith(props.src))
+        if(props.current !== undefined && props.current.endsWith(props.src))
             return (
                 <div onClick={(event)=>{if(props.onClick !== undefined) props.onClick(props.src)}}>
                     <img

@@ -199,7 +199,7 @@ const RectLabelsList: React.FC<IProps> = (
                 
         const importer = new (ImporterSpecData[formatType])([labelType])
         importer.import([labelsFile, annotationFile], onAnnotationLoadSuccess, onAnnotationsLoadFailure);         
-    }, [ computedAnnotations, imageLabels, onAnnotationLoadSuccess ]);
+    }, [ computedAnnotations, imageLabels, imageName, onAnnotationLoadSuccess ]);
 
     const onInference = () => {
         getInference().then(data => {

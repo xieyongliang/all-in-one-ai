@@ -11,8 +11,10 @@ import IndustrialModelProp from '../../Props/IndustrialModel'
 import { Updateindustrialmodels } from '../../../store/industrialmodels/actionCreators';
 import MenuItem from "@material-ui/core/MenuItem";
 import { Edit, Delete } from '@mui/icons-material';
-import { ListItemIcon, ListItemText, Menu, MenuList, Button, IconButton, Typography, Stack, Card, CardHeader, CardMedia, CardContent, CardActions  } from '@mui/material';
+import { red } from '@mui/material/colors';
+import { ListItemIcon, ListItemText, Menu, MenuList, Button, IconButton, Typography, Stack, Card, CardHeader, CardContent, CardActions, Avatar  } from '@mui/material';
 import { useHistory } from 'react-router-dom';
+import Image from '../../Utils/Image';
 
 interface IProps {
     updateIndustrialModelsAction: (industrialModels: IIndustrialModel[]) => any;
@@ -105,11 +107,16 @@ const IndustrialModelList: FunctionComponent<IProps> = (props) => {
                         {
                             itemsModels.map((item) => { 
                                 return (
-                                    <Grid item xs={3} sm={3} md={3}>
-                                        <Card sx ={{hegith: 450}} >
+                                    <Grid item xs={4} sm={4} md={4}>
+                                        <Card sx ={{hegith: 400}} >
                                         <CardHeader sx={{
                                                 height: 60
                                             }}
+                                            avatar={
+                                                <Avatar sx={{ bgcolor: red[500] }} aria-label="recipe">
+                                                    AI
+                                                </Avatar>
+                                            }
                                             action={
                                             <IconButton aria-label="settings" onClick={handleClick}>
                                                 <MoreVertIcon />
@@ -141,14 +148,8 @@ const IndustrialModelList: FunctionComponent<IProps> = (props) => {
                                             </MenuItem>
                                         </Menu>
                                         </MenuList>
-                                        <CardMedia
-                                            component="img"
-                                            height = {'360px'}
-                                            width = {'auto'}
-                                            image={item.httpuri}
-                                            alt={item.description}
-                                        />
                                         <CardContent >
+                                            <Image src={item.httpuri} height='256px' width='256px' public={true}></Image>
                                             <Typography variant="body2" color="text.secondary" sx ={{hegith: 90}}>
                                             {item.description}
                                             </Typography>
@@ -164,7 +165,6 @@ const IndustrialModelList: FunctionComponent<IProps> = (props) => {
                     </Grid>
                 </Container>
             )
-        
     }
 
     const renderCreateIndustrialModel = () => {
