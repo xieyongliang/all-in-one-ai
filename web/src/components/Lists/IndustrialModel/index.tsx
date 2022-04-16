@@ -149,7 +149,7 @@ const IndustrialModelList: FunctionComponent<IProps> = (props) => {
                                         </Menu>
                                         </MenuList>
                                         <CardContent >
-                                            <Image src={item.httpuri} height='256px' width='256px' public={true}></Image>
+                                            <Image src={item.httpuri} height='192px' width='192px' public={true}></Image>
                                             <Typography variant="body2" color="text.secondary" sx ={{hegith: 90}}>
                                             {item.description}
                                             </Typography>
