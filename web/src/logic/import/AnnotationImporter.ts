@@ -1,8 +1,8 @@
-import {ImageLabelData, LabelName} from "../../store/labels/types";
-import {LabelType} from "../../data/enums/LabelType";
+import { LabelImageData, LabelName } from "../../store/labels/types";
+import { LabelType } from "../../data/enums/LabelType";
 
 export type ImportResult = {
-    imagesData: ImageLabelData[]
+    imagesData: LabelImageData[]
     labelNames: LabelName[]
 }
 
@@ -15,7 +15,7 @@ export class AnnotationImporter {
 
     public import(
         filesData: File[],
-        onSuccess: (imagesData: ImageLabelData[], labelNames: LabelName[]) => any,
+        onSuccess: (imagesData: LabelImageData[], labelNames: LabelName[]) => any,
         onFailure: (error?:Error) => any
     ): void {
         throw new Error("Method not implemented.");

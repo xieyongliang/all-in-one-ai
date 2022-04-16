@@ -1,25 +1,25 @@
 import React from 'react';
-import {ISize} from "../../../../interfaces/ISize";
+import { ISize } from "../../../../interfaces/ISize";
 import Scrollbars from 'react-custom-scrollbars';
-import {ImageLabelData, LabelName, LabelPoint} from "../../../../store/labels/types";
+import { LabelImageData, LabelName, LabelPoint } from "../../../../store/labels/types";
 import './PointLabelsList.scss';
 import {
     updateActiveLabelId,
     updateActiveLabelNameId,
-    updateImageLabelDataById
+    updateLabelImageDataById
 } from "../../../../store/labels/actionCreators";
-import {AppState} from "../../../../store";
-import {connect} from "react-redux";
+import { AppState } from "../../../../store";
+import { connect } from "react-redux";
 import LabelInputField from "../LabelInputField/LabelInputField";
 import EmptyLabelList from "../EmptyLabelList/EmptyLabelList";
-import {LabelActions} from "../../../../logic/actions/LabelActions";
-import {findLast} from "lodash";
-import {LabelStatus} from "../../../../data/enums/LabelStatus";
+import { LabelActions } from "../../../../logic/actions/LabelActions";
+import { findLast } from "lodash";
+import { LabelStatus } from "../../../../data/enums/LabelStatus";
 
 interface IProps {
     size: ISize;
-    imageData: ImageLabelData;
-    updateImageLabelDataById: (id: string, newImageLabelData: ImageLabelData) => any;
+    imageData: LabelImageData;
+    updateLabelImageDataById: (id: string, newLabelImageData: LabelImageData) => any;
     activeLabelId: string;
     highlightedLabelId: string;
     updateActiveLabelNameId: (activeLabelId: string) => any;
@@ -31,7 +31,7 @@ const PointLabelsList: React.FC<IProps> = (
     {
         size,
         imageData,
-        updateImageLabelDataById,
+        updateLabelImageDataById,
         labelNames,
         updateActiveLabelNameId,
         activeLabelId,
@@ -54,7 +54,7 @@ const PointLabelsList: React.FC<IProps> = (
     };
 
     const updatePointLabel = (labelPointId: string, labelNameId: string) => {
-        const newImageLabelData = {
+        const newImageData = {
             ...imageData,
             labelPoints: imageData.labelPoints.map((labelPoint: LabelPoint) => {
                 if (labelPoint.id === labelPointId) {
@@ -66,7 +66,7 @@ const PointLabelsList: React.FC<IProps> = (
                 return labelPoint
             })
         };
-        updateImageLabelDataById(imageData.id, newImageLabelData);
+        updateLabelImageDataById(imageData.id, newImageData);
         updateActiveLabelNameId(labelNameId);
     };
 
@@ -120,7 +120,7 @@ const PointLabelsList: React.FC<IProps> = (
 };
 
 const mapDispatchToProps = {
-    updateImageLabelDataById,
+    updateLabelImageDataById,
     updateActiveLabelNameId,
     updateActiveLabelId
 };

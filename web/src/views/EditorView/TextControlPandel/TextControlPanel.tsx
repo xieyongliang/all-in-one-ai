@@ -1,14 +1,14 @@
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import './TextControlPanel.scss';
-import {updatePreventCustomCursorStatus} from "../../../store/general/actionCreators";
-import {AppState} from "../../../store";
-import {connect} from "react-redux";
-import {IPoint} from "../../../interfaces/IPoint";
+import { updatePreventCustomCursorStatus } from "../../../store/general/actionCreators";
+import { AppState } from "../../../store";
+import { connect } from "react-redux";
+import { IPoint } from "../../../interfaces/IPoint";
 import classNames from "classnames";
-import {TextRect} from "../../../store/texts/types";
-import {ImageButton} from "../../Common/ImageButton/ImageButton";
-import {ImageTextData} from "../../../store/texts/types";
-import {updateImageTextDataById} from "../../../store/texts/actionCreators";
+import { TextRect } from "../../../store/texts/types";
+import { ImageButton } from "../../Common/ImageButton/ImageButton";
+import { TextImageData } from "../../../store/texts/types";
+import {updateTextImageDataById } from "../../../store/texts/actionCreators";
 import { TextActions } from '../../../logic/actions/TextActions';
 
 interface IProps {
@@ -17,11 +17,11 @@ interface IProps {
     activeTextId: string;
     highlightedTextId: string;
     textData: TextRect;
-    imageData: ImageTextData;
-    updateImageTextDataById: (id: string, newImageData: ImageTextData) => any;
+    imageData: TextImageData;
+    updateTextImageDataById: (id: string, newImageData: TextImageData) => any;
 }
 
-const TextControlPanel: React.FC<IProps> = ({position, updatePreventCustomCursorStatus, activeTextId, highlightedTextId, textData, imageData, updateImageTextDataById}) => {
+const TextControlPanel: React.FC<IProps> = ({position, updatePreventCustomCursorStatus, activeTextId, highlightedTextId, textData, imageData, updateTextImageDataById}) => {
     const [isActive, setIsActiveStatus] = useState(false);
 
     const onMouseEnter = () => {
@@ -49,7 +49,7 @@ const TextControlPanel: React.FC<IProps> = ({position, updatePreventCustomCursor
                 }
             })
         };
-        updateImageTextDataById(imageData.id, newImageData);
+        updateTextImageDataById(imageData.id, newImageData);
         updatePreventCustomCursorStatus(false);
     };
 
@@ -97,7 +97,7 @@ const TextControlPanel: React.FC<IProps> = ({position, updatePreventCustomCursor
 
 const mapDispatchToProps = {
     updatePreventCustomCursorStatus,
-    updateImageTextDataById
+    updateTextImageDataById
 };
 
 const mapStateToProps = (state: AppState) => ({

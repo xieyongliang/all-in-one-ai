@@ -198,7 +198,7 @@ const EditorTopNavigationBar: React.FC<IProps> = (
                         'accept-all',
                         false,
                         undefined,
-                        () => AIActions.acceptAllSuggestedLabels(LabelsSelector.getActiveImageLabelData())
+                        () => AIActions.acceptAllSuggestedLabels(LabelsSelector.getActiveImageData())
                     )
                 }
                 {
@@ -209,7 +209,7 @@ const EditorTopNavigationBar: React.FC<IProps> = (
                         'reject-all',
                         false,
                         undefined,
-                        () => AIActions.rejectAllSuggestedLabels(LabelsSelector.getActiveImageLabelData())
+                        () => AIActions.rejectAllSuggestedLabels(LabelsSelector.getActiveImageData())
                     )
                 }
             </div>}

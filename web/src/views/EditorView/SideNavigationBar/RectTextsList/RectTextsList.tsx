@@ -1,14 +1,14 @@
-import React, { useEffect, useState } from 'react';
-import {ISize} from "../../../../interfaces/ISize";
+import React, { useCallback, useEffect, useState } from 'react';
+import { ISize } from "../../../../interfaces/ISize";
 import Scrollbars from 'react-custom-scrollbars';
 import './RectTextsList.scss';
-import {AppState} from "../../../../store";
-import {connect} from "react-redux";
+import { AppState } from "../../../../store";
+import { connect } from "react-redux";
 import TextInputField from '../TextInputField/TextInputField';
-import {ImageTextData, TextRect} from "../../../../store/texts/types";
+import { TextImageData, TextRect } from "../../../../store/texts/types";
 import {
     updateActiveTextId,
-    updateImageTextDataById
+    updateTextImageDataById
 } from "../../../../store/texts/actionCreators";
 import { TextActions } from '../../../../logic/actions/TextActions';
 import { Typography } from '@mui/material';
@@ -24,16 +24,17 @@ import { IIndustrialModel } from '../../../../store/industrialmodels/reducer';
 
 interface IProps {
     size: ISize;
-    imageData: ImageTextData;
+    imageData: TextImageData;
     activeTextId: string;
     projectSubType: ProjectSubType;
     imageBucket?: string;
     imageKey?: string;
     imageId?: string;
     industrialModels: IIndustrialModel[];
-    updateImageTextDataById: (id: string, newImageData: ImageTextData) => any;
+    updateTextImageDataById: (id: string, newImageData: TextImageData) => any;
     onProcessing: () => any;
     onProcessed: () => any;
+    onLoaded: () => any;
 }
 
 const RectTextsList: React.FC<IProps> = (
@@ -46,9 +47,10 @@ const RectTextsList: React.FC<IProps> = (
         imageKey,
         imageId,
         industrialModels,
-        updateImageTextDataById,
+        updateTextImageDataById,
         onProcessing,
-        onProcessed
+        onProcessed,
+        onLoaded
     }) => {
     const [ yolov5EndpointOptions, setYolov5EndpointOptions ] = useState([])
     const [ selectedYolov5Endpoint, setSelectedYolov5Endpoint ] = useState<SelectOption>()    
@@ -57,6 +59,8 @@ const RectTextsList: React.FC<IProps> = (
     const [ textFieldOptions, setTextFieldOptions ] = useState([])
     const [ selectedTextField, setSelectedTextField ] = useState<SelectOption>()
     const [ yolov5EndpointsMapping, setYolov5EndpointsMapping ] = useState({})
+    const [ loadingYolov5, setLoadingYolov5 ] = useState(true)
+    const [ loadingPaddleOCR, setLoadingPaddleOCR ] = useState(true)
     var processingCount = 0;
 
     const textInputFieldHeight = 40;
@@ -68,6 +72,29 @@ const RectTextsList: React.FC<IProps> = (
         width: size.width,
         height: imageData.textRects.length * textInputFieldHeight
     };
+
+    const handleProcessing = () => {
+        if(processingCount === 0) 
+            onProcessing();
+        processingCount++;
+    }
+
+    const handleProcessed = () => {
+        processingCount--;
+        if(processingCount === 0)
+            onProcessed();
+    }
+
+    const handleLoaded = useCallback(() => {
+        if(projectSubType === ProjectSubType.OBJECT_DETECTION) {
+            if(!loadingPaddleOCR && !loadingYolov5)
+                onLoaded();
+        }
+        else {
+            if(!loadingPaddleOCR)
+                onLoaded();
+        }
+    }, [loadingPaddleOCR, loadingYolov5, projectSubType, onLoaded])
 
     useEffect(() => {
         var count = industrialModels.filter((industrial_model) => industrial_model.algorithm === 'paddleocr').length;
@@ -85,6 +112,8 @@ const RectTextsList: React.FC<IProps> = (
                                 paddleocrEndpointOptions = paddleocrEndpointOptions.concat(endpointItems);
                                 if(index === count) {
                                     setPaddleOCREndpointOptions(paddleocrEndpointOptions);
+                                    setLoadingPaddleOCR(false);
+                                    handleLoaded();
                                 }
                             }
                         })
@@ -92,35 +121,39 @@ const RectTextsList: React.FC<IProps> = (
                 )
             }
         })
-    }, [industrialModels]);
+    }, [industrialModels, handleLoaded]);
 
     useEffect(() => {
-        var count = industrialModels.filter((industrial_model) => industrial_model.algorithm === 'yolov5').length;
-        var index = 0;
-        var yolov5EndpointOptions = [];
-        var yolov5EndpointsMapping = {};
-        industrialModels.forEach((industrialModel) => {
-            if(industrialModel.algorithm === 'yolov5') {
-                axios.get('/endpoint', {params: { industrial_model: industrialModel.id}})
-                    .then((response) => {
-                        var endpointItems = []
-                        response.data.forEach((item) => {
-                            endpointItems.push({label : item.EndpointName, value: item.EndpointName})
-                            yolov5EndpointsMapping[item.EndpointName] = industrialModel.id;
-                            if(endpointItems.length === response.data.length) {
-                                index++;
-                                yolov5EndpointOptions = yolov5EndpointOptions.concat(endpointItems)
-                                if(index === count) {
-                                    setYolov5EndpointOptions(yolov5EndpointOptions);
-                                    setYolov5EndpointsMapping(yolov5EndpointsMapping);
+        if(projectSubType === ProjectSubType.OBJECT_DETECTION) {
+            var count = industrialModels.filter((industrial_model) => industrial_model.algorithm === 'yolov5').length;
+            var index = 0;
+            var yolov5EndpointOptions = [];
+            var yolov5EndpointsMapping = {};
+            industrialModels.forEach((industrialModel) => {
+                if(industrialModel.algorithm === 'yolov5') {
+                    axios.get('/endpoint', {params: { industrial_model: industrialModel.id}})
+                        .then((response) => {
+                            var endpointItems = []
+                            response.data.forEach((item) => {
+                                endpointItems.push({label : item.EndpointName, value: item.EndpointName})
+                                yolov5EndpointsMapping[item.EndpointName] = industrialModel.id;
+                                if(endpointItems.length === response.data.length) {
+                                    index++;
+                                    yolov5EndpointOptions = yolov5EndpointOptions.concat(endpointItems)
+                                    if(index === count) {
+                                        setYolov5EndpointOptions(yolov5EndpointOptions);
+                                        setYolov5EndpointsMapping(yolov5EndpointsMapping);
+                                        setLoadingYolov5(false);
+                                        handleLoaded();
+                                    }
                                 }
-                            }
-                        })
-                    }
-                )
-            }
-        })
-    }, [industrialModels]);
+                            })
+                        }
+                    )
+                }
+            })
+        }
+    }, [industrialModels, projectSubType, handleLoaded]);
 
     useEffect(() => {
         if(selectedYolov5Endpoint !== undefined) {
@@ -147,7 +180,7 @@ const RectTextsList: React.FC<IProps> = (
                 return textRect
             })
         };
-        updateImageTextDataById(imageData.id, newImageData);
+        updateTextImageDataById(imageData.id, newImageData);
     };
 
     const getChildren = () => {
@@ -177,17 +210,6 @@ const RectTextsList: React.FC<IProps> = (
             setSelectedTextField({label: event.target.value, value: event.target.value})
     }
 
-    const handleProcessing = () => {
-        if(processingCount === 0) 
-            onProcessing();
-        processingCount++;
-    }
-
-    const handleProcessed = () => {
-        processingCount--;
-        if(processingCount === 0)
-            onProcessed();
-    }
     const getYolov5Inference = async () => {
         handleProcessing()
     
@@ -235,7 +257,7 @@ const RectTextsList: React.FC<IProps> = (
                     var index = textFieldOptions.findIndex((item) => item.value === selectedTextField.value)
                     if(index === imageId) {
                         getPaddleOCRInference({x: x, y: y, w: w, h: h}).then(data => {
-                            const imageData: ImageTextData = TextsSelector.getActiveImageData();
+                            const imageData: TextImageData = TextsSelector.getActiveImageData();
                             var index = 0;
                             data.bbox.forEach((item) => {
                                 var minx = Math.min(item[0][0], item[1][0], item[2][0], item[3][0])
@@ -266,7 +288,7 @@ const RectTextsList: React.FC<IProps> = (
             }))
         else
             getPaddleOCRInference().then(data => {
-                const imageData: ImageTextData = TextsSelector.getActiveImageData();
+                const imageData: TextImageData = TextsSelector.getActiveImageData();
                 var index = 0;
                 data.bbox.forEach((item) => {
                     var minx = Math.min(item[0][0], item[1][0], item[2][0], item[3][0])
@@ -302,7 +324,7 @@ const RectTextsList: React.FC<IProps> = (
                         {    
                             (projectSubType === ProjectSubType.OBJECT_DETECTION) && 
                             <Typography variant="button" gutterBottom component="div">
-                                    object detection
+                                object detection
                             </Typography>
                         }
                         {
@@ -326,7 +348,7 @@ const RectTextsList: React.FC<IProps> = (
                         {
                             (projectSubType === ProjectSubType.OBJECT_DETECTION) && 
                             <Typography variant="button" gutterBottom component="div">
-                                    text field
+                                text field
                             </Typography>
                         }
                         {
@@ -353,7 +375,7 @@ const RectTextsList: React.FC<IProps> = (
 };
 
 const mapDispatchToProps = {
-    updateImageTextDataById
+    updateTextImageDataById
 };
 
 const mapStateToProps = (state: AppState) => ({

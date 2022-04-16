@@ -1,22 +1,22 @@
 import React, { useEffect, useState } from 'react';
 import EditorView from '../../../views/EditorView/EditorView';
-import {ProjectSubType, ProjectType} from '../../../data/enums/ProjectType';
-import {AppState} from '../../../store';
-import {connect} from 'react-redux';
+import { ProjectSubType, ProjectType } from '../../../data/enums/ProjectType';
+import { AppState } from '../../../store';
+import { connect} from 'react-redux';
 import PopupView from '../../../views/PopupView/PopupView';
 import { ISize } from '../../../interfaces/ISize';
 import { ProjectData } from '../../../store/general/types';
-import { addImageLabelData, updateActiveLabelImageIndex, updateActiveLabelType, updateImageLabelData, updateLabelNames, updateActiveLabelNameId, updateFirstLabelCreatedFlag } from '../../../store/labels/actionCreators';
+import { addLabelImageData, updateActiveLabelImageIndex, updateActiveLabelType, updateLabelImageData, updateLabelNames, updateActiveLabelNameId, updateFirstLabelCreatedFlag } from '../../../store/labels/actionCreators';
 import { updatePerClassColorationStatus } from '../../../store/general/actionCreators';
 import { updateActivePopupType, updateProjectData } from '../../../store/general/actionCreators';
-import {ImageLabelData, LabelName} from '../../../store/labels/types';
-import { ImageLabelDataUtil } from '../../../utils/ImageLabelDataUtil';
-import { ImageTextData, Text } from '../../../store/texts/types';
-import { ImageTextDataUtil } from '../../../utils/ImageTextDataUtil';
+import { LabelImageData, LabelName} from '../../../store/labels/types';
+import { LabelImageDataUtil } from '../../../utils/LabelImageDataUtil';
+import { TextImageData, Text } from '../../../store/texts/types';
+import { TextImageDataUtil } from '../../../utils/TextImageDataUtil';
 import axios from 'axios';
 import { LabelType } from '../../../data/enums/LabelType';
 import { LoadingIndicator, Modal } from 'aws-northstar';
-import { addImageTextData, updateActiveTextId, updateActiveTextImageIndex, updateImageTextData, updateTexts } from '../../../store/texts/actionCreators';
+import { addTextImageData, updateActiveTextId, updateActiveTextImageIndex, updateTextImageData, updateTexts } from '../../../store/texts/actionCreators';
 import { Box, Dialog } from '@material-ui/core';
 import { LabelUtil } from '../../../utils/LabelUtil';
 
@@ -28,10 +28,10 @@ interface IProps {
     updateProjectDataAction: (projectData: ProjectData) => any;
     updateActiveLabelImageIndexAction: (activeImageIndex: number) => any;
     updateActiveTextImageIndexAction: (activeImageIndex: number) => any;
-    addImageLabelDataAction: (imageData: ImageLabelData[]) => any;
-    addImageTextDataAction: (imageData: ImageTextData[]) => any;
-    updateImageLabelDataAction: (imageLabelData: ImageLabelData[]) => any;
-    updateImageTextDataAction: (imageTextData: ImageTextData[]) => any;
+    addLabelImageDataAction: (imageData: LabelImageData[]) => any;
+    addTextImageDataAction: (imageData: TextImageData[]) => any;
+    updateLabelImageDataAction: (imageData: LabelImageData[]) => any;
+    updateTextImageDataAction: (imageData: TextImageData[]) => any;
     updateActiveLabelTypeAction: (activeLabelType: LabelType) => any;
     updateFirstLabelCreatedFlagAction: (firstLabelCreatedFlag: boolean) => any;
     updatePerClassColorationStatusAction: (updatePerClassColoration: boolean) => any;
@@ -75,15 +75,16 @@ const ImageAnnotate: React.FC<IProps> = (
         updateProjectDataAction,
         updateActiveLabelImageIndexAction,
         updateActiveTextImageIndexAction,
-        updateImageLabelDataAction,
-        updateImageTextDataAction,
+        updateLabelImageDataAction,
+        updateTextImageDataAction,
         updateFirstLabelCreatedFlagAction, 
         updatePerClassColorationStatusAction,
-        addImageLabelDataAction,
-        addImageTextDataAction,
+        addLabelImageDataAction,
+        addTextImageDataAction,
         onClose,
     }) => {
-    const [imageReady, setImageReady] = useState(false)
+    const [ loading, setLoading ] = useState(true)
+    const [ ready, setReady ] = useState(false)
 
     if(imageUri.startsWith('/'))
         imageUri = `${window.location.protocol}//${window.location.host}${imageUri}`    
@@ -97,8 +98,8 @@ const ImageAnnotate: React.FC<IProps> = (
         updateProjectDataAction({type: null, subType: null, name: 'my-project-name'});
         updateActiveLabelImageIndexAction(null);
         updateActiveTextImageIndexAction(null);
-        updateImageLabelDataAction([]);
-        updateImageTextDataAction([]);
+        updateLabelImageDataAction([]);
+        updateTextImageDataAction([]);
         updateFirstLabelCreatedFlagAction(false);
         updatePerClassColorationStatusAction(true)
 
@@ -116,7 +117,7 @@ const ImageAnnotate: React.FC<IProps> = (
 
                 if(type === ProjectType.TEXT_RECOGNITION) {
                     updateActiveTextImageIndexAction(0);
-                    addImageTextDataAction([ImageTextDataUtil.createImageTextDataFromFileData(imageFile)]);
+                    addTextImageDataAction([TextImageDataUtil.createTextImageDataFromFileData(imageFile)]);
                 }
                 else {
                     updateActiveLabelImageIndexAction(0);
@@ -125,24 +126,37 @@ const ImageAnnotate: React.FC<IProps> = (
                         labelNames.push(LabelUtil.createLabelName(imageLabel))
                     })
                     updateLabelNamesAction(labelNames);
-                    addImageLabelDataAction([ImageLabelDataUtil.createImageLabelDataFromFileData(imageFile)]);
+                    addLabelImageDataAction([LabelImageDataUtil.createLabelImageDataFromFileData(imageFile)]);
                 }
-    
-                setImageReady(true);    
+                setReady(true);
             })
-        }, [imageUri]); // eslint-disable-line react-hooks/exhaustive-deps
+    }, [imageUri]); // eslint-disable-line react-hooks/exhaustive-deps
     
-        if(!imageReady)
-            return (
-                <Dialog open={true}>
-                    <Box p={3}>
-                        <LoadingIndicator label='Loading...'/>
-                    </Box>
-                </Dialog>
-            )
-        else
-            return (
-                <Modal title="Image preview" visible={visible} onClose={()=>{setImageReady(false); onClose()}} width={"100"}>
+    const onLoaded = () => {
+        setLoading(false)
+    }
+
+    if(!ready)
+        return (
+            <Dialog open={true}>
+                <Box p={3}>
+                    <LoadingIndicator label='Loading...'/>
+                </Box>
+            </Dialog>
+        )
+    else
+        return (
+            <Modal title="Image preview" visible={visible} onClose={()=>onClose()} width={"100"}>
+                {
+                    loading &&  
+                    <Dialog open={true}>
+                        <Box p={3}>
+                            <LoadingIndicator label='Preparing...'/>
+                        </Box>
+                    </Dialog>   
+                }
+                {
+                    ready && 
                     <EditorView 
                         imageColors = {imageColors} 
                         imageLabels = {imageLabels} 
@@ -151,10 +165,15 @@ const ImageAnnotate: React.FC<IProps> = (
                         imageKey = {imageKey} 
                         imageId = {imageId}
                         imageName = {imageName}
+                        onLoaded = {onLoaded}
                     /> 
+                }
+                {
+                    ready &&
                     <PopupView/>
-                </Modal>
-            );
+                }
+            </Modal>
+        );
 };
 
 const mapDispatchToProps = {
@@ -164,12 +183,12 @@ const mapDispatchToProps = {
     updateTextsAction: updateTexts,
     updateActiveLabelImageIndexAction: updateActiveLabelImageIndex,
     updateActiveTextImageIndexAction: updateActiveTextImageIndex,
-    addImageLabelDataAction: addImageLabelData,
-    addImageTextDataAction: addImageTextData,
+    addLabelImageDataAction: addLabelImageData,
+    addTextImageDataAction: addTextImageData,
     updateProjectDataAction: updateProjectData,
     updateActivePopupTypeAction: updateActivePopupType,
-    updateImageLabelDataAction: updateImageLabelData,
-    updateImageTextDataAction: updateImageTextData,
+    updateLabelImageDataAction: updateLabelImageData,
+    updateTextImageDataAction: updateTextImageData,
     updateActiveLabelTypeAction: updateActiveLabelType,
     updateFirstLabelCreatedFlagAction: updateFirstLabelCreatedFlag,
     updatePerClassColorationStatusAction: updatePerClassColorationStatus,

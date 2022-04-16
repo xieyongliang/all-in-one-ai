@@ -1,27 +1,27 @@
 import React from 'react'
 import './LoadMoreImagesPopup.scss'
-import {AppState} from "../../../store";
-import {connect} from "react-redux";
-import {addImageLabelData} from "../../../store/labels/actionCreators";
-import {GenericYesNoPopup} from "../GenericYesNoPopup/GenericYesNoPopup";
-import {useDropzone} from "react-dropzone";
-import {ImageLabelData} from "../../../store/labels/types";
-import {AcceptedFileType} from "../../../data/enums/AcceptedFileType";
-import {PopupActions} from "../../../logic/actions/PopupActions";
-import {ImageLabelDataUtil} from "../../../utils/ImageLabelDataUtil";
+import { AppState } from "../../../store";
+import { connect } from "react-redux";
+import { addLabelImageData } from "../../../store/labels/actionCreators";
+import { GenericYesNoPopup } from "../GenericYesNoPopup/GenericYesNoPopup";
+import { useDropzone } from "react-dropzone";
+import { LabelImageData } from "../../../store/labels/types";
+import { AcceptedFileType } from "../../../data/enums/AcceptedFileType";
+import { PopupActions } from "../../../logic/actions/PopupActions";
+import { LabelImageDataUtil } from "../../../utils/LabelImageDataUtil";
 
 interface IProps {
-    addImageLabelData: (imageData: ImageLabelData[]) => any;
+    addLabelImageData: (imageData: LabelImageData[]) => any;
 }
 
-const LoadMoreImagesPopup: React.FC<IProps> = ({addImageLabelData}) => {
+const LoadMoreImagesPopup: React.FC<IProps> = ({addLabelImageData}) => {
     const {acceptedFiles, getRootProps, getInputProps} = useDropzone({
         accept: AcceptedFileType.IMAGE
     });
 
     const onAccept = () => {
         if (acceptedFiles.length > 0) {
-            addImageLabelData(acceptedFiles.map((fileData:File) => ImageLabelDataUtil.createImageLabelDataFromFileData(fileData)));
+            addLabelImageData(acceptedFiles.map((fileData:File) => LabelImageDataUtil.createLabelImageDataFromFileData(fileData)));
             PopupActions.close();
         }
     };
@@ -86,7 +86,7 @@ const LoadMoreImagesPopup: React.FC<IProps> = ({addImageLabelData}) => {
 };
 
 const mapDispatchToProps = {
-    addImageLabelData
+    addLabelImageData
 };
 
 const mapStateToProps = (state: AppState) => ({});

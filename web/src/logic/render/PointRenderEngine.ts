@@ -1,30 +1,30 @@
-import {IRect} from '../../interfaces/IRect';
-import {RenderEngineSettings} from '../../settings/RenderEngineSettings';
-import {IPoint} from '../../interfaces/IPoint';
-import {CanvasUtil} from '../../utils/CanvasUtil';
-import {store} from '../../index';
-import {ImageLabelData, LabelPoint} from '../../store/labels/types';
+import { IRect } from '../../interfaces/IRect';
+import { RenderEngineSettings } from '../../settings/RenderEngineSettings';
+import { IPoint} from '../../interfaces/IPoint';
+import { CanvasUtil } from '../../utils/CanvasUtil';
+import { store} from '../../index';
+import { LabelImageData, LabelPoint } from '../../store/labels/types';
 import { v4 as uuidv4 } from 'uuid';
 import {
     updateActiveLabelId,
     updateFirstLabelCreatedFlag,
     updateHighlightedLabelId,
-    updateImageLabelDataById
+    updateLabelImageDataById
 } from '../../store/labels/actionCreators';
-import {RectUtil} from '../../utils/RectUtil';
-import {DrawUtil} from '../../utils/DrawUtil';
-import {updateCustomCursorStyle} from '../../store/general/actionCreators';
-import {CustomCursorStyle} from '../../data/enums/CustomCursorStyle';
-import {LabelsSelector} from '../../store/selectors/LabelsSelector';
-import {EditorData} from '../../data/EditorData';
-import {BaseRenderEngine} from './BaseRenderEngine';
-import {RenderEngineUtil} from '../../utils/RenderEngineUtil';
-import {LabelType} from '../../data/enums/LabelType';
-import {LabelEditorActions} from '../actions/LabelEditorActions';
-import {EditorModel} from '../../staticModels/EditorModel';
-import {GeneralSelector} from '../../store/selectors/GeneralSelector';
-import {LabelStatus} from '../../data/enums/LabelStatus';
-import {Settings} from '../../settings/Settings';
+import { RectUtil } from '../../utils/RectUtil';
+import { DrawUtil } from '../../utils/DrawUtil';
+import { updateCustomCursorStyle } from '../../store/general/actionCreators';
+import { CustomCursorStyle } from '../../data/enums/CustomCursorStyle';
+import { LabelsSelector } from '../../store/selectors/LabelsSelector';
+import { EditorData } from '../../data/EditorData';
+import { BaseRenderEngine } from './BaseRenderEngine';
+import { RenderEngineUtil } from '../../utils/RenderEngineUtil';
+import { LabelType } from '../../data/enums/LabelType';
+import { LabelEditorActions } from '../actions/LabelEditorActions';
+import { EditorModel } from '../../staticModels/EditorModel';
+import { GeneralSelector } from '../../store/selectors/GeneralSelector';
+import { LabelStatus } from '../../data/enums/LabelStatus';
+import { Settings } from '../../settings/Settings';
 
 export class PointRenderEngine extends BaseRenderEngine {
 
@@ -72,7 +72,7 @@ export class PointRenderEngine extends BaseRenderEngine {
             const activeLabelPoint: LabelPoint = LabelsSelector.getActivePointLabel();
             const pointSnapped: IPoint = RectUtil.snapPointToRect(data.mousePositionOnViewPortContent, data.viewPortContentImageRect);
             const pointOnImage: IPoint = RenderEngineUtil.transferPointFromViewPortContentToImage(pointSnapped, data);
-            const imageData = LabelsSelector.getActiveImageLabelData();
+            const imageData = LabelsSelector.getActiveImageData();
 
             imageData.labelPoints = imageData.labelPoints.map((labelPoint: LabelPoint) => {
                 if (labelPoint.id === activeLabelPoint.id) {
@@ -83,7 +83,7 @@ export class PointRenderEngine extends BaseRenderEngine {
                 }
                 return labelPoint;
             });
-            store.dispatch(updateImageLabelDataById(imageData.id, imageData));
+            store.dispatch(updateLabelImageDataById(imageData.id, imageData));
         }
         LabelEditorActions.setViewPortActionsDisabledStatus(false);
     }
@@ -111,7 +111,7 @@ export class PointRenderEngine extends BaseRenderEngine {
     public render(data: EditorData): void {
         const activeLabelId: string = LabelsSelector.getActiveLabelId();
         const highlightedLabelId: string = LabelsSelector.getHighlightedLabelId();
-        const imageData: ImageLabelData = LabelsSelector.getActiveImageLabelData();
+        const imageData: LabelImageData = LabelsSelector.getActiveImageData();
         if (imageData) {
             imageData.labelPoints.forEach((labelPoint: LabelPoint) => {
                 if (labelPoint.id === activeLabelId) {
@@ -172,7 +172,7 @@ export class PointRenderEngine extends BaseRenderEngine {
     }
 
     private getLabelPointUnderMouse(mousePosition: IPoint, data: EditorData): LabelPoint {
-        const labelPoints: LabelPoint[] = LabelsSelector.getActiveImageLabelData().labelPoints;
+        const labelPoints: LabelPoint[] = LabelsSelector.getActiveImageData().labelPoints;
         for (let i = 0; i < labelPoints.length; i++) {
             const pointOnCanvas: IPoint = RenderEngineUtil.transferPointFromImageToViewPortContent(labelPoints[i].point, data);
             const handleRect: IRect = RectUtil.getRectWithCenterAndSize(pointOnCanvas, RenderEngineSettings.anchorHoverSize);
@@ -185,7 +185,7 @@ export class PointRenderEngine extends BaseRenderEngine {
 
     private addPointLabel = (point: IPoint) => {
         const activeLabelId = LabelsSelector.getActiveLabelNameId();
-        const imageData: ImageLabelData = LabelsSelector.getActiveImageLabelData();
+        const imageData: LabelImageData = LabelsSelector.getActiveImageData();
         const labelPoint: LabelPoint = {
             id: uuidv4(),
             labelId: activeLabelId,
@@ -195,7 +195,7 @@ export class PointRenderEngine extends BaseRenderEngine {
             suggestedLabel: null
         };
         imageData.labelPoints.push(labelPoint);
-        store.dispatch(updateImageLabelDataById(imageData.id, imageData));
+        store.dispatch(updateLabelImageDataById(imageData.id, imageData));
         store.dispatch(updateFirstLabelCreatedFlag(true));
         store.dispatch(updateActiveLabelId(labelPoint.id));
     };

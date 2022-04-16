@@ -1,24 +1,25 @@
 import React from 'react';
-import {connect} from "react-redux";
-import {LabelType} from "../../../../data/enums/LabelType";
-import {ISize} from "../../../../interfaces/ISize";
-import {AppState} from "../../../../store";
-import {ImageLabelData, LabelPoint, LabelRect} from "../../../../store/labels/types";
-import {VirtualList} from "../../../Common/VirtualList/VirtualList";
+import { connect } from "react-redux";
+import { LabelType } from "../../../../data/enums/LabelType";
+import { ISize } from "../../../../interfaces/ISize";
+import { AppState } from "../../../../store";
+import { LabelImageData, LabelPoint, LabelRect } from "../../../../store/labels/types";
+import { VirtualList } from "../../../Common/VirtualList/VirtualList";
 import ImagePreview from "../ImagePreview/ImagePreview";
 import './ImagesList.scss';
-import {ContextManager} from "../../../../logic/context/ContextManager";
-import {ContextType} from "../../../../data/enums/ContextType";
-import {ImageActions} from "../../../../logic/actions/ImageActions";
-import {EventType} from "../../../../data/enums/EventType";
-import {LabelStatus} from "../../../../data/enums/LabelStatus";
-import { ImageTextData } from '../../../../store/texts/types';
+import { ContextManager } from "../../../../logic/context/ContextManager";
+import { ContextType } from "../../../../data/enums/ContextType";
+import { ImageActions } from "../../../../logic/actions/ImageActions";
+import { EventType } from "../../../../data/enums/EventType";
+import { LabelStatus } from "../../../../data/enums/LabelStatus";
+import { TextImageData } from '../../../../store/texts/types';
 import { ProjectType } from '../../../../data/enums/ProjectType';
 
 interface IProps {
-    activeImageIndex: number;
-    imagesLabelData: ImageLabelData[];
-    imagesTextData: ImageTextData[];
+    activeLabelImageIndex: number;
+    activeTextImageIndex: number;
+    labelImageData: LabelImageData[];
+    textImageData: TextImageData[];
     activeLabelType: LabelType;
     projectType: ProjectType;
 }
@@ -61,25 +62,25 @@ class ImagesList extends React.Component<IProps, IState> {
     };
 
     private isImageChecked = (index:number): boolean => {
-        const imageLabelData = this.props.imagesLabelData[index]
-        const imageTextData = this.props.imagesTextData[index]
+        const labelImagelData = this.props.labelImageData[index]
+        const textImageData = this.props.textImageData[index]
 
         if(this.props.projectType === ProjectType.TEXT_RECOGNITION)
-            return imageTextData.textRects.length > 0
+            return textImageData.textRects.length > 0
         else {
             switch (this.props.activeLabelType) {
                 case LabelType.LINE:
-                    return imageLabelData.labelLines.length > 0
+                    return labelImagelData.labelLines.length > 0
                 case LabelType.IMAGE_RECOGNITION:
-                    return imageLabelData.labelNameIds.length > 0
+                    return labelImagelData.labelNameIds.length > 0
                 case LabelType.POINT:
-                    return imageLabelData.labelPoints
+                    return labelImagelData.labelPoints
                         .filter((labelPoint: LabelPoint) => labelPoint.status === LabelStatus.ACCEPTED)
                         .length > 0
                 case LabelType.POLYGON:
-                    return imageLabelData.labelPolygons.length > 0
+                    return labelImagelData.labelPolygons.length > 0
                 case LabelType.RECT:
-                    return imageLabelData.labelRects
+                    return labelImagelData.labelRects
                         .filter((labelRect: LabelRect) => labelRect.status === LabelStatus.ACCEPTED)
                         .length > 0
             }
@@ -92,27 +93,31 @@ class ImagesList extends React.Component<IProps, IState> {
 
     private renderImagePreview = (index: number, isScrolling: boolean, isVisible: boolean, style: React.CSSProperties) => {
         if(this.props.projectType === ProjectType.TEXT_RECOGNITION)
-                return <ImagePreview
-                key={index}
-                style={style}
-                size={{width: 150, height: 150}}
-                isScrolling={isScrolling}
-                isChecked={this.isImageChecked(index)}
-                imageData={this.props.imagesTextData[index]}
-                onClick={() => this.onClickHandler(index)}
-                isSelected={this.props.activeImageIndex === index}
-            />
+                return (
+                    <ImagePreview
+                        key={index}
+                        style={style}
+                        size={{width: 150, height: 150}}
+                        isScrolling={isScrolling}
+                        isChecked={this.isImageChecked(index)}
+                        imageData={this.props.textImageData[index]}
+                        onClick={() => this.onClickHandler(index)}
+                        isSelected={this.props.activeTextImageIndex === index}
+                    />
+            )
         else
-            return <ImagePreview
-                key={index}
-                style={style}
-                size={{width: 150, height: 150}}
-                isScrolling={isScrolling}
-                isChecked={this.isImageChecked(index)}
-                imageData={this.props.imagesLabelData[index]}
-                onClick={() => this.onClickHandler(index)}
-                isSelected={this.props.activeImageIndex === index}
-            />
+            return (
+                <ImagePreview
+                    key={index}
+                    style={style}
+                    size={{width: 150, height: 150}}
+                    isScrolling={isScrolling}
+                    isChecked={this.isImageChecked(index)}
+                    imageData={this.props.labelImageData[index]}
+                    onClick={() => this.onClickHandler(index)}
+                    isSelected={this.props.activeLabelImageIndex === index}
+                />
+            )
     };
 
     public render() {
@@ -129,7 +134,7 @@ class ImagesList extends React.Component<IProps, IState> {
                     <VirtualList
                         size={size}
                         childSize={{width: 150, height: 150}}
-                        childCount={this.props.imagesLabelData.length}
+                        childCount={this.props.labelImageData.length}
                         childRender={this.renderImagePreview}
                         overScanHeight={200}
                     />
@@ -140,7 +145,7 @@ class ImagesList extends React.Component<IProps, IState> {
                     <VirtualList
                         size={size}
                         childSize={{width: 150, height: 150}}
-                        childCount={this.props.imagesTextData.length}
+                        childCount={this.props.textImageData.length}
                         childRender={this.renderImagePreview}
                         overScanHeight={200}
                     />
@@ -153,9 +158,10 @@ class ImagesList extends React.Component<IProps, IState> {
 const mapDispatchToProps = {};
 
 const mapStateToProps = (state: AppState) => ({
-    activeImageIndex: state.labels.activeImageIndex,
-    imagesLabelData: state.labels.imagesData,
-    imagesTextData: state.texts.imagesData,
+    activeLabelImageIndex: state.labels.activeImageIndex,
+    activeTextImageIndex: state.texts.activeImageIndex,
+    labelImageData: state.labels.imagesData,
+    textImageData: state.texts.imagesData,
     activeLabelType: state.labels.activeLabelType,
     projectType: state.general.projectData.type
 });

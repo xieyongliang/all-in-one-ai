@@ -1,24 +1,24 @@
 import React from 'react';
 import './LineLabelsList.scss';
-import {ISize} from "../../../../interfaces/ISize";
-import {ImageLabelData, LabelLine, LabelName} from "../../../../store/labels/types";
-import {LabelActions} from "../../../../logic/actions/LabelActions";
+import { ISize } from "../../../../interfaces/ISize";
+import { LabelImageData, LabelLine, LabelName} from "../../../../store/labels/types";
+import { LabelActions} from "../../../../logic/actions/LabelActions";
 import LabelInputField from "../LabelInputField/LabelInputField";
-import {findLast} from "lodash";
+import { findLast} from "lodash";
 import EmptyLabelList from "../EmptyLabelList/EmptyLabelList";
 import Scrollbars from "react-custom-scrollbars";
 import {
     updateActiveLabelId,
     updateActiveLabelNameId,
-    updateImageLabelDataById
+    updateLabelImageDataById
 } from "../../../../store/labels/actionCreators";
 import {AppState} from "../../../../store";
 import {connect} from "react-redux";
 
 interface IProps {
     size: ISize;
-    imageData: ImageLabelData;
-    updateImageLabelDataById: (id: string, newImageLabelData: ImageLabelData) => any;
+    imageData: LabelImageData;
+    updateLabelImageDataById: (id: string, newLabelImageData: LabelImageData) => any;
     activeLabelId: string;
     highlightedLabelId: string;
     updateActiveLabelNameId: (activeLabelId: string) => any;
@@ -30,7 +30,7 @@ const LineLabelsList: React.FC<IProps> = (
     {
         size,
         imageData,
-        updateImageLabelDataById,
+        updateLabelImageDataById,
         labelNames,
         updateActiveLabelNameId,
         activeLabelId,
@@ -53,7 +53,7 @@ const LineLabelsList: React.FC<IProps> = (
     };
 
     const updateLineLabel = (labelLineId: string, labelNameId: string) => {
-        const newImageLabelData = {
+        const newLabelImageData = {
             ...imageData,
             labelLines: imageData.labelLines.map((labelLine: LabelLine) => {
                 if (labelLine.id === labelLineId) {
@@ -65,7 +65,7 @@ const LineLabelsList: React.FC<IProps> = (
                 return labelLine
             })
         };
-        updateImageLabelDataById(imageData.id, newImageLabelData);
+        updateLabelImageDataById(imageData.id, newLabelImageData);
         updateActiveLabelNameId(labelNameId);
     };
 
@@ -118,7 +118,7 @@ const LineLabelsList: React.FC<IProps> = (
 };
 
 const mapDispatchToProps = {
-    updateImageLabelDataById,
+    updateLabelImageDataById,
     updateActiveLabelNameId,
     updateActiveLabelId
 };

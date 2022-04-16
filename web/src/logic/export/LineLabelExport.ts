@@ -1,9 +1,9 @@
-import {AnnotationFormatType} from "../../data/enums/AnnotationFormatType";
-import {LabelsSelector} from "../../store/selectors/LabelsSelector";
-import {ImageLabelData, LabelLine, LabelName} from "../../store/labels/types";
-import {ExporterUtil} from "../../utils/ExporterUtil";
-import {ImageRepository} from "../imageRepository/ImageRepository";
-import {findLast} from "lodash";
+import { AnnotationFormatType } from "../../data/enums/AnnotationFormatType";
+import { LabelsSelector } from "../../store/selectors/LabelsSelector";
+import { LabelImageData, LabelLine, LabelName } from "../../store/labels/types";
+import { ExporterUtil } from "../../utils/ExporterUtil";
+import { ImageRepository } from "../imageRepository/ImageRepository";
+import { findLast } from "lodash";
 
 export class LineLabelsExporter {
     public static export(exportFormatType: AnnotationFormatType): void {
@@ -18,16 +18,16 @@ export class LineLabelsExporter {
 
     private static exportAsCSV(): void {
         const content: string = LabelsSelector.getImagesData()
-            .map((imageData: ImageLabelData) => {
+            .map((imageData: LabelImageData) => {
                 return LineLabelsExporter.wrapLineLabelsIntoCSV(imageData)})
-            .filter((imageLabelData: string) => {
-                return !!imageLabelData})
+            .filter((imageData: string) => {
+                return !!imageData})
             .join("\n");
         const fileName: string = `${ExporterUtil.getExportFileName()}.csv`;
         ExporterUtil.saveAs(content, fileName);
     }
 
-    private static wrapLineLabelsIntoCSV(imageData: ImageLabelData): string {
+    private static wrapLineLabelsIntoCSV(imageData: LabelImageData): string {
         if (imageData.labelLines.length === 0 || !imageData.loadStatus)
             return null;
 

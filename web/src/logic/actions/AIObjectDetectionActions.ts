@@ -1,31 +1,31 @@
-import {DetectedObject} from '@tensorflow-models/coco-ssd';
-import {ImageLabelData, LabelName, LabelRect} from '../../store/labels/types';
-import {LabelsSelector} from '../../store/selectors/LabelsSelector';
+import { DetectedObject} from '@tensorflow-models/coco-ssd';
+import { LabelImageData, LabelName, LabelRect} from '../../store/labels/types';
+import { LabelsSelector } from '../../store/selectors/LabelsSelector';
 import { v4 as uuidv4 } from 'uuid';
-import {store} from '../../index';
-import {updateImageLabelDataById} from '../../store/labels/actionCreators';
-import {ObjectDetector} from '../../ai/ObjectDetector';
-import {ImageRepository} from '../imageRepository/ImageRepository';
-import {LabelStatus} from '../../data/enums/LabelStatus';
-import {findLast} from 'lodash';
-import {updateSuggestedLabelList} from '../../store/ai/actionCreators';
-import {PopupWindowType} from '../../data/enums/PopupWindowType';
-import {updateActivePopupType} from '../../store/general/actionCreators';
-import {AISelector} from '../../store/selectors/AISelector';
-import {AIActions} from './AIActions';
+import { store } from '../../index';
+import { updateLabelImageDataById } from '../../store/labels/actionCreators';
+import { ObjectDetector } from '../../ai/ObjectDetector';
+import { ImageRepository } from '../imageRepository/ImageRepository';
+import { LabelStatus } from '../../data/enums/LabelStatus';
+import { findLast } from 'lodash';
+import { updateSuggestedLabelList } from '../../store/ai/actionCreators';
+import { PopupWindowType } from '../../data/enums/PopupWindowType';
+import { updateActivePopupType } from '../../store/general/actionCreators';
+import { AISelector } from '../../store/selectors/AISelector';
+import { AIActions } from './AIActions';
 import { ProjectType } from '../../data/enums/ProjectType';
 
 export class AIObjectDetectionActions {
     public static detectRectsForActiveImage(): void {
-        const activeImageLabelData: ImageLabelData = LabelsSelector.getActiveImageLabelData();
-        AIObjectDetectionActions.detectRects(activeImageLabelData.id, ImageRepository.getById(activeImageLabelData.id))
+        const activeLabelImageData: LabelImageData = LabelsSelector.getActiveImageData();
+        AIObjectDetectionActions.detectRects(activeLabelImageData.id, ImageRepository.getById(activeLabelImageData.id))
     }
 
     public static detectRects(imageId: string, image: HTMLImageElement): void {
         if (store.getState().general.projectData.type === ProjectType.TEXT_RECOGNITION)
             return;
 
-        if (LabelsSelector.getImageLabelDataById(imageId).isVisitedByObjectDetector || !AISelector.isAIObjectDetectorModelLoaded())
+        if (LabelsSelector.getImageDataById(imageId).isVisitedByObjectDetector || !AISelector.isAIObjectDetectorModelLoaded())
             return;
 
         store.dispatch(updateActivePopupType(PopupWindowType.LOADER));
@@ -44,14 +44,14 @@ export class AIObjectDetectionActions {
     }
 
     public static saveRectPredictions(imageId: string, predictions: DetectedObject[]) {
-        const imageData: ImageLabelData = LabelsSelector.getImageLabelDataById(imageId);
+        const imageData: LabelImageData = LabelsSelector.getImageDataById(imageId);
         const predictedLabels: LabelRect[] = AIObjectDetectionActions.mapPredictionsToRectLabels(predictions);
-        const nextImageLabelData: ImageLabelData = {
+        const nextLabelImageData: LabelImageData = {
             ...imageData,
             labelRects: imageData.labelRects.concat(predictedLabels),
             isVisitedByObjectDetector: true
         };
-        store.dispatch(updateImageLabelDataById(imageData.id, nextImageLabelData));
+        store.dispatch(updateLabelImageDataById(imageData.id, nextLabelImageData));
     }
 
     private static mapPredictionsToRectLabels(predictions: DetectedObject[]): LabelRect[] {
@@ -82,8 +82,8 @@ export class AIObjectDetectionActions {
         }, [])
     }
 
-    public static acceptAllSuggestedRectLabels(imageData: ImageLabelData) {
-        const newImageLabelData: ImageLabelData = {
+    public static acceptAllSuggestedRectLabels(imageData: LabelImageData) {
+        const newLabelImageData: LabelImageData = {
             ...imageData,
             labelRects: imageData.labelRects.map((labelRect: LabelRect) => {
                 const labelName: LabelName = findLast(LabelsSelector.getLabelNames(), {name: labelRect.suggestedLabel});
@@ -94,14 +94,14 @@ export class AIObjectDetectionActions {
                 }
             })
         };
-        store.dispatch(updateImageLabelDataById(newImageLabelData.id, newImageLabelData));
+        store.dispatch(updateLabelImageDataById(newLabelImageData.id, newLabelImageData));
     }
 
-    public static rejectAllSuggestedRectLabels(imageData: ImageLabelData) {
-        const newImageLabelData: ImageLabelData = {
+    public static rejectAllSuggestedRectLabels(imageData: LabelImageData) {
+        const newLabelImageData: LabelImageData = {
             ...imageData,
             labelRects: imageData.labelRects.filter((labelRect: LabelRect) => labelRect.status === LabelStatus.ACCEPTED)
         };
-        store.dispatch(updateImageLabelDataById(newImageLabelData.id, newImageLabelData));
+        store.dispatch(updateLabelImageDataById(newLabelImageData.id, newLabelImageData));
     }
 }

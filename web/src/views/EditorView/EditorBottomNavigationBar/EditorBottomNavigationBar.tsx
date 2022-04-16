@@ -1,18 +1,18 @@
 import React from 'react';
 import './EditorBottomNavigationBar.scss';
-import {ImageLabelData} from "../../../store/labels/types";
-import {ImageTextData} from "../../../store/texts/types";
-import {AppState} from "../../../store"; 
-import {connect} from "react-redux";
-import {ImageButton} from "../../Common/ImageButton/ImageButton";
-import {ISize} from "../../../interfaces/ISize";
-import {ContextType} from "../../../data/enums/ContextType";
+import { LabelImageData} from "../../../store/labels/types";
+import { TextImageData} from "../../../store/texts/types";
+import { AppState } from "../../../store"; 
+import { connect } from "react-redux";
+import { ImageButton } from "../../Common/ImageButton/ImageButton";
+import { ISize } from "../../../interfaces/ISize";
+import { ContextType } from "../../../data/enums/ContextType";
 import classNames from "classnames";
-import {ImageActions} from "../../../logic/actions/ImageActions";
+import { ImageActions } from "../../../logic/actions/ImageActions";
 
 interface IProps {
     size: ISize;
-    imageData: ImageLabelData | ImageTextData;
+    imageData: LabelImageData | TextImageData;
     totalImageCount: number;
     activeImageIndex: number;
     activeContext: ContextType;

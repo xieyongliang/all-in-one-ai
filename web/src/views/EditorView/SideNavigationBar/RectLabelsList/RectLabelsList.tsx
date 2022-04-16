@@ -1,14 +1,14 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import {ISize} from "../../../../interfaces/ISize";
+import { ISize } from "../../../../interfaces/ISize";
 import Scrollbars from 'react-custom-scrollbars';
-import {ImageLabelData, LabelName, LabelRect} from "../../../../store/labels/types";
+import { LabelImageData, LabelName, LabelRect } from "../../../../store/labels/types";
 import './RectLabelsList.scss';
 import {
     updateActiveLabelId,
     updateActiveLabelNameId,
     updateActiveLabelType,
-    updateImageLabelData,
-    updateImageLabelDataById,
+    updateLabelImageData,
+    updateLabelImageDataById,
     updateLabelNames
 } from "../../../../store/labels/actionCreators";
 import {AppState} from "../../../../store";
@@ -31,7 +31,7 @@ import { LabelsSelector } from '../../../../store/selectors/LabelsSelector';
 
 interface IProps {
     size: ISize;
-    imageData: ImageLabelData;
+    imageData: LabelImageData;
     activeLabelId: string;
     highlightedLabelId: string;
     labelNames: LabelName[];
@@ -44,12 +44,13 @@ interface IProps {
     imageName: string;
     updateActiveLabelId: (activeLabelId: string) => any;
     updateActiveLabelNameId: (activeLabelId: string) => any;
-    updateImageLabelDataById: (id: string, newImageLabelData: ImageLabelData) => any;
-    updateImageLabelData: (imagesData) => any;
+    updateLabelImageDataById: (id: string, newLabelImageData: LabelImageData) => any;
+    updateLabelImageData: (imagesData) => any;
     updateLabelNames: (labelNames) => any;
     updateActiveLabelType : (LabelType) => any;
     onProcessing: () => any;
-    onProcessed: () => any;    
+    onProcessed: () => any;
+    onLoaded: () => any;
 }
 
 const RectLabelsList: React.FC<IProps> = (
@@ -66,15 +67,16 @@ const RectLabelsList: React.FC<IProps> = (
     imageColors,
     imageAnnotations,
     imageName,
-    updateImageLabelDataById,
+    updateLabelImageDataById,
     updateActiveLabelNameId, 
     updateActiveLabelId,
     onProcessing,
-    onProcessed
+    onProcessed,
+    onLoaded
 }) => {
-    const [ yolov5Endpoints, setYolov5Endpoints ] = useState([])
-    const [ selectedYolov5Endpoint, setSelectedYolov5Endpoint ] = useState<SelectOption>()
-    const [ computedAnnotations ] = useState<string[]>(imageAnnotations !== undefined ? imageAnnotations :[])
+    const [ yolov5Endpoints, setYolov5Endpoints ] = useState([]);
+    const [ selectedYolov5Endpoint, setSelectedYolov5Endpoint ] = useState<SelectOption>();
+    const [ computedAnnotations ] = useState<string[]>(imageAnnotations !== undefined ? imageAnnotations :[]);
     
     const labelInputFieldHeight = 40;
     const listStyle: React.CSSProperties = {
@@ -91,24 +93,30 @@ const RectLabelsList: React.FC<IProps> = (
     useEffect(() => {
         axios.get('/endpoint', {params: { industrial_model: params.id}})
             .then((response) => {
-                var items = []
-                response.data.forEach((item) => {
-                    items.push({label: item.EndpointName, value: item.EndpointName})
-                    if(items.length === response.data.length) {
-                        setYolov5Endpoints(items)
-                        setSelectedYolov5Endpoint(items[0])
-                    }
-                })
+                console.log(response.data)
+                if(response.data.length > 0) {
+                    var items = [];
+                    response.data.forEach((item) => {
+                        items.push({label: item.EndpointName, value: item.EndpointName})
+                        if(items.length === response.data.length) {
+                            setYolov5Endpoints(items);
+                            setSelectedYolov5Endpoint(items[0]);
+                            onLoaded()
+                        }
+                    })
+                }
+                else
+                    onLoaded()
             }
         )
-    }, [params.id]);
+    }, [params.id, onLoaded]);
 
     const deleteRectLabelById = (labelRectId: string) => {
         LabelActions.deleteRectLabelById(imageData.id, labelRectId);
     };
 
     const updateRectLabel = (labelRectId: string, labelNameId: string) => {
-        const newImageLabelData = {
+        const newLabelImageData = {
             ...imageData,
             labelRects: imageData.labelRects
                 .map((labelRect: LabelRect) => {
@@ -123,7 +131,7 @@ const RectLabelsList: React.FC<IProps> = (
                 }
             })
         };
-        updateImageLabelDataById(imageData.id, newImageLabelData);
+        updateLabelImageDataById(imageData.id, newLabelImageData);
         updateActiveLabelNameId(labelNameId);
     };
 
@@ -171,8 +179,8 @@ const RectLabelsList: React.FC<IProps> = (
             return response.data
     }
 
-    const onAnnotationLoadSuccess = useCallback((imagesData: ImageLabelData[], labelNames: LabelName[]) => {
-        store.dispatch(updateImageLabelData(imagesData));
+    const onAnnotationLoadSuccess = useCallback((imagesData: LabelImageData[], labelNames: LabelName[]) => {
+        store.dispatch(updateLabelImageData(imagesData));
         store.dispatch(updateLabelNames(labelNames));
         store.dispatch(updateActiveLabelType(LabelType.RECT));
     
@@ -204,9 +212,9 @@ const RectLabelsList: React.FC<IProps> = (
     const onInference = () => {
         getInference().then(data => {
 
-            var imageData = LabelsSelector.getActiveImageLabelData();
+            var imageData = LabelsSelector.getActiveImageData();
             imageData.labelRects.splice(0, imageData.labelRects.length);
-            store.dispatch(updateImageLabelData([imageData]));
+            store.dispatch(updateLabelImageData([imageData]));
     
             var imageBboxs : number[][] = [];
             var imageIds : number[] = [];
@@ -267,10 +275,10 @@ const RectLabelsList: React.FC<IProps> = (
 };
 
 const mapDispatchToProps = {
-    updateImageLabelDataById,
+    updateLabelImageDataById,
     updateActiveLabelNameId,
     updateActiveLabelId,
-    updateImageLabelData,
+    updateLabelImageData,
     updateLabelNames,
     updateActiveLabelType
 };

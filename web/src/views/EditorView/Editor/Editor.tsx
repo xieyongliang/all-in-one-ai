@@ -1,35 +1,35 @@
 import React from 'react';
 import './Editor.scss';
-import {ISize} from '../../../interfaces/ISize';
-import {ImageLabelData, LabelPoint, LabelRect} from '../../../store/labels/types';
-import {FileUtil} from '../../../utils/FileUtil';
-import {AppState} from '../../../store';
-import {connect} from 'react-redux';
-import {updateImageLabelDataById} from '../../../store/labels/actionCreators';
-import {ImageRepository} from '../../../logic/imageRepository/ImageRepository';
-import {LabelType} from '../../../data/enums/LabelType';
-import {PopupWindowType} from '../../../data/enums/PopupWindowType';
-import {CanvasUtil} from '../../../utils/CanvasUtil';
-import {CustomCursorStyle} from '../../../data/enums/CustomCursorStyle';
-import {ImageLoadManager} from '../../../logic/imageRepository/ImageLoadManager';
-import {EventType} from '../../../data/enums/EventType';
-import {EditorData} from '../../../data/EditorData';
-import {EditorModel} from '../../../staticModels/EditorModel';
-import {LabelEditorActions} from '../../../logic/actions/LabelEditorActions';
-import {TextEditorActions} from '../../../logic/actions/TextEditorActions';
-import {EditorUtil} from '../../../utils/EditorUtil';
-import {ContextManager} from '../../../logic/context/ContextManager';
-import {ContextType} from '../../../data/enums/ContextType';
+import { ISize } from '../../../interfaces/ISize';
+import { LabelImageData, LabelPoint, LabelRect } from '../../../store/labels/types';
+import { FileUtil } from '../../../utils/FileUtil';
+import { AppState } from '../../../store';
+import { connect } from 'react-redux';
+import { updateLabelImageDataById } from '../../../store/labels/actionCreators';
+import { ImageRepository } from '../../../logic/imageRepository/ImageRepository';
+import { LabelType } from '../../../data/enums/LabelType';
+import { PopupWindowType } from '../../../data/enums/PopupWindowType';
+import { CanvasUtil } from '../../../utils/CanvasUtil';
+import { CustomCursorStyle } from '../../../data/enums/CustomCursorStyle';
+import { ImageLoadManager } from '../../../logic/imageRepository/ImageLoadManager';
+import { EventType } from '../../../data/enums/EventType';
+import { EditorData } from '../../../data/EditorData';
+import { EditorModel } from '../../../staticModels/EditorModel';
+import { LabelEditorActions } from '../../../logic/actions/LabelEditorActions';
+import { TextEditorActions } from '../../../logic/actions/TextEditorActions';
+import { EditorUtil } from '../../../utils/EditorUtil';
+import { ContextManager } from '../../../logic/context/ContextManager';
+import { ContextType } from '../../../data/enums/ContextType';
 import Scrollbars from 'react-custom-scrollbars';
-import {ViewPortActions} from '../../../logic/actions/ViewPortActions';
-import {PlatformModel} from '../../../staticModels/PlatformModel';
+import { ViewPortActions} from '../../../logic/actions/ViewPortActions';
+import { PlatformModel } from '../../../staticModels/PlatformModel';
 import LabelControlPanel from '../LabelControlPanel/LabelControlPanel';
 import TextControlPanel from '../TextControlPandel/TextControlPanel';
-import {IPoint} from '../../../interfaces/IPoint';
-import {RenderEngineUtil} from '../../../utils/RenderEngineUtil';
-import {LabelStatus} from '../../../data/enums/LabelStatus';
-import {isEqual} from 'lodash';
-import {AIActions} from '../../../logic/actions/AIActions';
+import { IPoint } from '../../../interfaces/IPoint';
+import { RenderEngineUtil } from '../../../utils/RenderEngineUtil';
+import { LabelStatus } from '../../../data/enums/LabelStatus';
+import { isEqual } from 'lodash';
+import { AIActions} from '../../../logic/actions/AIActions';
 import { ProjectType } from '../../../data/enums/ProjectType';
 import { TextRect } from '../../../store/texts/types';
 
@@ -37,7 +37,7 @@ interface IProps {
     size: ISize;
     imageData : any;
     activeLabelType: LabelType;
-    updateImageLabelDataById: (id: string, newImageLabelData: ImageLabelData) => any;
+    updateLabelImageDataById: (id: string, newLabelImageData: LabelImageData) => any;
     activePopupType: PopupWindowType;
     activeLabelId: string;
     customCursorStyle: CustomCursorStyle;
@@ -120,7 +120,7 @@ class Editor extends React.Component<IProps, IState> {
     // LOAD IMAGE
     // =================================================================================================================
 
-    private loadImage = async (imageData: ImageLabelData): Promise<any> => {
+    private loadImage = async (imageData: LabelImageData): Promise<any> => {
         if (imageData.loadStatus) {
             LabelEditorActions.setActiveImage(ImageRepository.getById(imageData.id));
             AIActions.detect(imageData.id, ImageRepository.getById(imageData.id));
@@ -137,9 +137,9 @@ class Editor extends React.Component<IProps, IState> {
         }
     };
 
-    private saveLoadedImage = (image: HTMLImageElement, imageData: ImageLabelData) => {
+    private saveLoadedImage = (image: HTMLImageElement, imageData: LabelImageData) => {
         imageData.loadStatus = true;
-        this.props.updateImageLabelDataById(imageData.id, imageData);
+        this.props.updateLabelImageDataById(imageData.id, imageData);
         ImageRepository.storeImage(imageData.id, image);
         LabelEditorActions.setActiveImage(image);
         AIActions.detect(imageData.id, image);
@@ -291,7 +291,7 @@ class Editor extends React.Component<IProps, IState> {
 }
 
 const mapDispatchToProps = {
-    updateImageLabelDataById
+    updateLabelImageDataById
 };
 
 const mapStateToProps = (state: AppState) => ({

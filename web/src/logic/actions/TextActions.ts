@@ -1,37 +1,37 @@
-import {LabelsSelector} from '../../store/selectors/LabelsSelector';
-import {ImageTextData, TextRect} from '../../store/texts/types';
-import {filter} from 'lodash';
-import {store} from '../../index';
+import { LabelsSelector } from '../../store/selectors/LabelsSelector';
+import { TextImageData, TextRect } from '../../store/texts/types';
+import { filter } from 'lodash';
+import { store } from '../../index';
 import { TextsSelector } from '../../store/selectors/TextsSelector';
-import { updateImageTextData, updateImageTextDataById } from '../../store/texts/actionCreators';
+import { updateTextImageData, updateTextImageDataById } from '../../store/texts/actionCreators';
 
 export class TextActions {
     public static deleteActiveText() {
-        const activeImageData: ImageTextData = TextsSelector.getActiveImageData();
+        const activeImageData: TextImageData = TextsSelector.getActiveImageData();
         const activeLabelId: string = LabelsSelector.getActiveLabelId();
         TextActions.deleteRectTextById(activeImageData.id, activeLabelId);
     }
 
     public static deleteRectTextById(imageId: string, textId: string) {
-        const imageData: ImageTextData = TextsSelector.getImageDataById(imageId);
+        const imageData: TextImageData = TextsSelector.getImageDataById(imageId);
         const newImageLabelData = {
             ...imageData,
             textRects: filter(imageData.textRects, (currentLabel: TextRect) => {
                 return currentLabel.id !== textId;
             })
         };
-        store.dispatch(updateImageTextDataById(imageData.id, newImageLabelData));
+        store.dispatch(updateTextImageDataById(imageData.id, newImageLabelData));
     }
 
     public static removeText(textIds: string[]) {
-        const imagesData: ImageTextData[] = TextsSelector.getImagesData();
-        const newImagesData: ImageTextData[] = imagesData.map((imageData: ImageTextData) => {
+        const imagesData: TextImageData[] = TextsSelector.getImagesData();
+        const newImagesData: TextImageData[] = imagesData.map((imageData: TextImageData) => {
             return TextActions.removeLabelNamesFromImageLabelData(imageData, textIds);
         });
-        store.dispatch(updateImageTextData(newImagesData))
+        store.dispatch(updateTextImageData(newImagesData))
     }
 
-    private static removeLabelNamesFromImageLabelData(imageData: ImageTextData, textIds: string[]): ImageTextData {
+    private static removeLabelNamesFromImageLabelData(imageData: TextImageData, textIds: string[]): TextImageData {
         return {
             ...imageData,
             textRects: imageData.textRects.map((textRect: TextRect) => {

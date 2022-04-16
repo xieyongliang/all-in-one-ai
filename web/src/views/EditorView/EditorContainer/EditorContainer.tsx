@@ -1,23 +1,23 @@
-import React, {useState} from 'react';
-import {connect} from "react-redux";
-import {Direction} from "../../../data/enums/Direction";
-import {ISize} from "../../../interfaces/ISize";
-import {Settings} from "../../../settings/Settings";
-import {AppState} from "../../../store";
-import {ImageLabelData} from "../../../store/labels/types";
+import React, { useState } from 'react';
+import { connect } from "react-redux";
+import { Direction } from "../../../data/enums/Direction";
+import { ISize } from "../../../interfaces/ISize";
+import { Settings } from "../../../settings/Settings";
+import { AppState } from "../../../store";
+import { LabelImageData } from "../../../store/labels/types";
 import ImagesList from "../SideNavigationBar/ImagesList/ImagesList";
 import LabelsToolkit from "../SideNavigationBar/LabelsToolkit/LabelsToolkit";
-import {SideNavigationBar} from "../SideNavigationBar/SideNavigationBar";
-import {VerticalEditorButton} from "../VerticalEditorButton/VerticalEditorButton";
+import { SideNavigationBar } from "../SideNavigationBar/SideNavigationBar";
+import { VerticalEditorButton } from "../VerticalEditorButton/VerticalEditorButton";
 import './EditorContainer.scss';
 import Editor from "../Editor/Editor";
-import {ContextManager} from "../../../logic/context/ContextManager";
-import {ContextType} from "../../../data/enums/ContextType";
+import { ContextManager} from "../../../logic/context/ContextManager";
+import { ContextType } from "../../../data/enums/ContextType";
 import EditorBottomNavigationBar from "../EditorBottomNavigationBar/EditorBottomNavigationBar";
 import EditorTopNavigationBar from "../EditorTopNavigationBar/EditorTopNavigationBar";
-import {ProjectType} from "../../../data/enums/ProjectType";
+import { ProjectType } from "../../../data/enums/ProjectType";
 import TextsToolkit from '../SideNavigationBar/TextsToolkit/TextsToolkit';
-import { ImageTextData } from '../../../store/texts/types';
+import { TextImageData } from '../../../store/texts/types';
 import { Box, Dialog } from '@material-ui/core';
 import { LoadingIndicator } from 'aws-northstar';
 
@@ -25,8 +25,8 @@ interface IProps {
     windowSize: ISize;
     activeLabelImageIndex: number;
     activeTextImageIndex: number;
-    imagesLabelData: ImageLabelData[];
-    imagesTextData: ImageTextData[];
+    labelImagesData: LabelImageData[];
+    textImagesData: TextImageData[];
     activeContext: ContextType;
     projectType: ProjectType;
     imageBucket?: string;
@@ -36,6 +36,7 @@ interface IProps {
     imageColors: string[];
     imageAnnotations?: string[];
     imageName: string;
+    onLoaded: () => any;
 }
 
 const EditorContainer: React.FC<IProps> = (
@@ -43,8 +44,8 @@ const EditorContainer: React.FC<IProps> = (
         windowSize,
         activeLabelImageIndex,
         activeTextImageIndex,
-        imagesLabelData,
-        imagesTextData,
+        labelImagesData,
+        textImagesData,
         activeContext,
         projectType,
         imageBucket,
@@ -53,7 +54,8 @@ const EditorContainer: React.FC<IProps> = (
         imageLabels,
         imageColors,
         imageAnnotations,
-        imageName
+        imageName,
+        onLoaded
     }) => {
     const [ leftTabStatus, setLeftTabStatus ] = useState(true);
     const [ rightTabStatus, setRightTabStatus ] = useState(true);
@@ -121,28 +123,34 @@ const EditorContainer: React.FC<IProps> = (
 
     const rightSideBarRender = () => {
         if(projectType === ProjectType.TEXT_RECOGNITION) 
-            return <TextsToolkit 
-                imageBucket = {imageBucket}
-                imageKey = {imageKey}
-                imageId = {imageId}
-                onProcessing = {onProcessing} 
-                onProcessed = {onProcessed}
-            />
+            return (
+                <TextsToolkit 
+                    imageBucket = {imageBucket}
+                    imageKey = {imageKey}
+                    imageId = {imageId}
+                    onProcessing = {onProcessing} 
+                    onProcessed = {onProcessed}
+                    onLoaded = {onLoaded}
+                />
+            )
         else
-            return <LabelsToolkit
-                imageBucket = {imageBucket}
-                imageKey = {imageKey}
-                imageId = {imageId}
-                imageColors = {imageColors}
-                imageLabels = {imageLabels}
-                imageName = {imageName}
-                imageAnnotations = {imageAnnotations}
-                onProcessing = {onProcessing} 
-                onProcessed = {onProcessed}
-            />
+            return (
+                <LabelsToolkit
+                    imageBucket = {imageBucket}
+                    imageKey = {imageKey}
+                    imageId = {imageId}
+                    imageColors = {imageColors}
+                    imageLabels = {imageLabels}
+                    imageName = {imageName}
+                    imageAnnotations = {imageAnnotations}
+                    onProcessing = {onProcessing} 
+                    onProcessed = {onProcessed}
+                    onLoaded = {onLoaded}
+                />
+            )
     };
 
-    var imagesData = projectType === ProjectType.TEXT_RECOGNITION ? imagesTextData : imagesLabelData
+    var imagesData = projectType === ProjectType.TEXT_RECOGNITION ? textImagesData : labelImagesData
     var activeImageIndex = projectType === ProjectType.TEXT_RECOGNITION ? activeTextImageIndex : activeLabelImageIndex
  
     const onProcessing = () => {
@@ -216,8 +224,8 @@ const mapStateToProps = (state: AppState) => ({
     windowSize: state.general.windowSize,
     activeLabelImageIndex: state.labels.activeImageIndex,
     activeTextImageIndex: state.texts.activeImageIndex,
-    imagesLabelData: state.labels.imagesData,
-    imagesTextData: state.texts.imagesData,
+    labelImagesData: state.labels.imagesData,
+    textImagesData: state.texts.imagesData,
     activeContext: state.general.activeContext,
     projectType: state.general.projectData.type
 });

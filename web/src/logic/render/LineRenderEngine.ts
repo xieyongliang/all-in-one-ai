@@ -1,29 +1,29 @@
-import {BaseRenderEngine} from './BaseRenderEngine';
-import {RenderEngineSettings} from '../../settings/RenderEngineSettings';
-import {LabelType} from '../../data/enums/LabelType';
-import {EditorData} from '../../data/EditorData';
-import {RenderEngineUtil} from '../../utils/RenderEngineUtil';
-import {ImageLabelData, LabelLine} from '../../store/labels/types';
-import {IPoint} from '../../interfaces/IPoint';
+import { BaseRenderEngine} from './BaseRenderEngine';
+import { RenderEngineSettings} from '../../settings/RenderEngineSettings';
+import { LabelType} from '../../data/enums/LabelType';
+import { EditorData} from '../../data/EditorData';
+import { RenderEngineUtil} from '../../utils/RenderEngineUtil';
+import { LabelImageData, LabelLine} from '../../store/labels/types';
+import { IPoint} from '../../interfaces/IPoint';
 import {RectUtil} from '../../utils/RectUtil';
 import {store} from '../../index';
 import {
     updateActiveLabelId,
     updateFirstLabelCreatedFlag,
     updateHighlightedLabelId,
-    updateImageLabelDataById
+    updateLabelImageDataById
 } from '../../store/labels/actionCreators';
-import {LabelEditorActions} from '../actions/LabelEditorActions';
-import {LabelsSelector} from '../../store/selectors/LabelsSelector';
-import {DrawUtil} from '../../utils/DrawUtil';
-import {GeneralSelector} from '../../store/selectors/GeneralSelector';
+import { LabelEditorActions } from '../actions/LabelEditorActions';
+import { LabelsSelector } from '../../store/selectors/LabelsSelector';
+import { DrawUtil } from '../../utils/DrawUtil';
+import { GeneralSelector } from '../../store/selectors/GeneralSelector';
 import { v4 as uuidv4 } from 'uuid';
-import {ILine} from '../../interfaces/ILine';
-import {LineUtil} from '../../utils/LineUtil';
-import {updateCustomCursorStyle} from '../../store/general/actionCreators';
-import {CustomCursorStyle} from '../../data/enums/CustomCursorStyle';
-import {LineAnchorType} from '../../data/enums/LineAnchorType';
-import {Settings} from '../../settings/Settings';
+import { ILine } from '../../interfaces/ILine';
+import { LineUtil } from '../../utils/LineUtil';
+import { updateCustomCursorStyle } from '../../store/general/actionCreators';
+import { CustomCursorStyle } from '../../data/enums/CustomCursorStyle';
+import { LineAnchorType } from '../../data/enums/LineAnchorType';
+import { Settings } from '../../settings/Settings';
 
 export class LineRenderEngine extends BaseRenderEngine {
 
@@ -99,7 +99,7 @@ export class LineRenderEngine extends BaseRenderEngine {
     private drawExistingLabels(data: EditorData) {
         const activeLabelId: string = LabelsSelector.getActiveLabelId();
         const highlightedLabelId: string = LabelsSelector.getHighlightedLabelId();
-        const imageData: ImageLabelData = LabelsSelector.getActiveImageLabelData();
+        const imageData: LabelImageData = LabelsSelector.getActiveImageData();
         imageData.labelLines.forEach((labelLine: LabelLine) => {
             const isActive: boolean = labelLine.id === activeLabelId || labelLine.id === highlightedLabelId;
             const lineOnCanvas = RenderEngineUtil.transferLineFromImageToViewPortContent(labelLine.line, data)
@@ -200,14 +200,14 @@ export class LineRenderEngine extends BaseRenderEngine {
         const lineOnCanvas = {start: this.lineCreationStartPoint, end: mousePositionOnCanvasSnapped}
         const lineOnImage = RenderEngineUtil.transferLineFromViewPortContentToImage(lineOnCanvas, data);
         const activeLabelId = LabelsSelector.getActiveLabelNameId();
-        const imageData: ImageLabelData = LabelsSelector.getActiveImageLabelData();
+        const imageData: LabelImageData = LabelsSelector.getActiveImageData();
         const labelLine: LabelLine = {
             id: uuidv4(),
             labelId: activeLabelId,
             line: lineOnImage
         };
         imageData.labelLines.push(labelLine);
-        store.dispatch(updateImageLabelDataById(imageData.id, imageData));
+        store.dispatch(updateLabelImageDataById(imageData.id, imageData));
         store.dispatch(updateFirstLabelCreatedFlag(true));
         store.dispatch(updateActiveLabelId(labelLine.id));
         this.lineCreationStartPoint = null
@@ -236,7 +236,7 @@ export class LineRenderEngine extends BaseRenderEngine {
     }
 
     private applyUpdateToLineLabel(data: EditorData) {
-        const imageData: ImageLabelData = LabelsSelector.getActiveImageLabelData();
+        const imageData: LabelImageData = LabelsSelector.getActiveImageData();
         const activeLabel: LabelLine = LabelsSelector.getActiveLineLabel();
         imageData.labelLines = imageData.labelLines.map((lineLabel: LabelLine) => {
             if (lineLabel.id !== activeLabel.id) {
@@ -257,7 +257,7 @@ export class LineRenderEngine extends BaseRenderEngine {
             }
         });
 
-        store.dispatch(updateImageLabelDataById(imageData.id, imageData));
+        store.dispatch(updateLabelImageDataById(imageData.id, imageData));
         store.dispatch(updateActiveLabelId(activeLabel.id));
     }
 
@@ -266,7 +266,7 @@ export class LineRenderEngine extends BaseRenderEngine {
     // =================================================================================================================
 
     private getLineUnderMouse(data: EditorData): LabelLine {
-        const labelLines: LabelLine[] = LabelsSelector.getActiveImageLabelData().labelLines;
+        const labelLines: LabelLine[] = LabelsSelector.getActiveImageData().labelLines;
         for (let i = 0; i < labelLines.length; i++) {
             const lineOnCanvas: ILine = RenderEngineUtil.transferLineFromImageToViewPortContent(labelLines[i].line, data);
             const mouseOverLine = RenderEngineUtil.isMouseOverLine(
@@ -280,7 +280,7 @@ export class LineRenderEngine extends BaseRenderEngine {
     }
 
     private getAnchorTypeUnderMouse(data: EditorData): LineAnchorType {
-        const labelLines: LabelLine[] = LabelsSelector.getActiveImageLabelData().labelLines;
+        const labelLines: LabelLine[] = LabelsSelector.getActiveImageData().labelLines;
         for (let i = 0; i < labelLines.length; i++) {
             const lineOnCanvas: ILine = RenderEngineUtil.transferLineFromImageToViewPortContent(labelLines[i].line, data);
             if (this.isMouseOverAnchor(data.mousePositionOnViewPortContent, lineOnCanvas.start)) {

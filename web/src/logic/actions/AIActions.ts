@@ -1,8 +1,8 @@
-import {LabelType} from "../../data/enums/LabelType";
-import {LabelsSelector} from "../../store/selectors/LabelsSelector";
-import {AIObjectDetectionActions} from "./AIObjectDetectionActions";
-import {AIPoseDetectionActions} from "./AIPoseDetectionActions";
-import {ImageLabelData} from "../../store/labels/types";
+import { LabelType } from "../../data/enums/LabelType";
+import { LabelsSelector } from "../../store/selectors/LabelsSelector";
+import { AIObjectDetectionActions } from "./AIObjectDetectionActions";
+import { AIPoseDetectionActions } from "./AIPoseDetectionActions";
+import { LabelImageData } from "../../store/labels/types";
 
 export class AIActions {
     public static excludeRejectedLabelNames(suggestedLabels: string[], rejectedLabels: string[]): string[] {
@@ -27,7 +27,7 @@ export class AIActions {
         }
     }
 
-    public static rejectAllSuggestedLabels(imageData: ImageLabelData) {
+    public static rejectAllSuggestedLabels(imageData: LabelImageData) {
         const activeLabelType: LabelType = LabelsSelector.getActiveLabelType();
 
         switch (activeLabelType) {
@@ -40,7 +40,7 @@ export class AIActions {
         }
     }
 
-    public static acceptAllSuggestedLabels(imageData: ImageLabelData) {
+    public static acceptAllSuggestedLabels(imageData: LabelImageData) {
         const activeLabelType: LabelType = LabelsSelector.getActiveLabelType();
         switch (activeLabelType) {
             case LabelType.RECT:

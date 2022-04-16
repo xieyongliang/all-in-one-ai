@@ -1,23 +1,23 @@
 import React, {useState} from 'react'
 import './ImportLabelPopup.scss'
-import {LabelType} from '../../../data/enums/LabelType';
-import {PopupActions} from '../../../logic/actions/PopupActions';
+import { LabelType} from '../../../data/enums/LabelType';
+import { PopupActions} from '../../../logic/actions/PopupActions';
 import GenericLabelTypePopup from '../GenericLabelTypePopup/GenericLabelTypePopup';
-import {ImportFormatData} from '../../../data/ImportFormatData';
-import {FeatureInProgress} from '../../EditorView/FeatureInProgress/FeatureInProgress';
-import {AppState} from '../../../store';
-import {connect} from 'react-redux';
-import {useDropzone} from 'react-dropzone';
-import {AcceptedFileType} from '../../../data/enums/AcceptedFileType';
-import {ImageLabelData, LabelName} from '../../../store/labels/types';
-import {updateActiveLabelType, updateImageLabelData, updateLabelNames} from '../../../store/labels/actionCreators';
-import {ImporterSpecData} from '../../../data/ImporterSpecData';
-import {AnnotationFormatType} from '../../../data/enums/AnnotationFormatType';
-import {ILabelFormatData} from '../../../interfaces/ILabelFormatData';
+import { ImportFormatData} from '../../../data/ImportFormatData';
+import { FeatureInProgress} from '../../EditorView/FeatureInProgress/FeatureInProgress';
+import { AppState} from '../../../store';
+import { connect} from 'react-redux';
+import { useDropzone} from 'react-dropzone';
+import { AcceptedFileType} from '../../../data/enums/AcceptedFileType';
+import { LabelImageData, LabelName} from '../../../store/labels/types';
+import { updateActiveLabelType, updateLabelImageData, updateLabelNames} from '../../../store/labels/actionCreators';
+import { ImporterSpecData } from '../../../data/ImporterSpecData';
+import { AnnotationFormatType } from '../../../data/enums/AnnotationFormatType';
+import { ILabelFormatData } from '../../../interfaces/ILabelFormatData';
 
 interface IProps {
     activeLabelType: LabelType,
-    updateImageLabelDataAction: (imageData: ImageLabelData[]) => any,
+    updateLabelImageDataAction: (imageData: LabelImageData[]) => any,
     updateLabelNamesAction: (labels: LabelName[]) => any,
     updateActiveLabelTypeAction: (activeLabelType: LabelType) => any
 }
@@ -25,7 +25,7 @@ interface IProps {
 const ImportLabelPopup: React.FC<IProps> = (
     {
         activeLabelType,
-        updateImageLabelDataAction,
+        updateLabelImageDataAction,
         updateLabelNamesAction,
         updateActiveLabelTypeAction
     }) => {
@@ -37,7 +37,7 @@ const ImportLabelPopup: React.FC<IProps> = (
     const [labelType, setLabelType] = useState(activeLabelType);
     const [formatType, setFormatType] = useState(resolveFormatType(activeLabelType));
     const [loadedLabelNames, setLoadedLabelNames] = useState([]);
-    const [loadedImageLabelData, setLoadedImageLabelData] = useState([]);
+    const [loadedLabelImageData, setLoadedLabelImageData] = useState([]);
     const [annotationsLoadedError, setAnnotationsLoadedError] = useState(null);
 
     const {getRootProps, getInputProps} = useDropzone({
@@ -53,25 +53,25 @@ const ImportLabelPopup: React.FC<IProps> = (
         setLabelType(labelType);
         setFormatType(resolveFormatType(labelType))
         setLoadedLabelNames([]);
-        setLoadedImageLabelData([]);
+        setLoadedLabelImageData([]);
         setAnnotationsLoadedError(null);
     }
 
-    const onAnnotationLoadSuccess = (imagesData: ImageLabelData[], labelNames: LabelName[]) => {
+    const onAnnotationLoadSuccess = (imagesData: LabelImageData[], labelNames: LabelName[]) => {
         setLoadedLabelNames(labelNames);
-        setLoadedImageLabelData(imagesData);
+        setLoadedLabelImageData(imagesData);
         setAnnotationsLoadedError(null);
     }
 
     const onAnnotationsLoadFailure = (error?:Error) => {
         setLoadedLabelNames([]);
-        setLoadedImageLabelData([]);
+        setLoadedLabelImageData([]);
         setAnnotationsLoadedError(error);
     };
 
     const onAccept = (labelType: LabelType) => {
-        if (loadedLabelNames.length !== 0 && loadedImageLabelData.length !== 0) {
-            updateImageLabelDataAction(loadedImageLabelData);
+        if (loadedLabelNames.length !== 0 && loadedLabelImageData.length !== 0) {
+            updateLabelImageDataAction(loadedLabelImageData);
             updateLabelNamesAction(loadedLabelNames);
             updateActiveLabelTypeAction(labelType);
             PopupActions.close();
@@ -99,7 +99,7 @@ const ImportLabelPopup: React.FC<IProps> = (
                 {annotationsLoadedError.message}
                 <p className='extraBold'>Try again</p>
             </>;
-        } else if (loadedImageLabelData.length !== 0 && loadedLabelNames.length !== 0) {
+        } else if (loadedLabelImageData.length !== 0 && loadedLabelNames.length !== 0) {
             return <>
                 <img
                     draggable={false}
@@ -175,7 +175,7 @@ const ImportLabelPopup: React.FC<IProps> = (
             acceptLabel={'Import'}
             onAccept={onAccept}
             skipAcceptButton={ImportFormatData[labelType].length === 0}
-            disableAcceptButton={loadedImageLabelData.length === 0 || loadedLabelNames.length === 0 || !!annotationsLoadedError}
+            disableAcceptButton={loadedLabelImageData.length === 0 || loadedLabelNames.length === 0 || !!annotationsLoadedError}
             rejectLabel={'Cancel'}
             onReject={onReject}
             renderInternalContent={renderInternalContent}
@@ -184,7 +184,7 @@ const ImportLabelPopup: React.FC<IProps> = (
 };
 
 const mapDispatchToProps = {
-    updateImageLabelDataAction: updateImageLabelData,
+    updateLabelImageDataAction: updateLabelImageData,
     updateLabelNamesAction: updateLabelNames,
     updateActiveLabelTypeAction: updateActiveLabelType
 };

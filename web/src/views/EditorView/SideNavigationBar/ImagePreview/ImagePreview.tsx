@@ -7,23 +7,23 @@ import { IRect } from "../../../../interfaces/IRect";
 import { ISize } from "../../../../interfaces/ISize";
 import { ImageRepository } from "../../../../logic/imageRepository/ImageRepository";
 import { AppState } from "../../../../store";
-import { updateImageLabelDataById } from "../../../../store/labels/actionCreators";
-import { ImageLabelData } from "../../../../store/labels/types";
-import { ImageTextData } from "../../../../store/texts/types";
+import { updateLabelImageDataById } from "../../../../store/labels/actionCreators";
+import { LabelImageData } from "../../../../store/labels/types";
+import { TextImageData } from "../../../../store/texts/types";
 import { FileUtil } from "../../../../utils/FileUtil";
 import { RectUtil } from "../../../../utils/RectUtil";
 import './ImagePreview.scss';
 import { CSSHelper } from "../../../../logic/helpers/CSSHelper";
 
 interface IProps {
-    imageData: ImageLabelData | ImageTextData;
+    imageData: LabelImageData | TextImageData;
     style: React.CSSProperties;
     size: ISize;
     isScrolling?: boolean;
     isChecked?: boolean;
     onClick?: () => any;
     isSelected?: boolean;
-    updateImageLabelDataById: (id: string, newImageLabelData: ImageLabelData | ImageTextData) => any;
+    updateLabelImageDataById: (id: string, newLabelImageData: LabelImageData | TextImageData) => any;
 }
 
 interface IState {
@@ -69,7 +69,7 @@ class ImagePreview extends React.Component<IProps, IState> {
         )
     }
 
-    private loadImage = async (imageData: ImageLabelData | ImageTextData, isScrolling: boolean) => {
+    private loadImage = async (imageData: LabelImageData | TextImageData, isScrolling: boolean) => {
         if (imageData.loadStatus) {
             const image = ImageRepository.getById(imageData.id);
             if (this.state.image !== image) {
@@ -85,9 +85,9 @@ class ImagePreview extends React.Component<IProps, IState> {
         }
     };
 
-    private saveLoadedImage = (image: HTMLImageElement, imageData: ImageLabelData | ImageTextData) => {
+    private saveLoadedImage = (image: HTMLImageElement, imageData: LabelImageData | TextImageData) => {
         imageData.loadStatus = true;
-        this.props.updateImageLabelDataById(imageData.id, imageData);
+        this.props.updateLabelImageDataById(imageData.id, imageData);
         ImageRepository.storeImage(imageData.id, image);
         if (imageData.id === this.props.imageData.id) {
             this.setState({ image });
@@ -184,7 +184,7 @@ class ImagePreview extends React.Component<IProps, IState> {
 }
 
 const mapDispatchToProps = {
-    updateImageLabelDataById
+    updateLabelImageDataById
 };
 
 const mapStateToProps = (state: AppState) => ({});

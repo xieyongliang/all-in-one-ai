@@ -1,30 +1,30 @@
-import {IPoint} from '../../interfaces/IPoint';
-import {IRect} from '../../interfaces/IRect';
-import {RectUtil} from '../../utils/RectUtil';
-import {DrawUtil} from '../../utils/DrawUtil';
-import {store} from '../..';
-import {ImageLabelData, LabelRect} from '../../store/labels/types';
-import {ImageTextData, TextRect } from '../../store/texts/types';
+import { IPoint} from '../../interfaces/IPoint';
+import { IRect} from '../../interfaces/IRect';
+import { RectUtil} from '../../utils/RectUtil';
+import { DrawUtil} from '../../utils/DrawUtil';
+import { store} from '../..';
+import { LabelImageData, LabelRect} from '../../store/labels/types';
+import { TextImageData, TextRect } from '../../store/texts/types';
 import {
     updateActiveLabelId,
     updateFirstLabelCreatedFlag,
     updateHighlightedLabelId,
-    updateImageLabelDataById
+    updateLabelImageDataById
 } from '../../store/labels/actionCreators';
-import {PointUtil} from '../../utils/PointUtil';
-import {RectAnchor} from '../../data/RectAnchor';
-import {RenderEngineSettings} from '../../settings/RenderEngineSettings';
-import {updateCustomCursorStyle} from '../../store/general/actionCreators';
-import {CustomCursorStyle} from '../../data/enums/CustomCursorStyle';
-import {LabelsSelector} from '../../store/selectors/LabelsSelector';
-import {EditorData} from '../../data/EditorData';
-import {BaseRenderEngine} from './BaseRenderEngine';
-import {RenderEngineUtil} from '../../utils/RenderEngineUtil';
-import {LabelType} from '../../data/enums/LabelType';
-import {LabelEditorActions} from '../actions/LabelEditorActions';
-import {GeneralSelector} from '../../store/selectors/GeneralSelector';
-import {LabelStatus} from '../../data/enums/LabelStatus';
-import {LabelUtil} from '../../utils/LabelUtil';
+import { PointUtil } from '../../utils/PointUtil';
+import { RectAnchor } from '../../data/RectAnchor';
+import { RenderEngineSettings } from '../../settings/RenderEngineSettings';
+import { updateCustomCursorStyle } from '../../store/general/actionCreators';
+import { CustomCursorStyle } from '../../data/enums/CustomCursorStyle';
+import { LabelsSelector } from '../../store/selectors/LabelsSelector';
+import { EditorData } from '../../data/EditorData';
+import { BaseRenderEngine } from './BaseRenderEngine';
+import { RenderEngineUtil } from '../../utils/RenderEngineUtil';
+import { LabelType } from '../../data/enums/LabelType';
+import { LabelEditorActions } from '../actions/LabelEditorActions';
+import { GeneralSelector } from '../../store/selectors/GeneralSelector';
+import { LabelStatus } from '../../data/enums/LabelStatus';
+import { LabelUtil } from '../../utils/LabelUtil';
 import { TextsSelector } from '../../store/selectors/TextsSelector';
 import { TextUtil } from '../../utils/TextUtil';
 
@@ -94,7 +94,7 @@ export class RectRenderEngine extends BaseRenderEngine {
                 const scale: number = RenderEngineUtil.calculateImageScale(data);
                 const scaledRect: IRect = RectUtil.scaleRect(resizeRect, scale);
 
-                const imageData = LabelsSelector.getActiveImageLabelData();
+                const imageData = LabelsSelector.getActiveImageData();
                 imageData.labelRects = imageData.labelRects.map((labelRect: LabelRect) => {
                     if (labelRect.id === activeLabelRect.id) {
                         return {
@@ -104,7 +104,7 @@ export class RectRenderEngine extends BaseRenderEngine {
                     }
                     return labelRect;
                 });
-                store.dispatch(updateImageLabelDataById(imageData.id, imageData));
+                store.dispatch(updateLabelImageDataById(imageData.id, imageData));
             }
         }
         this.endRectTransformation()
@@ -134,7 +134,7 @@ export class RectRenderEngine extends BaseRenderEngine {
 
     public render(data: EditorData) {
         const activeLabelId: string = LabelsSelector.getActiveLabelId();
-        const imageData: ImageLabelData = LabelsSelector.getActiveImageLabelData();
+        const imageData: LabelImageData = LabelsSelector.getActiveImageData();
         if (imageData) {
             imageData.labelRects.forEach((labelRect: LabelRect) => {
                 if (labelRect.status === LabelStatus.ACCEPTED && labelRect.id === activeLabelId) {
@@ -235,17 +235,17 @@ export class RectRenderEngine extends BaseRenderEngine {
 
     private addRectLabel = (rect: IRect) => {
         const activeLabelId = LabelsSelector.getActiveLabelNameId();
-        const imageData: ImageLabelData = LabelsSelector.getActiveImageLabelData();
+        const imageData: LabelImageData = LabelsSelector.getActiveImageData();
         const labelRect: LabelRect = LabelUtil.createLabelRect(activeLabelId, rect);
         imageData.labelRects.push(labelRect);
-        store.dispatch(updateImageLabelDataById(imageData.id, imageData));
+        store.dispatch(updateLabelImageDataById(imageData.id, imageData));
         store.dispatch(updateFirstLabelCreatedFlag(true));
         store.dispatch(updateActiveLabelId(labelRect.id));
     };
 
     private addRectText = (rect: IRect) => {
         const activeTextId = TextsSelector.getActiveTextId();
-        const imageData: ImageTextData = TextsSelector.getActiveImageData();
+        const imageData: TextImageData = TextsSelector.getActiveImageData();
         const textRect: TextRect = TextUtil.createTextRect(activeTextId, rect);
         imageData.textRects.push(textRect);
         store.dispatch(updateFirstLabelCreatedFlag(true));
@@ -258,7 +258,7 @@ export class RectRenderEngine extends BaseRenderEngine {
             return activeRectLabel;
         }
 
-        const labelRects: LabelRect[] = LabelsSelector.getActiveImageLabelData().labelRects;
+        const labelRects: LabelRect[] = LabelsSelector.getActiveImageData().labelRects;
         for (let i = 0; i < labelRects.length; i++) {
             if (this.isMouseOverRectEdges(labelRects[i].rect, data)) {
                 return labelRects[i];
@@ -299,7 +299,7 @@ export class RectRenderEngine extends BaseRenderEngine {
     }
 
     private getAnchorUnderMouse(data: EditorData): RectAnchor {
-        const labelRects: LabelRect[] = LabelsSelector.getActiveImageLabelData().labelRects;
+        const labelRects: LabelRect[] = LabelsSelector.getActiveImageData().labelRects;
         for (let i = 0; i < labelRects.length; i++) {
             const rect: IRect = this.calculateRectRelativeToActiveImage(labelRects[i].rect, data);
             const rectAnchor = this.getAnchorUnderMouseByRect(rect, data.mousePositionOnViewPortContent, data.viewPortContentImageRect);

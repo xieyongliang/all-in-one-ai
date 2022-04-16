@@ -1,26 +1,27 @@
 import React from "react";
 import './TextsToolkit.scss';
-import {ImageTextData} from "../../../../store/texts/types";
-import {updateImageTextDataById} from "../../../../store/texts/actionCreators";
-import {AppState} from "../../../../store";
-import {connect} from "react-redux";
-import {LabelType} from "../../../../data/enums/LabelType";
-import {ProjectType} from "../../../../data/enums/ProjectType";
-import {ISize} from "../../../../interfaces/ISize";
-import {Settings} from "../../../../settings/Settings";
-import {EventType} from "../../../../data/enums/EventType";
+import { TextImageData } from "../../../../store/texts/types";
+import { updateTextImageDataById } from "../../../../store/texts/actionCreators";
+import { AppState } from "../../../../store";
+import { connect } from "react-redux";
+import { LabelType } from "../../../../data/enums/LabelType";
+import { ProjectType } from "../../../../data/enums/ProjectType";
+import { ISize } from "../../../../interfaces/ISize";
+import { Settings } from "../../../../settings/Settings";
+import { EventType } from "../../../../data/enums/EventType";
 import RectTextsList from "../RectTextsList/RectTextsList";
 
 interface IProps {
     activeImageIndex:number,
-    imagesData: ImageTextData[];
+    imagesData: TextImageData[];
     projectType: ProjectType;
     imageBucket?: string;
     imageKey?: string;
     imageId?: string;
-    updateImageTextDataById: (id: string, newImageData: ImageTextData) => any;
+    updateTextImageDataById: (id: string, newImageData: TextImageData) => any;
     onProcessing: () => any;
     onProcessed: () => any;
+    onLoaded: () => any;
 }
 
 interface IState {
@@ -77,12 +78,13 @@ class TextsToolkit extends React.Component<IProps, IState> {
                         width: size.width - 20,
                         height: activeContentHeight - 20
                     }}
-                    imageData={imagesData[activeImageIndex]}
-                    onProcessing={this.props.onProcessing}
-                    onProcessed={this.props.onProcessed}
-                    imageBucket={this.props.imageBucket}
-                    imageKey={this.props.imageKey}
-                    imageId={this.props.imageId}   
+                    imageData = {imagesData[activeImageIndex]}
+                    imageBucket = {this.props.imageBucket}
+                    imageKey = {this.props.imageKey}
+                    imageId = {this.props.imageId}
+                    onProcessing = {this.props.onProcessing}
+                    onProcessed = {this.props.onProcessed}
+                    onLoaded = {this.props.onLoaded} 
                 />
             </div>;
         return content;
@@ -101,7 +103,7 @@ class TextsToolkit extends React.Component<IProps, IState> {
 }
 
 const mapDispatchToProps = {
-    updateImageTextDataById
+    updateTextImageDataById
 };
 
 const mapStateToProps = (state: AppState) => ({

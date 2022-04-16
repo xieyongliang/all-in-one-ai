@@ -1,4 +1,4 @@
-import {LabelsActionTypes, LabelsState, ImageLabelData} from './types';
+import {LabelsActionTypes, LabelsState, LabelImageData} from './types';
 import {Action} from '../Actions';
 
 const initialState: LabelsState = {
@@ -50,8 +50,8 @@ export function labelsReducer(
         case Action.UPDATE_LABEL_IMAGE_DATA_BY_ID: {
             return {
                 ...state,
-                imagesData: state.imagesData.map((imageData: ImageLabelData) =>
-                    imageData.id === action.payload.id ? action.payload.newImageLabelData : imageData
+                imagesData: state.imagesData.map((imageData: LabelImageData) =>
+                    imageData.id === action.payload.id ? action.payload.newLabelImageData : imageData
                 )
             }
         }

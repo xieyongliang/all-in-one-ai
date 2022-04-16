@@ -1,34 +1,34 @@
 import React from 'react';
 import './StateBar.scss';
-import {ImageLabelData} from "../../../store/labels/types";
-import {AppState} from "../../../store";
-import {connect} from "react-redux";
-import {LabelType} from "../../../data/enums/LabelType";
+import { LabelImageData } from "../../../store/labels/types";
+import { AppState } from "../../../store";
+import { connect } from "react-redux";
+import { LabelType } from "../../../data/enums/LabelType";
 
 interface IProps {
-    imagesData: ImageLabelData[];
+    imagesData: LabelImageData[];
     activeLabelType: LabelType;
 }
 
 const StateBar: React.FC<IProps> = ({imagesData, activeLabelType}) => {
 
-    const pointLabeledImages = imagesData.reduce((currentCount: number, currentImage: ImageLabelData) => {
+    const pointLabeledImages = imagesData.reduce((currentCount: number, currentImage: LabelImageData) => {
         return currentCount + (currentImage.labelPoints.length > 0 ? 1 : 0);
     }, 0);
 
-    const rectLabeledImages = imagesData.reduce((currentCount: number, currentImage: ImageLabelData) => {
+    const rectLabeledImages = imagesData.reduce((currentCount: number, currentImage: LabelImageData) => {
         return currentCount + (currentImage.labelRects.length > 0 ? 1 : 0);
     }, 0);
 
-    const polygonLabeledImages = imagesData.reduce((currentCount: number, currentImage: ImageLabelData) => {
+    const polygonLabeledImages = imagesData.reduce((currentCount: number, currentImage: LabelImageData) => {
         return currentCount + (currentImage.labelPolygons.length > 0 ? 1 : 0);
     }, 0);
 
-    const lineLabeledImages = imagesData.reduce((currentCount: number, currentImage: ImageLabelData) => {
+    const lineLabeledImages = imagesData.reduce((currentCount: number, currentImage: LabelImageData) => {
         return currentCount + (currentImage.labelLines.length > 0 ? 1 : 0);
     }, 0);
 
-    const tagLabeledImages = imagesData.reduce((currentCount: number, currentImage: ImageLabelData) => {
+    const tagLabeledImages = imagesData.reduce((currentCount: number, currentImage: LabelImageData) => {
         return currentCount + (currentImage.labelNameIds.length !== 0 ? 1 : 0);
     }, 0);
 

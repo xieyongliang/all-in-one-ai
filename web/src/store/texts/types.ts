@@ -5,7 +5,7 @@ export type TextState = {
     activeImageIndex: number;
     activeTextId: string;
     highlightedTextId: string;
-    imagesData: ImageTextData[];
+    imagesData: TextImageData[];
     texts: Text[];
 }
 
@@ -22,7 +22,7 @@ export type TextRect = {
     rect: IRect;
 }
 
-export type ImageTextData = {
+export type TextImageData = {
     id: string;
     fileData: File;
     loadStatus: boolean;
@@ -50,25 +50,25 @@ interface UpdateHighlightedTextId {
     }
 }
 
-interface UpdateImageTextDataById {
+interface UpdateTextImageDataById {
     type: typeof Action.UPDATE_TEXT_IMAGE_DATA_BY_ID;
     payload: {
         id: string;
-        newImageData: ImageTextData;
+        newImageData: TextImageData;
     }
 }
 
-interface AddImageTextData {
+interface AddTextImageData {
     type: typeof Action.ADD_TEXT_IMAGES_DATA;
     payload: {
-        imageData: ImageTextData[];
+        imageData: TextImageData[];
     }
 }
 
-interface UpdateImageTextData {
+interface UpdateTextImageData {
     type: typeof Action.UPDATE_TEXT_IMAGES_DATA;
     payload: {
-        imageData: ImageTextData[];
+        imageData: TextImageData[];
     }
 }
 
@@ -82,7 +82,7 @@ interface UpdateTexts {
 export type TextsActionTypes = UpdateActiveImageIndex |
     UpdateActiveTextId      |
     UpdateHighlightedTextId |
-    UpdateImageTextDataById |
-    AddImageTextData        |
-    UpdateImageTextData     |
+    UpdateTextImageDataById |
+    AddTextImageData        |
+    UpdateTextImageData     |
     UpdateTexts

@@ -1,25 +1,25 @@
 import React from 'react'
 import './ExitProjectPopup.scss'
-import {GenericYesNoPopup} from "../GenericYesNoPopup/GenericYesNoPopup";
+import { GenericYesNoPopup } from "../GenericYesNoPopup/GenericYesNoPopup";
 import {
     updateActiveLabelImageIndex,
     updateActiveLabelNameId,
     updateFirstLabelCreatedFlag,
-    updateImageLabelData,
+    updateLabelImageData,
     updateLabelNames
 } from "../../../store/labels/actionCreators";
-import {AppState} from "../../../store";
-import {connect} from "react-redux";
-import {ImageLabelData, LabelName} from "../../../store/labels/types";
-import {PopupActions} from "../../../logic/actions/PopupActions";
-import {ProjectData} from "../../../store/general/types";
-import {updateProjectData} from "../../../store/general/actionCreators";
+import { AppState } from "../../../store";
+import { connect } from "react-redux";
+import { LabelImageData, LabelName } from "../../../store/labels/types";
+import { PopupActions} from "../../../logic/actions/PopupActions";
+import { ProjectData } from "../../../store/general/types";
+import { updateProjectData } from "../../../store/general/actionCreators";
 
 interface IProps {
     updateActiveLabelImageIndex: (activeImageIndex: number) => any;
     updateActiveLabelNameId: (activeLabelId: string) => any;
     updateLabelNames: (labelNames: LabelName[]) => any;
-    updateImageLabelData: (imageData: ImageLabelData[]) => any;
+    updateLabelImageData: (imageData: LabelImageData[]) => any;
     updateFirstLabelCreatedFlag: (firstLabelCreatedFlag: boolean) => any;
     updateProjectData: (projectData: ProjectData) => any;
 }
@@ -29,7 +29,7 @@ const ExitProjectPopup: React.FC<IProps> = (props) => {
         updateActiveLabelNameId,
         updateLabelNames,
         updateActiveLabelImageIndex,
-        updateImageLabelData,
+        updateLabelImageData,
         updateFirstLabelCreatedFlag,
         updateProjectData
     } = props;
@@ -49,7 +49,7 @@ const ExitProjectPopup: React.FC<IProps> = (props) => {
         updateLabelNames([]);
         updateProjectData({type: null, subType: null, name: "my-project-name"});
         updateActiveLabelImageIndex(null);
-        updateImageLabelData([]);
+        updateLabelImageData([]);
         updateFirstLabelCreatedFlag(false);
         PopupActions.close();
     };
@@ -74,7 +74,7 @@ const mapDispatchToProps = {
     updateLabelNames,
     updateProjectData,
     updateActiveLabelImageIndex,
-    updateImageLabelData,
+    updateLabelImageData,
     updateFirstLabelCreatedFlag
 };
 

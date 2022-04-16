@@ -1,4 +1,4 @@
-import {LabelsActionTypes, ImageLabelData, LabelName} from './types';
+import {LabelsActionTypes, LabelImageData, LabelName} from './types';
 import {Action} from '../Actions';
 import {LabelType} from '../../data/enums/LabelType';
 
@@ -47,17 +47,17 @@ export function updateActiveLabelType(activeLabelType: LabelType): LabelsActionT
     };
 }
 
-export function updateImageLabelDataById(id: string, newImageLabelData: ImageLabelData): LabelsActionTypes {
+export function updateLabelImageDataById(id: string, newLabelImageData: LabelImageData): LabelsActionTypes {
     return {
         type: Action.UPDATE_LABEL_IMAGE_DATA_BY_ID,
         payload: {
             id,
-            newImageLabelData
+            newLabelImageData
         },
     };
 }
 
-export function addImageLabelData(imageData: ImageLabelData[]): LabelsActionTypes {
+export function addLabelImageData(imageData: LabelImageData[]): LabelsActionTypes {
     return {
         type: Action.ADD_LABEL_IMAGES_DATA,
         payload: {
@@ -66,7 +66,7 @@ export function addImageLabelData(imageData: ImageLabelData[]): LabelsActionType
     };
 }
 
-export function updateImageLabelData(imageData: ImageLabelData[]): LabelsActionTypes {
+export function updateLabelImageData(imageData: LabelImageData[]): LabelsActionTypes {
     return {
         type: Action.UPDATE_LABEL_IMAGES_DATA,
         payload: {

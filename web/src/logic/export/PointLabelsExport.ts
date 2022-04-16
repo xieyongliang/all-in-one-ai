@@ -1,9 +1,9 @@
-import {AnnotationFormatType} from "../../data/enums/AnnotationFormatType";
-import {ImageLabelData, LabelName, LabelPoint} from "../../store/labels/types";
-import {ImageRepository} from "../imageRepository/ImageRepository";
-import {LabelsSelector} from "../../store/selectors/LabelsSelector";
-import {ExporterUtil} from "../../utils/ExporterUtil";
-import {findLast} from "lodash";
+import { AnnotationFormatType } from "../../data/enums/AnnotationFormatType";
+import { LabelImageData, LabelName, LabelPoint } from "../../store/labels/types";
+import { ImageRepository } from "../imageRepository/ImageRepository";
+import { LabelsSelector } from "../../store/selectors/LabelsSelector";
+import { ExporterUtil } from "../../utils/ExporterUtil";
+import { findLast } from "lodash";
 
 export class PointLabelsExporter {
     public static export(exportFormatType: AnnotationFormatType): void {
@@ -18,16 +18,16 @@ export class PointLabelsExporter {
 
     private static exportAsCSV(): void {
         const content: string = LabelsSelector.getImagesData()
-            .map((imageData: ImageLabelData) => {
+            .map((imageData: LabelImageData) => {
                 return PointLabelsExporter.wrapRectLabelsIntoCSV(imageData)})
-            .filter((imageLabelData: string) => {
-                return !!imageLabelData})
+            .filter((imageData: string) => {
+                return !!imageData})
             .join("\n");
         const fileName: string = `${ExporterUtil.getExportFileName()}.csv`;
         ExporterUtil.saveAs(content, fileName);
     }
 
-    private static wrapRectLabelsIntoCSV(imageData: ImageLabelData): string {
+    private static wrapRectLabelsIntoCSV(imageData: LabelImageData): string {
         if (imageData.labelPoints.length === 0 || !imageData.loadStatus)
             return null;
 

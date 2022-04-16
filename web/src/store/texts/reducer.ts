@@ -1,4 +1,4 @@
-import { TextsActionTypes, TextState, ImageTextData } from './types';
+import { TextsActionTypes, TextState, TextImageData } from './types';
 import { Action } from '../Actions';
 
 const initialState: TextState = {
@@ -35,7 +35,7 @@ export function textsReducer(
         case Action.UPDATE_TEXT_IMAGE_DATA_BY_ID: {
             return {
                 ...state,
-                imagesData: state.imagesData.map((imageData: ImageTextData) =>
+                imagesData: state.imagesData.map((imageData: TextImageData) =>
                     imageData.id === action.payload.id ? action.payload.newImageData : imageData
                 )
             }

@@ -1,32 +1,32 @@
-import {PoseDetector} from '../../ai/PoseDetector';
-import {Keypoint, Pose} from '@tensorflow-models/posenet';
-import {ImageLabelData, LabelName, LabelPoint} from '../../store/labels/types';
-import {LabelsSelector} from '../../store/selectors/LabelsSelector';
-import {ImageRepository} from '../imageRepository/ImageRepository';
-import {LabelStatus} from '../../data/enums/LabelStatus';
+import { PoseDetector } from '../../ai/PoseDetector';
+import { Keypoint, Pose } from '@tensorflow-models/posenet';
+import { LabelImageData, LabelName, LabelPoint } from '../../store/labels/types';
+import { LabelsSelector } from '../../store/selectors/LabelsSelector';
+import { ImageRepository } from '../imageRepository/ImageRepository';
+import { LabelStatus } from '../../data/enums/LabelStatus';
 import { v4 as uuidv4 } from 'uuid';
-import {store} from '../../index';
-import {updateImageLabelDataById} from '../../store/labels/actionCreators';
-import {findLast} from 'lodash';
-import {AISelector} from '../../store/selectors/AISelector';
-import {AIActions} from './AIActions';
-import {updateSuggestedLabelList} from '../../store/ai/actionCreators';
-import {updateActivePopupType} from '../../store/general/actionCreators';
-import {PopupWindowType} from '../../data/enums/PopupWindowType';
-import {NumberUtil} from '../../utils/NumberUtil';
+import { store } from '../../index';
+import { updateLabelImageDataById } from '../../store/labels/actionCreators';
+import { findLast } from 'lodash';
+import { AISelector } from '../../store/selectors/AISelector';
+import { AIActions } from './AIActions';
+import { updateSuggestedLabelList } from '../../store/ai/actionCreators';
+import { updateActivePopupType } from '../../store/general/actionCreators';
+import { PopupWindowType } from '../../data/enums/PopupWindowType';
+import { NumberUtil } from '../../utils/NumberUtil';
 import { ProjectType } from '../../data/enums/ProjectType';
 
 export class AIPoseDetectionActions {
     public static detectPoseForActiveImage(): void {
-        const activeImageLabelData: ImageLabelData = LabelsSelector.getActiveImageLabelData();
-        AIPoseDetectionActions.detectPoses(activeImageLabelData.id, ImageRepository.getById(activeImageLabelData.id))
+        const activeLabelImageData: LabelImageData = LabelsSelector.getActiveImageData();
+        AIPoseDetectionActions.detectPoses(activeLabelImageData.id, ImageRepository.getById(activeLabelImageData.id))
     }
 
     public static detectPoses(imageId: string, image: HTMLImageElement): void {
         if (store.getState().general.projectData.type === ProjectType.TEXT_RECOGNITION)
             return;
 
-        if (LabelsSelector.getImageLabelDataById(imageId).isVisitedByPoseDetector || !AISelector.isAIPoseDetectorModelLoaded())
+        if (LabelsSelector.getImageDataById(imageId).isVisitedByPoseDetector || !AISelector.isAIPoseDetectorModelLoaded())
             return;
 
         store.dispatch(updateActivePopupType(PopupWindowType.LOADER));
@@ -45,17 +45,17 @@ export class AIPoseDetectionActions {
     }
 
     public static savePosePredictions(imageId: string, predictions: Pose[], image: HTMLImageElement) {
-        const imageData: ImageLabelData = LabelsSelector.getImageLabelDataById(imageId);
+        const imageData: LabelImageData = LabelsSelector.getImageDataById(imageId);
         const predictedLabels: LabelPoint[] = AIPoseDetectionActions
             .mapPredictionsToPointLabels(predictions)
             .filter((labelPoint: LabelPoint) => NumberUtil.isValueInRange(labelPoint.point.x, 0, image.width))
             .filter((labelPoint: LabelPoint) => NumberUtil.isValueInRange(labelPoint.point.y, 0, image.height))
-        const nextImageLabelData: ImageLabelData = {
+        const nextLabelImageData: LabelImageData = {
             ...imageData,
             labelPoints: imageData.labelPoints.concat(predictedLabels),
             isVisitedByPoseDetector: true
         };
-        store.dispatch(updateImageLabelDataById(imageData.id, nextImageLabelData));
+        store.dispatch(updateLabelImageDataById(imageData.id, nextLabelImageData));
     }
 
     private static mapPredictionsToPointLabels(predictions: Pose[]): LabelPoint[] {
@@ -97,8 +97,8 @@ export class AIPoseDetectionActions {
             }, [])
     }
 
-    public static acceptAllSuggestedPointLabels(imageData: ImageLabelData) {
-        const newImageLabelData: ImageLabelData = {
+    public static acceptAllSuggestedPointLabels(imageData: LabelImageData) {
+        const newLabelImageData: LabelImageData = {
             ...imageData,
             labelPoints: imageData.labelPoints.map((labelPoint: LabelPoint) => {
                 const labelName: LabelName = findLast(LabelsSelector.getLabelNames(), {name: labelPoint.suggestedLabel});
@@ -109,14 +109,14 @@ export class AIPoseDetectionActions {
                 }
             })
         };
-        store.dispatch(updateImageLabelDataById(newImageLabelData.id, newImageLabelData));
+        store.dispatch(updateLabelImageDataById(newLabelImageData.id, newLabelImageData));
     }
 
-    public static rejectAllSuggestedPointLabels(imageData: ImageLabelData) {
-        const newImageLabelData: ImageLabelData = {
+    public static rejectAllSuggestedPointLabels(imageData: LabelImageData) {
+        const newLabelImageData: LabelImageData = {
             ...imageData,
             labelPoints: imageData.labelPoints.filter((labelPoint: LabelPoint) => labelPoint.status === LabelStatus.ACCEPTED)
         };
-        store.dispatch(updateImageLabelDataById(newImageLabelData.id, newImageLabelData));
+        store.dispatch(updateLabelImageDataById(newLabelImageData.id, newLabelImageData));
     }
 }

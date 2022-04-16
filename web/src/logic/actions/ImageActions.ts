@@ -4,13 +4,13 @@ import {
   updateActiveLabelImageIndex,
   updateActiveLabelId,
   updateActiveLabelNameId,
-  updateImageLabelDataById,
+  updateLabelImageDataById,
 } from "../../store/labels/actionCreators";
 import { ViewPortActions } from "./ViewPortActions";
 import { EditorModel } from "../../staticModels/EditorModel";
 import { LabelType } from "../../data/enums/LabelType";
 import {
-  ImageLabelData,
+  LabelImageData,
   LabelLine,
   LabelPoint,
   LabelPolygon,
@@ -50,29 +50,29 @@ export class ImageActions {
       return;
     }
 
-    const imageData: ImageLabelData = LabelsSelector.getActiveImageLabelData();
+    const imageData: LabelImageData = LabelsSelector.getActiveImageData();
     store.dispatch(
-      updateImageLabelDataById(
+      updateLabelImageDataById(
         imageData.id,
-        ImageActions.mapNewImageLabelData(imageData, labelIndex)
+        ImageActions.mapNewLabelImageData(imageData, labelIndex)
       )
     );
     store.dispatch(updateActiveLabelNameId(labelNames[1].id));
   }
 
-  private static mapNewImageLabelData(
-    imageData: ImageLabelData,
+  private static mapNewLabelImageData(
+    imageData: LabelImageData,
     labelIndex: number
-  ): ImageLabelData {
+  ): LabelImageData {
     const labelType: LabelType = LabelsSelector.getActiveLabelType();
     const labelNames = LabelsSelector.getLabelNames();
-    let newImageLabelData: ImageLabelData = {
+    let newLabelImageData: LabelImageData = {
       ...imageData,
     };
     switch (labelType) {
       case LabelType.POINT:
         const point = LabelsSelector.getActivePointLabel();
-        newImageLabelData.labelPoints = imageData.labelPoints.map(
+        newLabelImageData.labelPoints = imageData.labelPoints.map(
           (labelPoint: LabelPoint) => {
             if (labelPoint.id === point.id) {
               return {
@@ -88,7 +88,7 @@ export class ImageActions {
         break;
       case LabelType.LINE:
         const line = LabelsSelector.getActiveLineLabel();
-        newImageLabelData.labelLines = imageData.labelLines.map(
+        newLabelImageData.labelLines = imageData.labelLines.map(
           (labelLine: LabelLine) => {
             if (labelLine.id === line.id) {
               return {
@@ -104,7 +104,7 @@ export class ImageActions {
         break;
       case LabelType.RECT:
         const rect = LabelsSelector.getActiveRectLabel();
-        newImageLabelData.labelRects = imageData.labelRects.map(
+        newLabelImageData.labelRects = imageData.labelRects.map(
           (labelRectangle: LabelRect) => {
             if (labelRectangle.id === rect.id) {
               return {
@@ -120,7 +120,7 @@ export class ImageActions {
         break;
       case LabelType.POLYGON:
         const polygon = LabelsSelector.getActivePolygonLabel();
-        newImageLabelData.labelPolygons = imageData.labelPolygons.map(
+        newLabelImageData.labelPolygons = imageData.labelPolygons.map(
           (labelPolygon: LabelPolygon) => {
             if (labelPolygon.id === polygon.id) {
               return {
@@ -137,16 +137,16 @@ export class ImageActions {
       case LabelType.IMAGE_RECOGNITION:
         const labelId: string = labelNames[labelIndex].id;
         if (imageData.labelNameIds.includes(labelId)) {
-          newImageLabelData.labelNameIds = remove(
+          newLabelImageData.labelNameIds = remove(
             imageData.labelNameIds,
             (element: string) => element !== labelId
           );
         } else {
-          newImageLabelData.labelNameIds = imageData.labelNameIds.concat(labelId);
+          newLabelImageData.labelNameIds = imageData.labelNameIds.concat(labelId);
         }
         break;
     }
 
-    return newImageLabelData;
+    return newLabelImageData;
   }
 }

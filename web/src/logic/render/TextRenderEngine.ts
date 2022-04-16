@@ -1,22 +1,22 @@
-import {IPoint} from '../../interfaces/IPoint';
-import {IRect} from '../../interfaces/IRect';
-import {RectUtil} from '../../utils/RectUtil';
-import {DrawUtil} from '../../utils/DrawUtil';
-import {store} from '../..';
-import {ImageTextData, TextRect } from '../../store/texts/types';
-import {PointUtil} from '../../utils/PointUtil';
-import {RectAnchor} from '../../data/RectAnchor';
-import {RenderEngineSettings} from '../../settings/RenderEngineSettings';
-import {updateCustomCursorStyle} from '../../store/general/actionCreators';
-import {CustomCursorStyle} from '../../data/enums/CustomCursorStyle';
-import {EditorData} from '../../data/EditorData';
-import {BaseRenderEngine} from './BaseRenderEngine';
-import {RenderEngineUtil} from '../../utils/RenderEngineUtil';
-import {TextEditorActions} from '../actions/TextEditorActions';
-import {GeneralSelector} from '../../store/selectors/GeneralSelector';
-import {TextUtil} from '../../utils/TextUtil';
+import { IPoint } from '../../interfaces/IPoint';
+import { IRect } from '../../interfaces/IRect';
+import { RectUtil } from '../../utils/RectUtil';
+import { DrawUtil } from '../../utils/DrawUtil';
+import { store } from '../..';
+import { TextImageData, TextRect } from '../../store/texts/types';
+import { PointUtil } from '../../utils/PointUtil';
+import { RectAnchor } from '../../data/RectAnchor';
+import { RenderEngineSettings } from '../../settings/RenderEngineSettings';
+import { updateCustomCursorStyle } from '../../store/general/actionCreators';
+import { CustomCursorStyle } from '../../data/enums/CustomCursorStyle';
+import { EditorData } from '../../data/EditorData';
+import { BaseRenderEngine } from './BaseRenderEngine';
+import { RenderEngineUtil } from '../../utils/RenderEngineUtil';
+import { TextEditorActions } from '../actions/TextEditorActions';
+import { GeneralSelector } from '../../store/selectors/GeneralSelector';
+import { TextUtil } from '../../utils/TextUtil';
 import { TextsSelector } from '../../store/selectors/TextsSelector';
-import { updateActiveTextId, updateImageTextDataById, updateHighlightedTextId } from '../../store/texts/actionCreators';
+import { updateActiveTextId, updateTextImageDataById, updateHighlightedTextId } from '../../store/texts/actionCreators';
 
 export class TextRenderEngine extends BaseRenderEngine {
 
@@ -94,7 +94,7 @@ export class TextRenderEngine extends BaseRenderEngine {
                     }
                     return textRect;
                 });
-                store.dispatch(updateImageTextDataById(imageData.id, imageData));
+                store.dispatch(updateTextImageDataById(imageData.id, imageData));
             }
         }
         this.endRectTransformation()
@@ -124,7 +124,7 @@ export class TextRenderEngine extends BaseRenderEngine {
 
     public render(data: EditorData) {
         const activeTextId: string = TextsSelector.getActiveTextId();
-        const imageData: ImageTextData = TextsSelector.getActiveImageData();
+        const imageData: TextImageData = TextsSelector.getActiveImageData();
         if (imageData) {
             imageData.textRects.forEach((textRect: TextRect) => {
                 if (textRect.id === activeTextId) {
@@ -215,7 +215,7 @@ export class TextRenderEngine extends BaseRenderEngine {
     }
 
     private addRectText = (rect: IRect) => {
-        const imageData: ImageTextData = TextsSelector.getActiveImageData();
+        const imageData: TextImageData = TextsSelector.getActiveImageData();
         const textRect: TextRect = TextUtil.createTextRect('', rect);
         imageData.textRects.push(textRect);
         store.dispatch(updateActiveTextId(textRect.id));

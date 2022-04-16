@@ -1,20 +1,20 @@
-import {ISize} from "../../../../interfaces/ISize";
-import {ImageLabelData, LabelName} from "../../../../store/labels/types";
+import { ISize} from "../../../../interfaces/ISize";
+import { LabelImageData, LabelName} from "../../../../store/labels/types";
 import React from "react";
 import Scrollbars from "react-custom-scrollbars";
-import {updateImageLabelDataById} from "../../../../store/labels/actionCreators";
-import {AppState} from "../../../../store";
-import {connect} from "react-redux";
-import {remove} from "lodash";
+import { updateLabelImageDataById} from "../../../../store/labels/actionCreators";
+import { AppState } from "../../../../store";
+import { connect } from "react-redux";
+import { remove } from "lodash";
 import './TagLabelsList.scss';
 import classNames from "classnames";
-import {ImageButton} from "../../../Common/ImageButton/ImageButton";
-import {PopupWindowType} from "../../../../data/enums/PopupWindowType";
-import {updateActivePopupType} from "../../../../store/general/actionCreators";
+import { ImageButton } from "../../../Common/ImageButton/ImageButton";
+import { PopupWindowType } from "../../../../data/enums/PopupWindowType";
+import { updateActivePopupType } from "../../../../store/general/actionCreators";
 interface IProps {
     size: ISize;
-    imageData: ImageLabelData;
-    updateImageLabelDataById: (id: string, newImageLabelData: ImageLabelData) => any;
+    imageData: LabelImageData;
+    updateLabelImageDataById: (id: string, newLabelImageData: LabelImageData) => any;
     labelNames: LabelName[];
     updateActivePopupType: (activePopupType: PopupWindowType) => any;
 }
@@ -23,7 +23,7 @@ const TagLabelsList: React.FC<IProps> = (
     {
         size,
         imageData,
-        updateImageLabelDataById,
+        updateLabelImageDataById,
         labelNames,
         updateActivePopupType
     }) => {
@@ -39,12 +39,12 @@ const TagLabelsList: React.FC<IProps> = (
 
     const onTagClick = (labelId: string)  => {
         if (imageData.labelNameIds.includes(labelId)) {
-            updateImageLabelDataById(imageData.id, {
+            updateLabelImageDataById(imageData.id, {
                 ...imageData,
                 labelNameIds: remove(imageData.labelNameIds, (element: string) => element !== labelId)
             })
         } else {
-            updateImageLabelDataById(imageData.id, {
+            updateLabelImageDataById(imageData.id, {
                 ...imageData,
                 labelNameIds: imageData.labelNameIds.concat(labelId)
             })
@@ -118,7 +118,7 @@ const TagLabelsList: React.FC<IProps> = (
 };
 
 const mapDispatchToProps = {
-    updateImageLabelDataById,
+    updateLabelImageDataById,
     updateActivePopupType
 };
 

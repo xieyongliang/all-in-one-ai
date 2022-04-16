@@ -1,8 +1,8 @@
-import {AnnotationFormatType} from "../../data/enums/AnnotationFormatType";
-import {LabelsSelector} from "../../store/selectors/LabelsSelector";
-import {ImageLabelData, LabelName} from "../../store/labels/types";
-import {ExporterUtil} from "../../utils/ExporterUtil";
-import {findLast} from "lodash";
+import { AnnotationFormatType } from "../../data/enums/AnnotationFormatType";
+import { LabelsSelector } from "../../store/selectors/LabelsSelector";
+import { LabelImageData, LabelName } from "../../store/labels/types";
+import { ExporterUtil } from "../../utils/ExporterUtil";
+import { findLast } from "lodash";
 
 export class TagLabelsExporter {
     public static export(exportFormatType: AnnotationFormatType): void {
@@ -20,10 +20,10 @@ export class TagLabelsExporter {
 
     private static exportAsCSV(): void {
         const content: string = LabelsSelector.getImagesData()
-            .filter((imageData: ImageLabelData) => {
+            .filter((imageData: LabelImageData) => {
                 return imageData.labelNameIds.length > 0
             })
-            .map((imageData: ImageLabelData) => {
+            .map((imageData: LabelImageData) => {
                 return TagLabelsExporter.wrapLabelNamesIntoCSV(imageData)})
             .join("\n");
         const fileName: string = `${ExporterUtil.getExportFileName()}.csv`;
@@ -32,10 +32,10 @@ export class TagLabelsExporter {
 
     private static exportAsJSON(): void {
         const contentObjects: object[] = LabelsSelector.getImagesData()
-            .filter((imageData: ImageLabelData) => {
+            .filter((imageData: LabelImageData) => {
                 return imageData.labelNameIds.length > 0
             })
-            .map((imageData: ImageLabelData) => {
+            .map((imageData: LabelImageData) => {
                 return {
                     "image": imageData.fileData.name,
                     "annotations": TagLabelsExporter.wrapLabelNamesIntoJSON(imageData)
@@ -45,7 +45,7 @@ export class TagLabelsExporter {
         ExporterUtil.saveAs(content, fileName);
     }
 
-    private static wrapLabelNamesIntoCSV(imageData: ImageLabelData): string {
+    private static wrapLabelNamesIntoCSV(imageData: LabelImageData): string {
         if (imageData.labelNameIds.length === 0 || !imageData.loadStatus)
             return null;
 
@@ -60,7 +60,7 @@ export class TagLabelsExporter {
         return labelFields.join(",")
     }
 
-    private static wrapLabelNamesIntoJSON(imageData: ImageLabelData): string[] {
+    private static wrapLabelNamesIntoJSON(imageData: LabelImageData): string[] {
         if (imageData.labelNameIds.length === 0 || !imageData.loadStatus)
             return [];
         const labelNames: LabelName[] = LabelsSelector.getLabelNames();

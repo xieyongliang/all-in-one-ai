@@ -1,29 +1,27 @@
 import React from "react";
 import './LabelsToolkit.scss';
-import {ImageLabelData} from "../../../../store/labels/types";
-import {updateActiveLabelId, updateActiveLabelType, updateImageLabelDataById} from "../../../../store/labels/actionCreators";
-import {AppState} from "../../../../store";
-import {connect} from "react-redux";
-import {LabelType} from "../../../../data/enums/LabelType";
-import {ProjectType} from "../../../../data/enums/ProjectType";
-import {ISize} from "../../../../interfaces/ISize";
-import {Settings} from "../../../../settings/Settings";
+import { LabelImageData} from "../../../../store/labels/types";
+import { updateActiveLabelId, updateActiveLabelType, updateLabelImageDataById} from "../../../../store/labels/actionCreators";
+import { AppState } from "../../../../store";
+import { connect } from "react-redux";
+import { LabelType } from "../../../../data/enums/LabelType";
+import { ProjectType } from "../../../../data/enums/ProjectType";
+import { ISize } from "../../../../interfaces/ISize";
+import { Settings } from "../../../../settings/Settings";
 import RectLabelsList from "../RectLabelsList/RectLabelsList";
 import PointLabelsList from "../PointLabelsList/PointLabelsList";
 import PolygonLabelsList from "../PolygonLabelsList/PolygonLabelsList";
-import {ContextManager} from "../../../../logic/context/ContextManager";
-import {ContextType} from "../../../../data/enums/ContextType";
-import {EventType} from "../../../../data/enums/EventType";
+import { ContextManager } from "../../../../logic/context/ContextManager";
+import { ContextType } from "../../../../data/enums/ContextType";
+import { EventType } from "../../../../data/enums/EventType";
 import LineLabelsList from "../LineLabelsList/LineLabelsList";
 import TagLabelsList from "../TagLabelsList/TagLabelsList";
 
 interface IProps {
     activeImageIndex:number,
     activeLabelType: LabelType;
-    imagesData: ImageLabelData[];
+    imagesData: LabelImageData[];
     projectType: ProjectType;
-    onProcessing: () => any;
-    onProcessed: () => any;
     imageBucket?: string;
     imageKey?: string;
     imageId?: string;
@@ -31,10 +29,13 @@ interface IProps {
     imageColors: string[];
     imageAnnotations?: string[];
     imageName: string;
-    updateImageLabelDataById: (id: string, newImageLabelData: ImageLabelData) => any;
+    updateLabelImageDataById: (id: string, newLabelImageData: LabelImageData) => any;
     updateActiveLabelType: (activeLabelType: LabelType) => any;
     updateActiveLabelId: (highlightedLabelId: string) => any;
-}
+    onProcessing: () => any;
+    onProcessed: () => any;
+    onLoaded: () => any;
+ }
 
 interface IState {
     size: ISize;
@@ -141,10 +142,12 @@ class LabelsToolkit extends React.Component<IProps, IState> {
                         imageName = {this.props.imageName}
                         onProcessing = {this.props.onProcessing}
                         onProcessed = {this.props.onProcessed}
+                        onLoaded = {this.props.onLoaded}
                     />
                 }
                 {
-                    activeLabelType === LabelType.POINT && <PointLabelsList
+                    activeLabelType === LabelType.POINT && 
+                    <PointLabelsList
                         size={{
                             width: size.width - 20,
                             height: activeContentHeight - 20
@@ -153,7 +156,8 @@ class LabelsToolkit extends React.Component<IProps, IState> {
                     />
                 }
                 {
-                    activeLabelType === LabelType.LINE && <LineLabelsList
+                    activeLabelType === LabelType.LINE && 
+                    <LineLabelsList
                         size={{
                             width: size.width - 20,
                             height: activeContentHeight - 20
@@ -162,7 +166,8 @@ class LabelsToolkit extends React.Component<IProps, IState> {
                     />
                 }
                 {
-                    activeLabelType === LabelType.POLYGON && <PolygonLabelsList
+                    activeLabelType === LabelType.POLYGON && 
+                    <PolygonLabelsList
                         size={{
                             width: size.width - 20,
                             height: activeContentHeight - 20
@@ -171,13 +176,15 @@ class LabelsToolkit extends React.Component<IProps, IState> {
                     />
                 }
                 {
-                    activeLabelType === LabelType.IMAGE_RECOGNITION && <TagLabelsList
+                    activeLabelType === LabelType.IMAGE_RECOGNITION && 
+                    <TagLabelsList
                         size={{
                             width: size.width - 20,
                             height: activeContentHeight - 20
                         }}
-                    imageData={imagesData[activeImageIndex]}
-                />}
+                        imageData={imagesData[activeImageIndex]}
+                    />
+                }
             </div>
         return content;
     };
@@ -196,7 +203,7 @@ class LabelsToolkit extends React.Component<IProps, IState> {
 }
 
 const mapDispatchToProps = {
-    updateImageLabelDataById,
+    updateLabelImageDataById,
     updateActiveLabelType,
     updateActiveLabelId
 };

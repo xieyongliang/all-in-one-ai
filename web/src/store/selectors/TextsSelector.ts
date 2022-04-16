@@ -1,6 +1,6 @@
-import {store} from '../..';
-import {ImageTextData, Text, TextRect} from '../texts/types';
-import {find} from 'lodash';
+import { store } from '../..';
+import { TextImageData, Text, TextRect} from '../texts/types';
+import { find } from 'lodash';
 
 export class TextsSelector {
     public static getTexts(): Text[] {
@@ -29,7 +29,7 @@ export class TextsSelector {
         return find(TextsSelector.getActiveImageData().textRects, {id: activeTextId});
     }
 
-    public static getImagesData(): ImageTextData[] {
+    public static getImagesData(): TextImageData[] {
         return store.getState().texts.imagesData;
     }
 
@@ -37,7 +37,7 @@ export class TextsSelector {
         return store.getState().texts.activeImageIndex;
     }
 
-    public static getActiveImageData(): ImageTextData | null {
+    public static getActiveImageData(): TextImageData | null {
         const activeImageIndex: number | null = TextsSelector.getActiveImageIndex();
 
         if (activeImageIndex === null)
@@ -46,13 +46,13 @@ export class TextsSelector {
         return TextsSelector.getImageDataByIndex(activeImageIndex);
     }
 
-    public static getImageDataByIndex(index: number): ImageTextData {
-        const imagesData: ImageTextData[] = TextsSelector.getImagesData();
+    public static getImageDataByIndex(index: number): TextImageData {
+        const imagesData: TextImageData[] = TextsSelector.getImagesData();
         return imagesData[index];
     }
 
-    public static getImageDataById(id: string): ImageTextData {
-        const imagesData: ImageTextData[] = TextsSelector.getImagesData();
+    public static getImageDataById(id: string): TextImageData {
+        const imagesData: TextImageData[] = TextsSelector.getImagesData();
         return find(imagesData, {id});
     }
 }

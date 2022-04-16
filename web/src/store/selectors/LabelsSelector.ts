@@ -1,7 +1,7 @@
-import {store} from '../..';
-import {ImageLabelData, LabelLine, LabelName, LabelPoint, LabelPolygon, LabelRect} from '../labels/types';
-import {find} from 'lodash';
-import {LabelType} from '../../data/enums/LabelType';
+import { store } from '../..';
+import { LabelImageData, LabelLine, LabelName, LabelPoint, LabelPolygon, LabelRect } from '../labels/types';
+import { find} from 'lodash';
+import { LabelType} from '../../data/enums/LabelType';
 
 export class LabelsSelector {
     public static getLabelNames(): LabelName[] {
@@ -21,7 +21,7 @@ export class LabelsSelector {
         return store.getState().labels.activeLabelType;
     }
 
-    public static getImagesData(): ImageLabelData[] {
+    public static getImagesData(): LabelImageData[] {
         return store.getState().labels.imagesData;
     }
 
@@ -29,22 +29,22 @@ export class LabelsSelector {
         return store.getState().labels.activeImageIndex;
     }
 
-    public static getActiveImageLabelData(): ImageLabelData | null {
+    public static getActiveImageData(): LabelImageData | null {
         const activeImageIndex: number | null = LabelsSelector.getActiveImageIndex();
 
         if (activeImageIndex === null)
             return null;
 
-        return LabelsSelector.getImageLabelDataByIndex(activeImageIndex);
+        return LabelsSelector.getImageDataByIndex(activeImageIndex);
     }
 
-    public static getImageLabelDataByIndex(index: number): ImageLabelData {
-        const imagesData: ImageLabelData[] = LabelsSelector.getImagesData();
+    public static getImageDataByIndex(index: number): LabelImageData {
+        const imagesData: LabelImageData[] = LabelsSelector.getImagesData();
         return imagesData[index];
     }
 
-    public static getImageLabelDataById(id: string): ImageLabelData {
-        const imagesData: ImageLabelData[] = LabelsSelector.getImagesData();
+    public static getImageDataById(id: string): LabelImageData {
+        const imagesData: LabelImageData[] = LabelsSelector.getImagesData();
         return find(imagesData, {id});
     }
 
@@ -62,7 +62,7 @@ export class LabelsSelector {
         if (activeLabelId === null)
             return null;
 
-        return find(LabelsSelector.getActiveImageLabelData().labelRects, {id: activeLabelId});
+        return find(LabelsSelector.getActiveImageData().labelRects, {id: activeLabelId});
     }
 
     public static getActivePointLabel(): LabelPoint | null {
@@ -71,7 +71,7 @@ export class LabelsSelector {
         if (activeLabelId === null)
             return null;
 
-        return find(LabelsSelector.getActiveImageLabelData().labelPoints, {id: activeLabelId});
+        return find(LabelsSelector.getActiveImageData().labelPoints, {id: activeLabelId});
     }
 
     public static getActivePolygonLabel(): LabelPolygon | null {
@@ -80,7 +80,7 @@ export class LabelsSelector {
         if (activeLabelId === null)
             return null;
 
-        return find(LabelsSelector.getActiveImageLabelData().labelPolygons, {id: activeLabelId});
+        return find(LabelsSelector.getActiveImageData().labelPolygons, {id: activeLabelId});
     }
 
     public static getActiveLineLabel(): LabelLine | null {
@@ -89,6 +89,6 @@ export class LabelsSelector {
         if (activeLabelId === null)
             return null;
 
-        return find(LabelsSelector.getActiveImageLabelData().labelLines, {id: activeLabelId});
+        return find(LabelsSelector.getActiveImageData().labelLines, {id: activeLabelId});
     }
 }

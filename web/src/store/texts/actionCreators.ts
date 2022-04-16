@@ -1,4 +1,4 @@
-import {TextsActionTypes, ImageTextData, Text } from './types';
+import {TextsActionTypes, TextImageData, Text } from './types';
 import { Action } from '../Actions';
 
 export function updateActiveTextImageIndex(activeImageIndex: number): TextsActionTypes {
@@ -28,7 +28,7 @@ export function updateHighlightedTextId(highlightedTextId: string): TextsActionT
     };
 }
 
-export function updateImageTextDataById(id: string, newImageData: ImageTextData): TextsActionTypes {
+export function updateTextImageDataById(id: string, newImageData: TextImageData): TextsActionTypes {
     return {
         type: Action.UPDATE_TEXT_IMAGE_DATA_BY_ID,
         payload: {
@@ -38,7 +38,7 @@ export function updateImageTextDataById(id: string, newImageData: ImageTextData)
     };
 }
 
-export function addImageTextData(imageData: ImageTextData[]): TextsActionTypes {
+export function addTextImageData(imageData: TextImageData[]): TextsActionTypes {
     return {
         type: Action.ADD_TEXT_IMAGES_DATA,
         payload: {
@@ -47,7 +47,7 @@ export function addImageTextData(imageData: ImageTextData[]): TextsActionTypes {
     };
 }
 
-export function updateImageTextData(imageData: ImageTextData[]): TextsActionTypes {
+export function updateTextImageData(imageData: TextImageData[]): TextsActionTypes {
     return {
         type: Action.UPDATE_TEXT_IMAGES_DATA,
         payload: {

@@ -1,9 +1,9 @@
-import {ImageLabelData, LabelName} from '../../../store/labels/types';
+import {LabelImageData, LabelName} from '../../../store/labels/types';
 import {LabelsSelector} from '../../../store/selectors/LabelsSelector';
 import {COCOCategory, COCOImage, COCOObject} from '../../../data/labels/COCO';
 import { v4 as uuidv4 } from 'uuid';
 import {ArrayUtil, PartitionResult} from '../../../utils/ArrayUtil';
-import {ImageLabelDataUtil} from '../../../utils/ImageLabelDataUtil';
+import {LabelImageDataUtil} from '../../../utils/LabelImageDataUtil';
 import {LabelUtil} from '../../../utils/LabelUtil';
 import {
     COCOAnnotationDeserializationError,
@@ -18,14 +18,14 @@ import {Settings} from "../../../settings/Settings";
 
 export type FileNameCOCOIdMap = {[ fileName: string]: number; }
 export type LabelNameMap = { [labelCOCOId: number]: LabelName; }
-export type ImageLabelDataMap = { [imageCOCOId: number]: ImageLabelData; }
+export type LabelImageDataMap = { [imageCOCOId: number]: LabelImageData; }
 
 export class COCOImporter extends AnnotationImporter {
     public static requiredKeys = ['images', 'annotations', 'categories']
 
     public import(
         filesData: File[],
-        onSuccess: (imagesData: ImageLabelData[], labelNames: LabelName[]) => any,
+        onSuccess: (imagesData: LabelImageData[], labelNames: LabelName[]) => any,
         onFailure: (error?:Error) => any
     ): void {
         if (filesData.length > 1) {
@@ -36,7 +36,7 @@ export class COCOImporter extends AnnotationImporter {
         reader.readAsText(filesData[0]);
         reader.onloadend = (evt: any) => {
             try {
-                const inputImagesLabelData: ImageLabelData[] = LabelsSelector.getImagesData();
+                const inputImagesLabelData: LabelImageData[] = LabelsSelector.getImagesData();
                 const annotations = COCOImporter.deserialize(evt.target.result)
                 const {imagesData, labelNames} = this.applyLabels(inputImagesLabelData, annotations);
                 onSuccess(imagesData,labelNames);
@@ -55,13 +55,13 @@ export class COCOImporter extends AnnotationImporter {
         }
     }
 
-    public applyLabels(imageLabelData: ImageLabelData[], annotationsObject: COCOObject): ImportResult {
+    public applyLabels(imageData: LabelImageData[], annotationsObject: COCOObject): ImportResult {
         COCOImporter.validateCocoFormat(annotationsObject);
         const {images, categories, annotations} = annotationsObject;
         const labelNameMap: LabelNameMap = COCOImporter.mapCOCOCategories(categories);
-        const cleanImageLabelData: ImageLabelData[] = imageLabelData.map((item: ImageLabelData) => ImageLabelDataUtil.cleanAnnotations(item));
-        const imageDataPartition: PartitionResult<ImageLabelData> = COCOImporter.partitionImageLabelData(cleanImageLabelData, images);
-        const imageDataMap: ImageLabelDataMap = COCOImporter.mapImageLabelData(imageDataPartition.pass, images);
+        const cleanLabelImageData: LabelImageData[] = imageData.map((item: LabelImageData) => LabelImageDataUtil.cleanAnnotations(item));
+        const imageDataPartition: PartitionResult<LabelImageData> = COCOImporter.partitionLabelImageData(cleanLabelImageData, images);
+        const imageDataMap: LabelImageDataMap = COCOImporter.mapLabelImageData(imageDataPartition.pass, images);
 
         for (const annotation of annotations) {
             if (!imageDataMap[annotation.image_id] || annotation.iscrowd === 1)
@@ -84,18 +84,18 @@ export class COCOImporter extends AnnotationImporter {
             }
         }
 
-        const resultImageLabelData = Object.values(imageDataMap).concat(imageDataPartition.fail);
+        const resultLabelImageData = Object.values(imageDataMap).concat(imageDataPartition.fail);
 
         return {
-            imagesData: ImageLabelDataUtil.arrange(resultImageLabelData, imageLabelData.map((item: ImageLabelData) => item.id)),
+            imagesData: LabelImageDataUtil.arrange(resultLabelImageData, imageData.map((item: LabelImageData) => item.id)),
             labelNames: Object.values(labelNameMap)
         }
     }
 
-    protected static partitionImageLabelData(items: ImageLabelData[], images: COCOImage[]): PartitionResult<ImageLabelData> {
+    protected static partitionLabelImageData(items: LabelImageData[], images: COCOImage[]): PartitionResult<LabelImageData> {
         const imageNames: string[] = images.map((item: COCOImage) => item.file_name);
-        const predicate = (item: ImageLabelData) => imageNames.includes(item.fileData.name);
-        return ArrayUtil.partition<ImageLabelData>(items, predicate);
+        const predicate = (item: LabelImageData) => imageNames.includes(item.fileData.name);
+        return ArrayUtil.partition<LabelImageData>(items, predicate);
     }
 
     protected static mapCOCOCategories(categories: COCOCategory[]): LabelNameMap {
@@ -109,12 +109,12 @@ export class COCOImporter extends AnnotationImporter {
         }, {});
     }
 
-    protected static mapImageLabelData(items: ImageLabelData[], images: COCOImage[]): ImageLabelDataMap {
+    protected static mapLabelImageData(items: LabelImageData[], images: COCOImage[]): LabelImageDataMap {
         const fileNameCOCOIdMap: FileNameCOCOIdMap = images.reduce((acc: FileNameCOCOIdMap, image: COCOImage) => {
             acc[image.file_name] = image.id
             return acc
         }, {});
-        return  items.reduce((acc: ImageLabelDataMap, image: ImageLabelData) => {
+        return  items.reduce((acc: LabelImageDataMap, image: LabelImageData) => {
             acc[fileNameCOCOIdMap[image.fileData.name]] = image
             return acc;
         }, {});
