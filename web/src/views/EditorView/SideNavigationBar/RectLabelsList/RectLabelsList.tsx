@@ -93,7 +93,6 @@ const RectLabelsList: React.FC<IProps> = (
     useEffect(() => {
         axios.get('/endpoint', {params: { industrial_model: params.id}})
             .then((response) => {
-                console.log(response.data)
                 if(response.data.length > 0) {
                     var items = [];
                     response.data.forEach((item) => {

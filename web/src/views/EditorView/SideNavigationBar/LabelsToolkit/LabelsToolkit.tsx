@@ -86,9 +86,7 @@ class LabelsToolkit extends React.Component<IProps, IState> {
                     LabelType.POLYGON    
                 ]
         }
-
-        const activeTab: LabelType = props.activeLabelType ? props.activeLabelType : this.tabs[0];
-        props.updateActiveLabelType(activeTab);
+        props.updateActiveLabelType(this.tabs[0]);
     }
 
     public componentDidMount(): void {

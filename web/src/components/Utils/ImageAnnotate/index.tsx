@@ -107,7 +107,6 @@ const ImageAnnotate: React.FC<IProps> = (
             .then((response) => {
                 var data = response.data;
                 imageFile = new File([data], `${imageName}.png`);
-                
                 updateProjectDataAction({
                     ...projectData,
                     type: type,

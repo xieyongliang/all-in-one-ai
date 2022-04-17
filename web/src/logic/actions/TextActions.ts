@@ -1,5 +1,5 @@
 import { LabelsSelector } from '../../store/selectors/LabelsSelector';
-import { TextImageData, TextRect } from '../../store/texts/types';
+import { TextImageData, TextPolygon, TextRect } from '../../store/texts/types';
 import { filter } from 'lodash';
 import { store } from '../../index';
 import { TextsSelector } from '../../store/selectors/TextsSelector';
@@ -21,6 +21,17 @@ export class TextActions {
             })
         };
         store.dispatch(updateTextImageDataById(imageData.id, newImageLabelData));
+    }
+
+    public static deletePolygonTextById(imageId: string, labelPolygonId: string) {
+        const imageData: TextImageData = TextsSelector.getImageDataById(imageId);
+        const newImageData = {
+            ...imageData,
+            labelPolygons: filter(imageData.textPolygons, (currentLabel: TextPolygon) => {
+                return currentLabel.id !== labelPolygonId;
+            })
+        };
+        store.dispatch(updateTextImageDataById(imageData.id, newImageData));
     }
 
     public static removeText(textIds: string[]) {

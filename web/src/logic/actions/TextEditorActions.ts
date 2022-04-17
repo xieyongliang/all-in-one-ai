@@ -15,7 +15,7 @@ import {ImageUtil} from "../../utils/ImageUtil";
 import {GeneralSelector} from "../../store/selectors/GeneralSelector";
 import {ViewPortHelper} from "../helpers/ViewPortHelper";
 import {CustomCursorStyle} from "../../data/enums/CustomCursorStyle";
-import { TextRenderEngine } from "../render/TextRenderEngine";
+import { TextPolygonRenderEngine } from "../render/TextPolygonRenderEngine";
 
 export class TextEditorActions {
 
@@ -24,11 +24,11 @@ export class TextEditorActions {
     // =================================================================================================================
 
     public static mountTextSupportRenderingEngine() {
-        EditorModel.supportRenderingEngine = new TextRenderEngine(EditorModel.canvas);
+        EditorModel.supportRenderingEngine = new TextPolygonRenderEngine(EditorModel.canvas);
     };
 
     public static swapSupportRenderingEngine() {
-        EditorModel.supportRenderingEngine = new TextRenderEngine(EditorModel.canvas);
+        EditorModel.supportRenderingEngine = new TextPolygonRenderEngine(EditorModel.canvas);
     };
 
     public static mountRenderEnginesAndHelpers() {

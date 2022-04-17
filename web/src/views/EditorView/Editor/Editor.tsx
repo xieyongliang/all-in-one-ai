@@ -89,11 +89,16 @@ class Editor extends React.Component<IProps, IState> {
 
         prevProps.imageData.id !== imageData.id && ImageLoadManager.addAndRun(this.loadImage(imageData));
 
-        if(this.props.projectType !== ProjectType.TEXT_RECOGNITION)
+        if(this.props.projectType !== ProjectType.TEXT_RECOGNITION) {
             if (prevProps.activeLabelType !== activeLabelType) {
                 LabelEditorActions.swapSupportRenderingEngine(activeLabelType);
                 AIActions.detect(imageData.id, ImageRepository.getById(imageData.id));
             }
+        }
+        else {
+            TextEditorActions.swapSupportRenderingEngine();
+            AIActions.detect(imageData.id, ImageRepository.getById(imageData.id));
+        }
 
         this.updateModelAndRender();
     }
@@ -122,17 +127,27 @@ class Editor extends React.Component<IProps, IState> {
 
     private loadImage = async (imageData: LabelImageData): Promise<any> => {
         if (imageData.loadStatus) {
-            LabelEditorActions.setActiveImage(ImageRepository.getById(imageData.id));
-            AIActions.detect(imageData.id, ImageRepository.getById(imageData.id));
-            this.updateModelAndRender()
+            if(this.props.projectType !== ProjectType.TEXT_RECOGNITION) {
+                LabelEditorActions.setActiveImage(ImageRepository.getById(imageData.id));
+                AIActions.detect(imageData.id, ImageRepository.getById(imageData.id));
+                this.updateModelAndRender()
+            }
+            else {
+                TextEditorActions.setActiveImage(ImageRepository.getById(imageData.id));
+                this.updateModelAndRender()
+            }
         }
         else {
             if (!EditorModel.isLoading) {
-                LabelEditorActions.setLoadingStatus(true);
+                if(this.props.projectType !== ProjectType.TEXT_RECOGNITION)
+                    LabelEditorActions.setLoadingStatus(true);
+                else 
+                    TextEditorActions.setLoadingStatus(true);
                 const saveLoadedImagePartial = (image: HTMLImageElement) => this.saveLoadedImage(image, imageData);
                 FileUtil.loadImage(imageData.fileData)
                     .then((image:HTMLImageElement) => saveLoadedImagePartial(image))
-                    .catch((error) => this.handleLoadImageError())
+                    .catch((error) => this.handleLoadImageError())                    
+                
             }
         }
     };
@@ -141,9 +156,15 @@ class Editor extends React.Component<IProps, IState> {
         imageData.loadStatus = true;
         this.props.updateLabelImageDataById(imageData.id, imageData);
         ImageRepository.storeImage(imageData.id, image);
-        LabelEditorActions.setActiveImage(image);
+        if(this.props.projectType !== ProjectType.TEXT_RECOGNITION)
+            LabelEditorActions.setActiveImage(image);
+        else
+            TextEditorActions.setActiveImage(image);
         AIActions.detect(imageData.id, image);
-        LabelEditorActions.setLoadingStatus(false);
+        if(this.props.projectType !== ProjectType.TEXT_RECOGNITION)
+            LabelEditorActions.setLoadingStatus(false);
+        else
+            TextEditorActions.setLoadingStatus(false);
         this.updateModelAndRender()
     };
 
@@ -157,11 +178,14 @@ class Editor extends React.Component<IProps, IState> {
         ViewPortActions.updateViewPortSize();
         ViewPortActions.updateDefaultViewPortImageRect();
         ViewPortActions.resizeViewPortContent();
-        LabelEditorActions.fullRender();
+        if(this.props.projectType !== ProjectType.TEXT_RECOGNITION)
+            LabelEditorActions.fullRender();
+        else
+            TextEditorActions.fullRender();
     };
 
     private update = (event: MouseEvent) => {
-        const editorData: EditorData = LabelEditorActions.getEditorData(event);
+        const editorData: EditorData = (this.props.projectType !== ProjectType.TEXT_RECOGNITION) ? LabelEditorActions.getEditorData(event) : TextEditorActions.getEditorData(event);
         EditorModel.mousePositionOnViewPortContent = CanvasUtil.getMousePositionOnCanvasFromEvent(event, EditorModel.canvas);
         EditorModel.primaryRenderingEngine.update(editorData);
 
@@ -171,8 +195,14 @@ class Editor extends React.Component<IProps, IState> {
             EditorModel.supportRenderingEngine && EditorModel.supportRenderingEngine.update(editorData);
         }
 
-        !this.props.activePopupType && LabelEditorActions.updateMousePositionIndicator(event);
-        LabelEditorActions.fullRender();
+        if(this.props.projectType !== ProjectType.TEXT_RECOGNITION) {
+            !this.props.activePopupType && LabelEditorActions.updateMousePositionIndicator(event);
+            LabelEditorActions.fullRender();
+        }
+        else {
+            !this.props.activePopupType && TextEditorActions.updateMousePositionIndicator(event);
+            TextEditorActions.fullRender();
+        }
     };
 
     private handleZoom = (event: WheelEvent) => {
@@ -189,7 +219,7 @@ class Editor extends React.Component<IProps, IState> {
     };
 
     private getOptionsPanels = () => {
-        const editorData: EditorData = LabelEditorActions.getEditorData();
+        const editorData: EditorData = (this.props.projectType !== ProjectType.TEXT_RECOGNITION) ? LabelEditorActions.getEditorData() : TextEditorActions.getEditorData();
         if(this.props.projectType === ProjectType.TEXT_RECOGNITION) {
             return this.props.imageData.textRects
                 .map((textRect: TextRect) => {

@@ -9,7 +9,8 @@ export class TextImageDataUtil {
             id: uuidv4(),
             fileData,
             loadStatus: false,
-            textRects: []
+            textRects: [],
+            textPolygons: []
         }
     }
 

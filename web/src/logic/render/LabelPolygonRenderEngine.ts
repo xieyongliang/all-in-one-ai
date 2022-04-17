@@ -27,7 +27,7 @@ import { GeneralSelector } from '../../store/selectors/GeneralSelector';
 import { Settings } from '../../settings/Settings';
 import { LabelUtil } from '../../utils/LabelUtil';
 
-export class PolygonRenderEngine extends BaseRenderEngine {
+export class LabelPolygonRenderEngine extends BaseRenderEngine {
 
     // =================================================================================================================
     // STATE

@@ -9,7 +9,8 @@ import { ProjectType } from "../../../../data/enums/ProjectType";
 import { ISize } from "../../../../interfaces/ISize";
 import { Settings } from "../../../../settings/Settings";
 import { EventType } from "../../../../data/enums/EventType";
-import RectTextsList from "../RectTextsList/RectTextsList";
+import PolygonTextsList from "../PolygonTextsList/PolygonTextsList";
+import { updateActiveLabelType } from "../../../../store/labels/actionCreators";
 
 interface IProps {
     activeImageIndex:number,
@@ -18,6 +19,7 @@ interface IProps {
     imageBucket?: string;
     imageKey?: string;
     imageId?: string;
+    updateActiveLabelType: (activeLabelType: LabelType) => any;
     updateTextImageDataById: (id: string, newImageData: TextImageData) => any;
     onProcessing: () => any;
     onProcessed: () => any;
@@ -38,6 +40,8 @@ class TextsToolkit extends React.Component<IProps, IState> {
         this.state = {
             size: null,
         };
+
+        props.updateActiveLabelType(LabelType.POLYGON);
     }
 
     public componentDidMount(): void {
@@ -73,7 +77,7 @@ class TextsToolkit extends React.Component<IProps, IState> {
                 className="Content"
                 style={{height: activeContentHeight}}
             >
-                <RectTextsList
+                <PolygonTextsList
                     size={{
                         width: size.width - 20,
                         height: activeContentHeight - 20
@@ -103,6 +107,7 @@ class TextsToolkit extends React.Component<IProps, IState> {
 }
 
 const mapDispatchToProps = {
+    updateActiveLabelType,
     updateTextImageDataById
 };
 

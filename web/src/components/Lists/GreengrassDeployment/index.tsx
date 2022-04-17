@@ -73,7 +73,6 @@ const GreengrassDeploymentList: FunctionComponent = () => {
             }
             else
                 for(let item of response.data) {
-                    console.log(item)
                     items.push({targetArn: item.targetArn, revisionId: item.revisionId, deploymentId : item.deploymentId, creationTime: item.creationTimestamp, status: item.deploymentStatus})
                     if(items.length === response.data.length) {
                         setGreengrassDeploymentItems(items);

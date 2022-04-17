@@ -1,5 +1,6 @@
 import { Action } from '../Actions';
 import {IRect} from '../../interfaces/IRect';
+import { IPoint } from '../../interfaces/IPoint';
 
 export type TextState = {
     activeImageIndex: number;
@@ -22,11 +23,18 @@ export type TextRect = {
     rect: IRect;
 }
 
+export type TextPolygon = {
+    id: string;
+    text: string;
+    vertices: IPoint[];
+}
+
 export type TextImageData = {
     id: string;
     fileData: File;
     loadStatus: boolean;
     textRects: TextRect[];
+    textPolygons: TextPolygon[];
 }
 
 interface UpdateActiveImageIndex {

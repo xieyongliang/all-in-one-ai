@@ -1,5 +1,5 @@
 import { store } from '../..';
-import { TextImageData, Text, TextRect} from '../texts/types';
+import { TextImageData, Text, TextRect, TextPolygon} from '../texts/types';
 import { find } from 'lodash';
 
 export class TextsSelector {
@@ -54,5 +54,14 @@ export class TextsSelector {
     public static getImageDataById(id: string): TextImageData {
         const imagesData: TextImageData[] = TextsSelector.getImagesData();
         return find(imagesData, {id});
+    }
+
+    public static getActivePolygonText(): TextPolygon | null {
+        const activeLabelId: string | null = TextsSelector.getActiveTextId();
+
+        if (activeLabelId === null)
+            return null;
+
+        return find(TextsSelector.getActiveImageData().textPolygons, {id: activeLabelId});
     }
 }

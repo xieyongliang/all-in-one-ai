@@ -14,6 +14,8 @@ import {DirectionUtil} from '../../utils/DirectionUtil';
 import {GeneralSelector} from '../../store/selectors/GeneralSelector';
 import {store} from '../../index';
 import {updateZoom} from '../../store/general/actionCreators';
+import { TextEditorActions } from './TextEditorActions';
+import { ProjectType } from '../../data/enums/ProjectType';
 
 export class ViewPortActions {
     public static updateViewPortSize() {
@@ -130,7 +132,9 @@ export class ViewPortActions {
         ViewPortActions.setScrollPosition(nextScrollPosition);
         EditorModel.mousePositionOnViewPortContent = PointUtil
             .add(EditorModel.mousePositionOnViewPortContent, translationVector);
-        LabelEditorActions.fullRender();
+        
+        var EditorActions = (store.getState().general.projectData.type === ProjectType.TEXT_RECOGNITION) ? LabelEditorActions : TextEditorActions;
+        EditorActions.fullRender();
     }
 
     public static zoomIn() {
@@ -142,7 +146,8 @@ export class ViewPortActions {
         ViewPortActions.setZoom(currentZoom + ViewPointSettings.ZOOM_STEP);
         ViewPortActions.resizeViewPortContent();
         ViewPortActions.setScrollPosition(ViewPortActions.calculateAbsoluteScrollPosition(nextRelativeScrollPosition));
-        LabelEditorActions.fullRender();
+        var EditorActions = (store.getState().general.projectData.type === ProjectType.TEXT_RECOGNITION) ? LabelEditorActions : TextEditorActions;
+        EditorActions.fullRender();
     }
 
     public static zoomOut() {
@@ -154,7 +159,8 @@ export class ViewPortActions {
         ViewPortActions.resizeViewPortContent();
         ViewPortActions.setScrollPosition(ViewPortActions
             .calculateAbsoluteScrollPosition(currentRelativeScrollPosition));
-        LabelEditorActions.fullRender();
+        var EditorActions = (store.getState().general.projectData.type === ProjectType.TEXT_RECOGNITION) ? LabelEditorActions : TextEditorActions;
+        EditorActions.fullRender();
     }
 
     public static setDefaultZoom() {
@@ -163,7 +169,8 @@ export class ViewPortActions {
         ViewPortActions.resizeViewPortContent();
         ViewPortActions.setScrollPosition(ViewPortActions
             .calculateAbsoluteScrollPosition(currentRelativeScrollPosition));
-        LabelEditorActions.fullRender();
+        var EditorActions = (store.getState().general.projectData.type === ProjectType.TEXT_RECOGNITION) ? LabelEditorActions : TextEditorActions;
+        EditorActions.fullRender();
     }
 
     public static setOneForOneZoom() {
@@ -174,7 +181,8 @@ export class ViewPortActions {
         ViewPortActions.setZoom(nextZoom);
         ViewPortActions.resizeViewPortContent();
         ViewPortActions.setScrollPosition(ViewPortActions.calculateAbsoluteScrollPosition(nextRelativeScrollPosition));
-        LabelEditorActions.fullRender();
+        var EditorActions = (store.getState().general.projectData.type === ProjectType.TEXT_RECOGNITION) ? LabelEditorActions : TextEditorActions;
+        EditorActions.fullRender();
     }
 
     public static setZoom(value: number) {

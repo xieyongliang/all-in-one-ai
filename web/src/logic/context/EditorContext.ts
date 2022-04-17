@@ -1,20 +1,21 @@
-import {HotKeyAction} from "../../data/HotKeyAction";
-import {EditorModel} from "../../staticModels/EditorModel";
-import {LabelType} from "../../data/enums/LabelType";
-import {EditorData} from "../../data/EditorData";
-import {LabelEditorActions} from "../actions/LabelEditorActions";
-import {PolygonRenderEngine} from "../render/PolygonRenderEngine";
-import {BaseContext} from "./BaseContext";
-import {ImageActions} from "../actions/ImageActions";
-import {ViewPortActions} from "../actions/ViewPortActions";
-import {Direction} from "../../data/enums/Direction";
-import {PlatformUtil} from "../../utils/PlatformUtil";
-import {LabelActions} from "../actions/LabelActions";
-import {TextActions} from '../actions/TextActions';
-import {LineRenderEngine} from "../render/LineRenderEngine";
+import { HotKeyAction } from "../../data/HotKeyAction";
+import { EditorModel } from "../../staticModels/EditorModel";
+import { LabelType } from "../../data/enums/LabelType";
+import { EditorData } from "../../data/EditorData";
+import { LabelEditorActions } from "../actions/LabelEditorActions";
+import { LabelPolygonRenderEngine } from "../render/LabelPolygonRenderEngine";
+import { BaseContext } from "./BaseContext";
+import { ImageActions } from "../actions/ImageActions";
+import { ViewPortActions } from "../actions/ViewPortActions";
+import { Direction } from "../../data/enums/Direction";
+import { PlatformUtil } from "../../utils/PlatformUtil";
+import { LabelActions } from "../actions/LabelActions";
+import { TextActions } from '../actions/TextActions';
+import { LineRenderEngine } from "../render/LineRenderEngine";
 import { store } from '../../';
 import { ProjectType } from "../../data/enums/ProjectType";
 import { TextEditorActions } from "../actions/TextEditorActions";
+import { TextPolygonRenderEngine } from "../render/TextPolygonRenderEngine";
 
 export class EditorContext extends BaseContext {
     public static actions: HotKeyAction[] = [
@@ -23,7 +24,10 @@ export class EditorContext extends BaseContext {
             action: (event: KeyboardEvent) => {
                 if (EditorModel.supportRenderingEngine && EditorModel.supportRenderingEngine.labelType === LabelType.POLYGON) {
                     const editorData: EditorData = LabelEditorActions.getEditorData();
-                    (EditorModel.supportRenderingEngine as PolygonRenderEngine).addLabelAndFinishCreation(editorData);
+                    if(store.getState().general.projectData.type === ProjectType.TEXT_RECOGNITION)
+                        (EditorModel.supportRenderingEngine as TextPolygonRenderEngine).addLabelAndFinishCreation(editorData);
+                    else
+                        (EditorModel.supportRenderingEngine as LabelPolygonRenderEngine).addLabelAndFinishCreation(editorData);
                 }
                 if(store.getState().general.projectData.type === ProjectType.TEXT_RECOGNITION)
                     TextEditorActions.fullRender();
@@ -37,7 +41,10 @@ export class EditorContext extends BaseContext {
                 if (EditorModel.supportRenderingEngine) {
                     switch (EditorModel.supportRenderingEngine.labelType) {
                         case LabelType.POLYGON:
-                            (EditorModel.supportRenderingEngine as PolygonRenderEngine).cancelLabelCreation();
+                            if(store.getState().general.projectData.type === ProjectType.TEXT_RECOGNITION)
+                                (EditorModel.supportRenderingEngine as TextPolygonRenderEngine).cancelLabelCreation();
+                            else
+                                (EditorModel.supportRenderingEngine as LabelPolygonRenderEngine).cancelLabelCreation();
                             break;
                         case LabelType.LINE:
                             (EditorModel.supportRenderingEngine as LineRenderEngine).cancelLabelCreation();
