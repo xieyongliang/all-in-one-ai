@@ -118,7 +118,7 @@ interface UpdateLabelImageDataById {
     type: typeof Action.UPDATE_LABEL_IMAGE_DATA_BY_ID;
     payload: {
         id: string;
-        newLabelImageData: LabelImageData;
+        newImageData: LabelImageData;
     }
 }
 

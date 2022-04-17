@@ -29,7 +29,7 @@ interface IProps {
     imageColors: string[];
     imageAnnotations?: string[];
     imageName: string;
-    updateLabelImageDataById: (id: string, newLabelImageData: LabelImageData) => any;
+    updateLabelImageDataById: (id: string, newImageData: LabelImageData) => any;
     updateActiveLabelType: (activeLabelType: LabelType) => any;
     updateActiveLabelId: (highlightedLabelId: string) => any;
     onProcessing: () => any;

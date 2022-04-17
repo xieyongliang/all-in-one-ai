@@ -44,7 +44,7 @@ interface IProps {
     imageName: string;
     updateActiveLabelId: (activeLabelId: string) => any;
     updateActiveLabelNameId: (activeLabelId: string) => any;
-    updateLabelImageDataById: (id: string, newLabelImageData: LabelImageData) => any;
+    updateLabelImageDataById: (id: string, newImageData: LabelImageData) => any;
     updateLabelImageData: (imagesData) => any;
     updateLabelNames: (labelNames) => any;
     updateActiveLabelType : (LabelType) => any;
@@ -115,7 +115,7 @@ const RectLabelsList: React.FC<IProps> = (
     };
 
     const updateRectLabel = (labelRectId: string, labelNameId: string) => {
-        const newLabelImageData = {
+        const newImageData = {
             ...imageData,
             labelRects: imageData.labelRects
                 .map((labelRect: LabelRect) => {
@@ -130,7 +130,7 @@ const RectLabelsList: React.FC<IProps> = (
                 }
             })
         };
-        updateLabelImageDataById(imageData.id, newLabelImageData);
+        updateLabelImageDataById(imageData.id, newImageData);
         updateActiveLabelNameId(labelNameId);
     };
 

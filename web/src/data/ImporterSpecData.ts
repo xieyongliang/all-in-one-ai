@@ -12,5 +12,6 @@ export const ImporterSpecData: ImporterSpecDataMap = {
     [AnnotationFormatType.JSON]: undefined,
     [AnnotationFormatType.VGG]: undefined,
     [AnnotationFormatType.VOC]: undefined,
-    [AnnotationFormatType.YOLO]: YOLOImporter
+    [AnnotationFormatType.YOLO]: YOLOImporter,
+    [AnnotationFormatType.PPOCR]: undefined
 }

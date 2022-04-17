@@ -21,7 +21,7 @@ interface IProps {
     labelData: LabelRect | LabelPoint;
     imageData: LabelImageData;
     updatePreventCustomCursorStatus: (preventCustomCursor: boolean) => any;
-    updateLabelImageDataById: (id: string, newLabelImageData: LabelImageData) => any;
+    updateLabelImageDataById: (id: string, newImageData: LabelImageData) => any;
 }
 
 const LabelControlPanel: React.FC<IProps> = ({position, updatePreventCustomCursorStatus, activeLabelId, highlightedLabelId, labelData, imageData, updateLabelImageDataById}) => {
@@ -38,7 +38,7 @@ const LabelControlPanel: React.FC<IProps> = ({position, updatePreventCustomCurso
     };
 
     const onAccept = () => {
-        const newLabelImageData = {
+        const newImageData = {
             ...imageData,
             labelRects: imageData.labelRects.map((labelRect: LabelRect) => {
                 if (labelRect.id === labelData.id) {
@@ -65,7 +65,7 @@ const LabelControlPanel: React.FC<IProps> = ({position, updatePreventCustomCurso
                 }
             })
         };
-        updateLabelImageDataById(imageData.id, newLabelImageData);
+        updateLabelImageDataById(imageData.id, newImageData);
         updatePreventCustomCursorStatus(false);
     };
 

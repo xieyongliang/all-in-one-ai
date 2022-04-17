@@ -83,7 +83,7 @@ export class AIObjectDetectionActions {
     }
 
     public static acceptAllSuggestedRectLabels(imageData: LabelImageData) {
-        const newLabelImageData: LabelImageData = {
+        const newImageData: LabelImageData = {
             ...imageData,
             labelRects: imageData.labelRects.map((labelRect: LabelRect) => {
                 const labelName: LabelName = findLast(LabelsSelector.getLabelNames(), {name: labelRect.suggestedLabel});
@@ -94,14 +94,14 @@ export class AIObjectDetectionActions {
                 }
             })
         };
-        store.dispatch(updateLabelImageDataById(newLabelImageData.id, newLabelImageData));
+        store.dispatch(updateLabelImageDataById(newImageData.id, newImageData));
     }
 
     public static rejectAllSuggestedRectLabels(imageData: LabelImageData) {
-        const newLabelImageData: LabelImageData = {
+        const newImageData: LabelImageData = {
             ...imageData,
             labelRects: imageData.labelRects.filter((labelRect: LabelRect) => labelRect.status === LabelStatus.ACCEPTED)
         };
-        store.dispatch(updateLabelImageDataById(newLabelImageData.id, newLabelImageData));
+        store.dispatch(updateLabelImageDataById(newImageData.id, newImageData));
     }
 }

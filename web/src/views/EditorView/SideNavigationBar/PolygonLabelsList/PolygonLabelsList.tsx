@@ -18,7 +18,7 @@ import {findLast} from "lodash";
 interface IProps {
     size: ISize;
     imageData: LabelImageData;
-    updateLabelImageDataById: (id: string, newLabelImageData: LabelImageData) => any;
+    updateLabelImageDataById: (id: string, newImageData: LabelImageData) => any;
     activeLabelId: string;
     highlightedLabelId: string;
     updateActiveLabelNameId: (activeLabelId: string) => any;
@@ -42,7 +42,7 @@ const PolygonLabelsList: React.FC<IProps> = ({size, imageData, updateLabelImageD
     };
 
     const updatePolygonLabel = (labelPolygonId: string, labelNameId: string) => {
-        const newLabelImageData = {
+        const newImageData = {
             ...imageData,
             labelPolygons: imageData.labelPolygons.map((currentLabel: LabelPolygon) => {
                 if (currentLabel.id === labelPolygonId) {
@@ -54,7 +54,7 @@ const PolygonLabelsList: React.FC<IProps> = ({size, imageData, updateLabelImageD
                 return currentLabel
             })
         };
-        updateLabelImageDataById(imageData.id, newLabelImageData);
+        updateLabelImageDataById(imageData.id, newImageData);
         updateActiveLabelNameId(labelNameId);
     };
 

@@ -19,6 +19,8 @@ import {Tooltip} from '@material-ui/core';
 import Fade from '@material-ui/core/Fade';
 import { AnnotationFormatType } from '../../../data/enums/AnnotationFormatType';
 import { RectLabelsExporter } from '../../../logic/export/RectLabelsExporter';
+import { ProjectSubType, ProjectType } from '../../../data/enums/ProjectType';
+import { PolygonTextsExporter } from '../../../logic/export/polygon/PolygonTextsExporter';
 
 const BUTTON_SIZE: ISize = {width: 30, height: 30};
 const BUTTON_PADDING: number = 10;
@@ -72,6 +74,8 @@ interface IProps {
     imageDragMode: boolean;
     crossHairVisible: boolean;
     activeLabelType: LabelType;
+    projectType: ProjectType;
+    projectSubType: ProjectSubType;
 }
 
 const EditorTopNavigationBar: React.FC<IProps> = (
@@ -82,6 +86,8 @@ const EditorTopNavigationBar: React.FC<IProps> = (
         imageDragMode,
         crossHairVisible,
         activeLabelType,
+        projectType,
+        projectSubType
     }) => {
     const getClassName = () => {
         return classNames(
@@ -105,6 +111,12 @@ const EditorTopNavigationBar: React.FC<IProps> = (
         updateCrossHairVisibleStatusAction(!crossHairVisible);
     }
 
+    const exportOnClick = () => {
+        if(projectType !== ProjectType.TEXT_RECOGNITION)
+            RectLabelsExporter.export(AnnotationFormatType.YOLO)
+        else
+            PolygonTextsExporter.export(AnnotationFormatType.PPOCR)
+    }
     return (
         <div className={getClassName()}>
             <div className='ButtonWrapper'>
@@ -179,12 +191,12 @@ const EditorTopNavigationBar: React.FC<IProps> = (
                 {
                     getButtonWithTooltip(
                         'export-lables',
-                        'export labels with yolov5 format',
+                        'export labels',
                         '/ico/export-labels.png',
                         'export-labels ',
                         false,
                         undefined,
-                        () => RectLabelsExporter.export(AnnotationFormatType.YOLO)
+                        exportOnClick
                     )
                 }
             </div>
@@ -226,7 +238,9 @@ const mapStateToProps = (state: AppState) => ({
     activeContext: state.general.activeContext,
     imageDragMode: state.general.imageDragMode,
     crossHairVisible: state.general.crossHairVisible,
-    activeLabelType: state.labels.activeLabelType
+    activeLabelType: state.labels.activeLabelType,
+    projectType: state.general.projectData.type,
+    projectSubType: state.general.projectData.subType
 });
 
 export default connect(

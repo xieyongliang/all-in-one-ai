@@ -23,7 +23,7 @@ interface IProps {
     isChecked?: boolean;
     onClick?: () => any;
     isSelected?: boolean;
-    updateLabelImageDataById: (id: string, newLabelImageData: LabelImageData | TextImageData) => any;
+    updateLabelImageDataById: (id: string, newImageData: LabelImageData | TextImageData) => any;
 }
 
 interface IState {

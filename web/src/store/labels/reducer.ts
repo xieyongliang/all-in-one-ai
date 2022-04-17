@@ -51,7 +51,7 @@ export function labelsReducer(
             return {
                 ...state,
                 imagesData: state.imagesData.map((imageData: LabelImageData) =>
-                    imageData.id === action.payload.id ? action.payload.newLabelImageData : imageData
+                    imageData.id === action.payload.id ? action.payload.newImageData : imageData
                 )
             }
         }

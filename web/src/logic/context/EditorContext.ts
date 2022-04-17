@@ -24,8 +24,9 @@ export class EditorContext extends BaseContext {
             action: (event: KeyboardEvent) => {
                 if (EditorModel.supportRenderingEngine && EditorModel.supportRenderingEngine.labelType === LabelType.POLYGON) {
                     const editorData: EditorData = LabelEditorActions.getEditorData();
-                    if(store.getState().general.projectData.type === ProjectType.TEXT_RECOGNITION)
+                    if(store.getState().general.projectData.type === ProjectType.TEXT_RECOGNITION) {
                         (EditorModel.supportRenderingEngine as TextPolygonRenderEngine).addLabelAndFinishCreation(editorData);
+                    }
                     else
                         (EditorModel.supportRenderingEngine as LabelPolygonRenderEngine).addLabelAndFinishCreation(editorData);
                 }

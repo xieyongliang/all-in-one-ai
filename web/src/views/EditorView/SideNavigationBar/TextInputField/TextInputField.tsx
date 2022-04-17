@@ -13,7 +13,8 @@ interface IProps {
     id: string;
     value: string;
     onDelete: (id: string) => any;
-    onChange: (labelRectId: string, labelNameId: string) => any;
+    onChange: (textPolygonId: string, text: string) => any;
+    updateActiveTextId: (activeTextId: string) => any;
 }
 
 interface IState {
@@ -53,6 +54,7 @@ class TextInputField extends React.Component<IProps, IState> {
 
     public onChange(event) {
         this.setState({ value: event.target.value });
+        this.props.onChange(this.props.id, event.target.value);
     }
 
     public render() {
@@ -88,7 +90,7 @@ class TextInputField extends React.Component<IProps, IState> {
                             <ImageButton
                                 externalClassName={"trash"}
                                 image={"/ico/trash.png"}
-                                imageAlt={"remove_rect"}
+                                imageAlt={"remove_polygon"}
                                 buttonSize={{width: 30, height: 30}}
                                 onClick={() => onDelete(id)}
                             />
@@ -101,10 +103,11 @@ class TextInputField extends React.Component<IProps, IState> {
 }
 
 const mapDispatchToProps = {
-    updateActiveTextId
+    updateActiveTextId,
 };
 
-const mapStateToProps = (state: AppState) => ({});
+const mapStateToProps = (state: AppState) => ({
+});
 
 export default connect(
     mapStateToProps,

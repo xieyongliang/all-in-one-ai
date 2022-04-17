@@ -361,7 +361,7 @@ export class LabelPolygonRenderEngine extends BaseRenderEngine {
             RenderEngineUtil.transferPointFromViewPortContentToImage(this.suggestedAnchorPositionOnCanvas, data);
         const insert = (arr, index, newItem) => [...arr.slice(0, index), newItem, ...arr.slice(index)];
 
-        const newLabelImageData: LabelImageData = {
+        const newImageData: LabelImageData = {
             ...imageData,
             labelPolygons: imageData.labelPolygons.map((polygon: LabelPolygon) => {
                 if (polygon.id !== activeLabel.id) {
@@ -375,7 +375,7 @@ export class LabelPolygonRenderEngine extends BaseRenderEngine {
             })
         };
 
-        store.dispatch(updateLabelImageDataById(newLabelImageData.id, newLabelImageData));
+        store.dispatch(updateLabelImageDataById(newImageData.id, newImageData));
         this.startExistingLabelResize(data, activeLabel.id, this.suggestedAnchorIndexInPolygon);
         this.discardSuggestedPoint();
     }

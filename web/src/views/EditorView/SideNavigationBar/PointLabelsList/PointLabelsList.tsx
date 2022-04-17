@@ -19,7 +19,7 @@ import { LabelStatus } from "../../../../data/enums/LabelStatus";
 interface IProps {
     size: ISize;
     imageData: LabelImageData;
-    updateLabelImageDataById: (id: string, newLabelImageData: LabelImageData) => any;
+    updateLabelImageDataById: (id: string, newImageData: LabelImageData) => any;
     activeLabelId: string;
     highlightedLabelId: string;
     updateActiveLabelNameId: (activeLabelId: string) => any;

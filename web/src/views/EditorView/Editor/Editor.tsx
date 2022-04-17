@@ -37,7 +37,7 @@ interface IProps {
     size: ISize;
     imageData : any;
     activeLabelType: LabelType;
-    updateLabelImageDataById: (id: string, newLabelImageData: LabelImageData) => any;
+    updateLabelImageDataById: (id: string, newImageData: LabelImageData) => any;
     activePopupType: PopupWindowType;
     activeLabelId: string;
     customCursorStyle: CustomCursorStyle;

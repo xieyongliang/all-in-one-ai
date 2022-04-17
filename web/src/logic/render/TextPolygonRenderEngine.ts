@@ -289,7 +289,7 @@ export class TextPolygonRenderEngine extends BaseRenderEngine {
     }
 
     public addLabelAndFinishCreation(data: EditorData) {
-        if (this.isCreationInProgress() && this.activePath.length > 2) {
+        if (this.isCreationInProgress() && this.activePath.length === 4) {
             const polygonOnImage: IPoint[] = RenderEngineUtil.transferPolygonFromViewPortContentToImage(this.activePath, data);
             this.addPolygonLabel(polygonOnImage);
             this.finishLabelCreation();
@@ -362,7 +362,7 @@ export class TextPolygonRenderEngine extends BaseRenderEngine {
             RenderEngineUtil.transferPointFromViewPortContentToImage(this.suggestedAnchorPositionOnCanvas, data);
         const insert = (arr, index, newItem) => [...arr.slice(0, index), newItem, ...arr.slice(index)];
 
-        const newLabelImageData: TextImageData = {
+        const newImageData: TextImageData = {
             ...imageData,
             textPolygons: imageData.textPolygons.map((polygon: TextPolygon) => {
                 if (polygon.id !== activeText.id) {
@@ -376,7 +376,7 @@ export class TextPolygonRenderEngine extends BaseRenderEngine {
             })
         };
 
-        store.dispatch(updateTextImageDataById(newLabelImageData.id, newLabelImageData));
+        store.dispatch(updateTextImageDataById(newImageData.id, newImageData));
         this.startExistingLabelResize(data, activeText.id, this.suggestedAnchorIndexInPolygon);
         this.discardSuggestedPoint();
     }

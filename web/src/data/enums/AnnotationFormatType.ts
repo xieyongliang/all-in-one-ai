@@ -4,5 +4,6 @@ export enum AnnotationFormatType {
     CSV = 'CSV',
     JSON = 'JSON',
     VOC = 'VOC',
-    VGG = 'VGG'
+    VGG = 'VGG',
+    PPOCR = 'PPOCR'
 }

@@ -47,12 +47,12 @@ export function updateActiveLabelType(activeLabelType: LabelType): LabelsActionT
     };
 }
 
-export function updateLabelImageDataById(id: string, newLabelImageData: LabelImageData): LabelsActionTypes {
+export function updateLabelImageDataById(id: string, newImageData: LabelImageData): LabelsActionTypes {
     return {
         type: Action.UPDATE_LABEL_IMAGE_DATA_BY_ID,
         payload: {
             id,
-            newLabelImageData
+            newImageData
         },
     };
 }

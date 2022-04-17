@@ -14,7 +14,7 @@ import { updateActivePopupType } from "../../../../store/general/actionCreators"
 interface IProps {
     size: ISize;
     imageData: LabelImageData;
-    updateLabelImageDataById: (id: string, newLabelImageData: LabelImageData) => any;
+    updateLabelImageDataById: (id: string, newImageData: LabelImageData) => any;
     labelNames: LabelName[];
     updateActivePopupType: (activePopupType: PopupWindowType) => any;
 }

@@ -98,7 +98,7 @@ export class AIPoseDetectionActions {
     }
 
     public static acceptAllSuggestedPointLabels(imageData: LabelImageData) {
-        const newLabelImageData: LabelImageData = {
+        const newImageData: LabelImageData = {
             ...imageData,
             labelPoints: imageData.labelPoints.map((labelPoint: LabelPoint) => {
                 const labelName: LabelName = findLast(LabelsSelector.getLabelNames(), {name: labelPoint.suggestedLabel});
@@ -109,14 +109,14 @@ export class AIPoseDetectionActions {
                 }
             })
         };
-        store.dispatch(updateLabelImageDataById(newLabelImageData.id, newLabelImageData));
+        store.dispatch(updateLabelImageDataById(newImageData.id, newImageData));
     }
 
     public static rejectAllSuggestedPointLabels(imageData: LabelImageData) {
-        const newLabelImageData: LabelImageData = {
+        const newImageData: LabelImageData = {
             ...imageData,
             labelPoints: imageData.labelPoints.filter((labelPoint: LabelPoint) => labelPoint.status === LabelStatus.ACCEPTED)
         };
-        store.dispatch(updateLabelImageDataById(newLabelImageData.id, newLabelImageData));
+        store.dispatch(updateLabelImageDataById(newImageData.id, newImageData));
     }
 }

@@ -18,7 +18,7 @@ import {connect} from "react-redux";
 interface IProps {
     size: ISize;
     imageData: LabelImageData;
-    updateLabelImageDataById: (id: string, newLabelImageData: LabelImageData) => any;
+    updateLabelImageDataById: (id: string, newImageData: LabelImageData) => any;
     activeLabelId: string;
     highlightedLabelId: string;
     updateActiveLabelNameId: (activeLabelId: string) => any;
@@ -53,7 +53,7 @@ const LineLabelsList: React.FC<IProps> = (
     };
 
     const updateLineLabel = (labelLineId: string, labelNameId: string) => {
-        const newLabelImageData = {
+        const newImageData = {
             ...imageData,
             labelLines: imageData.labelLines.map((labelLine: LabelLine) => {
                 if (labelLine.id === labelLineId) {
@@ -65,7 +65,7 @@ const LineLabelsList: React.FC<IProps> = (
                 return labelLine
             })
         };
-        updateLabelImageDataById(imageData.id, newLabelImageData);
+        updateLabelImageDataById(imageData.id, newImageData);
         updateActiveLabelNameId(labelNameId);
     };
 

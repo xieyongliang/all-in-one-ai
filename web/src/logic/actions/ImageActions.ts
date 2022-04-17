@@ -66,13 +66,13 @@ export class ImageActions {
   ): LabelImageData {
     const labelType: LabelType = LabelsSelector.getActiveLabelType();
     const labelNames = LabelsSelector.getLabelNames();
-    let newLabelImageData: LabelImageData = {
+    let newImageData: LabelImageData = {
       ...imageData,
     };
     switch (labelType) {
       case LabelType.POINT:
         const point = LabelsSelector.getActivePointLabel();
-        newLabelImageData.labelPoints = imageData.labelPoints.map(
+        newImageData.labelPoints = imageData.labelPoints.map(
           (labelPoint: LabelPoint) => {
             if (labelPoint.id === point.id) {
               return {
@@ -88,7 +88,7 @@ export class ImageActions {
         break;
       case LabelType.LINE:
         const line = LabelsSelector.getActiveLineLabel();
-        newLabelImageData.labelLines = imageData.labelLines.map(
+        newImageData.labelLines = imageData.labelLines.map(
           (labelLine: LabelLine) => {
             if (labelLine.id === line.id) {
               return {
@@ -104,7 +104,7 @@ export class ImageActions {
         break;
       case LabelType.RECT:
         const rect = LabelsSelector.getActiveRectLabel();
-        newLabelImageData.labelRects = imageData.labelRects.map(
+        newImageData.labelRects = imageData.labelRects.map(
           (labelRectangle: LabelRect) => {
             if (labelRectangle.id === rect.id) {
               return {
@@ -120,7 +120,7 @@ export class ImageActions {
         break;
       case LabelType.POLYGON:
         const polygon = LabelsSelector.getActivePolygonLabel();
-        newLabelImageData.labelPolygons = imageData.labelPolygons.map(
+        newImageData.labelPolygons = imageData.labelPolygons.map(
           (labelPolygon: LabelPolygon) => {
             if (labelPolygon.id === polygon.id) {
               return {
@@ -137,16 +137,16 @@ export class ImageActions {
       case LabelType.IMAGE_RECOGNITION:
         const labelId: string = labelNames[labelIndex].id;
         if (imageData.labelNameIds.includes(labelId)) {
-          newLabelImageData.labelNameIds = remove(
+          newImageData.labelNameIds = remove(
             imageData.labelNameIds,
             (element: string) => element !== labelId
           );
         } else {
-          newLabelImageData.labelNameIds = imageData.labelNameIds.concat(labelId);
+          newImageData.labelNameIds = imageData.labelNameIds.concat(labelId);
         }
         break;
     }
 
-    return newLabelImageData;
+    return newImageData;
   }
 }

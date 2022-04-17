@@ -172,12 +172,19 @@ const PolygonTextsList: React.FC<IProps> = (
         TextActions.deletePolygonTextById(imageData.id, textPolygonId)
     };
 
-    const updatePolygonText = (textPolygonId: string, textNameId: string) => {
+    const updatePolygonText = (textPolygonId: string, text: string) => {
         const newImageData = {
             ...imageData,
             textPolygons: imageData.textPolygons
                 .map((textPolygon: TextPolygon) => {
-                return textPolygon
+                if (textPolygon.id === textPolygonId) {
+                    return {
+                        ...textPolygon,
+                        text: text
+                    }
+                } else {
+                    return textPolygon
+                }
             })
         };
         updateTextImageDataById(imageData.id, newImageData);
