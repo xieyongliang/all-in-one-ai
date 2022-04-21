@@ -18,6 +18,7 @@ interface IProps {
 
 const InustrialModelProp: FunctionComponent<IProps> = (props) => {
     var labels = ''
+
     if(props.industrialModel.labels !== undefined) {
         props.industrialModel.labels.forEach((label) => {
             labels += label + '\n'
@@ -161,7 +162,6 @@ const InustrialModelProp: FunctionComponent<IProps> = (props) => {
             'file_name': fileName
         }
         setProcessing(true)
-        console.log(buffer)
         axios.post('/_industrialmodel', buffer)
             .then((response) => {
                 var modelId = response.data.id;
@@ -172,7 +172,12 @@ const InustrialModelProp: FunctionComponent<IProps> = (props) => {
                 props.industrialModel.description = modelDescription
                 props.industrialModel.labels = modelLables.split('\n');
                 props.industrialModel.samples = modelSamples
-                props.updateindustrialmodelsAction(props.industrialModels)
+                var copyIndustrialModels = JSON.parse(JSON.stringify(props.industrialModels))
+                var index = copyIndustrialModels.findIndex((industrialModel) =>
+                    industrialModel.id === modelId
+                )
+                copyIndustrialModels[index] = props.industrialModel
+                props.updateindustrialmodelsAction(copyIndustrialModels)
                 props.onClose()
             }).catch((error) => {
                 alert(error)

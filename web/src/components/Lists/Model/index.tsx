@@ -8,6 +8,7 @@ import JSZip from 'jszip';
 import axios from 'axios';
 import { PathParams } from '../../Interfaces/PathParams';
 import { getUtcDate } from '../../Utils/Helper';
+import { FetchDataOptions } from 'aws-northstar/components/Table';
 
 interface ModelItem {
     modelName: string;
@@ -15,7 +16,6 @@ interface ModelItem {
 }
 
 const ModelList: FunctionComponent = () => {
-    const [ modelItems, setModelItems ] = useState([])
     const [ loading, setLoading ] = useState(true);
     const [ sampleCode, setSampleCode ] = useState('')
     const [ sampleConsole, setSampleConsole ] = useState('')
@@ -31,6 +31,9 @@ const ModelList: FunctionComponent = () => {
     const [ visibleDetachConfirmation, setVisibleDetachConfirmation ] = useState(false)
     const [ processingDetach, setProcessingDetach ] = useState(false);
     const [ disabledDetach, setDisabledDetach ] = useState(true)    
+    const [ pageIndex, setPageIndex ] = useState(0);
+    const [ modelCurItems, setModelCurItems ] = useState([])
+    const [ modelAllItems, setModelAllItems ] = useState([])
 
     const history = useHistory();
 
@@ -65,21 +68,63 @@ const ModelList: FunctionComponent = () => {
 
     const onRefresh = useCallback(() => {
         setLoading(true)
-        var request = showAll ? axios.get('/model', {params : {'action': 'list'}}) : axios.get('/model', {params : {'industrial_model': params.id}})
-        request.then(
-            (response) => {
-                var items = []
-                for(let item of response.data) {
-                    items.push({modelName: item.ModelName, creationTime: item.CreationTime})
-                    if(items.length === response.data.length)
-                        setModelItems(items)
+
+        var loadedAllItems = false;
+        var loadedCurItems = false;
+        var modelAllItems = [];
+        var modelCurItems = [];
+        
+        axios.get('/model', {params : {'action': 'list'}})
+            .then((response) => {
+                if(response.data.length === 0) {
+                    loadedAllItems = true;
+                    setModelAllItems(modelAllItems);
+                    if(loadedCurItems) {
+                        setLoading(false);
+                        setSelectedModel(undefined);
+                    }
                 }
-                setLoading(false);
+                for(let item of response.data) {
+                    modelAllItems.push({modelName: item.ModelName, creationTime: item.CreationTime})
+                    if(modelAllItems.length === response.data.length) {
+                        loadedAllItems = true;
+                        setModelAllItems(modelAllItems);
+                        if(loadedCurItems) {
+                            setLoading(false);
+                            setSelectedModel(undefined);
+                        }
+                    }
+                }
             }, (error) => {
                 console.log(error);
             }
         );
-    }, [params.id, showAll])
+        axios.get('/model', {params : {'industrial_model': params.id}})
+            .then((response) => {
+                if(response.data.length === 0) {
+                    setModelCurItems(modelCurItems);
+                    loadedCurItems = true;
+                    if(loadedAllItems) {
+                        setLoading(false);
+                        setSelectedModel(undefined);
+                    }
+                }
+                for(let item of response.data) {
+                    modelCurItems.push({modelName: item.ModelName, creationTime: item.CreationTime})
+                    if(modelCurItems.length === response.data.length) {
+                        setModelCurItems(modelCurItems);
+                        loadedCurItems = true;
+                        if(loadedAllItems) {               
+                            setLoading(false);
+                            setSelectedModel(undefined);
+                        }
+                    }
+                }
+            }, (error) => {
+                console.log(error);
+            }
+        );
+    }, [params.id])
     
     useEffect(() => {
         onRefresh()
@@ -130,9 +175,15 @@ const ModelList: FunctionComponent = () => {
         }
     ];
 
+    const onChangeShowAll = (checked) => {
+        setShowAll(checked);
+        if(!checked && selectedModel !==undefined && modelCurItems.findIndex((item) => item.modelName === selectedModel.modelName) < 0)
+            setSelectedModel(undefined);
+    }
+
     const tableActions = (
         <Inline>
-            <Toggle label='Show all' checked={showAll} onChange={(checked)=>setShowAll(checked)}/>
+            <Toggle label='Show all' checked={showAll} onChange={onChangeShowAll}/>
             <Button icon="refresh" onClick={onRefresh} loading={loading}>Refresh</Button>
             <ButtonDropdown
                 content='Actions'
@@ -160,7 +211,8 @@ const ModelList: FunctionComponent = () => {
     const deleteModel = () => {
         setProcessingDelete(true)
         axios.delete(`/model/${selectedModel.modelName}`).then((data) => {
-            setModelItems(modelItems.filter((item) => item.modelName !== selectedModel.modelName));
+            setModelAllItems(modelAllItems.filter((item) => item.modelName !== selectedModel.modelName));
+            setModelCurItems(modelCurItems.filter((item) => item.modelName !== selectedModel.modelName));
             setVisibleDeleteConfirmation(false);
             setProcessingDelete(false);
         }, (error) => {
@@ -235,10 +287,20 @@ const ModelList: FunctionComponent = () => {
         if(selectedItems.length > 0) {
             setSelectedModel(selectedItems[0])
             setDisabledDelete(false)
-            var index = modelItems.findIndex((item) => item.name === selectedItems[0].modelName)
-            setDisabledAttach(index < 0)
-            setDisabledDetach(index >= 0)
+            if(!showAll) {
+                setDisabledAttach(true)
+                setDisabledDetach(false)
+            }
+            else {
+                var index = modelCurItems.findIndex((item) => item.modelName === selectedItems[0].modelName)
+                setDisabledAttach(index >= 0)
+                setDisabledDetach(index < 0) 
+            }
         }
+    }
+
+    const onFetchData = (options: FetchDataOptions) => {
+        setPageIndex(options.pageIndex);
     }
 
     const renderModelList = () => {
@@ -248,11 +310,13 @@ const ModelList: FunctionComponent = () => {
                 tableTitle='Models'
                 multiSelect={false}
                 columnDefinitions={columnDefinitions}
-                items={modelItems}
+                items={showAll ? modelAllItems : modelCurItems}
                 loading={loading}
                 onSelectionChange={onSelectionChange}
                 getRowId={getRowId}
                 selectedRowIds={selectedModel !== undefined ? [selectedModel.modelName] : []}
+                onFetchData={onFetchData}
+                defaultPageIndex={pageIndex}
             />
         )
     }

@@ -225,3 +225,10 @@ Resources:
       Name: /all_in_one_ai/config/meta/algorithms/yolov5paddleocr/industrialmodels
       Type: String
       Value: !Sub s3://${S3Bucket}/${S3Key}algorithms/yolov5paddleocr/industrialmodels/
+
+  Parameter22:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /all_in_one_ai/config/meta/algorithms/yolov5gluoncv/industrialmodels
+      Type: String
+      Value: !Sub s3://${S3Bucket}/${S3Key}algorithms/yolov5gluoncv/industrialmodels/

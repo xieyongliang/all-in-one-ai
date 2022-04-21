@@ -71,7 +71,8 @@ const IndustrialModelList: FunctionComponent<IProps> = (props) => {
         setAnchorEl(null);
       };
 
-    const handleClick = (event) => {
+    const handleClick = (event, industrialModel) => {
+        setIndustrialModel(industrialModel)
         setAnchorEl(event.currentTarget);
     };
     
@@ -79,17 +80,13 @@ const IndustrialModelList: FunctionComponent<IProps> = (props) => {
         onRefresh()
      }, [onRefresh])
 
-    const onDelete = (event, item) => {
-        setIndustrialModel(item)
+    const onDelete = () => {
         setVisibleConfirmationDialog(true)
-        event.stopPropagation();
         setAnchorEl(null);
     }
 
-    const onEdit = (event, item) => {
-        setIndustrialModel(item)
+    const onEdit = () => {
         setVisibleIndustrialModelProp(true)
-        event.stopPropagation();
         setAnchorEl(null);
     }
  
@@ -105,58 +102,67 @@ const IndustrialModelList: FunctionComponent<IProps> = (props) => {
                 <Container title='You can simply start from the existing industrial models.'>
                     <Grid container spacing={{ xs: 1, md: 1 }} columns={{ xs: 4, sm: 8, md: 12 }}>
                         {
-                            itemsModels.map((item) => { 
+                            itemsModels
+                                .sort((itemModel1 : IIndustrialModel, itemModel2: IIndustrialModel) => {
+                                    if(itemModel1.name > itemModel2.name)
+                                        return 1;
+                                    else if(itemModel1.name === itemModel2.name)
+                                        return 0;
+                                    else
+                                        return -1;
+                                })
+                                .map((itemModel) => {
                                 return (
                                     <Grid item xs={4} sm={4} md={4}>
-                                        <Card sx ={{hegith: 400}} >
-                                        <CardHeader sx={{
-                                                height: 60
-                                            }}
-                                            avatar={
-                                                <Avatar sx={{ bgcolor: red[500] }} aria-label="recipe">
-                                                    AI
-                                                </Avatar>
-                                            }
-                                            action={
-                                            <IconButton aria-label="settings" onClick={handleClick}>
-                                                <MoreVertIcon />
-                                            </IconButton>
-                                            }
-                                            title={item.name}
-                                            subheader={item.algorithm}
-                                        />
-                                        <MenuList>
-                                        <Menu 
-                                            anchorEl={anchorEl} 
-                                            keepMounted onClose={handleClose} 
-                                            open={open}>    
-                                            <MenuItem
-                                                key='Edit' 
-                                                onClick={(event)=>onEdit(event, item)}>
-                                                <ListItemIcon>
-                                                    <Edit fontSize="small" />
-                                                </ListItemIcon>
-                                                <ListItemText>Edit</ListItemText>
-                                            </MenuItem>
-                                            <MenuItem
-                                                key='Delete' 
-                                                onClick={(event)=>onDelete(event, item)}>
-                                                <ListItemIcon>
-                                                    <Delete fontSize="small" />
-                                                </ListItemIcon>
-                                                <ListItemText>Delete</ListItemText>
-                                            </MenuItem>
-                                        </Menu>
-                                        </MenuList>
-                                        <CardContent >
-                                            <Image src={item.httpuri} height='192px' width='192px' public={true}></Image>
-                                            <Typography variant="body2" color="text.secondary" sx ={{hegith: 90}}>
-                                            {item.description}
-                                            </Typography>
-                                        </CardContent>
-                                        <CardActions>
-                                            <Button size="large" variant="contained" onClick={()=>{history.push(`/imodels/${item.id}?tab=demo#sample`)}}>Try it</Button>
-                                        </CardActions>
+                                        <Card sx ={{hegith: 400}} key={itemModel.id} >
+                                            <CardHeader sx={{
+                                                    height: 60
+                                                }}
+                                                avatar={
+                                                    <Avatar sx={{ bgcolor: red[500] }} aria-label="recipe">
+                                                        AI
+                                                    </Avatar>
+                                                }
+                                                action={
+                                                <IconButton aria-label="settings" onClick={(event) => handleClick(event, itemModel)}>
+                                                    <MoreVertIcon />
+                                                </IconButton>
+                                                }
+                                                title={itemModel.name}
+                                                subheader={itemModel.algorithm}
+                                            />
+                                            <MenuList>
+                                            <Menu 
+                                                anchorEl={anchorEl} 
+                                                keepMounted onClose={handleClose} 
+                                                open={open}>    
+                                                <MenuItem
+                                                    key={`Edit-${itemModel.id}`}
+                                                    onClick={onEdit}>
+                                                    <ListItemIcon>
+                                                        <Edit fontSize="small" />
+                                                    </ListItemIcon>
+                                                    <ListItemText>Edit</ListItemText>
+                                                </MenuItem>
+                                                <MenuItem
+                                                    key={`Delete-${itemModel.id}`}
+                                                    onClick={onDelete}>
+                                                    <ListItemIcon>
+                                                        <Delete fontSize="small" />
+                                                    </ListItemIcon>
+                                                    <ListItemText>Delete</ListItemText>
+                                                </MenuItem>
+                                            </Menu>
+                                            </MenuList>
+                                            <CardContent >
+                                                <Image src={itemModel.httpuri} height='192px' width='192px' public={true}></Image>
+                                                <Typography variant="body2" color="text.secondary" sx ={{hegith: 90}}>
+                                                {itemModel.description}
+                                                </Typography>
+                                            </CardContent>
+                                            <CardActions>
+                                                <Button size="large" variant="contained" onClick={()=>{history.push(`/imodels/${itemModel.id}?tab=demo#sample`)}}>Try it</Button>
+                                            </CardActions>
                                         </Card>
                                     </Grid>
                                 )
@@ -179,8 +185,7 @@ const IndustrialModelList: FunctionComponent<IProps> = (props) => {
         setProssing(true)
         axios.delete(`/industrialmodel/${industrialModel.id}`, {params: {model_algorithm: industrialModel.algorithm}})
             .then((response) => {
-                var industrialModels = props.industrialModels
-                props.updateIndustrialModelsAction(industrialModels.filter((item) => item.id !== industrialModel.id))
+                props.updateIndustrialModelsAction(props.industrialModels.filter((item) => item.id !== industrialModel.id))
                 onRefresh()
                 setVisibleConfirmationDialog(false)
                 setProssing(false)

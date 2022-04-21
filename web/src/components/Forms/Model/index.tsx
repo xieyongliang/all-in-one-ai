@@ -44,7 +44,7 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
     const [ selectedModelPackageGroup, setSelectedModelPackageGroup ] = useState({});
     const [ selectedModelPackageGroupVersions, setSelectedModelPackageGroupVersions ] = useState({});
     const [ tags, setTags ] = useState([{key:'', value:''}])
-    const [ environments, setEnvironments ] = useState([{key:'', value:''}])
+    const [ environments, setEnvironments ] = useState([])
     const [ invalidModelName, setInvalidModelName ] = useState(false)
     const [ invalidModelDataUrl, setInvalidModelDataUrl ] = useState(false)
     const [ invalidModelPackageName, setInvalidModelPackageName ] = useState(false)

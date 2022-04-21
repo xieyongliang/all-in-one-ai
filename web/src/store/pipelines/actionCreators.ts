@@ -73,6 +73,42 @@ export function UpdateTrainingjobCfgS3Uri(trainingjobCfgS3Uri: string): Pipeline
     };
 }
 
+export function UpdateTrainingjobTrainingS3Uri(trainingjobTrainingS3Uri: string): PipelineActionTypes {
+    return {
+        type: Action.UPDATE_PIPELINE_TRAINING_JOB_TRAINING_S3URI,
+        payload: {
+            trainingjobTrainingS3Uri,
+        },
+    };
+}
+
+export function UpdateTrainingjobValidationS3Uri(trainingjobValidationS3Uri: string): PipelineActionTypes {
+    return {
+        type: Action.UPDATE_PIPELINE_TRAINING_JOB_VALIDATION_S3URI,
+        payload: {
+            trainingjobValidationS3Uri,
+        },
+    };
+}
+
+export function UpdateTrainingjobTestS3Uri(trainingjobTestS3Uri: string): PipelineActionTypes {
+    return {
+        type: Action.UPDATE_PIPELINE_TRAINING_JOB_TEST_S3URI,
+        payload: {
+            trainingjobTestS3Uri,
+        },
+    };
+}
+
+export function UpdateTrainingjobHyperparameters(trainingjobHyperparameters: string): PipelineActionTypes {
+    return {
+        type: Action.UPDATE_PIPELINE_TRAINING_JOB_HYPERPARAMETERS,
+        payload: {
+            trainingjobHyperparameters,
+        },
+    };
+}
+
 export function UpdateTrainingjobOutputS3Uri(trainingjobOutputS3Uri: string): PipelineActionTypes {
     return {
         type: Action.UPDATE_PIPELINE_TRAINING_JOB_OUTPUT_S3URI,

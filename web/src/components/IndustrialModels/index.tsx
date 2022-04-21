@@ -11,7 +11,7 @@ import RestApiList from '../Lists/RestApi';
 import GreengrassComponentList from '../Lists/GreengrassComponent';
 import GreengrassDeploymentList from '../Lists/GreengrassDeployment';
 import PipelineList from '../Lists/Pipeline';
-import TrainingJobForm from '../Forms/TrainingJob';
+import TrainingJobYolov5Form from '../Forms/TrainingJob/yolov5';
 import PipelineForm from '../Forms/Pipeline';
 import ModelForm from '../Forms/Model';
 import EndpointForm from '../Forms/Endpoint';
@@ -87,7 +87,7 @@ const IndustrialModels: FunctionComponent<IProps> = (
                 case 'pipeline':
                     return <PipelineForm/>;
                 case 'trainingjob':
-                    return <TrainingJobForm/>;
+                    return <TrainingJobYolov5Form/>;
                 case 'model':
                     return <ModelForm/>;
                 case 'endpoint':

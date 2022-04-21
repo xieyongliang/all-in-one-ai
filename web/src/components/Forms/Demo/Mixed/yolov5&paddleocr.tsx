@@ -24,8 +24,8 @@ const YolovPaddleOCRDemoForm: FunctionComponent = () => {
         return (
             <RadioGroup onChange={onChangeOptions}
                 items={[
-                    <RadioButton value='uploaded' checked={demoType === 'uploaded'} >Realtime inference with uploaded image</RadioButton>,
                     <RadioButton value='sample' checked={demoType === 'sample'} >Realtime inference with sample image</RadioButton>,
+                    <RadioButton value='uploaded' checked={demoType === 'uploaded'} >Realtime inference with uploaded image</RadioButton>,
                 ]}
             />
         )
@@ -36,8 +36,8 @@ const YolovPaddleOCRDemoForm: FunctionComponent = () => {
             <Container title = 'Demo options'>
                 {renderDemoOptions()}
             </Container>
-            {demoType === 'uploaded' && <InferenceForm type={ProjectType.TEXT_RECOGNITION} subType={ProjectSubType.OBJECT_DETECTION}/>}
             {demoType === 'sample' && <SampleForm type={ProjectType.TEXT_RECOGNITION} subType={ProjectSubType.OBJECT_DETECTION}/>}
+            {demoType === 'uploaded' && <InferenceForm type={ProjectType.TEXT_RECOGNITION} subType={ProjectSubType.OBJECT_DETECTION}/>}
         </Stack>
     )
 }

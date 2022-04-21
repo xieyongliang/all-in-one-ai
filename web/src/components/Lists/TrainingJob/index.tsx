@@ -10,6 +10,7 @@ import axios from 'axios';
 import { PathParams } from '../../Interfaces/PathParams';
 import { getDurationBySeconds, getUtcDate } from '../../Utils/Helper/index';
 import { DeleteConfirmationDialog } from 'aws-northstar';
+import { FetchDataOptions } from 'aws-northstar/components/Table';
 
 interface TrainingJobItem {
     trainingJobName: string;
@@ -19,7 +20,6 @@ interface TrainingJobItem {
 }
 
 const TrainingJobList: FunctionComponent = () => {
-    const [ trainingJobItems, setTrainingJobItems ] = useState([])
     const [ loading, setLoading ] = useState(true);
     const [ sampleCode, setSampleCode ] = useState('')
     const [ sampleConsole, setSampleConsole ] = useState('')
@@ -35,7 +35,9 @@ const TrainingJobList: FunctionComponent = () => {
     const [ visibleDetachConfirmation, setVisibleDetachConfirmation ] = useState(false)
     const [ processingDetach, setProcessingDetach ] = useState(false);
     const [ disabledDetach, setDisabledDetach ] = useState(true)    
-
+    const [ pageIndex, setPageIndex ] = useState(0);
+    const [ trainingJobCurItems, setTrainingJobCurItems ] = useState([])
+    const [ trainingJobAllItems, setTrainingJobAllItems ] = useState([])
     const history = useHistory();
 
     var params : PathParams = useParams();
@@ -47,7 +49,7 @@ const TrainingJobList: FunctionComponent = () => {
 
     useEffect(() => {
         var cancel = false
-        const requests = [ axios.get('/function/all_in_one_ai_create_training_job_yolov5?action=code'), axios.get('/function/all_in_one_ai_create_training_job_yolov5?action=console')];
+        const requests = [ axios.get('/function/all_in_one_ai_create_training_job?action=code'), axios.get('/function/all_in_one_ai_create_training_job?action=console')];
         axios.all(requests)
         .then(axios.spread(function(response0, response1) {
             getSourceCode(response0.data).then((data) => {
@@ -69,27 +71,77 @@ const TrainingJobList: FunctionComponent = () => {
 
     const onRefresh = useCallback(() => {
         setLoading(true)
-        var request = showAll ? axios.get('/trainingjob', {params : {'action': 'list'}}) : axios.get('/trainingjob', {params : {'industrial_model': params.id}})
-        request.then(
-            (response) => {
-                var items = []
+
+        var loadedAllItems = false;
+        var loadedCurItems = false;
+        var trainingJobAllItems = [];
+        var trainingJobCurItems = [];
+        
+        axios.get('/trainingjob', {params : {'action': 'list'}})
+            .then((response) => {
                 if(response.data.length === 0) {
-                    setTrainingJobItems(items)
-                    setLoading(false);
+                    loadedAllItems = true;
+                    setTrainingJobAllItems(trainingJobAllItems);
+                    if(loadedCurItems) {
+                        setLoading(false);
+                        setSelectedTrainingJob(undefined);
+                    }
                 }
-                else
-                    for(let item of response.data) {
-                        items.push({trainingJobName: item.TrainingJobName, trainingJobStatus : item.TrainingJobStatus, duration: getDurationBySeconds(parseInt(item.TrainingTimeInSeconds)), creationTime: item.CreationTime})
-                        if(items.length === response.data.length) {
-                            setTrainingJobItems(items)
+                for(let item of response.data) {
+                    trainingJobAllItems.push(
+                        {
+                            trainingJobName: item.TrainingJobName, 
+                            trainingJobStatus : item.TrainingJobStatus, 
+                            duration: getDurationBySeconds(parseInt(item.TrainingTimeInSeconds)), 
+                            creationTime: item.CreationTime
+                        }
+                    )
+                    if(trainingJobAllItems.length === response.data.length) {
+                        loadedAllItems = true;
+                        setTrainingJobAllItems(trainingJobAllItems);
+                        if(loadedCurItems) {
                             setLoading(false);
+                            setSelectedTrainingJob(undefined);
                         }
                     }
+                }
             }, (error) => {
                 console.log(error);
             }
         );
-    }, [params.id, showAll])
+        axios.get('/trainingjob', {params : {'industrial_model': params.id}})
+            .then((response) => {
+                if(response.data.length === 0) {
+                    setTrainingJobCurItems(trainingJobCurItems);
+                    loadedCurItems = true;
+                    if(loadedAllItems) {
+                        setLoading(false);
+                        setSelectedTrainingJob(undefined);
+                    }
+                }
+                for(let item of response.data) {
+                    trainingJobCurItems.push(
+                        {
+                            trainingJobName: item.TrainingJobName, 
+                            trainingJobStatus : item.TrainingJobStatus, 
+                            duration: getDurationBySeconds(parseInt(item.TrainingTimeInSeconds)), 
+                            creationTime: item.CreationTime
+                        }
+                    )
+                    if(trainingJobCurItems.length === response.data.length) {
+                        setTrainingJobCurItems(trainingJobCurItems);
+                        loadedCurItems = true;
+                        if(loadedAllItems) {               
+                            setLoading(false);
+                            setSelectedTrainingJob(undefined);
+                        }
+                    }
+                }
+            }, (error) => {
+                console.log(error);
+            }
+        );
+    }, [params.id])
 
     useEffect(() => {
         onRefresh()
@@ -263,10 +315,16 @@ const TrainingJobList: FunctionComponent = () => {
             }
         }
     ];
+
+    const onChangeShowAll = (checked) => {
+        setShowAll(checked);
+        if(!checked && selectedTrainingJob !==undefined && trainingJobCurItems.findIndex((item) => item.trainingJobName === selectedTrainingJob.trainingJobName) < 0)
+            setSelectedTrainingJob(undefined);
+    }
     
     const tableActions = (
         <Inline>
-            <Toggle label='Show all' checked={showAll} onChange={(checked)=>setShowAll(checked)}/>
+            <Toggle label='Show all' checked={showAll} onChange={onChangeShowAll}/>
             <Button icon="refresh" onClick={onRefresh} loading={loading}>Refresh</Button>
             <ButtonDropdown
                 content='Actions'
@@ -280,12 +338,22 @@ const TrainingJobList: FunctionComponent = () => {
         if(selectedItems.length > 0) {
             setSelectedTrainingJob(selectedItems[0])
             setDisabledStop(false)
-            var index = trainingJobItems.findIndex((item) => item.name === selectedItems[0].trainingJobName)
-            setDisabledAttach(index < 0)
-            setDisabledDetach(index >= 0)
+            if(!showAll) {
+                setDisabledAttach(true)
+                setDisabledDetach(false)
+            }
+            else {
+                var index = trainingJobCurItems.findIndex((item) => item.trainingJobName === selectedItems[0].trainingJobName)
+                setDisabledAttach(index >= 0)
+                setDisabledDetach(index < 0) 
+            }
         }
     }
     
+    const onFetchData = (options: FetchDataOptions) => {
+        setPageIndex(options.pageIndex);
+    }
+
     const renderTrainingJobList = () => {
         return (
             <Table
@@ -293,11 +361,13 @@ const TrainingJobList: FunctionComponent = () => {
                 tableTitle='Training jobs'
                 multiSelect={false}
                 columnDefinitions={columnDefinitions}
-                items={trainingJobItems}
+                items={showAll ? trainingJobAllItems : trainingJobCurItems}
                 loading={loading}
                 onSelectionChange={onSelectionChange}
                 getRowId={getRowId}
                 selectedRowIds={selectedTrainingJob !== undefined ? [selectedTrainingJob.trainingJobName] : []}
+                onFetchData={onFetchData}
+                defaultPageIndex={pageIndex}
             />
         )    
     }

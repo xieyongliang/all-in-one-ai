@@ -86,8 +86,10 @@ const GluonCVDemoForm: FunctionComponent<IProps> = (
         if(industrialModel !== undefined) {
             setLoading(true)
             var s3uri = industrialModel.samples
+            console.log('000')
             axios.get('/s3', {params : { s3uri : s3uri, page_num: imagePage, page_size: 20 }})
                 .then((response) => {
+                    console.log(response.data)
                     setOriginImageItems(response.data.payload);
                     setImageCount(response.data.count);
                     setLoading(false);

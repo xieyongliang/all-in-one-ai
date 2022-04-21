@@ -33,8 +33,8 @@ const PaddleOCRDemoForm: FunctionComponent<IProps> = (
         return (
             <RadioGroup onChange={onChangeOptions}
                 items={[
-                    <RadioButton value='uploaded' checked={demoOption === 'uploaded'} >Realtime inference with uploaded image</RadioButton>,
                     <RadioButton value='sample' checked={demoOption === 'sample'} >Realtime inference with sample image</RadioButton>,
+                    <RadioButton value='uploaded' checked={demoOption === 'uploaded'} >Realtime inference with uploaded image</RadioButton>,
                 ]}
             />
         )
@@ -50,8 +50,8 @@ const PaddleOCRDemoForm: FunctionComponent<IProps> = (
                     <Toggle label='Advanced mode' checked={advancedMode} onChange={onAdvancedModeChange}/>
                 </FormField>
             </Container>
-            {demoOption === 'uploaded' && <InferenceForm type={ProjectType.TEXT_RECOGNITION}/>}
             {demoOption === 'sample' && <SampleForm type={ProjectType.TEXT_RECOGNITION}/>}
+            {demoOption === 'uploaded' && <InferenceForm type={ProjectType.TEXT_RECOGNITION}/>}
         </Stack>
     )
 }

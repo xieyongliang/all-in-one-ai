@@ -18,6 +18,7 @@ export type GeneralState = {
     preventCustomCursor: boolean;
     imageDragMode: boolean;
     crossHairVisible: boolean;
+    reverseLineColor: boolean;
     enablePerClassColoration: boolean;
     activeContext: ContextType;
     projectData: ProjectData;
@@ -80,6 +81,13 @@ interface UpdateCrossHairVisibleStatus {
     }
 }
 
+interface updateReverseLineColor {
+    type: typeof Action.UPDATE_REVERSE_LINE_COLOR;
+    payload: {
+        reverseLineColor: boolean;
+    }
+}
+
 interface UpdateZoom {
     type: typeof Action.UPDATE_ZOOM,
     payload: {
@@ -102,5 +110,6 @@ export type GeneralActionTypes = UpdateProjectData
     | UpdatePreventCustomCursorStatus
     | UpdateImageDragModeStatus
     | UpdateCrossHairVisibleStatus
+    | updateReverseLineColor
     | UpdateZoom
     | UpdatePerClassColoration

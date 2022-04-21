@@ -9,6 +9,10 @@ export type PipelineState = {
     trainingjobLabelsS3Uri: string;
     trainingjobWeightsS3Uri: string;
     trainingjobCfgS3Uri: string;
+    trainingjobTrainingS3Uri: string;
+    trainingjobValidationS3Uri: string;
+    trainingjobTestS3Uri: string;
+    trainingjobHyperparameters: string;
     trainingjobOutputS3Uri: string;
     modelAlgorithm: string;
     modelModelPackageGroupName: string;
@@ -80,6 +84,34 @@ interface UpdateTrainingjobCfgS3Uri {
     type: typeof Action.UPDATE_PIPELINE_TRAINING_JOB_CFG_S3URI;
     payload: {
         trainingjobCfgS3Uri: string;
+    }
+}
+
+interface UpdateTrainingjobTrainingS3Uri {
+    type: typeof Action.UPDATE_PIPELINE_TRAINING_JOB_TRAINING_S3URI;
+    payload: {
+        trainingjobTrainingS3Uri: string;
+    }
+}
+
+interface UpdateTrainingjobValidationS3Uri {
+    type: typeof Action.UPDATE_PIPELINE_TRAINING_JOB_VALIDATION_S3URI;
+    payload: {
+        trainingjobValidationS3Uri: string;
+    }
+}
+
+interface UpdateTrainingjobTestS3Uri {
+    type: typeof Action.UPDATE_PIPELINE_TRAINING_JOB_TEST_S3URI;
+    payload: {
+        trainingjobTestS3Uri: string;
+    }
+}
+
+interface UpdateTrainingjobHyperparameters {
+    type: typeof Action.UPDATE_PIPELINE_TRAINING_JOB_HYPERPARAMETERS;
+    payload: {
+        trainingjobHyperparameters: string;
     }
 }
 
@@ -202,6 +234,10 @@ export type PipelineActionTypes = UpdatePipelineType
     | UpdateTrainingjobLebelsS3Uri
     | UpdateTrainingjobWeightsS3Uri
     | UpdateTrainingjobCfgS3Uri
+    | UpdateTrainingjobTrainingS3Uri
+    | UpdateTrainingjobValidationS3Uri
+    | UpdateTrainingjobTestS3Uri
+    | UpdateTrainingjobHyperparameters
     | UpdateTrainingjobOutputS3Uri
     | UpdateModelAlgorithm
     | UpdateModelModelPackageGroupName

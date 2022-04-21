@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 import { Wizard, FormField, Input, LoadingIndicator } from 'aws-northstar/components';
 import { Container, Stack } from 'aws-northstar/layouts';
 import axios from 'axios';
-import TrainingJobForm from '../TrainingJob';
+import TrainingJobYolov5Form from '../TrainingJob/yolov5';
 import ModelForm from '../Model';
 import EndpointForm from '../Endpoint';
 import GreengrassComponentForm from '../GreengrassComponent';
@@ -160,10 +160,10 @@ const PipelineForm: FunctionComponent<IProps> = (props) => {
             content: 
                 renderPipeline()
         },
-        {
+        algorithm === 'yolov5' && {
             title: 'Training job',
             content: 
-                <TrainingJobForm wizard={true}/>
+                <TrainingJobYolov5Form wizard={true}/>
         },
         {
             title: 'Model',
@@ -193,10 +193,10 @@ const PipelineForm: FunctionComponent<IProps> = (props) => {
             content: 
                 renderPipeline()
         },
-        {
+        algorithm === 'yolov5' && {
             title: 'Training job',
             content: 
-                <TrainingJobForm wizard={true}/>
+                <TrainingJobYolov5Form wizard={true}/>
         },
         {
             title: 'Model',

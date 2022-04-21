@@ -19,6 +19,7 @@ import { AppState } from '../../../store';
 import { connect } from 'react-redux';
 import { IIndustrialModel } from '../../../store/industrialmodels/reducer';
 import { ProjectSubType, ProjectType } from '../../../data/enums/ProjectType';
+import { FetchDataOptions } from 'aws-northstar/components/Table';
 
 interface TransformJobItem {
     transformJobName: string;
@@ -32,7 +33,6 @@ interface IProps {
 }
 
 const TransformJobList: FunctionComponent<IProps> = (props) => {
-    const [ transformJobItems, setTransformJobItems ] = useState([])
     const [ disabledReview, setDisabledReview ] = useState(true)
     const [ loadingTable, setLoadingTable ] = useState(true)
     const [ visibleReview, setVisibleReview ] = useState(false)
@@ -57,6 +57,9 @@ const TransformJobList: FunctionComponent<IProps> = (props) => {
     const [ visibleDetachConfirmation, setVisibleDetachConfirmation ] = useState(false)
     const [ processingDetach, setProcessingDetach ] = useState(false);
     const [ disabledDetach, setDisabledDetach ] = useState(true)   
+    const [ pageIndex, setPageIndex ] = useState(0);
+    const [ transformJobCurItems, setTransformJobCurItems ] = useState([])
+    const [ transformJobAllItems, setTransformJobAllItems ] = useState([])
 
     const history = useHistory();
 
@@ -93,7 +96,6 @@ const TransformJobList: FunctionComponent<IProps> = (props) => {
 
     const onRefresh = useCallback(() => {
         if(industrialModels.length > 0) {
-            var transformJobItems = []
             var index = industrialModels.findIndex((item) => item.id === params.id)
             setImageLabels(industrialModels[index].labels)
             setCurImageItem('');
@@ -101,25 +103,80 @@ const TransformJobList: FunctionComponent<IProps> = (props) => {
             setVisibleReview(false);
 
             setLoadingTable(true)
-            var request = showAll ? axios.get('/transformjob', {params : {action: 'list'}}) : axios.get('/transformjob', {params : {industrial_model: params.id}})
-            request.then(
-                (response) => {
+
+            var loadedAllItems = false;
+            var loadedCurItems = false;
+            var transformJobAllItems = [];
+            var transformJobCurItems = [];
+            
+            axios.get('/transformjob', {params : {'action': 'list'}})
+                .then((response) => {
                     if(response.data.length === 0) {
-                        setTransformJobItems(transformJobItems);
-                        setLoadingTable(false);
+                        loadedAllItems = true;
+                        setTransformJobAllItems(transformJobAllItems);
+                        if(loadedCurItems) {
+                            setLoadingTable(false);
+                            setSelectedTransformJob(undefined);
+                        }
                     }
-                    else
-                        for(let item of response.data) {
-                            transformJobItems.push({transformJobName: item.TransformJobName, transformJobStatus : item.TransformJobStatus, duration: getDurationByDates(item.TransformStartTime, item.TransformEndTime), creationTime: item.CreationTime})
-                            if(transformJobItems.length === response.data.length) {
-                                setTransformJobItems(transformJobItems);
+                    for(let item of response.data) {
+                        transformJobAllItems.push(
+                            {
+                                transformJobName: item.TransformJobName, 
+                                transformJobStatus: item.TransformJobStatus, 
+                                creationTime: item.CreationTime, 
+                                duration: getDurationByDates(item.TransformStartTime, item.TransformEndTime)
+                            }
+                        )
+                        if(transformJobAllItems.length === response.data.length) {
+                            loadedAllItems = true;
+                            setTransformJobAllItems(transformJobAllItems);
+                            if(loadedCurItems) {
                                 setLoadingTable(false);
+                                setSelectedTransformJob(undefined);
                             }
                         }
+                    }
+                }, (error) => {
+                    console.log(error);
                 }
-            )
+            );
+            axios.get('/transformjob', {params : {'industrial_model': params.id}})
+                .then((response) => {
+                    if(response.data.length === 0) {
+                        setTransformJobCurItems(transformJobCurItems);
+                        loadedCurItems = true;
+                        if(loadedAllItems) {
+                            setLoadingTable(false);
+                            setSelectedTransformJob(undefined);
+                        }
+                    }
+                    for(let item of response.data) {
+                        transformJobCurItems.push(
+                            {
+                                transformJobName: item.TransformJobName, 
+                                transformJobStatus: item.TransformJobStatus, 
+                                creationTime: item.CreationTime, 
+                                duration: getDurationByDates(item.TransformStartTime, item.TransformEndTime)
+                            }
+                        )
+                        if(transformJobCurItems.length === response.data.length) {
+                            setTransformJobCurItems(transformJobCurItems);
+                            loadedCurItems = true;
+                            if(loadedAllItems) {               
+                                setLoadingTable(false);
+                                setSelectedTransformJob(undefined);
+                            }
+                        }
+                    }
+                }, (error) => {
+                    console.log(error);
+                }
+            );
+    
+            
         }
-    }, [params.id, industrialModels, showAll])
+    }, [params.id, industrialModels])
 
     useEffect(() => {
         onRefresh()
@@ -185,11 +242,18 @@ const TransformJobList: FunctionComponent<IProps> = (props) => {
         if(selectedItems.length > 0) {
             setSelectedTransformJob(selectedItems[0])
             setDisabledStop(false)
-            setDisabledReview(false)
-            var index = transformJobItems.findIndex((item) => item.name === selectedItems[0].transformJobName)
-            setDisabledAttach(index < 0)
-            setDisabledDetach(index >= 0)
-        } 
+            if(!showAll) {
+                setDisabledAttach(true)
+                setDisabledDetach(false)
+                setDisabledReview(false)
+            }
+            else {
+                var index = transformJobCurItems.findIndex((item) => item.transformJobName === selectedItems[0].transformJobName)
+                setDisabledAttach(index >= 0)
+                setDisabledDetach(index < 0) 
+                setDisabledReview(index < 0)
+            }
+        }
     })
 
     const onCreate = () => {
@@ -262,7 +326,7 @@ const TransformJobList: FunctionComponent<IProps> = (props) => {
                 loading={processingAttach}
                 deleteButtonText='Attach'
             >
-                <Text>This will attach this training job to current industrial model.</Text>
+                <Text>This will attach this transform job to current industrial model.</Text>
             </DeleteConfirmationDialog>
         )
     }
@@ -293,7 +357,7 @@ const TransformJobList: FunctionComponent<IProps> = (props) => {
                 loading={processingDetach}
                 deleteButtonText='Detach'
             >
-                <Text>This will dettach this training job from current industrial model.</Text>
+                <Text>This will dettach this transform job from current industrial model.</Text>
             </DeleteConfirmationDialog>
         )
     }
@@ -372,9 +436,15 @@ const TransformJobList: FunctionComponent<IProps> = (props) => {
         }
     ];
 
+    const onChangeShowAll = (checked) => {
+        setShowAll(checked);
+        if(!checked && selectedTransformJob !==undefined && transformJobCurItems.findIndex((item) => item.transformJobName === selectedTransformJob.transformJobName) < 0)
+            setSelectedTransformJob(undefined);
+    }
+
     const tableActions = (
         <Inline>
-            <Toggle label='Show all' checked={showAll} onChange={(checked)=>setShowAll(checked)}/>
+            <Toggle label='Show all' checked={showAll} onChange={onChangeShowAll}/>
             <Button icon="refresh" onClick={onRefresh} loading={loadingTable}>Refresh</Button>
             <ButtonDropdown
                 content='Actions'
@@ -417,6 +487,10 @@ const TransformJobList: FunctionComponent<IProps> = (props) => {
             )
     }
 
+    const onFetchData = (options: FetchDataOptions) => {
+        setPageIndex(options.pageIndex);
+    }
+        
     const renderTransformJobList = () => {
         return (
             <Table
@@ -424,11 +498,13 @@ const TransformJobList: FunctionComponent<IProps> = (props) => {
                 tableTitle='Batch transform jobs'
                 multiSelect={false}
                 columnDefinitions={columnDefinitions}
-                items={transformJobItems}
+                items={showAll ? transformJobAllItems : transformJobCurItems}
+                loading={loadingTable}
                 onSelectionChange={onSelectionChange}
                 getRowId={getRowId}
-                loading={loadingTable}
                 selectedRowIds={selectedTransformJob !== undefined ? [selectedTransformJob.transformJobName] : []}
+                onFetchData={onFetchData}
+                defaultPageIndex={pageIndex}
             />
         )    
     }

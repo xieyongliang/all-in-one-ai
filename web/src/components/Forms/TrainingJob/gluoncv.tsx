@@ -1,31 +1,29 @@
 import { FunctionComponent, useState } from 'react';
-import { Form, FormSection, FormField, Input, Button, Stack, Text } from 'aws-northstar';
+import { Form, FormSection, FormField, Input, Button, Stack, Text, ExpandableSection } from 'aws-northstar';
 import { useHistory, useParams } from 'react-router-dom'; 
 import Select, { SelectOption } from 'aws-northstar/components/Select';
 import Grid from '@mui/material/Grid';
 import axios from 'axios';
 import {connect} from 'react-redux';
 import { AppState } from '../../../store';
-import { UpdateTrainingjobImageS3Uri, UpdateTrainingjobInstanceCount, UpdateTrainingjobInstanceType, UpdateTrainingjobLabelsS3Uri, UpdateTrainingjobVolumeSizeInGB, UpdateTrainingjobWeightsS3Uri, UpdateTrainingjobCfgS3Uri, UpdateTrainingjobOutputS3Uri } from '../../../store/pipelines/actionCreators';
+import { UpdateTrainingjobInstanceCount, UpdateTrainingjobInstanceType, UpdateTrainingjobOutputS3Uri, UpdateTrainingjobTrainingS3Uri, UpdateTrainingjobValidationS3Uri, UpdateTrainingjobTestS3Uri, UpdateTrainingjobHyperparameters } from '../../../store/pipelines/actionCreators';
 import { IIndustrialModel } from '../../../store/industrialmodels/reducer';
 import { PathParams } from '../../Interfaces/PathParams';
 
 interface IProps {
     updateTrainingjobInstanceTypeAction: (trainingjobInstanceType: string) => any;
     updateTrainingjobInstanceCountAction: (trainingjobInstanceCount: number) => any;
-    updateTrainingjobVolumeSizeInGBAction: (trainingjobVolumeSizeInGB: number) => any;
-    updateTrainingjobImageS3UriAction: (trainingjobImagesS3Uri: string) => any;
-    updateTrainingjobLabelsS3UriAction: (trainingjobLabelsS3Uri: string) => any;
-    updateTrainingjobWeightsS3UriAction: (trainingjobWeightsS3Uri: string) => any;
-    updateTrainingjobCfgS3UriAction: (trainingjobCfgS3Uri: string) => any;
+    updateTrainingjobTrainingS3UriAction: (trainingjobTrainingS3Uri: string) => any;
+    updateTrainingjobValidationS3UriAction: (trainingjobValidationS3Uri: string) => any;
+    updateTrainingjobTestS3UriAction: (trainingjobTestS3Uri: string) => any;
+    updateTrainingjobHyperparametersAction: (trainingjobHyperparameters: string) => any;
     updateTrainingjobOutputS3UriAction: (trainingjobOutputS3Uri: string) => any;
     trainingjobInstanceType : string;
     trainingjobInstanceCount : number;
-    trainingjobVolumeSizeInGB : number;
-    trainingjobImagesS3Uri : string;
-    trainingjobLabelsS3Uri : string;
-    trainingjobWeightsS3Uri : string;
-    trainingjobCfgS3Uri : string;
+    trainingjobTrainingS3Uri : string;
+    trainingjobValidationS3Uri : string;
+    trainingjobTestS3Uri : string;
+    trainingjobHyperparameters : string;
     trainingjobOutputS3Uri : string;
     wizard?: boolean;
     industrialModels: IIndustrialModel[];
@@ -66,23 +64,21 @@ const optionsInstance : SelectOption[]= [
     }
 ];
 
-const TrainingJobForm: FunctionComponent<IProps> = (props) => {
+const TrainingJobGluonCV5Form: FunctionComponent<IProps> = (props) => {
     const [ trainingJobName, setTrainingJobName ] = useState('')
     const [ trainingImage, setTrainingImage ] = useState('')
     const [ selectedInstanceType, setSelectedInstanceType ] = useState<SelectOption>(props.wizard ? {label: props.trainingjobInstanceType, value: props.trainingjobInstanceType} : {})
     const [ instanceCount, setInstanceCount ] = useState(props.wizard ? props.trainingjobInstanceCount : 1)
-    const [ volumeSizeInGB, setVolumeSizeInGB ] = useState(props.wizard ? props.trainingjobVolumeSizeInGB : 30)
-    const [ imagesS3Uri, setImagesS3Uri ] = useState(props.wizard ? props.trainingjobImagesS3Uri : '')
-    const [ labelsS3Uri, setLabelsS3Uri ] = useState(props.wizard ? props.trainingjobLabelsS3Uri : '')
-    const [ weightsS3Uri, setWeightsS3Uri ] = useState(props.wizard ? props.trainingjobWeightsS3Uri : '')
-    const [ cfgS3Uri, setCfgS3Uri ] = useState(props.wizard ? props.trainingjobCfgS3Uri : '')
+    const [ trainingS3Uri, setTrainingS3Uri ] = useState(props.wizard ? props.trainingjobTrainingS3Uri : '')
+    const [ validationS3Uri, setValidationS3Uri ] = useState(props.wizard ? props.trainingjobValidationS3Uri : '')
+    const [ testS3Uri, setTestS3Uri ] = useState(props.wizard ? props.trainingjobTestS3Uri : '')
+    const [ hyperparameters, setHyperparameters ] = useState([{key:'', value:''}])
     const [ outputS3Uri, setOutputS3Uri ] = useState(props.wizard ? props.trainingjobOutputS3Uri : '')
     const [ tags ] = useState([{key:'', value:''}])
     const [ forcedRefresh, setForcedRefresh ] = useState(false)
     const [ invalidTrainingJobName, setInvalidTrainingJobName ] = useState(false)
     const [ invalidInstanceType, setinvalidInstanceType ] = useState(false)
     const [ invalidInstanceCount, setInvalidInstanceCount ] = useState(false)
-    const [ invalidVolumeSizeInGB, setInvalidVolumeSizeInGB ] = useState(false)
     const [ invalidImagesS3Uri, setInvalidImagesS3Uri ] = useState(false)
     const [ invalidLabelsS3Uri, setInvalidLabelsS3Uri ] = useState(false)
     const [ invalidOutputS3Uri, setInvalidOutputS3Uri ] = useState(false)
@@ -107,36 +103,32 @@ const TrainingJobForm: FunctionComponent<IProps> = (props) => {
             if(props.wizard)
                 props.updateTrainingjobInstanceCountAction(parseInt(event));
         }
-        if(id === 'formFieldIdVolumeSizeInGB') {
-            setVolumeSizeInGB(parseInt(event));
+        if(id === 'formFieldIdTrainingS3Uri') {
+            setTrainingS3Uri(event);
             if(props.wizard)
-                props.updateTrainingjobVolumeSizeInGBAction(parseInt(event));
+                props.updateTrainingjobTrainingS3UriAction(event);
         }
-        if(id === 'formFieldIdImagesS3Uri') {
-            setImagesS3Uri(event);
+        if(id === 'formFieldIdValidationS3Uri') {
+            setValidationS3Uri(event);
             if(props.wizard)
-                props.updateTrainingjobImageS3UriAction(event);
+                props.updateTrainingjobValidationS3UriAction(event)
         }
-        if(id === 'formFieldIdLabelsS3Uri') {
-            setLabelsS3Uri(event);
+        if(id === 'formFieldIdTestS3Uri') {
+            setTestS3Uri(event);
             if(props.wizard)
-                props.updateTrainingjobLabelsS3UriAction(event)
-        }
-        if(id === 'formFieldIdWeightsS3Uri') {
-            setWeightsS3Uri(event);
-            if(props.wizard)
-                props.updateTrainingjobWeightsS3UriAction(event)
-        }
-        if(id === 'formFieldIdCfgS3Uri') {
-            setCfgS3Uri(event);
-            if(props.wizard)
-                props.updateTrainingjobCfgS3UriAction(event)
+                props.updateTrainingjobTestS3UriAction(event)
         }
         if(id === 'formFieldIdOutputS3Uri') {
             setOutputS3Uri(event);
             if(props.wizard)
                 props.updateTrainingjobOutputS3UriAction(event)
         }
+    }
+
+    const onChangeHyperparameters = (id: string, event: any, index : number) => {
+        var copyHyparameters = JSON.parse(JSON.stringify(hyperparameters));
+        copyHyparameters[index][id] = event
+        setHyperparameters(copyHyparameters)
     }
 
     const onSubmit = () => {
@@ -146,11 +138,9 @@ const TrainingJobForm: FunctionComponent<IProps> = (props) => {
             setinvalidInstanceType(true)
         else if(instanceCount <= 0)
             setInvalidInstanceCount(true)
-        else if(volumeSizeInGB <= 0)
-            setInvalidVolumeSizeInGB(true)
-        else if(imagesS3Uri === '')
+        else if(trainingS3Uri === '')
             setInvalidImagesS3Uri(true)
-        else if(labelsS3Uri === '')
+        else if(validationS3Uri === '')
             setInvalidLabelsS3Uri(true)
         else if(outputS3Uri === '')
             setInvalidOutputS3Uri(true)
@@ -165,11 +155,10 @@ const TrainingJobForm: FunctionComponent<IProps> = (props) => {
                 'model_algorithm': algorithm,
                 'instance_type': selectedInstanceType.value,
                 'instance_count': instanceCount,
-                'volume_size_in_gb': volumeSizeInGB,
-                'images_s3uri': imagesS3Uri,
-                'labels_s3uri': labelsS3Uri,
-                'weights_s3uri': weightsS3Uri,
-                'cfg_s3uri': cfgS3Uri,
+                'training_s3uri': trainingS3Uri,
+                'validation_s3uri': validationS3Uri,
+                'hyperparameters': hyperparameters,
+                'cfg_s3uri': testS3Uri,
                 'output_s3uri': outputS3Uri
             }
             if(tags.length > 1 || (tags.length === 1 && tags[0].key !== '' && tags[0].value !== ''))
@@ -286,22 +275,16 @@ const TrainingJobForm: FunctionComponent<IProps> = (props) => {
                     <FormField label='Instance count' controlId='formFieldIdInstanceCount'>
                         <Input type='number' value={instanceCount} required={true} invalid={invalidInstanceCount} onChange={(event) => onChange('formFieldIdInstanceCount', event)} />
                     </FormField>
-                    <FormField label='Additional storage volume per instance (GB)' controlId='formFieldIdVolumeSizeInGB'>
-                        <Input type='number' value={volumeSizeInGB} required={true} invalid={invalidVolumeSizeInGB} onChange={(event) => onChange('formFieldIdVolumeSizeInGB', event)}/>
-                    </FormField>
                 </FormSection>
                 <FormSection header='Input data configuration'>
-                    <FormField label='Images S3Uri' controlId='formFieldIdImagesS3Uri'>
-                        <Input value={imagesS3Uri} required={true} invalid={invalidImagesS3Uri} onChange={(event) => onChange('formFieldIdImagesS3Uri', event)}/>
+                    <FormField label='Training S3Uri' controlId='formFieldIdTrainingS3Uri'>
+                        <Input value={trainingS3Uri} required={true} invalid={invalidImagesS3Uri} onChange={(event) => onChange('formFieldIdTrainingS3Uri', event)}/>
                     </FormField>
-                    <FormField label='Lables S3Uri' controlId='formFieldIdLabelsPrefix'>
-                        <Input value={labelsS3Uri} required={true} invalid={invalidLabelsS3Uri} onChange={(event) => onChange('formFieldIdLabelsS3Uri', event)} />
+                    <FormField label='Validation S3Uri' controlId='formFieldIdValidationS3Uri'>
+                        <Input value={validationS3Uri} required={true} invalid={invalidLabelsS3Uri} onChange={(event) => onChange('formFieldIdValidationS3Uri', event)} />
                     </FormField>
-                    <FormField label='Weights S3Uri' controlId='formFieldIdWeightsS3Uri'>
-                        <Input value={weightsS3Uri} required={true} placeholder={'default'} onChange={(event) => onChange('formFieldIdWeightsS3Uri', event)}/>
-                    </FormField>
-                    <FormField label='Cfg S3Uri' controlId='formFieldIdCfgS3Uri'>
-                        <Input value={cfgS3Uri} required={true} placeholder={'default'} onChange={(event) => onChange('formFieldIdCfgS3Uri', event)} />
+                    <FormField label='Test S3Uri' controlId='formFieldIdTestS3Uri'>
+                        <Input value={testS3Uri} required={true} placeholder={'default'} onChange={(event) => onChange('formFieldIdTestS3Uri', event)} />
                     </FormField>
                 </FormSection>
                 <FormSection header='Output data configuration'>
@@ -310,6 +293,65 @@ const TrainingJobForm: FunctionComponent<IProps> = (props) => {
                     </FormField>
                 </FormSection>
             </Stack>
+        )
+    }
+
+    const onAddHyperparameter = () => {
+        var copyHyparameters = JSON.parse(JSON.stringify(hyperparameters));
+        copyHyparameters.push({key:'', value:''});
+        setHyperparameters(copyHyparameters);
+        var hyperparameter = {}
+        if(copyHyparameters.length > 0) {
+            copyHyparameters.forEach((item) => {
+                if(item['key'] === '') {
+                    alert('key in hyperparameter cannot be empty');
+                    return;
+                }
+                hyperparameter[item['key']] = item['value'];
+            })
+        }
+        props.updateTrainingjobHyperparametersAction(JSON.stringify(hyperparameter))
+    }
+
+    const onRemoveHyperparameter = (index) => {
+        var copyHyparameters = JSON.parse(JSON.stringify(hyperparameters));
+        copyHyparameters.splice(index, 1);
+        setHyperparameters(copyHyparameters);
+    }
+
+    const renderHyperparameters = () => {
+        return (
+            <ExpandableSection header="Hyperparameters - optional">
+                <Stack>
+                    {
+                        hyperparameters.length>0 && 
+                        <Grid container spacing={{ xs: 1, md: 1 }} columns={{ xs: 4, sm: 8, md: 12 }}>
+                            <Grid item xs={2} sm={4} md={4}>
+                                <Text> Key </Text>
+                            </Grid>
+                            <Grid item xs={2} sm={4} md={4}>
+                                <Text> Value </Text> 
+                            </Grid>
+                        </Grid>
+                    }
+                    {
+                        hyperparameters.map((item, index) => (
+                            <Grid container spacing={{ xs: 1, md: 1 }} columns={{ xs: 4, sm: 8, md: 12 }}>
+                                <Grid item xs={2} sm={4} md={4}>
+                                    <Input type='text' value={item.key} onChange={(event) => onChangeHyperparameters('key', event, index)}/>
+                                </Grid>
+                                <Grid item xs={2} sm={4} md={4}>
+                                    <Input type='text' value={item.value} onChange={(event) => onChangeHyperparameters('value', event, index)}/>
+                                </Grid>
+                                <Grid item xs={2} sm={4} md={4}>
+                                    <Button onClick={() => onRemoveHyperparameter(index)}>Remove</Button>
+                                </Grid>
+                            </Grid>
+                        ))
+                    }
+                    <Button variant='link' size='large' onClick={onAddHyperparameter}>Add hyperparameter</Button>
+                </Stack>
+            </ExpandableSection>  
         )
     }
 
@@ -346,22 +388,20 @@ const TrainingJobForm: FunctionComponent<IProps> = (props) => {
 const mapDispatchToProps = {
     updateTrainingjobInstanceTypeAction: UpdateTrainingjobInstanceType,
     updateTrainingjobInstanceCountAction: UpdateTrainingjobInstanceCount,
-    updateTrainingjobVolumeSizeInGBAction: UpdateTrainingjobVolumeSizeInGB,
-    updateTrainingjobImageS3UriAction: UpdateTrainingjobImageS3Uri,
-    updateTrainingjobLabelsS3UriAction: UpdateTrainingjobLabelsS3Uri,
-    updateTrainingjobWeightsS3UriAction: UpdateTrainingjobWeightsS3Uri,
-    updateTrainingjobCfgS3UriAction: UpdateTrainingjobCfgS3Uri,
+    updateTrainingjobTrainingS3UriAction: UpdateTrainingjobTrainingS3Uri,
+    updateTrainingjobValidationS3UriAction: UpdateTrainingjobValidationS3Uri,
+    updateTrainingjobTestS3UriAction: UpdateTrainingjobTestS3Uri,
+    updateTrainingjobHyperparametersAction: UpdateTrainingjobHyperparameters,
     updateTrainingjobOutputS3UriAction: UpdateTrainingjobOutputS3Uri
 };
 
 const mapStateToProps = (state: AppState) => ({
     trainingjobInstanceType : state.pipeline.trainingjobInstanceType,
     trainingjobInstanceCount : state.pipeline.trainingjobInstanceCount,
-    trainingjobVolumeSizeInGB : state.pipeline.trainingjobVolumeSizeInGB,
-    trainingjobImagesS3Uri : state.pipeline.trainingjobImagesS3Uri,
-    trainingjobLabelsS3Uri : state.pipeline.trainingjobLabelsS3Uri,
+    trainingjobTrainingS3Uri : state.pipeline.trainingjobTrainingS3Uri,
+    trainingjobValidationS3Uri : state.pipeline.trainingjobValidationS3Uri,
     trainingjobWeightsS3Uri : state.pipeline.trainingjobWeightsS3Uri,
-    trainingjobCfgS3Uri : state.pipeline.trainingjobCfgS3Uri,
+    trainingjobHyperparameters: state.pipeline.trainingjobHyperparameters,
     trainingjobOutputS3Uri : state.pipeline.trainingjobOutputS3Uri,
     industrialModels : state.industrialmodel.industrialModels
 });
@@ -369,4 +409,4 @@ const mapStateToProps = (state: AppState) => ({
 export default connect(
     mapStateToProps,
     mapDispatchToProps
-)(TrainingJobForm);
+)(TrainingJobGluonCV5Form);

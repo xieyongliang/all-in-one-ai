@@ -68,6 +68,14 @@ export function updateCrossHairVisibleStatus(crossHairVisible: boolean): General
     };
 }
 
+export function updateReverseLineColor(reverseLineColor: boolean): GeneralActionTypes {
+    return {
+        type: Action.UPDATE_REVERSE_LINE_COLOR,
+        payload: {
+            reverseLineColor,
+        },
+    };
+}
 export function updateProjectData(projectData: ProjectData): GeneralActionTypes {
     return {
         type: Action.UPDATE_PROJECT_DATA,

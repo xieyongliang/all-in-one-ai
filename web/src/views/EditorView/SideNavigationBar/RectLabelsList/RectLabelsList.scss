@@ -18,10 +18,15 @@
 
 .Command {
   color: white;
-  
+
   Button {
-    margin-top: 10px;
-    margin-bottom: 30px;
+    margin-top: 6px;
+    margin-bottom: 3px;
     width: 300px;
+  }
+
+  div {
+    margin-top: 3px;
+    margin-bottom: 3px;
   }
 }

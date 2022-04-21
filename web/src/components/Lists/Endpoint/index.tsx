@@ -10,6 +10,7 @@ import JSZip from 'jszip';
 import axios from 'axios';
 import { PathParams } from '../../Interfaces/PathParams';
 import { getUtcDate } from '../../Utils/Helper/index';
+import { FetchDataOptions } from 'aws-northstar/components/Table';
 
 interface EndpointItem {
     endpointName: string;
@@ -19,23 +20,24 @@ interface EndpointItem {
 }
 
 const EndpointList: FunctionComponent = () => {
-    const [ endpointItems, setEndpointItems ] = useState([])
     const [ loading, setLoading ] = useState(true);
-    const [ sampleCode, setSampleCode ] = useState('')
-    const [ sampleConsole, setSampleConsole ] = useState('')
-    const [ visibleSampleCode, setVisibleSampleCode ] = useState(false)
-    const [ selectedEndpoint, setSelectedEndpoint ] = useState<EndpointItem>()
-    const [ showAll, setShowAll ] = useState(false)
+    const [ sampleCode, setSampleCode ] = useState('');
+    const [ sampleConsole, setSampleConsole ] = useState('');
+    const [ visibleSampleCode, setVisibleSampleCode ] = useState(false);
+    const [ selectedEndpoint, setSelectedEndpoint ] = useState<EndpointItem>();
+    const [ showAll, setShowAll ] = useState(false);
     const [ visibleDeleteConfirmation, setVisibleDeleteConfirmation ] = useState(false);
     const [ processingDelete, setProcessingDelete ] = useState(false);
-    const [ disabledDelete, setDisabledDelete ] = useState(true)
-    const [ visibleAttachConfirmation, setVisibleAttachConfirmation ] = useState(false)
+    const [ disabledDelete, setDisabledDelete ] = useState(true);
+    const [ visibleAttachConfirmation, setVisibleAttachConfirmation ] = useState(false);
     const [ processingAttach, setProcessingAttach ] = useState(false);
-    const [ disabledAttach, setDisabledAttach ] = useState(true)
-    const [ visibleDetachConfirmation, setVisibleDetachConfirmation ] = useState(false)
+    const [ disabledAttach, setDisabledAttach ] = useState(true);
+    const [ visibleDetachConfirmation, setVisibleDetachConfirmation ] = useState(false);
     const [ processingDetach, setProcessingDetach ] = useState(false);
-    const [ disabledDetach, setDisabledDetach ] = useState(true)
-
+    const [ disabledDetach, setDisabledDetach ] = useState(true);
+    const [ pageIndex, setPageIndex ] = useState(0);
+    const [ endpointCurItems, setEndpointCurItems ] = useState([])
+    const [ endpointAllItems, setEndpointAllItems ] = useState([])
     const history = useHistory();
 
     var params : PathParams = useParams();
@@ -85,27 +87,77 @@ const EndpointList: FunctionComponent = () => {
 
     const onRefresh = useCallback(() => {
         setLoading(true)
-        var request = showAll ? axios.get('/endpoint', {params : {'action': 'list'}}) : axios.get('/endpoint', {params : {'industrial_model': params.id}})
-        request.then(
-            (response) => {
-                var items = []
+
+        var loadedAllItems = false;
+        var loadedCurItems = false;
+        var endpointAllItems = [];
+        var endpointCurItems = [];
+        
+        axios.get('/endpoint', {params : {'action': 'list'}})
+            .then((response) => {
                 if(response.data.length === 0) {
-                    setEndpointItems(items);
-                    setLoading(false);
+                    loadedAllItems = true;
+                    setEndpointAllItems(endpointAllItems);
+                    if(loadedCurItems) {
+                        setLoading(false);
+                        setSelectedEndpoint(undefined);
+                    }
                 }
-                else
-                    for(let item of response.data) {
-                        items.push({endpointName: item.EndpointName, endpointStatus: item.EndpointStatus, creationTime: item.CreationTime, lastModifiedTime: item.LastModifiedTime})
-                        if(items.length ===  response.data.length) {
-                            setEndpointItems(items);
+                for(let item of response.data) {
+                    endpointAllItems.push(
+                        {
+                            endpointName: item.EndpointName, 
+                            endpointStatus: item.EndpointStatus, 
+                            creationTime: item.CreationTime, 
+                            lastModifiedTime: item.LastModifiedTime
+                        }
+                    )
+                    if(endpointAllItems.length === response.data.length) {
+                        loadedAllItems = true;
+                        setEndpointAllItems(endpointAllItems);
+                        if(loadedCurItems) {
                             setLoading(false);
+                            setSelectedEndpoint(undefined);
                         }
                     }
+                }
             }, (error) => {
                 console.log(error);
             }
         );
-    }, [params.id, showAll])
+        axios.get('/endpoint', {params : {'industrial_model': params.id}})
+            .then((response) => {
+                if(response.data.length === 0) {
+                    setEndpointCurItems(endpointCurItems);
+                    loadedCurItems = true;
+                    if(loadedAllItems) {
+                        setLoading(false);
+                        setSelectedEndpoint(undefined);
+                    }
+                }
+                for(let item of response.data) {
+                    endpointCurItems.push(
+                        {
+                            endpointName: item.EndpointName, 
+                            endpointStatus: item.EndpointStatus, 
+                            creationTime: item.CreationTime, 
+                            lastModifiedTime: item.LastModifiedTime
+                        }
+                    )
+                    if(endpointCurItems.length === response.data.length) {
+                        setEndpointCurItems(endpointCurItems);
+                        loadedCurItems = true;
+                        if(loadedAllItems) {               
+                            setLoading(false);
+                            setSelectedEndpoint(undefined);
+                        }
+                    }
+                }
+            }, (error) => {
+                console.log(error);
+            }
+        );
+    }, [params.id])
 
     useEffect(() => {
         onRefresh()
@@ -179,10 +231,16 @@ const EndpointList: FunctionComponent = () => {
             }
         }
     ];
-    
+
+    const onChangeShowAll = (checked) => {
+        setShowAll(checked);
+        if(!checked && selectedEndpoint !==undefined && endpointCurItems.findIndex((item) => item.endpointName === selectedEndpoint.endpointName) < 0)
+            setSelectedEndpoint(undefined);
+    }
+
     const tableActions = (
         <Inline>
-            <Toggle label='Show all' checked={showAll} onChange={(checked)=>setShowAll(checked)}/>
+            <Toggle label='Show all' checked={showAll} onChange={onChangeShowAll}/>
             <Button icon="refresh" onClick={onRefresh} loading={loading}>Refresh</Button>
             <ButtonDropdown
                 content='Actions'
@@ -285,10 +343,20 @@ const EndpointList: FunctionComponent = () => {
         if(selectedItems.length > 0) {
             setSelectedEndpoint(selectedItems[0])
             setDisabledDelete(false)
-            var index = endpointItems.findIndex((item) => item.name === selectedItems[0].endpointName)
-            setDisabledAttach(index < 0)
-            setDisabledDetach(index >= 0)
+            if(!showAll) {
+                setDisabledAttach(true)
+                setDisabledDetach(false)
+            }
+            else {
+                var index = endpointCurItems.findIndex((item) => item.endpointName === selectedItems[0].endpointName)
+                setDisabledAttach(index >= 0)
+                setDisabledDetach(index < 0) 
+            }
         }
+    }
+
+    const onFetchData = (options: FetchDataOptions) => {
+        setPageIndex(options.pageIndex);
     }
 
     const renderEndpointList = () => {
@@ -298,11 +366,13 @@ const EndpointList: FunctionComponent = () => {
                 tableTitle='Endpoints'
                 multiSelect={false}
                 columnDefinitions={columnDefinitions}
-                items={endpointItems}
+                items={showAll ? endpointAllItems : endpointCurItems}
                 loading={loading}
                 onSelectionChange={onSelectionChange}
-                selectedRowIds={selectedEndpoint !== undefined ? [selectedEndpoint.endpointName] : []}
                 getRowId={getRowId}
+                selectedRowIds={selectedEndpoint !== undefined ? [selectedEndpoint.endpointName] : []}
+                onFetchData={onFetchData}
+                defaultPageIndex={pageIndex}
             />
         )
     }

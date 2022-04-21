@@ -6,7 +6,6 @@ import flask
 import boto3
 import uuid
 import os
-import imghdr
 
 import sys
 
@@ -17,8 +16,8 @@ from pathlib import Path
 import torch
 import torch.backends.cudnn as cudnn
 from models.common import DetectMultiBackend
-from utils.datasets import IMG_FORMATS, VID_FORMATS, LoadImages, LoadStreams
-from utils.general import check_img_size, non_max_suppression, scale_coords, xyxy2xywh, set_logging
+from utils.datasets import LoadImages
+from utils.general import non_max_suppression, scale_coords, xyxy2xywh, set_logging
 from utils.torch_utils import select_device, time_sync
 
 # The flask app for serving predictions
@@ -29,6 +28,7 @@ s3_client = boto3.client('s3')
 print(os.environ)
 name = os.environ['name'] if('name' in os.environ) else 'tutorial'
 weights = os.environ['weights'] if ('weights' in os.environ) else '/opt/ml/model/{}/weights/best.pt'.format(name)
+data = os.environ['data'] if('data' in os.environ) else '/opt/yolov5/data/coco128.yaml'
 imgsz = int(os.environ['imgsz']) if('imgsz' in os.environ) else 640 
 conf_thres = float(os.environ['conf_thres']) if('conf_thres' in os.environ) else 0.25
 iou_thres = float(os.environ['iou_thres']) if('iou_thres' in os.environ) else 0.45
@@ -41,8 +41,6 @@ half = bool(os.environ['half']) if('half' in os.environ) else False
 
 def init(weights='yolov5s.pt',  # model.pt path(s)
         data='data/coco128.yaml',  # dataset.yaml path
-        source='data/images',  # file/dir/URL/glob, 0 for webcam
-        imgsz=640,  # inference size (pixels)
         device='',  # cuda device, i.e. 0 or 0,1,2,3 or cpu
         half=False,  # use FP16 half-precision inference
         dnn=False,  # use OpenCV DNN for ONNX inference
@@ -51,29 +49,14 @@ def init(weights='yolov5s.pt',  # model.pt path(s)
     set_logging()
     device = select_device(device)
     half &= device.type != 'cpu'  # half precision only supported on CUDA
-    is_file = Path(source).suffix[1:] in (IMG_FORMATS + VID_FORMATS)
-    is_url = source.lower().startswith(('rtsp://', 'rtmp://', 'http://', 'https://'))
-    webcam = source.isnumeric() or source.endswith('.txt') or (is_url and not is_file)
 
     # Load model
     model = DetectMultiBackend(weights, device=device, dnn=dnn, data=data, fp16=half)
-    stride, names, pt = model.stride, model.names, model.pt
-    imgsz = check_img_size(imgsz, s=stride)  # check image size
+    stride, names = model.stride, model.names
 
-    if webcam:
-        cudnn.benchmark = True  # set True to speed up constant image size inference
-        dataset = LoadStreams(source, img_size=imgsz, stride=stride, auto=pt)
-        bs = len(dataset)  # batch_size
-    else:
-        dataset = LoadImages(source, img_size=imgsz, stride=stride, auto=pt)
-        bs = 1  # batch_size
+    return model, names, stride
 
-    # Run inference
-    model.warmup(imgsz=(1 if pt else bs, 3, *imgsz))  # warmup
-
-    return model, names, stride, webcam
-
-model, names, stride, webcam = init(weights=weights, imgsz=[imgsz, imgsz], device=device, half=half)
+model, names, stride = init(weights=weights, device=device, half=half, data=data)
 
 def detect(source):
     dataset = LoadImages(source, img_size=[imgsz, imgsz], stride=stride)
@@ -96,16 +79,11 @@ def detect(source):
         # Process detections
         result = []
         for i, det in enumerate(pred):  # detections per image
-            if webcam:  # batch_size >= 1
-                p, im0, frame = path[i], im0s[i].copy(), dataset.count
-                s += f'{i}: '
-            else:
-                p, im0, frame = path, im0s.copy(), getattr(dataset, 'frame', 0)
+            p, im0, frame = path, im0s.copy(), getattr(dataset, 'frame', 0)
 
             p = Path(p)  # to Path
             s += '%gx%g ' % im.shape[2:]  # print string
             gn = torch.tensor(im0.shape)[[1, 0, 1, 0]]  # normalization gain whwh
-            imc = im0  # for save_crop
             if len(det):
                 # Rescale boxes from img_size to im0 size
                 det[:, :4] = scale_coords(im.shape[2:], det[:, :4], im0.shape).round()
@@ -176,10 +154,7 @@ def invocations():
 
         print('Download finished!')
     
-    if imghdr.what(download_file_name) != None:
-        inference_result = detect(download_file_name)
-    else:
-        inference_result = {}
+    inference_result = detect(download_file_name)
     
     _payload = json.dumps(inference_result,ensure_ascii=False)
     

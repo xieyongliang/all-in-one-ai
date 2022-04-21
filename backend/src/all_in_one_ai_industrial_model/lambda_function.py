@@ -29,6 +29,7 @@ def lambda_handler(event, context):
             model_algorithm = request['model_algorithm']
 
             params = {}
+            params['model_name'] = request['model_name']
             params['model_description'] = request['model_description']
             params['model_labels'] = request['model_labels'].split('\n')
             params['model_samples'] = request['model_samples']
@@ -53,6 +54,9 @@ def lambda_handler(event, context):
                     data_yaml_template_s3uri = '{0}default/data/cfg/data.yaml'.format(industrialmodels_s3uri)
                     data_yaml_output_s3uri = '{0}{1}/data/cfg/data.yaml'.format(industrialmodels_s3uri, model_id)
                     generate_data_yaml(data_yaml_template_s3uri, data_yaml_output_s3uri, params['model_labels'])
+                elif(model_algorithm == 'gluoncv'):
+                    industrialmodels_s3bucket, industrialmodels_s3key = get_bucket_and_key(industrialmodels_s3uri)
+                    s3bucketcopy(industrialmodels_s3bucket, '{0}default/script'.format(industrialmodels_s3key), '{0}{1}/script'.format(industrialmodels_s3key, model_id))
             
                 params['model_id'] = model_id
                 params['model_algorithm'] = request['model_algorithm']
@@ -125,18 +129,31 @@ def lambda_handler(event, context):
                     'body': json.dumps(items, default = defaultencode)
                 }
             else:
-                params = {}
-                params['model_id'] = model_id
-                params['model_algorithm'] = model_algorithm
-    
-                print(params)
-                item = ddbh.get_item(params)
+                key = {}
+                key['model_id'] = model_id
+                key['model_algorithm'] = model_algorithm
+                print(key)
 
-            return {
-               'statusCode': 200,
-                'body': json.dumps(item, default = defaultencode)
-            }
+            if event['httpMethod'] == 'DELETE':    
+                response = ddbh.delete_item(key)
 
+                return {
+                    'statusCode': response['ResponseMetadata']['HTTPStatusCode'],
+                    'body': json.dumps(key, default = defaultencode)
+                }
+            elif event['httpMethod'] == 'GET': 
+                item = ddbh.get_item(key)
+
+                return {
+                    'statusCode': 200,
+                    'body': json.dumps(item, default = defaultencode)
+                }
+            else:
+                return {
+                    'statusCode': 400,
+                    'body': 'Unsupported HTTP method'
+                }
+                
 def get_bucket_and_key(s3uri):
     pos = s3uri.find('/', 5)
     bucket = s3uri[5 : pos]

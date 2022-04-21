@@ -11,6 +11,7 @@ const initialState: GeneralState = {
     preventCustomCursor: false,
     imageDragMode: false,
     crossHairVisible: true,
+    reverseLineColor: false,
     enablePerClassColoration: true,
     projectData: {
         type: null,
@@ -65,6 +66,12 @@ export function generalReducer(
             return {
                 ...state,
                 crossHairVisible: action.payload.crossHairVisible
+            }
+        }
+        case Action.UPDATE_REVERSE_LINE_COLOR: {
+            return {
+                ...state,
+                reverseLineColor: action.payload.reverseLineColor
             }
         }
         case Action.UPDATE_PROJECT_DATA: {

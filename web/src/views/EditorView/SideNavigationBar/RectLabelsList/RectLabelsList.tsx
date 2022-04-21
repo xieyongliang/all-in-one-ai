@@ -210,6 +210,7 @@ const RectLabelsList: React.FC<IProps> = (
 
     const onInference = () => {
         getInference().then(data => {
+            console.log(data)
 
             var imageData = LabelsSelector.getActiveImageData();
             imageData.labelRects.splice(0, imageData.labelRects.length);
@@ -251,15 +252,19 @@ const RectLabelsList: React.FC<IProps> = (
             <Scrollbars>
                 <Stack>
                     <div className='Command'>
-                         <Typography variant="button" gutterBottom component="div">
-                            object detection
-                        </Typography>                       
-                        <Select
-                            options = {yolov5Endpoints}
-                            selectedOption = {selectedYolov5Endpoint}
-                            onChange = {(event) => onChange('YolovtEndpoints', event)}
-                        />
-                        <Button variant="primary" size="small" onClick={onInference}>Select and inference</Button>
+                        <div>
+                            <Typography gutterBottom component="div">
+                                Select endpoint for object detection
+                            </Typography>    
+                        </div>
+                        <div>                   
+                            <Select
+                                options = {yolov5Endpoints}
+                                selectedOption = {selectedYolov5Endpoint}
+                                onChange = {(event) => onChange('YolovtEndpoints', event)}
+                            />
+                        </div>
+                        <Button variant="primary" size="small" onClick={onInference}>Run</Button>
                     </div>
                 </Stack>
                 <div

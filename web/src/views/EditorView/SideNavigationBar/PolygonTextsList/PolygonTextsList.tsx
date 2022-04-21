@@ -17,21 +17,26 @@ import axios from 'axios';
 import { TextsSelector } from '../../../../store/selectors/TextsSelector';
 import { TextUtil } from '../../../../utils/TextUtil';
 import { store } from '../../../..';
-import { Button, Select, Stack } from 'aws-northstar';
+import { Button, Select, Stack, Toggle } from 'aws-northstar';
 import { SelectOption } from 'aws-northstar/components/Select';
 import { IIndustrialModel } from '../../../../store/industrialmodels/reducer';
 import { IPoint } from '../../../../interfaces/IPoint';
+import { updateReverseLineColor } from '../../../../store/general/actionCreators';
+import { useParams } from 'react-router-dom';
+import { PathParams } from '../../../../components/Interfaces/PathParams';
 
 interface IProps {
     size: ISize;
     imageData: TextImageData;
     activeTextId: string;
     projectSubType: ProjectSubType;
+    reverseLineColor: boolean;
     imageBucket?: string;
     imageKey?: string;
     imageId?: string;
     industrialModels: IIndustrialModel[];
     updateTextImageDataById: (id: string, newImageData: TextImageData) => any;
+    updateReverseLineColor: (reverseLineColor: boolean) => any;
     onProcessing: () => any;
     onProcessed: () => any;
     onLoaded: () => any;
@@ -43,11 +48,13 @@ const PolygonTextsList: React.FC<IProps> = (
         imageData, 
         activeTextId, 
         projectSubType, 
+        reverseLineColor,
         imageBucket,
         imageKey,
         imageId,
         industrialModels,
         updateTextImageDataById,
+        updateReverseLineColor,
         onProcessing,
         onProcessed,
         onLoaded
@@ -62,6 +69,8 @@ const PolygonTextsList: React.FC<IProps> = (
     const [ loadingYolov5, setLoadingYolov5 ] = useState(true)
     const [ loadingPaddleOCR, setLoadingPaddleOCR ] = useState(true)
     var processingCount = 0;
+
+    var params : PathParams = useParams();
 
     const textInputFieldHeight = 40;
     const listStyle: React.CSSProperties = {
@@ -97,36 +106,78 @@ const PolygonTextsList: React.FC<IProps> = (
     }, [loadingPaddleOCR, loadingYolov5, projectSubType, onLoaded])
 
     useEffect(() => {
-        var count = industrialModels.filter((industrial_model) => industrial_model.algorithm === 'paddleocr').length;
-        var index = 0;
-        var paddleocrEndpointOptions = [];
-        industrialModels.forEach((industrialModel) => {
-            if(industrialModel.algorithm === 'paddleocr') {
-                axios.get('/endpoint', {params: { industrial_model: industrialModel.id}})
-                    .then((response) => {
-                        var endpointItems = []  
-                        response.data.forEach((item) => {
-                            endpointItems.push({label : item.EndpointName, value: item.EndpointName})
-                            if(endpointItems.length === response.data.length) {
+        if(projectSubType === ProjectSubType.OBJECT_DETECTION) {
+            var count = industrialModels.filter((industrial_model) => industrial_model.algorithm === 'paddleocr').length;
+            if(count === 0) {
+                setLoadingPaddleOCR(false);
+                handleLoaded();
+            }
+
+            var index = 0;
+            var paddleocrEndpointItems = [];
+            var paddleocrEndpointOptions = [];
+            industrialModels.forEach((industrialModel) => {
+                if(industrialModel.algorithm === 'paddleocr') {
+                    axios.get('/endpoint', {params: { industrial_model: industrialModel.id}})
+                        .then((response) => {
+                            var endpointItems = []
+                            if(response.data.length === 0) {
                                 index++;
-                                paddleocrEndpointOptions = paddleocrEndpointOptions.concat(endpointItems);
                                 if(index === count) {
+                                    paddleocrEndpointItems.forEach((paddleocrEndpointItem) => {
+                                        paddleocrEndpointOptions.push({key: paddleocrEndpointItem, value: paddleocrEndpointItem})
+                                    })
                                     setPaddleOCREndpointOptions(paddleocrEndpointOptions);
                                     setLoadingPaddleOCR(false);
                                     handleLoaded();
                                 }
                             }
-                        })
+                            response.data.forEach((item) => {
+                                endpointItems.push(item.EndpointName)
+                                if(endpointItems.length === response.data.length) {
+                                    index++;
+                                    paddleocrEndpointItems = [...new Set([...paddleocrEndpointItems, ...endpointItems])];
+                                    if(index === count) {
+                                        paddleocrEndpointItems.forEach((paddleocrEndpointItem) => {
+                                            paddleocrEndpointOptions.push({key: paddleocrEndpointItem, value: paddleocrEndpointItem})
+                                        })    
+                                        setPaddleOCREndpointOptions(paddleocrEndpointOptions);
+                                        setLoadingPaddleOCR(false);
+                                        handleLoaded();
+                                    }
+                                }
+                            })
+                        }
+                    )
+                }
+            })
+        }
+        else {
+            axios.get('/endpoint', {params: { industrial_model: params.id}})
+                .then((response) => {
+                    var endpointItems = []
+                    if(response.data.length === 0) {
+                        setLoadingPaddleOCR(false);
+                        handleLoaded();
                     }
-                )
-            }
-        })
-    }, [industrialModels, handleLoaded]);
+                    response.data.forEach((item) => {
+                        endpointItems.push({label : item.EndpointName, value: item.EndpointName})
+                        if(endpointItems.length === response.data.length) {
+                            setPaddleOCREndpointOptions(endpointItems);
+                            setLoadingPaddleOCR(false);
+                            handleLoaded();
+                        }
+                    })
+                }
+            )
+        }
+    }, [industrialModels, handleLoaded, params.id, projectSubType]);
 
     useEffect(() => {
         if(projectSubType === ProjectSubType.OBJECT_DETECTION) {
             var count = industrialModels.filter((industrial_model) => industrial_model.algorithm === 'yolov5').length;
             var index = 0;
+            var yolov5EndpointItems = [];
             var yolov5EndpointOptions = [];
             var yolov5EndpointsMapping = {};
             industrialModels.forEach((industrialModel) => {
@@ -134,13 +185,22 @@ const PolygonTextsList: React.FC<IProps> = (
                     axios.get('/endpoint', {params: { industrial_model: industrialModel.id}})
                         .then((response) => {
                             var endpointItems = []
+                            if(response.data.length === 0) {
+                                setYolov5EndpointOptions(yolov5EndpointOptions);
+                                setYolov5EndpointsMapping(yolov5EndpointsMapping);
+                                setLoadingYolov5(false);
+                                handleLoaded();
+                            }
                             response.data.forEach((item) => {
-                                endpointItems.push({label : item.EndpointName, value: item.EndpointName})
+                                endpointItems.push(item.EndpointName)
                                 yolov5EndpointsMapping[item.EndpointName] = industrialModel.id;
                                 if(endpointItems.length === response.data.length) {
                                     index++;
-                                    yolov5EndpointOptions = yolov5EndpointOptions.concat(endpointItems)
+                                    yolov5EndpointItems = [...new Set([...yolov5EndpointItems, ...endpointItems])]
                                     if(index === count) {
+                                        yolov5EndpointItems.forEach((yolov5EndpointItem) => {
+                                            yolov5EndpointOptions.push({key: yolov5EndpointItem, value: yolov5EndpointItem})
+                                        })
                                         setYolov5EndpointOptions(yolov5EndpointOptions);
                                         setYolov5EndpointsMapping(yolov5EndpointsMapping);
                                         setLoadingYolov5(false);
@@ -318,47 +378,62 @@ const PolygonTextsList: React.FC<IProps> = (
             <Scrollbars>
                 <Stack>
                     <div className='Command'>
-                        {    
-                            (projectSubType === ProjectSubType.OBJECT_DETECTION) && 
-                            <Typography variant="button" gutterBottom component="div">
-                                object detection
-                            </Typography>
-                        }
-                        {
-                            (projectSubType === ProjectSubType.OBJECT_DETECTION) && 
-                            <Select
-                                placeholder='Choose an endpoint'
-                                selectedOption={selectedYolov5Endpoint}
-                                onChange={(event) => onChange('Yolov5', event)}
-                                options={yolov5EndpointOptions}
-                            />
-                        }
-                        <Typography variant="button" gutterBottom component="div">
-                            text detection
-                        </Typography>
-                        <Select
-                            placeholder='Choose an endpoint'
-                            selectedOption={selectedPaddleOCREndpoint}
-                            onChange={(event) => onChange('PaddleOCR', event)}
-                            options={paddleocrEndpointOptions}
-                        />
-                        {
-                            (projectSubType === ProjectSubType.OBJECT_DETECTION) && 
-                            <Typography variant="button" gutterBottom component="div">
-                                text field
-                            </Typography>
-                        }
-                        {
-                            (projectSubType === ProjectSubType.OBJECT_DETECTION) && 
-                            <Select
-                                placeholder='Choose an endpoint'
-                                selectedOption={selectedTextField}
-                                onChange={(event) => onChange('TextField', event)}
-                                options={textFieldOptions}
-                            />
-                        }
-                        <Button variant="primary" size="small" onClick={onInference}>Select and inference</Button>
+                        <div>
+                            {    
+                                (projectSubType === ProjectSubType.OBJECT_DETECTION) && 
+                                <Typography gutterBottom component="div">
+                                    Select endpoint for object detection
+                                </Typography>
+                            }
                         </div>
+                        <div>
+                            {
+                                (projectSubType === ProjectSubType.OBJECT_DETECTION) && 
+                                <Select
+                                    placeholder='Choose an endpoint'
+                                    selectedOption={selectedYolov5Endpoint}
+                                    onChange={(event) => onChange('Yolov5', event)}
+                                    options={yolov5EndpointOptions}
+                                />
+                            }
+                        </div>
+                        <div>
+                            <Typography gutterBottom component="div">
+                                Select endpoint for text recognition
+                            </Typography>
+                        </div>
+                        <div>
+                            <Select
+                                placeholder='Choose an endpoint'
+                                selectedOption={selectedPaddleOCREndpoint}
+                                onChange={(event) => onChange('PaddleOCR', event)}
+                                options={paddleocrEndpointOptions}
+                            />
+                        </div>
+                        <div>
+                            {
+                                (projectSubType === ProjectSubType.OBJECT_DETECTION) && 
+                                <Typography gutterBottom component="div">
+                                    Select text field
+                                </Typography>
+                            }
+                        </div>
+                        <div>
+                            {
+                                (projectSubType === ProjectSubType.OBJECT_DETECTION) && 
+                                <Select
+                                    placeholder='Choose an endpoint'
+                                    selectedOption={selectedTextField}
+                                    onChange={(event) => onChange('TextField', event)}
+                                    options={textFieldOptions}
+                                />
+                            }
+                        </div>
+                        <Button variant="primary" size="small" onClick={onInference}>Run</Button>
+                        <div>
+                            <Toggle label='Reverse line color' checked={reverseLineColor} onChange={(checked)=>updateReverseLineColor(checked)}/>
+                        </div>
+                    </div>
                 </Stack>
                 <div
                     className="PolygonTextsListContent"
@@ -372,12 +447,14 @@ const PolygonTextsList: React.FC<IProps> = (
 };
 
 const mapDispatchToProps = {
-    updateTextImageDataById
+    updateTextImageDataById,
+    updateReverseLineColor
 };
 
 const mapStateToProps = (state: AppState) => ({
     activeTextId: state.texts.activeTextId,
     projectSubType: state.general.projectData.subType,
+    reverseLineColor: state.general.reverseLineColor,
     industrialModels : state.industrialmodel.industrialModels
 });
 

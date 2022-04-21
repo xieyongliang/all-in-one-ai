@@ -10,6 +10,10 @@ const initialState: PipelineState = {
     trainingjobLabelsS3Uri: '',
     trainingjobWeightsS3Uri: '',
     trainingjobCfgS3Uri: '',
+    trainingjobTrainingS3Uri: '',
+    trainingjobValidationS3Uri: '',
+    trainingjobTestS3Uri: '',
+    trainingjobHyperparameters: '{}',
     trainingjobOutputS3Uri: '',
     modelAlgorithm: '',
     modelModelPackageGroupName: '',
@@ -79,6 +83,30 @@ export function pipelineReducer(
             return {
                 ...state,
                 trainingjobCfgS3Uri: action.payload.trainingjobCfgS3Uri
+            }
+        }
+        case Action.UPDATE_PIPELINE_TRAINING_JOB_TRAINING_S3URI: {
+            return {
+                ...state,
+                trainingjobTrainingS3Uri: action.payload.trainingjobTrainingS3Uri
+            }
+        }
+        case Action.UPDATE_PIPELINE_TRAINING_JOB_VALIDATION_S3URI: {
+            return {
+                ...state,
+                trainingjobValidationS3Uri: action.payload.trainingjobValidationS3Uri
+            }
+        }
+        case Action.UPDATE_PIPELINE_TRAINING_JOB_TEST_S3URI: {
+            return {
+                ...state,
+                trainingjobTestS3Uri: action.payload.trainingjobTestS3Uri
+            }
+        }
+        case Action.UPDATE_PIPELINE_TRAINING_JOB_HYPERPARAMETERS: {
+            return {
+                ...state,
+                trainingjobHyperparameters: action.payload.trainingjobHyperparameters
             }
         }
         case Action.UPDATE_PIPELINE_TRAINING_JOB_OUTPUT_S3URI: {

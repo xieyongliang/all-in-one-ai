@@ -20,9 +20,10 @@ import SideNavigationBase, { SideNavigationItem, SideNavigationItemType } from '
 import { connect } from 'react-redux';
 import { AppState } from '../../store';
 import { store } from '../..';
+import { IIndustrialModel } from '../../store/industrialmodels/reducer';
 
 const AppLayout: FunctionComponent = ( {children} ) => {
-    const [ itemsModels, setItemsModels ] = useState<SideNavigationItem[]>([])
+    const [ items, setItems ] = useState<SideNavigationItem[]>([])
     const Header = useMemo(
         () => <HeaderBase title='All-In-One AI' logoPath='/ml.jpg' />,
         []
@@ -33,10 +34,19 @@ const AppLayout: FunctionComponent = ( {children} ) => {
     useEffect(() => {
         var items = []
         items.push({ text: 'Overview', type: SideNavigationItemType.LINK, href: '/imodels' })
-        store.getState().industrialmodel.industrialModels.forEach((item) => {
-            items.push({text: item.name, type: SideNavigationItemType.LINK, href: `/imodels/${item.id}?tab=demo#sample`})
-        })
-        setItemsModels(items)
+        store.getState().industrialmodel.industrialModels
+            .sort((itemModel1 : IIndustrialModel, itemModel2: IIndustrialModel) => {
+                if(itemModel1.name > itemModel2.name)
+                    return 1;
+                else if(itemModel1.name === itemModel2.name)
+                    return 0;
+                else
+                    return -1;
+            })
+            .forEach((item) => {
+                items.push({text: item.name, type: SideNavigationItemType.LINK, href: `/imodels/${item.id}?tab=demo#sample`})
+            })
+        setItems(items)
      }, [industrialModels])
  
     const SideNavigation = useMemo(() => {
@@ -55,7 +65,7 @@ const AppLayout: FunctionComponent = ( {children} ) => {
                     {
                         'type': SideNavigationItemType.SECTION,
                         'text': 'Industrial models',
-                        'items': itemsModels
+                        'items': items
                     },
                     {
                         'type': SideNavigationItemType.SECTION,
@@ -69,7 +79,7 @@ const AppLayout: FunctionComponent = ( {children} ) => {
                 ]}
             />
         );
-    }, [itemsModels]);
+    }, [items]);
 
     return (
         <AppLayoutBase header={Header} navigation={SideNavigation} >

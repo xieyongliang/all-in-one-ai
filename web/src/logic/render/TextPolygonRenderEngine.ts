@@ -232,12 +232,14 @@ export class TextPolygonRenderEngine extends BaseRenderEngine {
     }
 
     private drawPolygon(labelId: string | null, polygon: IPoint[], isActive: boolean) {
-        const lineColor: string = BaseRenderEngine.resolveLabelLineColor(labelId, true)
+        var lineColor: string = BaseRenderEngine.resolveLabelLineColor(labelId, true)
         const anchorColor: string = BaseRenderEngine.resolveLabelAnchorColor(true)
         const standardizedPoints: IPoint[] = polygon.map((point: IPoint) => RenderEngineUtil.setPointBetweenPixels(point));
         if (isActive) {
             DrawUtil.drawPolygonWithFill(this.canvas, standardizedPoints, DrawUtil.hexToRGB(lineColor, 0.2));
         }
+        if(store.getState().general.reverseLineColor)
+            lineColor = (0xFFFFFF - parseInt(lineColor)).toString();
         DrawUtil.drawPolygon(this.canvas, standardizedPoints, lineColor, RenderEngineSettings.LINE_THICKNESS);
         if (isActive) {
             standardizedPoints.forEach((point: IPoint) => {

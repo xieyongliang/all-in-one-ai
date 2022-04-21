@@ -133,11 +133,12 @@ const SampleForm: FunctionComponent<IProps> = (props) => {
                     <LoadingIndicator label='Loading...'/>
                 </Container>
             )
-        else 
+        else {
             return (
                 <Container title = 'Select image file from sample list'>
                     <ImageList cols={10} rowHeight={64} gap={10} variant={'quilted'}>
                         {
+                            imageItems.length > 0 && 
                             imageItems.map((item) => (
                                 <ImageListItem key={item.httpuri} rows={2}>
                                     <Image
@@ -154,6 +155,7 @@ const SampleForm: FunctionComponent<IProps> = (props) => {
                     <Pagination page={imagePage} onChange={(event, value) => onChange('formFieldIdPage', value)} count={Math.ceil(imageCount / 20)} />
                 </Container>
             )
+        }
     }
 
     const renderSampleCode = () => {

@@ -2,6 +2,7 @@ from decimal import Decimal
 import json
 import boto3
 import helper
+from sagemaker import image_uris
 from boto3.dynamodb.conditions import Key
 from datetime import date, datetime
 import traceback
@@ -24,8 +25,19 @@ def lambda_handler(event, context):
 
             industrial_model = request['industrial_model']
             model_algorithm = request['model_algorithm']
-            inference_image = ssmh.get_parameter('/all_in_one_ai/config/meta/algorithms/{0}/sagemaker/image'.format(model_algorithm))
-
+            instance_type = request['instance_type'] if 'instance_type' in request else 'ml.m5.xlarge'
+            region_name = boto3.session.Session().region_name
+            if(model_algorithm == 'yolov5'):
+                inference_image = ssmh.get_parameter('/all_in_one_ai/config/meta/algorithms/{0}/sagemaker/image'.format(model_algorithm))
+            elif(model_algorithm == 'gluoncv'):
+                inference_image = image_uris.retrieve(
+                    framework = 'mxnet',
+                    region = region_name,
+                    version = '1.8.0', 
+                    py_version = 'py37', 
+                    image_scope = 'inference', 
+                    instance_type = instance_type
+                )
             payload = {}
             payload['model_name'] = request['model_name']
             payload['role_arn'] = role_arn
@@ -86,6 +98,10 @@ def lambda_handler(event, context):
                 action = event['queryStringParameters']['action']
         
         try:
+            print(model_name)
+            print(industrial_model)
+            print(action)
+            
             if(action == 'attach' and event['httpMethod'] == 'GET'):
                 params = {}
                 params['model_name'] = model_name
