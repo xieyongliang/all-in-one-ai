@@ -185,11 +185,15 @@ const PolygonTextsList: React.FC<IProps> = (
                     axios.get('/endpoint', {params: { industrial_model: industrialModel.id}})
                         .then((response) => {
                             var endpointItems = []
+                            
                             if(response.data.length === 0) {
-                                setYolov5EndpointOptions(yolov5EndpointOptions);
-                                setYolov5EndpointsMapping(yolov5EndpointsMapping);
-                                setLoadingYolov5(false);
-                                handleLoaded();
+                                index++;
+                                if(index === count) {
+                                    setYolov5EndpointOptions(yolov5EndpointOptions);
+                                    setYolov5EndpointsMapping(yolov5EndpointsMapping);
+                                    setLoadingYolov5(false);
+                                    handleLoaded();
+                                }
                             }
                             response.data.forEach((item) => {
                                 endpointItems.push(item.EndpointName)
@@ -201,7 +205,7 @@ const PolygonTextsList: React.FC<IProps> = (
                                         yolov5EndpointItems.forEach((yolov5EndpointItem) => {
                                             yolov5EndpointOptions.push({key: yolov5EndpointItem, value: yolov5EndpointItem})
                                         })
-                                        setYolov5EndpointOptions(yolov5EndpointOptions);
+                                        setYolov5EndpointOptions([...yolov5EndpointOptions]);
                                         setYolov5EndpointsMapping(yolov5EndpointsMapping);
                                         setLoadingYolov5(false);
                                         handleLoaded();

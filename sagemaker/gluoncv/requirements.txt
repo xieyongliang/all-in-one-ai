@@ -1,6 +1,1 @@
 gluoncv
-flask
-gunicorn
-boto3
-gevent
-Pillow

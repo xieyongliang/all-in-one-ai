@@ -127,7 +127,6 @@ const SampleForm: FunctionComponent<IProps> = (props) => {
     }
     
     const renderImageList = () => {
-        console.log(imageItems)
         if(loading)
             return (
                 <Container title = 'Select image file from sample list'>
