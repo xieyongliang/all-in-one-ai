@@ -36,6 +36,7 @@ RUN update-alternatives --install /usr/local/bin/pip pip /usr/local/bin/pip3 1
 
 # Install MXNet, MMS, and SageMaker Inference Toolkit to set up MMS
 RUN pip3 --no-cache-dir install paddlepaddle-gpu \
+                                paddleocr \
                                 boto3 \
                                 multi-model-server \
                                 sagemaker-inference \
