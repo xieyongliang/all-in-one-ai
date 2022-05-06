@@ -31,6 +31,7 @@ import PaddleOCR from './components/Algorithms/PaddleOCR';
 import Track from './components/Scenarios/Track';
 import CameraForm from './components/Forms/Camera';
 import MapForm from './components/Forms/Map';
+import YoutubeForm from './components/Forms/Camera/youtube';
 
 const App : FunctionComponent = () => {
     const withLayout = (Component : any, props? : any) => {
@@ -82,6 +83,7 @@ const App : FunctionComponent = () => {
                     <Route sensitive={true} exact path="/">{withLayout(Dashboard)}</Route>
                     <Route sensitive={true} exact path="/mtr">{withLayout(CameraForm)}</Route>                    
                     <Route sensitive={true} exact path="/map">{withLayout(MapForm)}</Route>                    
+                    <Route sensitive={true} exact path="/youtube">{withLayout(YoutubeForm)}</Route>                    
                 </Switch>
             </Router>
         </NorthStarThemeProvider>

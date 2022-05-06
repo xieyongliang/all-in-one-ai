@@ -11,7 +11,7 @@ if [ "$#" -ne 1 ]; then
     exit 1
 fi
 
-image="all-in-one-ai-paddleocr-gpu"
+image="all-in-one-ai-ppocr"
 
 # Get the account number associated with the current IAM credentials
 account=$(aws sts get-caller-identity --query Account --output text)
@@ -50,3 +50,4 @@ docker build -t ${image} -f Dockerfile .
 
 docker tag ${image} ${fullname}
 docker push ${fullname}
+

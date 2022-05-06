@@ -1,12 +1,10 @@
 import argparse
 import logging
 import os
-import random
 import sys
 
 import numpy as np
 from datasets import load_dataset
-import torch
 import transformers
 from transformers import (BertTokenizer, HfArgumentParser, DataCollatorForSeq2Seq, 
                           Seq2SeqTrainer, Seq2SeqTrainingArguments, TrainerCallback)
@@ -17,7 +15,6 @@ from lib.modeling_cpt import CPTForConditionalGeneration
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--model_name_or_path", default='/path/to/model', type=str)
-parser.add_argument("--dataset", default="lcsts", type=str)
 parser.add_argument("--learning_rate", default=2e-5, type=float)
 parser.add_argument("--per_device_train_batch_size", default='50', type=str)
 parser.add_argument("--num_train_epochs", default='5', type=str)
@@ -27,20 +24,17 @@ parser.add_argument("--validation_file", default="/path/to/validation_file", typ
 parser.add_argument("--text_column", default="text", type=str)
 parser.add_argument("--summary_column", default="summary", type=str)
 parser.add_argument("--output_dir", default="/path/to/output", type=str)
+parser.add_argument("--val_max_target_length", default="80", type=str)
+parser.add_argument("--path", default="csv", type=str)
+
 args = parser.parse_args()
 arg_dict = args.__dict__
 
 logger = logging.getLogger(__name__)
 
-dataset_name = arg_dict['dataset']
-
-output_dir = arg_dict['output_dir'] + '/' + dataset_name
+output_dir = arg_dict['output_dir']
 if not os.path.exists(output_dir):
     os.mkdir(output_dir)
-
-seed = len(os.listdir(output_dir)) + 1
-output_dir = output_dir + '/' + str(seed)
-length_map = {'lcsts': '30', 'csl': '50', 'adgen': '128', 'hk01': '64', 'hk01meta': '80'}
 
 args = [
     '--model_name_or_path', arg_dict['model_name_or_path'],
@@ -53,9 +47,8 @@ args = [
     '--per_device_eval_batch_size', arg_dict['per_device_train_batch_size'],
     '--overwrite_output_dir',
     '--max_source_length=512',
-    '--val_max_target_length=' + length_map[arg_dict['dataset']],
+    '--val_max_target_length=' + arg_dict['val_max_target_length'],
     '--predict_with_generate=1',
-    '--seed', str(1000 * seed),
     '--num_train_epochs', arg_dict['num_train_epochs'],
     '--save_strategy', 'no',
     '--evaluation_strategy', 'epoch',
@@ -65,17 +58,6 @@ args = [
 parser = HfArgumentParser((ModelArguments, DataTrainingArguments, Seq2SeqTrainingArguments))
 model_args, data_args, training_args = parser.parse_args_into_dataclasses(args)
 
-
-def set_seed(seed):
-    random.seed(seed)
-    np.random.seed(seed)
-    torch.manual_seed(seed)
-    if torch.cuda.is_available():
-        torch.cuda.manual_seed_all(seed)
-
-
-set_seed(training_args.seed)
-
 datasets = {}
 data_files = {}
 if data_args.train_file is not None:
@@ -84,14 +66,8 @@ if data_args.validation_file is not None:
     data_files["validation"] = data_args.validation_file
 if data_args.test_file is not None:
     data_files["test"] = data_args.test_file
-# for key in data_files:
-# print(key)
-# load csv data
-# datasets[key] = load_dataset('csv', data_files=data_files[key])
-# datasets[key]=load_json(data_files[key])
 
-# data_files = {"train": "./demo_data/SUMMARY.hk01/train.csv", "test": "./demo_data/SUMMARY.hk01/dev.csv"}
-datasets = load_dataset("csv", data_files=data_files)
+datasets = load_dataset(arg_dict['path'], data_files=data_files)
 
 print ("dataset: ", datasets)
 

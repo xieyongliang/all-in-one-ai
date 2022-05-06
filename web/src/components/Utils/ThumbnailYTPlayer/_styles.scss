@@ -1,0 +1,50 @@
+.thumbnail-yt-player {
+  position: relative;
+  overflow: hidden;
+
+  border-radius: 10px;
+
+  min-width: 385px;
+  min-height: 220px;
+
+  &__iframe,
+  &__thumb {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+  }
+
+  &__iframe {
+    z-index: 1;
+    width: 100%;
+  }
+
+  &__thumb {
+    z-index: 5;
+
+    color: white;
+
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 20px 0;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+
+    &-icon {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      flex: 1;
+    }
+
+    &-title {
+      text-align: center;
+    }
+  }
+}

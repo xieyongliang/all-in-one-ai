@@ -1,6 +1,5 @@
 torch
 numpy
-transformers
 rouge
 pandas
 datasets==1.4.1
