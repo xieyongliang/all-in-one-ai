@@ -58,7 +58,10 @@
     "react-syntax-highlighter": "latest",
     "jimp": "latest",
     "react-cookie": "latest",
-    "react-native-webview": "latest"
+    "react-native-webview": "latest",
+    "react-hls-player": "latest",
+    "react-player": "latest",
+    "react-image-marker": "latest"
   },
   "devDependencies": {
     "@types/file-saver": "^2.0.3",
@@ -70,9 +73,7 @@
     "@redux-devtools/core": "^3.9.0",
     "tslint": "^6.1.3",
     "tslint-react": "^5.0.0",
-    "konva": "latest",
-    "react-player": "latest",
-    "react-image-marker": "latest"
+    "konva": "latest"
   },
   "eslintConfig": {
     "extends": [

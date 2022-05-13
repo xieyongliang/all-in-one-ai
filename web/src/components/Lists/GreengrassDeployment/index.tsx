@@ -10,6 +10,7 @@ import axios from 'axios';
 import JSZip from 'jszip';
 import { PathParams } from '../../Interfaces/PathParams';
 import { getUtcDate } from '../../Utils/Helper';
+import './index.scss'
 
 interface DataType {
     targetArn: string;
@@ -85,7 +86,7 @@ const GreengrassDeploymentList: FunctionComponent = () => {
     }, [params.id]);
 
     const onCreate = () => {
-        history.push(`/imodels/${params.id}?tab=greengrassdeployment#form`)
+        history.push(`/imodels/${params.id}?tab=greengrassdeployment#create`)
     }
 
     const getRowId = useCallback(data => data.targetArn + '-' + data.revisionId, []);
@@ -156,8 +157,12 @@ const GreengrassDeploymentList: FunctionComponent = () => {
     
     const tableActions = (
         <Inline>
-            <Button icon="refresh" onClick={onRefresh} loading={loading}>Refresh</Button>
-            <Button variant='primary' onClick={onCreate}>Create</Button>
+            <div className='tableaction'>
+                <Button icon="refresh" onClick={onRefresh} loading={loading}>Refresh</Button>
+            </div>
+            <div className='tableaction'>
+                <Button variant='primary' onClick={onCreate}>Create</Button>
+            </div>
         </Inline>
     );
     

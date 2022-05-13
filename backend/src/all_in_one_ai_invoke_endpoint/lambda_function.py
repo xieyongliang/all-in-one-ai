@@ -25,7 +25,9 @@ def lambda_handler(event, context):
             ContentType = content_type,
             Body = body)
 
+        print(response)
         body = response['Body'].read()
+        print(body)
         return {
             'statusCode': 200,
             'body': body

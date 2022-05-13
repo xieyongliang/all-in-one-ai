@@ -24,6 +24,7 @@ def lambda_handler(event, context):
         if(s3uri != None):
             bucket, key = get_bucket_and_key(s3uri)
             type = check_s3_prefix(bucket, key)
+            print(type)
             if(type == 0):
                 paginator = s3_client.get_paginator("list_objects_v2")
                 pages = paginator.paginate(Bucket = bucket, Prefix = key)
@@ -105,6 +106,6 @@ def check_s3_prefix(bucket, key):
     if(len(objs) > 1):
         return 0
     elif(len(objs) == 1): 
-        return 0 if objs[0].get()['ContentType'] == 'application/x-directory' else 1
+        return -1 if objs[0].get()['ContentType'].startswith('application/x-directory') else 1
     else:
         return -1

@@ -20,6 +20,7 @@ import { connect } from 'react-redux';
 import { IIndustrialModel } from '../../../store/industrialmodels/reducer';
 import { ProjectSubType, ProjectType } from '../../../data/enums/ProjectType';
 import { FetchDataOptions } from 'aws-northstar/components/Table';
+import './index.scss'
 
 interface TransformJobItem {
     transformJobName: string;
@@ -139,6 +140,7 @@ const TransformJobList: FunctionComponent<IProps> = (props) => {
                     }
                 }, (error) => {
                     console.log(error);
+                    setLoadingTable(false);
                 }
             );
             axios.get('/transformjob', {params : {'industrial_model': params.id}})
@@ -171,6 +173,7 @@ const TransformJobList: FunctionComponent<IProps> = (props) => {
                     }
                 }, (error) => {
                     console.log(error);
+                    setLoadingTable(false);
                 }
             );
     
@@ -444,13 +447,21 @@ const TransformJobList: FunctionComponent<IProps> = (props) => {
 
     const tableActions = (
         <Inline>
-            <Toggle label='Show all' checked={showAll} onChange={onChangeShowAll}/>
-            <Button icon="refresh" onClick={onRefresh} loading={loadingTable}>Refresh</Button>
-            <ButtonDropdown
-                content='Actions'
-                    items={[{text: 'Review', onClick: onReview, disabled: disabledReview},{ text: 'Stop', onClick: onStop, disabled: disabledStop }, { text: 'Attach', onClick: onAttach, disabled: disabledAttach }, { text: 'Detach', onClick: onDetach, disabled: disabledDetach }, { text: 'Add/Edit tags', disabled: true }]}
-            />        
-            <Button variant='primary' onClick={onCreate}>Create</Button>
+            <div className='tableaction'>        
+                <Toggle label='Show all' checked={showAll} onChange={onChangeShowAll}/>
+            </div>
+            <div className='tableaction'>        
+                <Button icon="refresh" onClick={onRefresh} loading={loadingTable}>Refresh</Button>
+            </div>
+            <div className='tableaction'>        
+                <ButtonDropdown
+                    content='Actions'
+                        items={[{text: 'Review', onClick: onReview, disabled: disabledReview},{ text: 'Stop', onClick: onStop, disabled: disabledStop }, { text: 'Attach', onClick: onAttach, disabled: disabledAttach }, { text: 'Detach', onClick: onDetach, disabled: disabledDetach }, { text: 'Add/Edit tags', disabled: true }]}
+                />
+            </div>
+            <div className='tableaction'>        
+                <Button variant='primary' onClick={onCreate}>Create</Button>
+            </div>
         </Inline>
     );
 

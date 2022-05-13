@@ -1,6 +1,6 @@
 import { FunctionComponent, useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { Container, Link, Toggle, Stack, LoadingIndicator } from 'aws-northstar';
+import { useHistory, useParams } from 'react-router-dom';
+import { Container, Link, Toggle, Stack, LoadingIndicator, Inline, Button } from 'aws-northstar';
 import ImageList from '@mui/material/ImageList';
 import ImageListItem from '@mui/material/ImageListItem';
 import SyntaxHighlighter from 'react-syntax-highlighter';
@@ -16,6 +16,7 @@ import { AppState } from '../../../store';
 import { connect } from 'react-redux';
 import { IIndustrialModel } from '../../../store/industrialmodels/reducer';
 import { ProjectSubType, ProjectType } from '../../../data/enums/ProjectType';
+import './index.scss'
 
 interface IProps {
     type: ProjectType;
@@ -34,7 +35,8 @@ const SampleForm: FunctionComponent<IProps> = (props) => {
     const [ imageCount, setImageCount ] = useState(0)
     const [ loading, setLoading ] = useState(true);
     const [ visibleImagePreview, setVisibleImagePreview ] = useState(false)
-
+    const history = useHistory();
+    
     var params : PathParams = useParams();
 
     const getSourceCode = async (uri) => {
@@ -158,6 +160,29 @@ const SampleForm: FunctionComponent<IProps> = (props) => {
         }
     }
 
+    const onStartTrain = () => {
+        history.push(`/imodels/${params.id}?tab=train#create`)
+    }
+
+    const onStartDeploy = () => {
+        history.push(`/imodels/${params.id}?tab=deploy#create`)
+    }
+
+    const renderQuickStart = () => {
+        return (
+            <Container headingVariant='h4' title = 'Quick start'>
+                <Inline>
+                    <div className='quickstartaction'>
+                        <Button onClick={onStartTrain}>Start train</Button>
+                    </div>
+                    <div className='quickstartaction'>
+                        <Button onClick={onStartDeploy}>Start deploy</Button>
+                    </div>
+                </Inline>
+            </Container>
+        )
+    }
+
     const renderSampleCode = () => {
         return (
             <Container title = 'Sample code'>
@@ -174,12 +199,16 @@ const SampleForm: FunctionComponent<IProps> = (props) => {
 
     if(visibleImagePreview)
         return (
-            renderImagePreview()
+            <Stack>
+                { renderImagePreview() }
+                { renderQuickStart() }
+            </Stack>
         )
     else
         return (
             <Stack>
                 { renderImageList() }
+                { renderQuickStart() }
                 { renderSampleCode() }
             </Stack>
         )

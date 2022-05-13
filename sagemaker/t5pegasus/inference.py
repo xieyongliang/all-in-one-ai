@@ -1,22 +1,42 @@
 import jieba
 import numpy as np
-import tensorflow as tf
 import os
+import boto3
+import zipfile
+import io
+import tensorflow as tf
 from bert4keras.models import build_transformer_model
 from bert4keras.snippets import AutoRegressiveDecoder
 from bert4keras.tokenizers import Tokenizer
+
+s3_client = boto3.client('s3')
+
+def get_bucket_and_key(s3uri):
+    pos = s3uri.find('/', 5)
+    bucket = s3uri[5 : pos]
+    key = s3uri[pos + 1 : ]
+    return bucket, key
 
 def model_fn(model_dir):
     """
     Load the model for inference
     """
-    config_path = '{0}/chinese_t5_pegasus_base/config.json'.format(model_dir)
-    checkpoint_path = '{0}/chinese_t5_pegasus_base/model.ckpt'.format(model_dir)
-    dict_path = '{0}/chinese_t5_pegasus_base/vocab.txt'.format(model_dir)
+    chinese_t5_pegasus_base_s3uri = os.environ['chinese_t5_pegasus_base_s3uri']
+
+    bucket, key = get_bucket_and_key(chinese_t5_pegasus_base_s3uri)
+    s3_object = s3_client.get_object(Bucket = bucket, Key = key)
+    bytes = s3_object["Body"].read()
+    zfile = zipfile.ZipFile(io.BytesIO(bytes))
+    zfile.extractall()
+    zfile.close()
+
+    config_path = 'chinese_t5_pegasus_base/config.json'
+    checkpoint_path = 'chinese_t5_pegasus_base/model.ckpt'
+    dict_path = 'chinese_t5_pegasus_base/vocab.txt'
     gpus = tf.config.experimental.list_physical_devices('GPU')  ##获取可用GPU
     for gpu in (gpus):
         tf.config.experimental.set_memory_growth(gpu, True)  ##设置显存使用方式
-    
+        
     max_c_len = os.environ['max_c_len'] if ('max_c_len' in os.os.environ) else 500
     max_t_len = os.environ['max_t_len'] if ('max_t_len' in os.os.environ) else 200
 
@@ -38,7 +58,7 @@ def model_fn(model_dir):
     decoder = t5.decoder
     model = t5.model
 
-    model.load_weights('/home/ec2-user/SageMaker/bert_model/best_model.weights')
+    model.load_weights('{0}/best_model.weights'.format(model_dir))
 
     autotitle = AutoTitle(
         start_id = tokenizer._token_start_id,

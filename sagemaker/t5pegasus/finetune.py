@@ -7,6 +7,9 @@ from __future__ import print_function
 import os
 os.system('pip install -r requirements.txt')
 
+import os
+os.environ['TF_KERAS'] = '1'  # 必须使用tf.keras
+
 import json
 import argparse
 import numpy as np
@@ -18,6 +21,7 @@ from bert4keras.tokenizers import Tokenizer
 from bert4keras.optimizers import Adam
 from bert4keras.snippets import sequence_padding, open
 from bert4keras.snippets import DataGenerator, AutoRegressiveDecoder
+import tensorflow as tf
 from keras.models import Model
 from rouge import Rouge  # pip install rouge
 from nltk.translate.bleu_score import sentence_bleu, SmoothingFunction
@@ -129,6 +133,7 @@ class Evaluator(keras.callbacks.Callback):
         rouge_1, rouge_2, rouge_l, bleu = 0, 0, 0, 0
         for title, content in tqdm(data):
             total += 1
+            print(total)
             title = ' '.join(title).lower()
             pred_title = ' '.join(autotitle.generate(content, topk=topk)).lower()
                         
@@ -199,7 +204,6 @@ if __name__ == '__main__':
     output = CrossEntropy(1)([model.inputs[1], model.outputs[0]])
 
     model = Model(model.inputs, output)
-    # model.compile(optimizer=Adam(2e-4))
     model.compile(optimizer=Adam(learning_rate))
     
     autotitle = AutoTitle(
@@ -217,3 +221,6 @@ if __name__ == '__main__':
         epochs=epochs,
         callbacks=[evaluator]
     )
+
+    # Save the model 
+    model.save(os.environ["SM_MODEL_DIR"] + '/model_1')

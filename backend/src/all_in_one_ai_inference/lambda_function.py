@@ -7,6 +7,9 @@ def lambda_handler(event, context):
     if event['httpMethod'] == 'POST':
         payload = event['body']
 
+        print(event['headers'])
+        print(event['queryStringParameters'])
+
         if('Content-Type' in event['headers']):
             content_type = event['headers']['Content-Type']
         elif('content-type' in event['headers']):
@@ -31,6 +34,7 @@ def lambda_handler(event, context):
         if('FunctionError' not in response):
             payload = response["Payload"].read().decode("utf-8")
             payload = json.loads(payload)
+            print(payload['body'])
             return {
                 'statusCode': payload['statusCode'],
                 'body': payload['body']

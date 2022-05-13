@@ -385,4 +385,22 @@ module.exports = function(app) {
         secure: false,
         ws: false,
     }));
+    app.use(createProxyMiddleware('/train', {
+        target: baseUrl + '/train',
+        pathRewrite: {
+            '^/train': ''
+        },
+        changeOrigin: true,
+        secure: false,
+        ws: false,
+    }));    
+    app.use(createProxyMiddleware('/deploy', {
+        target: baseUrl + '/deploy',
+        pathRewrite: {
+            '^/deploy': ''
+        },
+        changeOrigin: true,
+        secure: false,
+        ws: false,
+    }));    
 };

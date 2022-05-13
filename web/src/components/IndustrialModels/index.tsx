@@ -7,11 +7,13 @@ import Yolov5DemoForm from '../Forms/Demo/Single/yolov5';
 import TrainingJobList from '../Lists/TrainingJob';
 import ModelList from '../Lists/Model';
 import EndpointList from '../Lists/Endpoint';
+import TransformJobList from '../Lists/TransformJob'
 import RestApiList from '../Lists/RestApi';
 import GreengrassComponentList from '../Lists/GreengrassComponent';
 import GreengrassDeploymentList from '../Lists/GreengrassDeployment';
 import PipelineList from '../Lists/Pipeline';
-import TrainingJobYolov5Form from '../Forms/TrainingJob/yolov5';
+import TrainingJobForm from '../Forms/TrainingJob';
+import DeployForm from '../Forms/Deploy';
 import PipelineForm from '../Forms/Pipeline';
 import ModelForm from '../Forms/Model';
 import EndpointForm from '../Forms/Endpoint';
@@ -30,11 +32,11 @@ import PipelineProp from '../Props/Pipeline';
 import { AppState } from '../../store';
 import { connect } from 'react-redux';
 import { IIndustrialModel } from '../../store/industrialmodels/reducer';
-import LiteModelForm from '../Forms/Model/lite'
 import GluonCVDemoForm from '../Forms/Demo/Single/gluoncv'
 import { LoadingIndicator } from 'aws-northstar';
 import PaddleOCRDemoForm from '../Forms/Demo/Single/paddleocr';
 import Yolov5PaddleOCRDemoForm from '../Forms/Demo/Mixed/yolov5&paddleocr';
+import CPTDemoForm from '../Forms/Demo/Single/cpt';
 
 interface IProps {
     industrialModels : IIndustrialModel[];
@@ -77,218 +79,150 @@ const IndustrialModels: FunctionComponent<IProps> = (
         
     var algorithm = industrialModels[index].algorithm;
 
-    var tabs;
+    var tabs, advancedTabs;
+
+    if(hash === 'create' || hash === 'review') {
+        switch(tab) {
+            case 'transformjob':
+                return <TransformJobForm/>;
+            case 'pipeline':
+                return <PipelineForm/>;
+            case 'trainingjob':
+            case 'train':
+                return <TrainingJobForm/>;
+            case 'model':
+                return <ModelForm/>;
+            case 'endpoint':
+                return <EndpointForm/>;
+            case 'deploy':
+                return <DeployForm/>;
+            case 'restapi':
+                return <RestApiForm/>;
+            case 'greengrasscomponentversion':
+                return <GreengrassComponentForm/>;
+            case 'greengrassdeployment':
+                return <GreengrassDeploymentForm/>;
+        }
+    }
+
+    if(hash.startsWith('prop')) {
+        switch(tab) {
+            case 'transformjob':
+                return <TransformJobProp />;
+            case 'trainingjob':
+                return <TrainingJobProp />;
+            case 'model':
+                return <ModelProp />;
+            case 'endpoint':
+                return <EndpointProp />;
+            case 'restapi':
+                return <RestApiProp />;
+            case 'greengrasscomponentversion':
+                return <GreengrassComponentProp/>;
+            case 'greengrassdeployment':
+                return <GreengrassDeploymentProp/>;
+            case 'pipeline':
+                return <PipelineProp/>;
+        }
+    }
+
+    advancedTabs = [
+        {
+            label: 'ML pipelines',
+            id: 'pipeline',
+            content: <PipelineList />
+        },
+        {
+            label: 'Training jobs',
+            id: 'trainingjob',
+            content: <TrainingJobList />
+        },
+        {
+            label: 'Models',
+            id: 'model',
+            content: <ModelList/>
+        },
+        {
+            label: 'Endpoints',
+            id: 'endpoint',
+            content: <EndpointList/>
+        },
+        {
+            label: 'Transform jobs',
+            id: 'transformjob',
+            content: <TransformJobList/>
+        },
+        {
+            label: 'Rest apis',
+            id: 'restapi',
+            content: <RestApiList/>
+        },
+        {
+            label: 'Greengrass components',
+            id: 'greengrasscomponentversion',
+            content: <GreengrassComponentList/>
+        },
+        {
+            label: 'Greengrass deployments',
+            id: 'greengrassdeployment',
+            content: <GreengrassDeploymentList/>
+        }
+    ]; 
+
 
     if(algorithm === 'yolov5') {
-        if(hash === 'form' || hash === 'review') {
-            switch(tab) {
-                case 'demo':
-                    return <TransformJobForm/>;
-                case 'pipeline':
-                    return <PipelineForm/>;
-                case 'trainingjob':
-                    return <TrainingJobYolov5Form/>;
-                case 'model':
-                    return <ModelForm/>;
-                case 'endpoint':
-                    return <EndpointForm/>;
-                case 'restapi':
-                    return <RestApiForm/>;
-                case 'greengrasscomponentversion':
-                    return <GreengrassComponentForm/>;
-                case 'greengrassdeployment':
-                    return <GreengrassDeploymentForm/>;
+        tabs = [
+            {
+                label: 'Demo',
+                id: 'demo',
+                content: <Yolov5DemoForm advancedMode={advancedMode} onAdvancedModeChange={onAdvancedModeChange} />
             }
-        }
-
-        if(hash.startsWith('prop')) {
-            switch(tab) {
-                case 'demo':
-                    return <TransformJobProp />;
-                case 'trainingjob':
-                    return <TrainingJobProp />;
-                case 'model':
-                    return <ModelProp />;
-                case 'endpoint':
-                    return <EndpointProp />;
-                case 'restapi':
-                    return <RestApiProp />;
-                case 'greengrasscomponentversion':
-                    return <GreengrassComponentProp/>;
-                case 'greengrassdeployment':
-                    return <GreengrassDeploymentProp/>;
-                case 'pipeline':
-                    return <PipelineProp/>;
-            }
-        }
-
-        if(advancedMode)
-            tabs = [
-                {
-                    label: 'Demo',
-                    id: 'demo',
-                    content: <Yolov5DemoForm advancedMode={advancedMode} onAdvancedModeChange={onAdvancedModeChange}/>
-                },
-                {
-                    label: 'ML pipelines',
-                    id: 'pipeline',
-                    content: <PipelineList />
-                },
-                {
-                    label: 'Training jobs',
-                    id: 'trainingjob',
-                    content: <TrainingJobList />
-                },
-                {
-                    label: 'Models',
-                    id: 'model',
-                    content: <ModelList/>
-                },
-                {
-                    label: 'Endpoints',
-                    id: 'endpoint',
-                    content: <EndpointList/>
-                },
-                {
-                    label: 'Rest apis',
-                    id: 'restapi',
-                    content: <RestApiList/>
-                },
-                {
-                    label: 'Greengrass components',
-                    id: 'greengrasscomponentversion',
-                    content: <GreengrassComponentList/>
-                },
-                {
-                    label: 'Greengrass deployments',
-                    id: 'greengrassdeployment',
-                    content: <GreengrassDeploymentList/>
-                }
-            ]; 
-        else
-            tabs = [
-                {
-                    label: 'Demo',
-                    id: 'demo',
-                    content: <Yolov5DemoForm advancedMode={advancedMode} onAdvancedModeChange={onAdvancedModeChange} />
-                }
-            ]   
-        return (
-            <Tabs tabs={tabs} variant='container' activeId={tab} onChange={onChange}/>
-        )
+        ]   
     } 
     else if(algorithm === 'paddleocr') {
-        if(hash === 'form' || hash === 'review') {
-            switch(tab) {
-                case 'model':
-                    return <LiteModelForm/>;
-                case 'endpoint':
-                    return <EndpointForm/>;
+        tabs = [
+            {
+                label: 'Demo',
+                id: 'demo',
+                content: <PaddleOCRDemoForm advancedMode={advancedMode} onAdvancedModeChange={onAdvancedModeChange}/>
             }
-        }
-
-        if(hash.startsWith('prop')) {
-            switch(tab) {
-                case 'model':
-                    return <ModelProp />;
-                case 'endpoint':
-                    return <EndpointProp />;
-            }
-        }
-
-        if(advancedMode)
-            tabs = [
-                {
-                    label: 'Demo',
-                    id: 'demo',
-                    content: <PaddleOCRDemoForm advancedMode={advancedMode} onAdvancedModeChange={onAdvancedModeChange}/>
-                },
-                {
-                    label: 'Models',
-                    id: 'model',
-                    content: <ModelList/>
-                },
-                {
-                    label: 'Endpoints',
-                    id: 'endpoint',
-                    content: <EndpointList/>
-                }
-            ];
-        else
-            tabs = [
-                {
-                    label: 'Demo',
-                    id: 'demo',
-                    content: <PaddleOCRDemoForm advancedMode={advancedMode} onAdvancedModeChange={onAdvancedModeChange}/>
-                }
-            ]
-        return (
-            <Tabs tabs={tabs} variant='container' activeId={tab} onChange={onChange}/>
-        )
+        ]
     }
     else if(algorithm === 'gluoncv'){
-        if(hash === 'form') {
-            switch(tab) {
-                case 'demo':
-                    return <GluonCVDemoForm advancedMode={advancedMode} onAdvancedModeChange={onAdvancedModeChange}/>;
-                case 'model':
-                    return <LiteModelForm/>;
-                case 'endpoint':
-                    return <EndpointForm/>;
+        tabs = [
+            {
+                label: 'Demo',
+                id: 'demo',
+                content: <GluonCVDemoForm advancedMode={advancedMode} onAdvancedModeChange={onAdvancedModeChange}/>
             }
-        }
-
-        if(hash.startsWith('prop')) {
-            switch(tab) {
-                case 'model':
-                    return <ModelProp />;
-                case 'endpoint':
-                    return <EndpointProp />;
+        ]
+    }
+    else if(algorithm === 'cpt'){
+        tabs = [
+            {
+                label: 'Demo',
+                id: 'demo',
+                content: <CPTDemoForm advancedMode={advancedMode} onAdvancedModeChange={onAdvancedModeChange}/>
             }
-        }
-
-        if(advancedMode)
-            tabs = [
-                {
-                    label: 'Demo',
-                    id: 'demo',
-                    content: <GluonCVDemoForm advancedMode={advancedMode} onAdvancedModeChange={onAdvancedModeChange}/>
-                },
-                {
-                    label: 'Models',
-                    id: 'model',
-                    content: <ModelList/>
-                },
-                {
-                    label: 'Endpoints',
-                    id: 'endpoint',
-                    content: <EndpointList/>
-                }
-            ];
-        else
-            tabs = [
-                {
-                    label: 'Demo',
-                    id: 'demo',
-                    content: <GluonCVDemoForm advancedMode={advancedMode} onAdvancedModeChange={onAdvancedModeChange}/>
-                }
-            ]
-        return (
-            <Tabs tabs={tabs} variant='container' activeId={tab} onChange={onChange}/>
-        )
+        ]     
     }
     else {
-        const tabs = [
+        tabs = [
             {
                 label: 'Demo',
                 id: 'demo',
                 content: <Yolov5PaddleOCRDemoForm/>
             }
         ];
-        return (
-            <Tabs tabs={tabs} variant='container' activeId={tab} onChange={onChange}/>
-        )
     }
+
+    if(advancedMode)
+        tabs = tabs.concat(advancedTabs)
+
+    return (
+        <Tabs tabs={tabs} variant='container' activeId={tab} onChange={onChange}/>
+    )
+
 }
 
 const mapStateToProps = (state: AppState) => ({

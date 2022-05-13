@@ -11,6 +11,7 @@ import { PathParams } from '../../Interfaces/PathParams';
 import { getDurationBySeconds, getUtcDate } from '../../Utils/Helper/index';
 import { DeleteConfirmationDialog } from 'aws-northstar';
 import { FetchDataOptions } from 'aws-northstar/components/Table';
+import './index.scss'
 
 interface TrainingJobItem {
     trainingJobName: string;
@@ -107,6 +108,7 @@ const TrainingJobList: FunctionComponent = () => {
                 }
             }, (error) => {
                 console.log(error);
+                setLoading(false);
             }
         );
         axios.get('/trainingjob', {params : {'industrial_model': params.id}})
@@ -139,6 +141,7 @@ const TrainingJobList: FunctionComponent = () => {
                 }
             }, (error) => {
                 console.log(error);
+                setLoading(false);
             }
         );
     }, [params.id])
@@ -149,9 +152,9 @@ const TrainingJobList: FunctionComponent = () => {
 
 
     const onCreate = () => {
-        history.push(`/imodels/${params.id}?tab=trainingjob#form`)
+        history.push(`/imodels/${params.id}?tab=trainingjob#create`)
     }
-    
+
     const onStop = () => {
         setVisibleStopConfirmation(true)
     }
@@ -324,13 +327,21 @@ const TrainingJobList: FunctionComponent = () => {
     
     const tableActions = (
         <Inline>
-            <Toggle label='Show all' checked={showAll} onChange={onChangeShowAll}/>
-            <Button icon="refresh" onClick={onRefresh} loading={loading}>Refresh</Button>
-            <ButtonDropdown
-                content='Actions'
-                    items={[{ text: 'Stop', onClick: onStop, disabled: disabledStop }, { text: 'Attach', onClick: onAttach, disabled: disabledAttach }, { text: 'Detach', onClick: onDetach, disabled: disabledDetach }, { text: 'Add/Edit tags', disabled: true }]}
-            />        
-            <Button variant='primary' onClick={onCreate}>Create</Button>
+            <div className='tableaction'>
+                <Toggle label='Show all' checked={showAll} onChange={onChangeShowAll}/>
+            </div>
+            <div className='tableaction'>
+                <Button icon="refresh" onClick={onRefresh} loading={loading}>Refresh</Button>
+            </div>
+            <div className='tableaction'>
+                <ButtonDropdown
+                    content='Actions'
+                        items={[{ text: 'Stop', onClick: onStop, disabled: disabledStop }, { text: 'Attach', onClick: onAttach, disabled: disabledAttach }, { text: 'Detach', onClick: onDetach, disabled: disabledDetach }, { text: 'Add/Edit tags', disabled: true }]}
+                />
+            </div>
+            <div className='tableaction'>
+                <Button variant='primary' onClick={onCreate}>Create</Button>
+            </div>
         </Inline>
     );
 

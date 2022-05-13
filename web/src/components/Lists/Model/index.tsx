@@ -9,6 +9,7 @@ import axios from 'axios';
 import { PathParams } from '../../Interfaces/PathParams';
 import { getUtcDate } from '../../Utils/Helper';
 import { FetchDataOptions } from 'aws-northstar/components/Table';
+import './index.scss'
 
 interface ModelItem {
     modelName: string;
@@ -97,6 +98,7 @@ const ModelList: FunctionComponent = () => {
                 }
             }, (error) => {
                 console.log(error);
+                setLoading(false)
             }
         );
         axios.get('/model', {params : {'industrial_model': params.id}})
@@ -122,6 +124,7 @@ const ModelList: FunctionComponent = () => {
                 }
             }, (error) => {
                 console.log(error);
+                setLoading(false);
             }
         );
     }, [params.id])
@@ -133,7 +136,7 @@ const ModelList: FunctionComponent = () => {
     const getRowId = useCallback(data => data.modelName, []);
 
     const onCreate = () => {
-        history.push(`/imodels/${params.id}?tab=model#form`)
+        history.push(`/imodels/${params.id}?tab=model#create`)
     }
 
     const onDelete = () => {
@@ -146,6 +149,10 @@ const ModelList: FunctionComponent = () => {
 
     const onDetach = () => {
         setVisibleDetachConfirmation(true)
+    }
+
+    const onDeploy = () => {
+        history.push(`/imodels/${params.id}?tab=deploy#create`)
     }
 
     const columnDefinitions : Column<ModelItem>[]= [
@@ -183,13 +190,21 @@ const ModelList: FunctionComponent = () => {
 
     const tableActions = (
         <Inline>
-            <Toggle label='Show all' checked={showAll} onChange={onChangeShowAll}/>
-            <Button icon="refresh" onClick={onRefresh} loading={loading}>Refresh</Button>
-            <ButtonDropdown
-                content='Actions'
-                    items={[{ text: 'Delete', onClick: onDelete, disabled: disabledDelete }, { text: 'Attach', onClick: onAttach, disabled: disabledAttach }, { text: 'Detach', onClick: onDetach, disabled: disabledDetach }, { text: 'Add/Edit tags', disabled: true }]}
-                />        
-            <Button variant='primary' onClick={onCreate}>Create</Button>
+            <div className='tableaction'>
+                <Toggle label='Show all' checked={showAll} onChange={onChangeShowAll}/>
+            </div>
+            <div className='tableaction'>
+                <Button icon="refresh" onClick={onRefresh} loading={loading}>Refresh</Button>
+            </div>
+            <div className='tableaction'>
+                <ButtonDropdown
+                    content='Actions'
+                    items={[{ text: 'Deploy', onClick: onDeploy}, { text: 'Delete', onClick: onDelete, disabled: disabledDelete }, { text: 'Attach', onClick: onAttach, disabled: disabledAttach }, { text: 'Detach', onClick: onDetach, disabled: disabledDetach }, { text: 'Add/Edit tags', disabled: true }]}
+                />
+            </div>
+            <div className='tableaction'>
+                <Button variant='primary' onClick={onCreate}>Create</Button>
+            </div>
         </Inline>
     );
 

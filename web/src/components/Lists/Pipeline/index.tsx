@@ -12,6 +12,7 @@ import JSZip from 'jszip';
 import axios from 'axios';
 import { getUtcDate } from '../../Utils/Helper';
 import { Container, Stack, Toggle } from 'aws-northstar';
+import './index.scss'
 
 interface PipelineItem {
     pipelineExecutionArn: string;
@@ -78,6 +79,7 @@ const PipelineList: FunctionComponent = () => {
                 }
         }, (error) => {
             console.log(error);
+            setLoading(false);
         });
     }, [params.id])
 
@@ -86,7 +88,7 @@ const PipelineList: FunctionComponent = () => {
     }, [onRefresh]);
 
     const onCreate = () => {
-        history.push(`/imodels/${params.id}?tab=pipeline#form`)
+        history.push(`/imodels/${params.id}?tab=pipeline#create`)
     }
 
     const getRowId = useCallback(data => data.pipelineExecutionArn, []);
@@ -163,10 +165,12 @@ const PipelineList: FunctionComponent = () => {
     
     const tableActions = (
         <Inline>
-            <Button icon="refresh" onClick={onRefresh} loading={loading}>Refresh</Button>
-            <Button variant='primary' onClick={onCreate}>
-                Create
-            </Button>
+            <div className='tableaction'>
+                <Button icon="refresh" onClick={onRefresh} loading={loading}>Refresh</Button>
+            </div>
+            <div className='tableaction'>
+                <Button variant='primary' onClick={onCreate}>Create</Button>
+            </div>
         </Inline>
     );
 

@@ -8,6 +8,7 @@ import SyntaxHighlighter from 'react-syntax-highlighter';
 import { github } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 import JSZip from 'jszip';
 import axios from 'axios';
+import './index.scss'
 
 interface DataType {
     name: string;
@@ -81,7 +82,7 @@ const GreengrassComponentList: FunctionComponent = () => {
     }, [onRefresh]);
 
     const onCreate = () => {
-        history.push(`/imodels/${params.id}?tab=greengrasscomponentversion#form`)
+        history.push(`/imodels/${params.id}?tab=greengrasscomponentversion#create`)
     }
 
     const getRowId = React.useCallback(data => data.arn, []);
@@ -115,8 +116,12 @@ const GreengrassComponentList: FunctionComponent = () => {
     
     const tableActions = (
         <Inline>
-            <Button icon="refresh" onClick={onRefresh} loading={loading}>Refresh</Button>
-            <Button variant='primary' onClick={onCreate}>Create</Button>
+            <div className='tableaction'>
+                <Button icon="refresh" onClick={onRefresh} loading={loading}>Refresh</Button>
+            </div>
+            <div className='tableaction'>
+                <Button variant='primary' onClick={onCreate}>Create</Button>
+            </div>
         </Inline>
     );    
 

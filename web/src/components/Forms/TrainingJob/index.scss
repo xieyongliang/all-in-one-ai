@@ -1,0 +1,20 @@
+.subheader {
+    margin-left : -16px;
+    margin-right: -16px;
+    border-top: 1px solid #eeeeee;
+    border-bottom: 1px solid #eeeeee;
+    background-color: #f5f5f5;
+    margin-bottom: 5px;
+    margin-top: 5px;
+
+    .title {
+        margin-left : 16px;
+        margin-right: 16px;
+        margin-top: 5px;
+        margin-bottom: 5px;
+        font-size: 14px;
+        color: #16191f;
+        font-family: "Roboto", "Helvetica Neue", "HelveticaNeue", "Helvetica", "Arial", sans-serif;
+        font-weight: 700;
+    }
+}

@@ -1,6 +1,6 @@
-import { FunctionComponent, useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { Container, Link, Toggle, Select, Stack, FormField, Button, Grid, ProgressBar, LoadingIndicator, Text } from 'aws-northstar';
+import { FunctionComponent, useEffect, useState, ComponentType } from 'react';
+import { useHistory, useParams } from 'react-router-dom';
+import { Container, Link, Toggle, Select, Stack, FormField, Button, Grid, ProgressBar, LoadingIndicator, Text, Inline } from 'aws-northstar';
 import ImageList from '@mui/material/ImageList';
 import ImageListItem from '@mui/material/ImageListItem';
 import SyntaxHighlighter from 'react-syntax-highlighter';
@@ -17,6 +17,7 @@ import { SelectOption } from 'aws-northstar/components/Select';
 import FileUpload from 'aws-northstar/components/FileUpload';
 import { FileMetadata } from 'aws-northstar/components/FileUpload/types';
 import ImagePreview from '../../../Utils/ImagePreview';
+import '../index.scss'
 
 interface IProps {
     industrialModels: IIndustrialModel[];
@@ -48,7 +49,8 @@ const GluonCVDemoForm: FunctionComponent<IProps> = (
     const [ loading, setLoading ] = useState(true);
     const [ processing, setProcessing ] = useState(false);
     const [ importing, setImporting ] = useState(false);
-    const [ importedCount, setImportedCount ] = useState(0)
+    const [ importedCount, setImportedCount ] = useState(0);
+    const history = useHistory();
 
     var params : PathParams = useParams();
 
@@ -80,7 +82,6 @@ const GluonCVDemoForm: FunctionComponent<IProps> = (
             cancel = true;
         }
     }, []);
-
 
     useEffect(() => {
         if(industrialModel !== undefined) {
@@ -232,40 +233,37 @@ const GluonCVDemoForm: FunctionComponent<IProps> = (
         if(curImagePreviewItem === '') 
             return (
                 <Container headingVariant='h4' title='Select image file from local disk and Preview'>
-                    <Grid container spacing={3}>
-                        <Grid item xs={6}>
+                    <Inline>
+                    <div className='quickstartaction'>
                         <FileUpload
                             controlId='fileImage'
                             onChange={onFileChange}
-                        />
-                        </Grid>
-                        <Grid item xs={6}>
-                            <FormField controlId='formFieldIdSearch'>
-                                <Button variant='primary' disabled={curImagePreviewItem === ''} onClick={onSearch} loading={processing}>Search by image</Button>
-                            </FormField>
-                        </Grid>
-                    </Grid>
+                        >
+                        </FileUpload>
+                    </div>
+                    <div className='quickstartaction'>
+                        <FormField controlId='1'>
+                            <Button variant='primary' disabled={curImagePreviewItem === ''} onClick={onSearch} loading={processing}>Search by image</Button>
+                        </FormField>
+                    </div>
+                    </Inline>
                 </Container>
             )
         else 
             return (
                 <Container headingVariant='h4' title='Select image file from local disk and Preview'>
-                    <Grid container spacing={3}>
-                        <Grid item xs={6}>
-                        <FileUpload
-                            controlId='fileImage'
-                            onChange={onFileChange}
-                        />
-                        </Grid>
-                        <Grid item xs={6}>
-                            <FormField controlId='formFieldIdSearchByImage'>
-                                <Button variant='primary' disabled={curImagePreviewItem === ''} onClick={onSearch} loading={processing}>Search by image</Button>
-                            </FormField>
-                        </Grid>
-                        <Grid item xs={12}>
-                            <Image src={`/_image/${curImagePreviewItem}`} width={"100%"} height={"100%"} current='' onClick={onImageClick}/>
-                        </Grid>
-                    </Grid>
+                    <Inline>
+                        <div className='quickstartaction'>
+                            <FileUpload
+                                controlId='fileImage'
+                                onChange={onFileChange}
+                            />
+                        </div>
+                        <div className='quickstartaction'>
+                            <Button variant='primary' disabled={curImagePreviewItem === ''} onClick={onSearch} loading={processing}>Search by image</Button>
+                        </div>
+                    </Inline>
+                    <Image src={`/_image/${curImagePreviewItem}`} width={"100%"} height={"100%"} current='' onClick={onImageClick}/>
                 </Container>
             )
     }
@@ -293,9 +291,32 @@ const GluonCVDemoForm: FunctionComponent<IProps> = (
         )
     }
 
+    const onStartTrain = () => {
+        history.push(`/imodels/${params.id}?tab=train#create`)
+    }
+
+    const onStartDeploy = () => {
+        history.push(`/imodels/${params.id}?tab=deploy#create`)
+    }
+
+    const renderQuickStart = () => {
+        return (
+            <Container headingVariant='h4' title = 'Quick start'>
+                <Inline>
+                    <div className='quickstartaction'>
+                        <Button onClick={onStartTrain}>Start train</Button>
+                    </div>
+                    <div className='quickstartaction'>
+                        <Button onClick={onStartDeploy}>Start deploy</Button>
+                    </div>
+                </Inline>
+            </Container>
+        )
+    }
+
     const renderSampleCode = () => {
         return (
-            <Container title = 'Sample code'>
+            <Container headingVariant='h4' title = 'Sample code'>
                 <Toggle label={visibleSampleCode ? 'Show sample code' : 'Hide sample code'} checked={visibleSampleCode} onChange={(checked) => {setVisibleSampleCode(checked)}} />
                 <Link href={sampleConsole}>Open in AWS Lambda console</Link>
                 {
@@ -329,6 +350,7 @@ const GluonCVDemoForm: FunctionComponent<IProps> = (
             { renderOriginImageList() }
             { renderUploadImage() }
             { visibleSearchImage && renderSearchImageList() }
+            { renderQuickStart() }
             { renderSampleCode() }
         </Stack>
     )

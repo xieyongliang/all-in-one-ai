@@ -28,10 +28,10 @@ import { store } from '.';
 import { Action } from './store/Actions';
 import GluonCV from './components/Algorithms/GluonCV';
 import PaddleOCR from './components/Algorithms/PaddleOCR';
+import CPT from './components/Algorithms/CPT';
 import Track from './components/Scenarios/Track';
 import CameraForm from './components/Forms/Camera';
 import MapForm from './components/Forms/Map';
-import YoutubeForm from './components/Forms/Camera/youtube';
 
 const App : FunctionComponent = () => {
     const withLayout = (Component : any, props? : any) => {
@@ -78,12 +78,12 @@ const App : FunctionComponent = () => {
                     <Route sensitive={true} exact path="/algorithms/yolov5">{withLayout(Yolov5)}</Route>
                     <Route sensitive={true} exact path="/algorithms/gluoncv">{withLayout(GluonCV)}</Route>
                     <Route sensitive={true} exact path="/algorithms/paddleocr">{withLayout(PaddleOCR)}</Route>
+                    <Route sensitive={true} exact path="/algorithms/cpt">{withLayout(CPT)}</Route>
                     <Route sensitive={true} exact path="/imodels/:id">{withLayout(IndustrialModels)}</Route>
                     <Route sensitive={true} exact path="/imodels">{withLayout(IndustrialModelOverview)}</Route>
                     <Route sensitive={true} exact path="/">{withLayout(Dashboard)}</Route>
                     <Route sensitive={true} exact path="/mtr">{withLayout(CameraForm)}</Route>                    
-                    <Route sensitive={true} exact path="/map">{withLayout(MapForm)}</Route>                    
-                    <Route sensitive={true} exact path="/youtube">{withLayout(YoutubeForm)}</Route>                    
+                    <Route sensitive={true} exact path="/map">{withLayout(MapForm)}</Route>                                      
                 </Switch>
             </Router>
         </NorthStarThemeProvider>

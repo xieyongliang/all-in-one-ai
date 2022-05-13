@@ -19,7 +19,9 @@ const TrainingJobProp: FunctionComponent = () => {
     const [ inputDataConfig, setInputDataConfig ] = useState([])
     const [ outputDataConfig, setOutputDataConfig ] = useState({})
     const [ modelArtifacts, setModelArtifacts ] = useState({})
+    const [ hyperParameters, setHyperParameters ] = useState({})
     const [ stoppingCondition, setStoppingCondition ] = useState({})
+    const [ enableManagedSpotTraining, setEnableManagedSpotTraining ] = useState('')
     const [ loading, setLoading ] = useState(true);
 
     const history = useHistory();
@@ -33,20 +35,23 @@ const TrainingJobProp: FunctionComponent = () => {
         axios.get(`/trainingjob/${id}`)
             .then((response) => {
             if(response.data.length > 0) {
+                console.log(response.data[0])
                 setTrainingJobName(response.data[0].TrainingJobName)
                 setCreationTime(getUtcDate(response.data[0].CreationTime))
                 setLastModifiedTime(getUtcDate(response.data[0].LastModifiedTime))
-                setTrainingStartTime(getUtcDate(response.data[0].TrainingStartTime))
-                setTrainingEndTime(getUtcDate(response.data[0].TrainingEndTime))
+                setTrainingStartTime(('TrainingStartTime' in response.data[0] ? getUtcDate(response.data[0].TrainingStartTime) : '-'))
+                setTrainingEndTime(('TrainingEndTime' in response.data[0] ? getUtcDate(response.data[0].TrainingEndTime) : '-'))
                 setTrainingTimeInSeconds(response.data[0].TrainingTimeInSeconds)
                 setBillableTimeInSeconds(response.data[0].BillableTimeInSeconds)
                 setTrainingJobStatus(response.data[0].TrainingJobStatus)
                 setAlgorithmSpecificaton(response.data[0].AlgorithmSpecification)
+                setHyperParameters(response.data[0].HyperParameters)
                 setResourceConfig(response.data[0].ResourceConfig)
                 setInputDataConfig(response.data[0].InputDataConfig)
                 setOutputDataConfig(response.data[0].OutputDataConfig)
                 setModelArtifacts(response.data[0].ModelArtifacts)
                 setStoppingCondition(response.data[0].StoppingCondition)
+                setEnableManagedSpotTraining(response.data[0].EnableManagedSpotTraining)
                 setLoading(false);
             }
         }, (error) => {
@@ -108,6 +113,7 @@ const TrainingJobProp: FunctionComponent = () => {
     }
 
     const renderAlgorithmSpecifications = () => {
+        console.log(enableManagedSpotTraining)
         return (
             <FormSection header='Algorithm'>
                 <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }}>
@@ -129,6 +135,30 @@ const TrainingJobProp: FunctionComponent = () => {
                     <Grid item xs={2} sm={4} md={4}>
                         <KeyValuePair label='Maximum runtime (s)' value={stoppingCondition['MaxRuntimeInSeconds']}></KeyValuePair>
                     </Grid>
+                    <Grid item xs={2} sm={4} md={4}>
+                        <KeyValuePair label='Maximum wait time for managed spot training(s)' value={'MaxWaitTimeInSeconds' in stoppingCondition ? stoppingCondition['MaxWaitTimeInSeconds'] : '-'}></KeyValuePair>
+                    </Grid>
+                    <Grid item xs={2} sm={4} md={4}>
+                        <KeyValuePair label='Managed spot training' value={enableManagedSpotTraining ? 'Enabled' : 'Disabled'}></KeyValuePair>
+                    </Grid>
+                </Grid>
+            </FormSection>
+        )
+    }
+
+    const renderHyperParameters = () => {
+        return (    
+            <FormSection header='HyperParameters'>
+                <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }}>
+                    {
+                        Object.keys(hyperParameters).map((key) => {
+                            return (
+                                <Grid item xs={2} sm={4} md={4}>
+                                    <KeyValuePair label={key} value={hyperParameters[key]}></KeyValuePair>                        
+                                </Grid>
+                            )
+                        })
+                    }
                 </Grid>
             </FormSection>
         )
@@ -200,6 +230,7 @@ const TrainingJobProp: FunctionComponent = () => {
             { loading && <LoadingIndicator label='Loading...'/> }
             { !loading && renderJobSummary() }
             { !loading && renderAlgorithmSpecifications() }
+            { !loading && renderHyperParameters() }
             { !loading && renderInputDataConfiguration() }
             { !loading && renderOutputConfiguration() }
             { !loading && renderOutput() }

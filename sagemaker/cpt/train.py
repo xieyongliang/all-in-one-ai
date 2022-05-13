@@ -2,7 +2,6 @@ import argparse
 import logging
 import os
 import sys
-
 import numpy as np
 from datasets import load_dataset
 import transformers

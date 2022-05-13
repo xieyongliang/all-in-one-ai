@@ -7,6 +7,7 @@ import { useHistory, useParams } from 'react-router-dom';
 import { PathParams } from '../../Interfaces/PathParams';
 import axios from 'axios';
 import { getUtcDate } from '../../Utils/Helper';
+import './index.scss'
 
 interface DataType {
     name: string;
@@ -41,6 +42,7 @@ const RestApiList: FunctionComponent = () => {
                 }
         }, (error) => {
             console.log(error);
+            setLoading(false);
         });        
     }, [params.id])
 
@@ -49,7 +51,7 @@ const RestApiList: FunctionComponent = () => {
     }, [onRefresh]);
 
     const onCreate = () => {
-        history.push(`/imodels/${params.id}?tab=restapi#form`)
+        history.push(`/imodels/${params.id}?tab=restapi#create`)
     }
 
     const getRowId = React.useCallback(data => data.name, []);
@@ -95,8 +97,12 @@ const RestApiList: FunctionComponent = () => {
     
     const tableActions = (
         <Inline>
-            <Button icon="refresh" onClick={onRefresh} loading={loading}>Refresh</Button>
-            <Button variant='primary' onClick={onCreate}>Create</Button>
+            <div className='tableaction'>
+                <Button icon="refresh" onClick={onRefresh} loading={loading}>Refresh</Button>
+            </div>
+            <div className='tableaction'>
+                <Button variant='primary' onClick={onCreate}>Create</Button>
+            </div>
         </Inline>
     );
     
