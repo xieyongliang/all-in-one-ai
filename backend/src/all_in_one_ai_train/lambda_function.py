@@ -13,12 +13,18 @@ role_arn = ssmh.get_parameter('/all_in_one_ai/config/meta/sagemaker_role_arn')
 lambda_client = boto3.client('lambda')
 
 def lambda_handler(event, context):
+    print(event)
+    
+    request = json.loads(event['body'])
+    
     try:
-        algorithm = event['body']['model_algorithm']
-        instance_type = event['body']['instance_type']
-        instance_count = event['body']['instance_count']
-        hyperparameters = event['body']['hyperparameters']
-        inputs = event['body']['inputs']
+        algorithm = request['model_algorithm']
+        industrial_model = request['industrial_model']
+        instance_type = request['instance_type']
+        instance_count = request['instance_count']
+        hyperparameters = request['hyperparameters'] if('hyperparameters' in request) else {}
+        inputs = request['inputs']
+        job_name = request['training_job_name']
                 
         if(algorithm == 'yolov5'):
             default_hyperparameters = {
@@ -29,19 +35,23 @@ def lambda_handler(event, context):
                 'name': 'tutorial', 
                 'img': 640, 
                 'batch': 16, 
-                'epochs': 100
+                'epochs': 10
             }
-            for hyperparameter in default_hyperparameters:
-                if(hyperparameter not in hyperparameter):
-                    hyperparameters[hyperparameter] = default_hyperparameters[hyperparameter]
+            for key in default_hyperparameters.keys():
+                if(key not in hyperparameters.keys()):
+                    hyperparameters[key] = default_hyperparameters[key]
             
             git_config = {'repo': 'https://github.com/ultralytics/yolov5.git', 'branch': 'master'}
             
             payload = {
                 'body': {
+                    'job_name': job_name,
+                    'algorithm': algorithm,
+                    'industrial_model': industrial_model,
                     'entry_point': 'train.py',
                     'source_dir': '.',
                     'git_config': git_config,
+                    'role': role_arn,
                     'instance_type': instance_type,
                     'instance_count': instance_count,
                     'hyperparameters': hyperparameters,
@@ -54,7 +64,7 @@ def lambda_handler(event, context):
             response = lambda_client.invoke(
                 FunctionName = 'all_in_one_ai_create_train_pytorch',
                 InvocationType = 'Event',
-                Payload=json.dumps({'body': payload})
+                Payload=json.dumps(payload)
             )
         elif(algorithm == 'gluoncv'):
             source_dir = ssmh.get_parameter('/all_in_one_ai/config/meta/algorithms/{0}/source'.format(algorithm))
@@ -70,14 +80,18 @@ def lambda_handler(event, context):
                 "num_workers": 8,
                 "model_name": "ResNet50_v2"
             }
-            for hyperparameter in default_hyperparameters:
-                if(hyperparameter not in hyperparameter):
-                    hyperparameters[hyperparameter] = default_hyperparameters[hyperparameter]
+            for key in default_hyperparameters.keys():
+                if(key not in hyperparameters.keys()):
+                    hyperparameters[key] = default_hyperparameters[key]
             
             payload = {
                 'body': {
+                    'job_name': job_name,
+                    'algorithm': algorithm,
+                    'industrial_model': industrial_model,
                     'entry_point': 'finetune.py',
                     'source_dir': source_dir,
+                    'role': role_arn,
                     'instance_type': instance_type,
                     'instance_count': instance_count,
                     'hyperparameters': hyperparameters,
@@ -90,7 +104,7 @@ def lambda_handler(event, context):
             response = lambda_client.invoke(
                 FunctionName = 'all_in_one_ai_create_train_mxnet',
                 InvocationType = 'Event',
-                Payload=json.dumps({'body': payload})
+                Payload=json.dumps(payload)
             )
         elif(algorithm == 'cpt'):
             source_dir = ssmh.get_parameter('/all_in_one_ai/config/meta/algorithms/{0}/source'.format(algorithm))
@@ -108,34 +122,41 @@ def lambda_handler(event, context):
                 'val_max_target_length': 80,
                 'path': 'json'
             }
-            for hyperparameter in default_hyperparameters:
-                if(hyperparameter not in hyperparameter):
-                    hyperparameters[hyperparameter] = default_hyperparameters[hyperparameter]
+            for key in default_hyperparameters.keys():
+                if(key not in hyperparameters.keys()):
+                    hyperparameters[key] = default_hyperparameters[key]
             
             payload = {
                 'body': {
-                    'entry_point': 'finetune.py',
+                    'job_name': job_name,
+                    'algorithm': algorithm,
+                    'industrial_model': industrial_model,
+                    'entry_point': 'train.py',
                     'source_dir': source_dir,
+                    'role': role_arn,
                     'instance_type': instance_type,
                     'instance_count': instance_count,
                     'hyperparameters': hyperparameters,
-                    'transformers_version': '4.17.0',
-                    'inputs': inputs,
-                    'py_version': 'py37',
-                    'framework_version': '1.8.0'
+                    'transformers_version': '4.12.3',
+                    'tensorflow_version': None,
+                    'pytorch_version': '1.9.1',
+                    'py_version': 'py38',
+                    'inputs': inputs
                 }
             }
 
             response = lambda_client.invoke(
                 FunctionName = 'all_in_one_ai_create_train_huggingface',
                 InvocationType = 'Event',
-                Payload=json.dumps({'body': payload})
+                Payload=json.dumps(payload)
             )
 
-
+        print(response)
+        payload = str(response['Payload'].read())
+        print(payload)
         return {
             'statusCode': 200,
-            'body': json.dumps(response, default = defaultencode)
+            'body': json.dumps(payload, default = defaultencode)
         }
 
     except Exception as e:

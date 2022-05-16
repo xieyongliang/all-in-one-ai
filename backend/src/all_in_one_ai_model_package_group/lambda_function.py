@@ -8,6 +8,7 @@ sagemaker_client = boto3.client('sagemaker')
 
 def lambda_handler(event, context):
     print(event)
+    
     response = None
     if event['httpMethod'] == 'POST':
         try:

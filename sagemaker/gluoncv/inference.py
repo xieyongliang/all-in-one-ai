@@ -1,7 +1,6 @@
 import json
 import os
 import boto3
-from matplotlib.colors import to_rgb
 import mxnet as mx
 from mxnet.gluon import nn
 from gluoncv.model_zoo import get_model

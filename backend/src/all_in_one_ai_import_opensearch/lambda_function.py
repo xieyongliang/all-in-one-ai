@@ -21,7 +21,6 @@ def lambda_handler(event, context):
         action = None
         if('action' in event['queryStringParameters']):
             action = event['queryStringParameters']['action']
-        
         if(action == 'query'):
             if es.indices.exists(index = index):
                 query = {

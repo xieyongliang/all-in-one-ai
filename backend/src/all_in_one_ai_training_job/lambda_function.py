@@ -1,6 +1,7 @@
 import json
 import boto3
 import helper
+from sagemaker import image_uris
 from boto3.dynamodb.conditions import Key
 from decimal import Decimal
 from datetime import date, datetime
@@ -36,14 +37,14 @@ def lambda_handler(event, context):
                 'VolumeSizeInGB': request['volume_size_in_gb']
             }
             payload['input_data_config'] = []
-            for channel in request['inputs']:
+            for key in request['inputs'].keys():
                 payload['input_data_config'].append(
                     {
-                        'ChannelName': channel.key,
+                        'ChannelName': key,
                         'DataSource': {
                             'S3DataSource': {
                                 'S3DataType': 'S3Prefix',
-                                'S3Uri': channel.value,
+                                'S3Uri': request['inputs'][key],
                                 'S3DataDistributionType': 'FullyReplicated'
                             }
                         }

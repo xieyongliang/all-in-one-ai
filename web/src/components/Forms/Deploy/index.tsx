@@ -22,6 +22,7 @@ const instanceOptions : SelectOption[]= [
             { label: 'ml.m5.2xlarge', value: 'ml.m5.2xlarge' }, 
             { label: 'ml.m5.4xlarge', value: 'ml.m5.4xlarge' }, 
             { label: 'ml.m5.12xlarge', value: 'ml.m5.12xlarge' }, 
+            { label: 'ml.m5.16xlarge', value: 'ml.m5.16xlarge' },
             { label: 'ml.m5.24xlarge', value: 'ml.m5.24xlarge' },
             { label: 'ml.m5d.large', value: 'ml.m5d.large' }, 
             { label: 'ml.m5d.xlarge', value: 'ml.m5d.xlarge' }, 

@@ -11,7 +11,6 @@ import traceback
 ssmh = helper.ssm_helper()
 models_table = ssmh.get_parameter('/all_in_one_ai/config/meta/industrial_model_table')
 ddbh = helper.ddb_helper({'table_name': models_table})
-industrialmodels_s3uri = ssmh.get_parameter('/all_in_one_ai/config/meta/algorithms/yolov5/industrialmodels')
 
 s3_client = boto3.client('s3', config=boto3.session.Config(s3={'addressing_style': 'virtual'}, signature_version='s3v4'))
 s3_resource = boto3.resource('s3')
@@ -48,15 +47,13 @@ def lambda_handler(event, context):
                 params['model_icon'] = icon_s3uri
 
                 if(model_algorithm == 'yolov5'):
+                    industrialmodels_s3uri = ssmh.get_parameter('/all_in_one_ai/config/meta/algorithms/yolov5/industrialmodels')
                     industrialmodels_s3bucket, industrialmodels_s3key = get_bucket_and_key(industrialmodels_s3uri)
                     s3bucketcopy(industrialmodels_s3bucket, '{0}default/data/cfg'.format(industrialmodels_s3key), '{0}{1}/data/cfg'.format(industrialmodels_s3key, model_id))
                     s3bucketcopy(industrialmodels_s3bucket, '{0}default/data/weights'.format(industrialmodels_s3key), '{0}{1}/data/weights'.format(industrialmodels_s3key, model_id))
                     data_yaml_template_s3uri = '{0}default/data/cfg/data.yaml'.format(industrialmodels_s3uri)
                     data_yaml_output_s3uri = '{0}{1}/data/cfg/data.yaml'.format(industrialmodels_s3uri, model_id)
                     generate_data_yaml(data_yaml_template_s3uri, data_yaml_output_s3uri, params['model_labels'])
-                elif(model_algorithm == 'gluoncv'):
-                    industrialmodels_s3bucket, industrialmodels_s3key = get_bucket_and_key(industrialmodels_s3uri)
-                    s3bucketcopy(industrialmodels_s3bucket, '{0}default/script'.format(industrialmodels_s3key), '{0}{1}/script'.format(industrialmodels_s3key, model_id))
             
                 params['model_id'] = model_id
                 params['model_algorithm'] = request['model_algorithm']

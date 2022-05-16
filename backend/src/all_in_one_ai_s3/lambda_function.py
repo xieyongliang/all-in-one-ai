@@ -3,7 +3,6 @@ import boto3
 import traceback
 from botocore.exceptions import ClientError
 
-
 s3_client = boto3.client('s3', config=boto3.session.Config(s3={'addressing_style': 'virtual'}, signature_version='s3v4'))
 s3_resource = boto3.resource('s3')
 

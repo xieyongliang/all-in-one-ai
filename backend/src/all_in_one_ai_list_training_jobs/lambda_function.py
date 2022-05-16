@@ -9,10 +9,10 @@ sagemaker_client = boto3.client('sagemaker')
 def lambda_handler(event, context):
     try:
         result = [];
-        paginator = sagemaker_client.get_paginator("list_endpoints")
+        paginator = sagemaker_client.get_paginator("list_training_jobs")
         pages = paginator.paginate()
         for page in pages:
-            result += page['Endpoints']
+            result += page['TrainingJobSummaries']
         
         return {
             'statusCode': 200,

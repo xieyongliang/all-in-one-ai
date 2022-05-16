@@ -25,9 +25,14 @@ def lambda_handler(event, context):
         pipeline_id = payload['pipeline_id']
         
         if(pipeline_type == '0' or pipeline_type == '2'):
+            print('----')
+            print(payload['component_version_arn'])
             component_version_arn = payload['component_version_arn']
+            print('+++++')
             deployment_id = payload['deployment_id']
+            print(deployment_id)
         
+        print('0')
         if(pipeline_type == '0' or pipeline_type == '1'):
             request = {
                 'model_name': payload['model_name']
@@ -75,6 +80,7 @@ def lambda_handler(event, context):
                     'statusCode': 400,
                     'body': response['FunctionError']
                 }
+        print('1')
         items = ddbhPipeline.scan(FilterExpression=Key('pipeline_id').eq(pipeline_id))
         pipeline_execution_arn = items[0]['pipeline_execution_arn']
         params = {}
@@ -88,6 +94,7 @@ def lambda_handler(event, context):
             params['component_version_arn'] = component_version_arn
             params['deployment_id'] = deployment_id
 
+        print('2')
         if(pipeline_type == '0' or pipeline_type == '1' or pipeline_type == '2'):
 
             key = {
@@ -95,6 +102,8 @@ def lambda_handler(event, context):
                 'industrial_model': industrial_model
             }
             ddbhPipeline.update_item(key, params)
+        print('3')
+        print(pipeline_execution_arn)
         return {
             'statusCode': 200,
             'body': pipeline_execution_arn

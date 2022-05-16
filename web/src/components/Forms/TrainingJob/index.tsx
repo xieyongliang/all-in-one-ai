@@ -138,24 +138,6 @@ const inputDataOptions = {
             key: 'test',
             value: ''
         }
-    ],
-    't5pegasus': [
-        {
-            key: 'train',
-            value: ''
-        },
-        {
-            key: 'val',
-            value: ''
-        },
-        {
-            key: 'test',
-            value: ''
-        },
-        {
-            key: 'chinese_t5_pegasus_base',
-            value: ''
-        }
     ]
 }
 
