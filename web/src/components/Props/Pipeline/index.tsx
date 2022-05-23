@@ -11,6 +11,7 @@ const PipelineProp: FunctionComponent = () => {
     const [ endpointName, setEndpointName ] = useState('')
     const [ ComponentVersionArn, setComponentVersionArn ] = useState('')
     const [ DeploymentId, setDeploymentId ] = useState('')
+    const [ scriptMode, setScriptMode ] = useState(false)
 
     const history = useHistory();
 
@@ -29,6 +30,8 @@ const PipelineProp: FunctionComponent = () => {
                 setEndpointName(response.data[0].endpoint_name)
                 setComponentVersionArn(response.data[0].component_version_arn)
                 setDeploymentId(response.data[0].deployment_id)
+                if('script_mode' in response.data[0])
+                    setScriptMode(response.data[0].script_mode)
             }
         }, (error) => {
             console.log(error);
@@ -93,13 +96,13 @@ const PipelineProp: FunctionComponent = () => {
                 <KeyValuePair label='Endpoint' value={getEndpointProps(endpointName)}></KeyValuePair>            
             </FormSection>
             {
-                ( pipelineType === '0' || pipelineType === '2') && 
+                ( pipelineType === '0' || pipelineType === '2') && !scriptMode &&
                 <FormSection header='Greengrass component version'>
                     <KeyValuePair label='Greengrass component version' value={getGreengrassComponentVersionProps(ComponentVersionArn)}></KeyValuePair>            
                 </FormSection>
             }
             {
-                ( pipelineType === '0' || pipelineType === '2') && 
+                ( pipelineType === '0' || pipelineType === '2') && !scriptMode &&
                 <FormSection header='Greengrass deployment'>
                     <KeyValuePair label='Greengrass deployment' value={getGreengrassDeploymentProps(DeploymentId)}></KeyValuePair>            
                 </FormSection>

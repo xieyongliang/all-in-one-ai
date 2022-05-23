@@ -1,46 +1,32 @@
-import { FunctionComponent, useState } from 'react';
-import ReactHlsPlayer from 'react-hls-player';
-import Grid from '@mui/material/Grid';
+import { FunctionComponent, useRef, useEffect } from 'react';
 
 const CameraForm: FunctionComponent = () => {
-    const [ hls ] = useState('')
+    const videoRef = useRef(null);
 
-    const renderCamera = () => {
-        return (
-            <div className='player-wrapper'>
-                <ReactHlsPlayer
-                    playerRef={undefined}
-                    src={hls}
-                    autoPlay={false}
-                    controls={true}
-                    width="auto"
-                    height="auto"        
-                />
-            </div>
-        )
-    }
+    useEffect(() => {
+      getVideo();
+    }, [videoRef]);
+  
+    const getVideo = () => {
+      navigator.mediaDevices
+        .getUserMedia({ video: { width: 300 } })
+        .then(stream => {
+          let video = videoRef.current;
+          video.srcObject = stream;
+          video.play();
+        })
+        .catch(err => {
+          console.error("error:", err);
+        });
+    };
 
     return (
-        <Grid container spacing={{ xs: 2, md: 2 }} columns={{ xs: 4, sm: 12, md: 12 }}>
-            <Grid item xs={2} sm={4} md={4}>
-                { renderCamera() }
-            </Grid>
-            <Grid item xs={2} sm={4} md={4}>
-                { renderCamera() }
-            </Grid>
-            <Grid item xs={2} sm={4} md={4}>
-                { renderCamera() }
-            </Grid>
-            <Grid item xs={2} sm={4} md={4}>
-                { renderCamera() }
-            </Grid>
-            <Grid item xs={2} sm={4} md={4}>
-                { renderCamera() }
-            </Grid>
-            <Grid item xs={2} sm={4} md={4}>
-                { renderCamera() }
-            </Grid>
-        </Grid>
+        <div>
+            <div>
+                <button>Take a photo</button>
+                <video ref={videoRef} />
+            </div>
+        </div>
     )
 }
 

@@ -1,6 +1,7 @@
 import os
 import sys
 from importlib_metadata import entry_points
+from sklearn import pipeline
 if not os.path.exists('/tmp/package'):
     os.mkdir('/tmp/package')
 os.system('pip3 install -U sagemaker -t /tmp/package')
@@ -13,6 +14,7 @@ def lambda_handler(event, context):
     print(event)
         
     try:
+        pipeline_id = event['body']['pipeline_id'] if('pipeline_id' in event['body']) else None
         endpoint_name = event['body']['endpoint_name'] if('endpoint_name' in event['body'] and event['body']['endpoint_name'] != '') else None
         industrial_model = event['body']['industrial_model']
         model_data = event['body']['model_data']
@@ -40,7 +42,7 @@ def lambda_handler(event, context):
             tensorflow_version = tensorflow_version,
 	        pytorch_version = pytorch_version,
 	        py_version = py_version,
-	        env=hub
+	        env = hub
         )
     
         predictor = model.deploy(
@@ -50,7 +52,7 @@ def lambda_handler(event, context):
             wait = False
         )
 
-        persist_meta(model.name, model.endpoint_name, industrial_model)
+        persist_meta(model.name, model.endpoint_name, industrial_model, pipeline_id)
         
         return {
             'statusCode': 200,

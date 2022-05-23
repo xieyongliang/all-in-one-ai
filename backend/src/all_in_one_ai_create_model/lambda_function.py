@@ -9,7 +9,7 @@ def lambda_handler(event, context):
         model_name = event['body']['model_name']
         role_arn = event['body']['role_arn']
         tags = event['body']['tags'] if('tags' in event['body']) else []
-        environment = event['body']['environment'] if('environment' in event['body']) else {}
+        model_environment = event['body']['model_environment']
         response = None
     
         if('model_package_arn' in event['body']):
@@ -20,13 +20,13 @@ def lambda_handler(event, context):
                 Containers = [
                     {
                         'ModelPackageName' : model_package_arn, 
-                        'Environment' : environment 
+                        'Environment' : model_environment 
                     }
                 ],
                 Tags = tags
             )
         else:
-            container_image = event['body']['container_image']
+            inference_image = event['body']['inference_image']
             model_data_url = None
             if('model_data_url' in event['body']):
                 model_data_url = event['body']['model_data_url']
@@ -37,10 +37,10 @@ def lambda_handler(event, context):
                     ModelName = model_name,
                     PrimaryContainer={
                         'ContainerHostname': 'Container1',
-                        'Image': container_image,
+                        'Image': inference_image,
                         'Mode': mode,
                         'ModelDataUrl': model_data_url,
-                        'Environment' : environment
+                        'Environment' : model_environment
                     },
                     ExecutionRoleArn = role_arn,
                     EnableNetworkIsolation = False,
@@ -51,13 +51,13 @@ def lambda_handler(event, context):
                     ModelName = model_name,
                     PrimaryContainer={
                         'ContainerHostname': 'Container1',
-                        'Image': container_image,
+                        'Image': inference_image,
                         'Mode': mode,
-                        'Environment' : environment
+                        'Environment' : model_environment
                     },
                     ExecutionRoleArn = role_arn,
                     EnableNetworkIsolation = False,
-                    Environment =  environment,
+                    Environment =  model_environment,
                     Tags = tags
                 )
                 

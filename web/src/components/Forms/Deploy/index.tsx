@@ -8,6 +8,7 @@ import { connect } from 'react-redux';
 import { IIndustrialModel } from '../../../store/industrialmodels/reducer';
 import { PathParams } from '../../Interfaces/PathParams';
 import Select, { SelectOption } from 'aws-northstar/components/Select';
+import { UpdateEndpointInitialInstanceCount, UpdateEndpointInstanceType, UpdateEndpointName, UpdateModelEnvironment, UpdateModelName } from '../../../store/pipelines/actionCreators';
 
 const instanceOptions : SelectOption[]= [
     {
@@ -94,16 +95,26 @@ const instanceOptions : SelectOption[]= [
 ];
 
 interface IProps {
+    updateModelNameAction: (modelName: string) => any;
+    updateModelEnvironmentAction: (modelEnvironment: any[]) => any;
+    updateEndpointNameAction: (endpointName: string) => any;
+    updateEndpointInstanceTypeAction: (instanceType: string) => any;
+    updateEndpointInstanceCountAction: (instanceCount: number) => any;
     industrialModels : IIndustrialModel[];
+    modelName: string;
+    modelEnvironment: any[];
+    endpointName: string;
+    endpointInstanceType: string;
+    endpointInstanceCount: number;
     wizard?: boolean;
 }
 
 const DeployForm: FunctionComponent<IProps> = (props) => {
-    const [ modelName, setModelName ] = useState('')
+    const [ modelName, setModelName ] = useState(props.wizard ? props.modelName : '')
     const [ modelData, setModelData ] = useState('')
-    const [ endpointName, setEndpointName ] = useState('')
-    const [ selectedInstanceType, setSelectedInstanceType ] = useState<SelectOption>({})
-    const [ instanceCount, setInstanceCount ] = useState(1)
+    const [ endpointName, setEndpointName ] = useState(props.wizard ? props.endpointName : '')
+    const [ selectedInstanceType, setSelectedInstanceType ] = useState<SelectOption>(props.wizard ? {label: props.endpointInstanceType, value: props.endpointInstanceType} : {})
+    const [ instanceCount, setInstanceCount ] = useState(props.wizard ? props.endpointInstanceCount : 1)
     const [ processing, setProcessing ] = useState(false)
     const [ environments, setEnvironments ] = useState([])
 
@@ -112,16 +123,28 @@ const DeployForm: FunctionComponent<IProps> = (props) => {
     var params : PathParams = useParams();
     
     const onChange = (id: string, event: any, option?: string) => {
-        if(id === 'formFieldIdModelName')
+        if(id === 'formFieldIdModelName') {
             setModelName(event);
+            if(props.wizard)
+                props.updateModelNameAction(event)
+        }
         else if(id === 'formFieldIdModelData')
             setModelData(event);
-        else if(id === 'formFieldIdEndpointName')
+        else if(id === 'formFieldIdEndpointName') {
             setEndpointName(event);
-        else if(id === 'formFieldIdInstanceType')
+            if(props.wizard)
+                props.updateEndpointNameAction(event)
+        }
+        else if(id === 'formFieldIdInstanceType') {
             setSelectedInstanceType({label: event.target.value, value: event.target.value})
-        else if(id === 'formFieldIdInstanceCount')
+            if(props.wizard)
+                props.updateEndpointInstanceTypeAction(event.target.value)
+        }
+        else if(id === 'formFieldIdInstanceCount') {
             setInstanceCount(event)
+            if(props.wizard)
+                props.updateEndpointInstanceCountAction(event)
+        }
     }
 
     const onSubmit = () => {
@@ -136,7 +159,7 @@ const DeployForm: FunctionComponent<IProps> = (props) => {
                 'model_algorithm': algorithm,
                 'endpoint_name': endpointName,
                 'instance_type': selectedInstanceType.value,
-                'instance_count': instanceCount
+                'initial_instance_count': instanceCount
             }
 
         if(environments.length > 0) {
@@ -148,7 +171,7 @@ const DeployForm: FunctionComponent<IProps> = (props) => {
                     }
                     environment[item['key']] = item['value'];
                 })
-                body['environment'] = JSON.stringify(environment)
+                body['model_environment'] = JSON.stringify(environment)
             }
                 
             setProcessing(true)
@@ -173,9 +196,12 @@ const DeployForm: FunctionComponent<IProps> = (props) => {
                 <FormField label='Model name' controlId='formFieldIdModelName'>
                     <Input type='text' required={true} value={modelName} onChange={(event)=>onChange('formFieldIdModelName', event)}/>
                 </FormField>
-                <FormField label='Model data' controlId='formFieldIdModelData'>
-                    <Input type='text' required={true} value={modelData} onChange={(event)=>onChange('formFieldIdModelData', event)}/>
-                </FormField>
+                {
+                    !props.wizard && 
+                    <FormField label='Model data' controlId='formFieldIdModelData'>
+                        <Input type='text' required={true} value={modelData} onChange={(event)=>onChange('formFieldIdModelData', event)}/>
+                    </FormField>
+                }
                 <FormField label='Endpoint name' controlId='formFieldIdEndpointName'>
                     <Input type='text' required={true} value={endpointName} onChange={(event)=>onChange('formFieldIdEndpointName', event)}/>
                 </FormField>
@@ -208,9 +234,11 @@ const DeployForm: FunctionComponent<IProps> = (props) => {
     }
 
     const onChangeEnvironment = (id: string, event: any, index : number) => {
-        var copyEnvironment = JSON.parse(JSON.stringify(environments));
-        copyEnvironment[index][id] = event
-        setEnvironments(copyEnvironment)
+        if(id === 'key')
+            environments[index].key = event
+        else
+            environments[index].value = event
+        props.updateModelEnvironmentAction(environments)
     }
 
     const renderEnvironment = () => {
@@ -248,26 +276,45 @@ const DeployForm: FunctionComponent<IProps> = (props) => {
         )
     }
 
-    return (
-        <Form
-            header='Create deploy'
-            description='To deploy a model to Amazon SageMaker, first create the model by providing the location of the model artifacts and inference code.'
-            actions={
-                <div>
-                    <Button variant='link' onClick={onCancel}>Cancel</Button>
-                    <Button variant='primary' onClick={onSubmit} loading={processing}>Submit</Button>
-                </div>
-            }>            
-            { renderDeploySetting() }
-        </Form>
-    )
+    if(props.wizard) {
+        return (
+            renderDeploySetting()
+        )
+    }
+    else
+        return (
+            <Form
+                header='Create deploy'
+                description='To deploy a model to Amazon SageMaker, first create the model by providing the location of the model artifacts and inference code.'
+                actions={
+                    <div>
+                        <Button variant='link' onClick={onCancel}>Cancel</Button>
+                        <Button variant='primary' onClick={onSubmit} loading={processing}>Submit</Button>
+                    </div>
+                }>            
+                { renderDeploySetting() }
+            </Form>
+        )
 }
 
+const mapDispatchToProps = {
+    updateModelNameAction: UpdateModelName,
+    updateModelEnvironmentAction: UpdateModelEnvironment,
+    updateEndpointNameAction: UpdateEndpointName,
+    updateEndpointInstanceTypeAction: UpdateEndpointInstanceType,
+    updateEndpointInstanceCountAction: UpdateEndpointInitialInstanceCount
+};
+
 const mapStateToProps = (state: AppState) => ({
-    pipelineType: state.pipeline.pipelineType,
+    modelName: state.pipeline.modelName,
+    modelEnvironment: state.pipeline.modelEnvironment,
+    endpointName: state.pipeline.endpointName,
+    endpointInstanceType: state.pipeline.endpointInstanceType,
+    endpointInstanceCount: state.pipeline.endpointInitialInstanceCount,
     industrialModels : state.industrialmodel.industrialModels
 });
 
 export default connect(
-    mapStateToProps
+    mapStateToProps,
+    mapDispatchToProps
 )(DeployForm);

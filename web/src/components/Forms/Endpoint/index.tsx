@@ -10,19 +10,6 @@ import { UpdateEndpointAcceleratorType, UpdateEndpointInitialInstanceCount, Upda
 import { IIndustrialModel } from '../../../store/industrialmodels/reducer';
 import { PathParams } from '../../Interfaces/PathParams';
 
-interface IProps {
-    updateEndpointInstanceTypeAction: (endpointInstanceType: string) => any;
-    updateEndpointAcceleratorTypeAction: (endpointAcceleratorType: string) => any;
-    updateEndpointInitialInstanceCountAction: (endpointInitialInstanceCount: number) => any,
-    updateEndpointInitialVariantWeightAction: (endpointInitialVariantWeight: number) => any
-    endpointInstanceType : string;
-    endpointAcceleratorType: string;
-    endpointInitialInstanceCount: number;
-    endpointInitialVariantWeight: number;
-    industrialModels : IIndustrialModel[];
-    wizard?: boolean;
-}
-
 const optionsInstance : SelectOption[]= [
     {
         label: 'Standard', 
@@ -115,6 +102,19 @@ const optionsAcceleratorType : SelectOption[] = [
     { label: 'ml.eia2.large', value: 'ml.eia2.large' },
     { label: 'ml.eia2.xlarge', value: 'ml.eia2.xlarge' },
 ]
+
+interface IProps {
+    updateEndpointInstanceTypeAction: (endpointInstanceType: string) => any;
+    updateEndpointAcceleratorTypeAction: (endpointAcceleratorType: string) => any;
+    updateEndpointInitialInstanceCountAction: (endpointInitialInstanceCount: number) => any,
+    updateEndpointInitialVariantWeightAction: (endpointInitialVariantWeight: number) => any
+    endpointInstanceType : string;
+    endpointAcceleratorType: string;
+    endpointInitialInstanceCount: number;
+    endpointInitialVariantWeight: number;
+    industrialModels : IIndustrialModel[];
+    wizard?: boolean;
+}
 
 const EndpointForm: FunctionComponent<IProps> = (props) => {
     const [ modelOptions, setModelOptions ] = useState([])

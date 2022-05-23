@@ -11,7 +11,6 @@ import traceback
 
 ssmh = helper.ssm_helper()
 pipeline_table = ssmh.get_parameter('/all_in_one_ai/config/meta/pipeline_table')
-training_job_table = ssmh.get_parameter('/all_in_one_ai/config/meta/training_job_table')
 role_arn = ssmh.get_parameter('/all_in_one_ai/config/meta/sagemaker_role_arn')
 lambda_arn = ssmh.get_parameter('/all_in_one_ai/config/meta/pipeline/create_pipeline_helper_lambda_arn')
 
@@ -28,28 +27,19 @@ def lambda_handler(event, context):
         model_algorithm = request['model_algorithm']
         pipeline_name = request['pipeline_name']
         pipeline_type = request['pipeline_type']
+        script_mode = request['script_mode']
         
-        if(pipeline_type == '0' or pipeline_type == '1' or pipeline_type == '2' or pipeline_type == '3'):
-            training_image = ssmh.get_parameter('/all_in_one_ai/config/meta/algorithms/{0}/sagemaker/image'.format(model_algorithm))
-            inference_image = ssmh.get_parameter('/all_in_one_ai/config/meta/algorithms/{0}/sagemaker/image'.format(model_algorithm))
-
-            weights_s3uri = '{0}{1}/data/weights'.format(ssmh.get_parameter('/all_in_one_ai/config/meta/algorithms/{0}/industrialmodels'.format(model_algorithm)), industrial_model)
-            cfg_s3uri = '{0}{1}/data/cfg'.format(ssmh.get_parameter('/all_in_one_ai/config/meta/algorithms/{0}/industrialmodels'.format(model_algorithm)), industrial_model)
-        
+        if(script_mode or pipeline_type == '0' or pipeline_type == '1' or pipeline_type == '2' or pipeline_type == '3'):
             request['role'] = role_arn
             request['lambda_arn'] = lambda_arn
-            request['training_image'] = training_image
-            request['inference_image'] = inference_image
             subfix = ''.join(random.sample(string.ascii_lowercase + string.digits, 6))
-            request['model_name'] = '{0}-{1}'.format(pipeline_name, subfix) 
-            request['endpoint_name'] = '{0}-{1}'.format(pipeline_name, subfix) 
-            request['endpoint_config_name'] = '{0}-{1}'.format(pipeline_name, subfix)
+            genearted_name = '{0}-{1}'.format(pipeline_name, subfix)
+            if('model_name' not in request or request['model_name'] == ''):
+                request['model_name'] = genearted_name
+            if('endpoint_name' not in request or request['endpoint_name'] == ''):
+                request['endpoint_name'] = genearted_name 
+            request['endpoint_config_name'] = request['endpoint_name']
             request['model_package_group_inference_instances'] = request['endpoint_instance_type']
-            if(pipeline_type == '0' or pipeline_type == '1'):
-                if(request['training_job_weights_s3uri'] == ''):
-                    request['training_job_weights_s3uri'] = weights_s3uri
-                if(request['training_job_cfg_s3uri'] == ''):
-                    request['training_job_cfg_s3uri'] = cfg_s3uri
 
             pipeline_id = uuid.uuid4().hex
             request['pipeline_id'] = pipeline_id
@@ -74,6 +64,7 @@ def lambda_handler(event, context):
                 params['model_name'] = request['model_name']
                 params['endpoint_config_name'] = request['endpoint_config_name']
                 params['endpoint_name'] = request['endpoint_name']
+                params['script_mode'] = script_mode
                 print(params)
                 
                 item = ddbh.put_item(params)

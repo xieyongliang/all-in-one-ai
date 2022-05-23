@@ -14,10 +14,12 @@ def lambda_handler(event, context):
     print(event)
     
     try:
+        pipeline_id = event['body']['pipeline_id'] if('pipeline_id' in event['body']) else None
         model_name = event['body']['model_name'] if('model_name' in event['body'] and event['body']['model_name'] != '') else None
         endpoint_name = event['body']['endpoint_name'] if('endpoint_name' in event['body'] and event['body']['endpoint_name'] != '') else None
         industrial_model = event['body']['industrial_model']
         model_data = event['body']['model_data']
+        model_environment = event['body']['model_environment']
         entry_point = event['body']['entry_point']
         source_dir = event['body']['source_dir']
         role = event['body']['role']
@@ -33,7 +35,8 @@ def lambda_handler(event, context):
             source_dir = source_dir,
             role = role,
             framework_version = framework_version, 
-            py_version = py_version
+            py_version = py_version,
+            env = model_environment
         )
     
         predictor = model.deploy(
@@ -45,7 +48,7 @@ def lambda_handler(event, context):
             wait = False
         )
 
-        persist_meta(model.name, model.endpoint_name, industrial_model)
+        persist_meta(model.name, model.endpoint_name, industrial_model, pipeline_id)
         
         return {
             'statusCode': 200,

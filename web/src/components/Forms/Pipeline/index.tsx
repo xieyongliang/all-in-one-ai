@@ -13,26 +13,30 @@ import RadioButton from 'aws-northstar/components/RadioButton';
 import RadioGroup from 'aws-northstar/components/RadioGroup';
 import { AppState } from '../../../store';
 import { PathParams } from '../../Interfaces/PathParams';
-import { UpdateModelAlgorithm, UpdatePipelineType } from '../../../store/pipelines/actionCreators';
+import { UpdateIndustrialModel, UpdateModelAlgorithm, UpdatePipelineType, UpdateScriptMode } from '../../../store/pipelines/actionCreators';
 import { IIndustrialModel } from '../../../store/industrialmodels/reducer';
 import { Box, Dialog } from '@material-ui/core';
+import { v4 as uuidv4 } from 'uuid';
+import DeployForm from '../Deploy';
 
 interface IProps {
     updatePipelineTypeAction: (pipelineType : string) => any;
+    updateInstrialModelAction: (industrialModel: string) => any;
+    updateScriptModeAction: (scriptMode: boolean) => any;
     updateModelAlgorithmAction: (modelAlgorithm: string) => any;
     pipelineType: string;
+    trainingjobHyperparameters: any[];
     trainingjobInstanceType : string;
     trainingjobInstanceCount : number;
     trainingjobVolumeSizeInGB : number;
-    trainingjobImagesS3Uri : string;
-    trainingjobLabelsS3Uri : string;
-    trainingjobWeightsS3Uri : string;
-    trainingjobCfgS3Uri : string;
+    trainingjobInputData : any[];
     trainingjobOutputS3Uri : string;
+    modelName: string;
     modelModelPackageGroupName: string;
     modelModelPackageArn: string;
     modelDataUrl: string;
-    modelEnvironment: Object;
+    modelEnvironment: any[];
+    endpointName: string;
     endpointInstanceType : string;
     endpointAcceleratorType: string;
     endpointInitialInstanceCount: number;
@@ -50,6 +54,7 @@ interface IProps {
 const PipelineForm: FunctionComponent<IProps> = (props) => {
     const [ pipelineType, setPipelineType ] = useState('0')
     const [ pipelineName, setPipelineName ] = useState('')
+    const [ scriptMode, setScriptMode ] = useState(true)
     const [ processing, setProcessing ] = useState(false)
 
     const history = useHistory();
@@ -60,60 +65,95 @@ const PipelineForm: FunctionComponent<IProps> = (props) => {
     var algorithm = props.industrialModels[index].algorithm
 
     props.updateModelAlgorithmAction(algorithm)
+    props.updateInstrialModelAction(params.id)
 
     const onChange = (id: string, event: any) => {
         if(id === 'formFieldIdPipelineName')
             setPipelineName(event)
     }
 
-    const onChangeOptions = (event, value) => {
+    const onChangePipelineOptions = (event, value) => {
         setPipelineType(value)
         props.updatePipelineTypeAction(value)
+    }
+
+    const onChangeContainerOptions = (event, value) => {
+        setScriptMode(value === 'BYOS')
+        props.updateScriptModeAction(value === 'BYOS')
     }
 
     const onSubmit = () => {
         var index = props.industrialModels.findIndex((item) => item.id === params.id)
         var algorithm = props.industrialModels[index].algorithm
-        var environment = props.modelEnvironment
+        var modelEnvironment = {}
+        props.modelEnvironment.forEach((environment) => {
+            var key = environment.key;
+            var value = environment.value;
+            modelEnvironment[key] = value;
+        });
         
         var body = {}
         body['pipeline_name'] = pipelineName
         body['pipeline_type'] = pipelineType
         body['industrial_model'] = params.id
         body['model_algorithm'] = algorithm
-        body['environment'] = environment
-        if(pipelineType === '0' || pipelineType === '1') {
+        body['model_environment'] = modelEnvironment
+
+        if(scriptMode) {
+            body['script_mode'] = true
+            var trainingjobHyperparameters = {}
+            props.trainingjobHyperparameters.forEach((hyperparameter) => {
+                var key = hyperparameter.key;
+                var value = hyperparameter.value;
+                trainingjobHyperparameters[key] = value;
+            });
+            body['training_job_hyperparameters'] = trainingjobHyperparameters
             body['training_job_instance_type'] = props.trainingjobInstanceType
             body['training_job_instance_count'] = props.trainingjobInstanceCount
-            body['training_job_volume_size_in_gb'] = props.trainingjobVolumeSizeInGB
-            body['training_job_images_s3uri'] = props.trainingjobImagesS3Uri
-            body['training_job_labels_s3uri'] = props.trainingjobLabelsS3Uri
-            body['training_job_weights_s3uri'] = props.trainingjobWeightsS3Uri
-            body['training_job_cfg_s3uri'] = props.trainingjobCfgS3Uri
-            body['training_job_output_s3uri'] = props.trainingjobOutputS3Uri
-            body['model_package_group_name'] = props.modelModelPackageGroupName
+            var trainingjobInputData = {}
+            props.trainingjobInputData.forEach((inputData) => {
+                var key = inputData.key;
+                var value = inputData.value;
+                trainingjobInputData[key] = value;
+            });
+            body['training_job_input_data'] = trainingjobInputData
+            body['model_name'] = props.modelName
+            body['endpoint_name'] = props.endpointName
+            body['endpoint_instance_type'] = props.endpointInstanceType
+            body['endpoint_initial_instance_count'] = props.endpointInitialInstanceCount
         }
-        else
-            body['model_package_arn'] = props.modelModelPackageArn
-        
-        body['endpoint_instance_type'] = props.endpointInstanceType
-        body['endpoint_accelerator_type'] = props.endpointAcceleratorType
-        body['endpoint_initial_instance_count'] = props.endpointInitialInstanceCount
-        body['endpoint_initial_variant_weight'] = props.endpointInitialVariantWeight
+        else {
+            body['script_mode'] = false
+            if(pipelineType === '0' || pipelineType === '1') {
+                body['training_job_instance_type'] = props.trainingjobInstanceType
+                body['training_job_instance_count'] = props.trainingjobInstanceCount
+                body['training_job_volume_size_in_gb'] = props.trainingjobVolumeSizeInGB
+                body['training_job_input_data'] = props.trainingjobInputData
+                body['training_job_output_s3uri'] = props.trainingjobOutputS3Uri
+                body['model_package_group_name'] = props.modelModelPackageGroupName
+            }
+            else
+                body['model_package_arn'] = props.modelModelPackageArn
+            
+            body['endpoint_instance_type'] = props.endpointInstanceType
+            body['endpoint_accelerator_type'] = props.endpointAcceleratorType
+            body['endpoint_initial_instance_count'] = props.endpointInitialInstanceCount
+            body['endpoint_initial_variant_weight'] = props.endpointInitialVariantWeight
 
-        if(pipelineType === '0' || pipelineType === '2') {
-            body['greengrass_component_name'] = props.greengrassComponentName
-            body['greengrass_component_version'] = props.greengrassComponentVersion
-            body['greengrass_deployment_name'] = props.greengrassDeploymentName
-            body['greengrass_deployment_target_type'] = props.greengrassDeploymentTargetType
-            body['greengrass_deployment_target_arn'] = props.greengrassDeploymentTargetArn
-            body['greengrass_deployment_components'] = props.greengrassDeploymentComponents
+            if(pipelineType === '0' || pipelineType === '2') {
+                body['greengrass_component_name'] = props.greengrassComponentName
+                body['greengrass_component_version'] = props.greengrassComponentVersion
+                body['greengrass_deployment_name'] = props.greengrassDeploymentName
+                body['greengrass_deployment_target_type'] = props.greengrassDeploymentTargetType
+                body['greengrass_deployment_target_arn'] = props.greengrassDeploymentTargetArn
+                body['greengrass_deployment_components'] = props.greengrassDeploymentComponents
+            }
+
+            if(pipelineType === '2')
+                body['model_data_url'] = props.modelDataUrl            
         }
-
-        if(pipelineType === '2')
-            body['model_data_url'] = props.modelDataUrl
-        
         setProcessing(true)
+        console.log(JSON.stringify(body))
         axios.post('/pipeline', body,  { headers: {'content-type': 'application/json' }}) 
         .then((response) => {
             history.goBack()
@@ -130,7 +170,7 @@ const PipelineForm: FunctionComponent<IProps> = (props) => {
 
     const renderPipelineOptions = () => {
         return (
-            <RadioGroup onChange={onChangeOptions}
+            <RadioGroup onChange={onChangePipelineOptions}
                 items={[
                     <RadioButton value='0' checked={pipelineType==='0'}>Both training and inference and deploy in both cloud and edge</RadioButton>, 
                     <RadioButton value='1' checked={pipelineType==='1'}>Both training and inference and deploy only in cloud</RadioButton>,
@@ -141,14 +181,32 @@ const PipelineForm: FunctionComponent<IProps> = (props) => {
         )
     }
 
+    const renderContainerOptions = () => {
+        return (
+            <RadioGroup onChange={onChangeContainerOptions}
+                items={[
+                    <RadioButton value='BYOS' checked={scriptMode}>Bring your own script.</RadioButton>, 
+                    <RadioButton value='BYOC' checked={!scriptMode}>Bring your own container.</RadioButton>,
+                ]}
+            />
+        )
+    }
+
+
     const renderPipeline = () => {
         return (
             <Stack>
-                <FormField label='Pipeline name' controlId='formFieldIdPipelineName'>
+                <FormField label='Pipeline name' controlId={uuidv4()}>
                     <Input type='text' value={pipelineName} onChange={(event) => onChange('formFieldIdPipelineName', event)}/>
                 </FormField>
-                <FormField label='Pipeline type' controlId='formFieldIdPipelineType'>
-                    {renderPipelineOptions()}
+                {
+                    !scriptMode && 
+                    <FormField label='Pipeline type' controlId={uuidv4()}>
+                        {renderPipelineOptions()}
+                    </FormField>
+                }
+                <FormField label='Pipeline option' controlId={uuidv4()}>
+                    {renderContainerOptions()}
                 </FormField>
             </Stack>
         )
@@ -160,7 +218,25 @@ const PipelineForm: FunctionComponent<IProps> = (props) => {
             content: 
                 renderPipeline()
         },
-        algorithm === 'yolov5' && {
+        {
+            title: 'Train',
+            content: 
+                <TrainingJobForm wizard={true}/>
+        },
+        {
+            title: 'Deploy',
+            content: 
+                <DeployForm wizard={true}/>
+        }
+    ]
+
+    const steps0 = [
+        {
+            title: 'Pipeline',
+            content: 
+                renderPipeline()
+        },
+        {
             title: 'Training job',
             content: 
                 <TrainingJobForm wizard={true}/>
@@ -256,7 +332,7 @@ const PipelineForm: FunctionComponent<IProps> = (props) => {
         } 
     ]
 
-    if(pipelineType === '0') {
+    if(scriptMode) {
         return (
             <BrowserRouter>
                 <Container>
@@ -268,6 +344,22 @@ const PipelineForm: FunctionComponent<IProps> = (props) => {
                         </Dialog>
                     }
                     <Wizard steps={steps} onSubmitButtonClick={onSubmit} onCancelButtonClick={onCancel}/>
+                </Container>
+            </BrowserRouter>
+        )
+    }
+    else if(pipelineType === '0') {
+        return (
+            <BrowserRouter>
+                <Container>
+                    {
+                        processing && <Dialog open={true}>
+                            <Box p={3}>
+                                <LoadingIndicator label='Processing...'/>
+                            </Box>
+                        </Dialog>
+                    }
+                    <Wizard steps={steps0} onSubmitButtonClick={onSubmit} onCancelButtonClick={onCancel}/>
                 </Container>
             </BrowserRouter>
         )
@@ -324,23 +416,25 @@ const PipelineForm: FunctionComponent<IProps> = (props) => {
 
 const mapDispatchToProps = {
     updatePipelineTypeAction: UpdatePipelineType,
+    updateInstrialModelAction: UpdateIndustrialModel,
+    updateScriptModeAction: UpdateScriptMode,
     updateModelAlgorithmAction: UpdateModelAlgorithm
 };
 
 const mapStateToProps = (state: AppState) => ({
     pipelineType: state.pipeline.pipelineType,
+    trainingjobHyperparameters: state.pipeline.trainingjobHyperparameters,
     trainingjobInstanceType : state.pipeline.trainingjobInstanceType,
     trainingjobInstanceCount : state.pipeline.trainingjobInstanceCount,
     trainingjobVolumeSizeInGB : state.pipeline.trainingjobVolumeSizeInGB,
-    trainingjobImagesS3Uri : state.pipeline.trainingjobImagesS3Uri,
-    trainingjobLabelsS3Uri : state.pipeline.trainingjobLabelsS3Uri,
-    trainingjobWeightsS3Uri : state.pipeline.trainingjobWeightsS3Uri,
-    trainingjobCfgS3Uri : state.pipeline.trainingjobCfgS3Uri,
+    trainingjobInputData : state.pipeline.trainingjobInputData,
     trainingjobOutputS3Uri : state.pipeline.trainingjobOutputS3Uri,
+    modelName: state.pipeline.modelName,
     modelModelPackageGroupName : state.pipeline.modelModelPackageGroupName,
     modelModelPackageArn: state.pipeline.modelModelPackageArn,
     modelDataUrl: state.pipeline.modelDataUrl,
     modelEnvironment: state.pipeline.modelEnvironment,
+    endpointName: state.pipeline.endpointName,
     endpointInstanceType : state.pipeline.endpointInstanceType,
     endpointAcceleratorType: state.pipeline.endpointAcceleratorType,
     endpointInitialInstanceCount: state.pipeline.endpointInitialInstanceCount,

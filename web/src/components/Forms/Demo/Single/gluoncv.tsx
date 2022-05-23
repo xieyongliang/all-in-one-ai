@@ -1,4 +1,4 @@
-import { FunctionComponent, useEffect, useState, ComponentType } from 'react';
+import { FunctionComponent, useEffect, useState } from 'react';
 import { useHistory, useParams } from 'react-router-dom';
 import { Container, Link, Toggle, Select, Stack, FormField, Button, Grid, ProgressBar, LoadingIndicator, Text, Inline } from 'aws-northstar';
 import ImageList from '@mui/material/ImageList';

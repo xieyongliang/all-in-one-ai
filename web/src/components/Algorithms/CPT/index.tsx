@@ -18,7 +18,7 @@ const CPT: FunctionComponent = () => {
                     <li>CPT-base: 10 layers S-Enc, 2 layers U-Dec/G-Dec, 12 Heads and 768 Model dim.</li>
                     <li>CPT-large: 20 layers S-Enc, 4 layers U-Dec/G-Dec, 16 Heads and 1024 Model dim.</li>
                 </ol>                
-                <img src='/cpt.png' alt=''></img>
+                <img src='/cpt.png' width='50%' alt=''></img>
                 </Stack>
             </Container>
             <Container title = 'CPT project'>

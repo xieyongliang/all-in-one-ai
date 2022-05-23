@@ -6,31 +6,10 @@ import Grid from '@mui/material/Grid';
 import axios from 'axios';
 import {connect} from 'react-redux';
 import { AppState } from '../../../store';
-import { UpdateTrainingjobImageS3Uri, UpdateTrainingjobInstanceCount, UpdateTrainingjobInstanceType, UpdateTrainingjobLabelsS3Uri, UpdateTrainingjobVolumeSizeInGB, UpdateTrainingjobWeightsS3Uri, UpdateTrainingjobCfgS3Uri, UpdateTrainingjobOutputS3Uri } from '../../../store/pipelines/actionCreators';
+import { UpdateTrainingjobInputData, UpdateTrainingjobInstanceCount, UpdateTrainingjobInstanceType, UpdateTrainingjobVolumeSizeInGB, UpdateTrainingjobOutputS3Uri, UpdateTrainingjobHyperparameters } from '../../../store/pipelines/actionCreators';
 import { IIndustrialModel } from '../../../store/industrialmodels/reducer';
 import { PathParams } from '../../Interfaces/PathParams';
 import './index.scss';
-
-interface IProps {
-    updateTrainingjobInstanceTypeAction: (trainingjobInstanceType: string) => any;
-    updateTrainingjobInstanceCountAction: (trainingjobInstanceCount: number) => any;
-    updateTrainingjobVolumeSizeInGBAction: (trainingjobVolumeSizeInGB: number) => any;
-    updateTrainingjobImageS3UriAction: (trainingjobImagesS3Uri: string) => any;
-    updateTrainingjobLabelsS3UriAction: (trainingjobLabelsS3Uri: string) => any;
-    updateTrainingjobWeightsS3UriAction: (trainingjobWeightsS3Uri: string) => any;
-    updateTrainingjobCfgS3UriAction: (trainingjobCfgS3Uri: string) => any;
-    updateTrainingjobOutputS3UriAction: (trainingjobOutputS3Uri: string) => any;
-    trainingjobInstanceType : string;
-    trainingjobInstanceCount : number;
-    trainingjobVolumeSizeInGB : number;
-    trainingjobImagesS3Uri : string;
-    trainingjobLabelsS3Uri : string;
-    trainingjobWeightsS3Uri : string;
-    trainingjobCfgS3Uri : string;
-    trainingjobOutputS3Uri : string;
-    wizard?: boolean;
-    industrialModels: IIndustrialModel[];
-}
 
 const instanceOptions : SelectOption[]= [
     {
@@ -141,6 +120,25 @@ const inputDataOptions = {
     ]
 }
 
+interface IProps {
+    updateTrainingjobInstanceTypeAction: (trainingjobInstanceType: string) => any;
+    updateTrainingjobInstanceCountAction: (trainingjobInstanceCount: number) => any;
+    updateTrainingjobVolumeSizeInGBAction: (trainingjobVolumeSizeInGB: number) => any;
+    updateTrainingjobHyperparametersAction: (hyperparameters: any[]) => any;
+    updateTrainingjobInputDataAction: (trainingjobInputData: any[]) => any;
+    updateTrainingjobOutputS3UriAction: (trainingjobOutputS3Uri: string) => any;
+    trainingjobInstanceType : string;
+    trainingjobInstanceCount : number;
+    trainingjobVolumeSizeInGB : number;
+    trainingjobHyperparameters: any[];
+    trainingjobInputData : any[];
+    trainingjobOutputS3Uri : string;
+    scriptMode: boolean;
+    industrialModels: IIndustrialModel[];
+    industrialModel: string;
+    wizard?: boolean;
+}
+
 const TrainingJobForm: FunctionComponent<IProps> = (props) => {
     const [ trainingJobName, setTrainingJobName ] = useState('')
     const [ trainingImage, setTrainingImage ] = useState('')
@@ -150,8 +148,8 @@ const TrainingJobForm: FunctionComponent<IProps> = (props) => {
     const [ outputS3Uri, setOutputS3Uri ] = useState(props.wizard ? props.trainingjobOutputS3Uri : '')
     const [ tags, setTags ] = useState([{key:'', value:''}])
     const [ processing, setProcessing ] = useState(false)
-    const [ scriptMode, setScriptMode ]  = useState(!props.wizard)
-    const [ hyperparameters, setHyperParameters ] = useState([])
+    const [ scriptMode, setScriptMode ]  = useState(props.wizard ? props.scriptMode : true)
+    const [ hyperparameters, setHyperParameters ] = useState(props.wizard? props.trainingjobHyperparameters : [])
     const [ checkpointS3Uri, setCheckpointS3Uri ] = useState('')
     const [ checkpointLocalPath, setCheckpointLocalPath ] = useState('')
     const [ enableManagedSpotTraining, setEnableManagedSpotTraining ] = useState(false)
@@ -163,13 +161,14 @@ const TrainingJobForm: FunctionComponent<IProps> = (props) => {
     const history = useHistory();
 
     var params : PathParams = useParams();
-    var algorithm = props.industrialModels.find((item) => item.id === params.id).algorithm
-
-    const [ inputData ] = useState(inputDataOptions[algorithm])
+    var industrialModel = props.wizard ? props.industrialModels.find((item) => item.id === props.industrialModel) : props.industrialModels.find((item) => item.id === params.id);
+    var algorithm = industrialModel.algorithm;
+    const [ inputData ] = useState(inputDataOptions[algorithm]);
 
     const onChange = (id: string, event: any) => {
-        if(id === 'formFieldIdTrainingJobName')
+        if(id === 'formFieldIdTrainingJobName') {
             setTrainingJobName(event);
+        }
         if(id === 'formFieldIdInstanceType') {
             setSelectedInstanceType({ label: event.target.value, value: event.target.value });
             if(props.wizard)
@@ -220,11 +219,13 @@ const TrainingJobForm: FunctionComponent<IProps> = (props) => {
             hyperparameters[index].key = event
         else
             hyperparameters[index].value = event
+        props.updateTrainingjobHyperparametersAction(hyperparameters)   
     }
 
     const onChangeInputData = (id, event) => {
         var channel = inputData.find((channel) => channel.key === id)
         channel.value = event
+        props.updateTrainingjobInputDataAction(inputData)
     }
 
     const onSubmit = () => {            
@@ -285,7 +286,7 @@ const TrainingJobForm: FunctionComponent<IProps> = (props) => {
                 'instance_type': selectedInstanceType.value,
                 'instance_count': instanceCount,
                 'inputs': {},
-                'hyperparameters' : {}
+                'model_hyperparameters' : {}
             }
             inputData.forEach((channel) => {
                 var key = channel.key;
@@ -295,7 +296,7 @@ const TrainingJobForm: FunctionComponent<IProps> = (props) => {
             if(tags.length > 1 || (tags.length === 1 && tags[0].key !== '' && tags[0].value !== ''))
                 body2['tags'] = tags
             hyperparameters.forEach((hyperparameter) => {
-                body2['hyperparameters'][hyperparameter.key] = hyperparameter.value
+                body2['model_hyperparameters'][hyperparameter.key] = hyperparameter.value
             })
             setProcessing(true)
             console.log(body2)
@@ -353,30 +354,33 @@ const TrainingJobForm: FunctionComponent<IProps> = (props) => {
         return (
             <FormSection header='Job settings'>
                 {
-                    !wizard && 
+                    (!wizard) && 
                     <Grid container spacing={{ xs: 2, md: 2 }} columns={{ xs: 4, sm: 8, md: 8 }}>
                         <Grid item xs={2} sm={4} md={4}>
                             <Text variant='p'>Job name</Text>
                             <Text variant='small'>Maximum of 63 alphanumeric characters. Can include hyphens (-), but not spaces. Must be unique within your account in an AWS Region.</Text>
                             <div style={{marginTop: '5px', marginBottom: '5px'}}>
-                                <Input type='text' required={true} onChange={(event) => onChange('formFieldIdTrainingJobName', event)}/>
+                                <Input type='text' value={trainingJobName} required={true} onChange={(event) => onChange('formFieldIdTrainingJobName', event)}/>
                             </div>
                         </Grid>
                     </Grid>
                 }
-                <div className='subheader'>
-                    <div className='title'>
-                        Algorithm specification
+                {
+                    !wizard && 
+                    <div className='subheader'>
+                        <div className='title'>
+                            Algorithm specification
+                        </div>
                     </div>
-                </div>
+                }
                 {
                     !wizard && 
                     <div style={{marginBottom: '5px'}}>
                         <FormField controlId='formFieldIdTrainingMode' description='Use SageMaker built-in container image or your own container image.'>
                             <RadioGroup onChange={onChangeOptions}
                                 items={[
-                                    <RadioButton value='BYOS' checked={scriptMode}>Script mode.</RadioButton>, 
-                                    <RadioButton value='BYOC' checked={!scriptMode}>Container mode.</RadioButton>,
+                                    <RadioButton value='BYOS' checked={scriptMode}>Bring your own script.</RadioButton>, 
+                                    <RadioButton value='BYOC' checked={!scriptMode}>Bring your own container.</RadioButton>,
                                 ]}
                             /> 
                         </FormField>
@@ -435,31 +439,37 @@ const TrainingJobForm: FunctionComponent<IProps> = (props) => {
                 {
                     scriptMode && <div style={{margin: '15px'}}/>
                 }
-                <div className='subheader'>
-                    <div className='title'>
-                        Stop condiction
+                {
+                    !scriptMode && 
+                    <div className='subheader'>
+                        <div className='title'>
+                            Stop condiction
+                        </div>
                     </div>
-                </div>
-                <Grid container spacing={{ xs: 2, md: 2 }} columns={{ xs: 4, sm: 8, md: 8 }}>
-                    <Grid item xs={2} sm={8} md={8}>
-                        <Text>Maximum runtime</Text>
+                }
+                {
+                    !scriptMode && 
+                    <Grid container spacing={{ xs: 2, md: 2 }} columns={{ xs: 4, sm: 8, md: 8 }}>
+                        <Grid item xs={2} sm={8} md={8}>
+                            <Text>Maximum runtime</Text>
+                        </Grid>
+                        <Grid item xs={2} sm={3} md={3}>
+                            <div style={{marginTop: '-20px', marginBottom: '-5px'}}>
+                                <Input type='number' value={maxRuntime} required={true} onChange={(event) => onChange('formFieldIdStopMaxRuntimeTime', event)}/>
+                            </div>
+                        </Grid>
+                        <Grid item xs={2} sm={1} md={1}>
+                            <div style={{marginTop: '-20px', marginBottom: '-5px'}}>
+                                <Select
+                                    placeholder='Choose an option'
+                                    options={timeUnitOptions}
+                                    selectedOption={selectedRuntimeUnit}
+                                    onChange={(event) => onChange('formFieldIdStopRuntimeUnit', event)}
+                                />
+                            </div>
+                        </Grid>
                     </Grid>
-                    <Grid item xs={2} sm={3} md={3}>
-                        <div style={{marginTop: '-20px', marginBottom: '-5px'}}>
-                            <Input type='number' value={maxRuntime} required={true} onChange={(event) => onChange('formFieldIdStopMaxRuntimeTime', event)}/>
-                        </div>
-                    </Grid>
-                    <Grid item xs={2} sm={1} md={1}>
-                        <div style={{marginTop: '-20px', marginBottom: '-5px'}}>
-                            <Select
-                                placeholder='Choose an option'
-                                options={timeUnitOptions}
-                                selectedOption={selectedRuntimeUnit}
-                                onChange={(event) => onChange('formFieldIdStopRuntimeUnit', event)}
-                            />
-                        </div>
-                    </Grid>
-                </Grid>
+                }
             </FormSection>
         )
     }
@@ -630,11 +640,12 @@ const TrainingJobForm: FunctionComponent<IProps> = (props) => {
         return (
             <Stack>
                 { renderTrainingJobSetting() }
+                { scriptMode && renderHyperparameters() }
                 { renderInputDataConfiguration() }
-                { renderCheckpointConfiguration() }
-                { renderOutputDataConfiguration()}
-                { renderManagedSpotTraining() }
-                { renderTrainingJobTag() }
+                { !scriptMode && renderCheckpointConfiguration() }
+                { !scriptMode && renderOutputDataConfiguration()}
+                { !scriptMode && renderManagedSpotTraining() }
+                { !scriptMode && renderTrainingJobTag() }
             </Stack>
         )
     }
@@ -652,10 +663,10 @@ const TrainingJobForm: FunctionComponent<IProps> = (props) => {
                 { renderTrainingJobSetting() }
                 { scriptMode && renderHyperparameters() }
                 { renderInputDataConfiguration() }
-                { renderCheckpointConfiguration() }
-                { renderOutputDataConfiguration()}
-                { renderManagedSpotTraining() }
-                { renderTrainingJobTag() }
+                { !scriptMode && renderCheckpointConfiguration() }
+                { !scriptMode && renderOutputDataConfiguration()}
+                { !scriptMode && renderManagedSpotTraining() }
+                { !scriptMode && renderTrainingJobTag() }
             </Form>
         )
     }
@@ -665,23 +676,21 @@ const mapDispatchToProps = {
     updateTrainingjobInstanceTypeAction: UpdateTrainingjobInstanceType,
     updateTrainingjobInstanceCountAction: UpdateTrainingjobInstanceCount,
     updateTrainingjobVolumeSizeInGBAction: UpdateTrainingjobVolumeSizeInGB,
-    updateTrainingjobImageS3UriAction: UpdateTrainingjobImageS3Uri,
-    updateTrainingjobLabelsS3UriAction: UpdateTrainingjobLabelsS3Uri,
-    updateTrainingjobWeightsS3UriAction: UpdateTrainingjobWeightsS3Uri,
-    updateTrainingjobCfgS3UriAction: UpdateTrainingjobCfgS3Uri,
+    updateTrainingjobHyperparametersAction: UpdateTrainingjobHyperparameters,
+    updateTrainingjobInputDataAction: UpdateTrainingjobInputData,
     updateTrainingjobOutputS3UriAction: UpdateTrainingjobOutputS3Uri
 };
 
 const mapStateToProps = (state: AppState) => ({
+    scriptMode: state.pipeline.scritpMode,
     trainingjobInstanceType : state.pipeline.trainingjobInstanceType,
     trainingjobInstanceCount : state.pipeline.trainingjobInstanceCount,
     trainingjobVolumeSizeInGB : state.pipeline.trainingjobVolumeSizeInGB,
-    trainingjobImagesS3Uri : state.pipeline.trainingjobImagesS3Uri,
-    trainingjobLabelsS3Uri : state.pipeline.trainingjobLabelsS3Uri,
-    trainingjobWeightsS3Uri : state.pipeline.trainingjobWeightsS3Uri,
-    trainingjobCfgS3Uri : state.pipeline.trainingjobCfgS3Uri,
+    trainingjobHyperparameters: state.pipeline.trainingjobHyperparameters,
+    trainingjobInputData : state.pipeline.trainingjobInputData,
     trainingjobOutputS3Uri : state.pipeline.trainingjobOutputS3Uri,
-    industrialModels : state.industrialmodel.industrialModels
+    industrialModels : state.industrialmodel.industrialModels,
+    industrialModel: state.pipeline.industrialModel
 });
 
 export default connect(

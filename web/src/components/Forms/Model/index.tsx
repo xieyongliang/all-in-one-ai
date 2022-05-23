@@ -21,12 +21,13 @@ interface IProps {
     updateModelModelPackageGroupNameAction : (modelModelPackageGroupName: string) => any;
     updateModelModelPackageArnAction : (modelModelPackageArn: string) => any;
     updateModelDataUrlAction: (modelDataUrl: string) => any;
-    updateModelEnvironmentAction: (modelEnvironment: Object) => any;
+    updateModelEnvironmentAction: (modelEnvironment: any[]) => any;
     pipelineType: string;
     modelModelPackageGroupName: string;
     modelModelPackageArn: string;
     modelDataUrl: string;
     modelAlgorithm: string;
+    modelEnvironment: any[];
     industrialModels : IIndustrialModel[];
     wizard?: boolean;
 }
@@ -133,9 +134,11 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
     }
 
     const onChangeEnvironment = (id: string, event: any, index : number) => {
-        var copyEnvironment = JSON.parse(JSON.stringify(environments));
-        copyEnvironment[index][id] = event
-        setEnvironments(copyEnvironment)
+        if(id === 'key')
+            environments[index].key = event
+        else
+            environments[index].value = event
+        props.updateModelEnvironmentAction(environments)  
     }
 
     const onChangeOptions = (event, value) => {
@@ -181,21 +184,15 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
                     'model_algorithm': algorithm,
                     'container_image': containerIamge,
                     'model_data_url': modelDataUrl,
+                    'model_environment': {},
                     'mode': containerModelType
                 }
                 if(tags.length > 1 || (tags.length === 1 && tags[0].key !== '' && tags[0].value !== ''))
                     body['tags'] = tags;
-                if(environments.length > 0) {
-                    var environment = {}
-                    environments.forEach((item) => {
-                        if(item['key'] === '') {
-                            alert('key in environment variables cannot be empty');
-                            return;
-                        }
-                        environment[item['key']] = item['value'];
-                    })
-                    body['environment'] = JSON.stringify(environment)
-                }
+                environments.forEach((environment) => {
+                    body['model_environment'][environment.key] = environment.value
+                })
+                body['model_environment'] = JSON.stringify(body['model_environment'])
                 setProcessing(true)
                 axios.post('/model', body,  { headers: {'content-type': 'application/json' }}) 
                     .then((response) => {
@@ -505,7 +502,7 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
         return (
             <Stack>
                 <FormField label='Location of inference code image' description='Type the registry path where the inference code image is stored in Amazon ECR.' controlId='formFieldIdContainerImage'>
-                    <Input type='text' required={true} value={containerIamge} placeholder={'default'} onChange={(event)=>{onChange('formFieldIdContainerImage', event)}} />
+                    <Input type='text' required={true} value={containerIamge} onChange={(event)=>{onChange('formFieldIdContainerImage', event)}} />
                 </FormField>
                 <FormField label='Location of model artifacts' description='Type the URL where model artifacts are stored in S3.' controlId='formFieldIdModelDataUrl'>
                     <Input type='text' required={true} value={modelDataUrl} invalid={invalidModelDataUrl} onChange={(event)=>{onChange('formFieldIdModelDataUrl', event)}} />
@@ -518,20 +515,9 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
     }
 
     const onAddEnvironmentVairable = () => {
-        var copyEnvironmentVaraibles = JSON.parse(JSON.stringify(environments));
-        copyEnvironmentVaraibles.push({key:'', value:''});
-        setEnvironments(copyEnvironmentVaraibles);
-        var environment = {}
-        if(copyEnvironmentVaraibles.length > 0) {
-            copyEnvironmentVaraibles.forEach((item) => {
-                if(item['key'] === '') {
-                    alert('key in environment variables cannot be empty');
-                    return;
-                }
-                environment[item['key']] = item['value'];
-            })
-        }
-        props.updateModelEnvironmentAction(environment)
+        var copyEnvironment = JSON.parse(JSON.stringify(environments))
+        copyEnvironment.push({key:'', value:''});
+        setEnvironments(copyEnvironment)
     }
 
     const onRemoveEnvironmentVariable = (index) => {
@@ -660,6 +646,7 @@ const mapStateToProps = (state: AppState) => ({
     modelModelPackageArn: state.pipeline.modelModelPackageArn,
     modelDataUrl: state.pipeline.modelDataUrl,
     modelAlgorithm: state.pipeline.modelAlgorithm,
+    modelEnvironment: state.pipeline.modelEnvironment,
     industrialModels : state.industrialmodel.industrialModels
 });
 

@@ -12,11 +12,6 @@ def model_fn(model_dir):
     Load the model for inference
     """
     model_name = os.environ['model_name'] if('model_name' in os.environ) else 'custom'
-    print('++++++++')
-    print(model_dir)
-    print(os.listdir(model_dir))
-    print(model_name)
-    print(os.path.exists(os.path.join(model_dir, 'tutorial', 'weights', 'best.pt')))
     if(model_name == 'custom'):
         model = torch.hub.load('ultralytics/yolov5', 'custom', os.path.join(model_dir, 'tutorial', 'weights', 'best.pt'), force_reload=True)
     else:

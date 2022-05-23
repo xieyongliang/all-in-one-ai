@@ -3,23 +3,22 @@ import { Action } from '../Actions';
 
 const initialState: PipelineState = {
     pipelineType: '0',
+    industrialModel: '',
+    scritpMode: true,
+    trainingjobName: '',
     trainingjobInstanceType: '',
     trainingjobInstanceCount: 1,
     trainingjobVolumeSizeInGB: 30,
-    trainingjobImagesS3Uri: '',
-    trainingjobLabelsS3Uri: '',
-    trainingjobWeightsS3Uri: '',
-    trainingjobCfgS3Uri: '',
-    trainingjobTrainingS3Uri: '',
-    trainingjobValidationS3Uri: '',
-    trainingjobTestS3Uri: '',
-    trainingjobHyperparameters: '{}',
+    trainingjobInputData: [],
+    trainingjobHyperparameters: [],
     trainingjobOutputS3Uri: '',
+    modelName: '',
     modelAlgorithm: '',
     modelModelPackageGroupName: '',
     modelModelPackageArn: '',
     modelDataUrl: '',
-    modelEnvironment: {},
+    modelEnvironment: [],
+    endpointName: '',
     endpointInstanceType: '',
     endpointAcceleratorType: '',
     endpointInitialInstanceCount: 1,
@@ -43,6 +42,24 @@ export function pipelineReducer(
                 pipelineType: action.payload.pipelineType
             }
         }
+        case Action.UPDATE_PIPELINE_INDUSTRIAL_MODEL: {
+            return {
+                ...state,
+                industrialModel: action.payload.industrialModel
+            }
+        }   
+        case Action.UPDATE_PIPELINE_SCRIPT_MODE: {
+            return {
+                ...state,
+                scritpMode: action.payload.scriptMode
+            }
+        }
+        case Action.UPDATE_PIPELINE_TRAINING_JOB_NAME: {
+            return {
+                ...state,
+                trainingjobName: action.payload.trainingjobName
+            }
+        }        
         case Action.UPDATE_PIPELINE_TRAINING_JOB_INSTANCE_TYPE: {
             return {
                 ...state,
@@ -61,46 +78,10 @@ export function pipelineReducer(
                 trainingjobVolumeSizeInGB: action.payload.trainingjobVolumeSizeInGB
             }
         }
-        case Action.UPDATE_PIPELINE_TRAINING_JOB_IMAGES_S3URI: {
+        case Action.UPDATE_PIPELINE_TRAINING_JOB_INPUT_DATA: {
             return {
                 ...state,
-                trainingjobImagesS3Uri: action.payload.trainingjobImagesS3Uri
-            }
-        }
-        case Action.UPDATE_PIPELINE_TRAINING_JOB_LABELS_S3URI: {
-            return {
-                ...state,
-                trainingjobLabelsS3Uri: action.payload.trainingjobLabelsS3Uri
-            }
-        }
-        case Action.UPDATE_PIPELINE_TRAINING_JOB_WEIGHTS_S3URI: {
-            return {
-                ...state,
-                trainingjobWeightsS3Uri: action.payload.trainingjobWeightsS3Uri
-            }
-        }
-        case Action.UPDATE_PIPELINE_TRAINING_JOB_CFG_S3URI: {
-            return {
-                ...state,
-                trainingjobCfgS3Uri: action.payload.trainingjobCfgS3Uri
-            }
-        }
-        case Action.UPDATE_PIPELINE_TRAINING_JOB_TRAINING_S3URI: {
-            return {
-                ...state,
-                trainingjobTrainingS3Uri: action.payload.trainingjobTrainingS3Uri
-            }
-        }
-        case Action.UPDATE_PIPELINE_TRAINING_JOB_VALIDATION_S3URI: {
-            return {
-                ...state,
-                trainingjobValidationS3Uri: action.payload.trainingjobValidationS3Uri
-            }
-        }
-        case Action.UPDATE_PIPELINE_TRAINING_JOB_TEST_S3URI: {
-            return {
-                ...state,
-                trainingjobTestS3Uri: action.payload.trainingjobTestS3Uri
+                trainingjobInputData: action.payload.trainingjobInputData
             }
         }
         case Action.UPDATE_PIPELINE_TRAINING_JOB_HYPERPARAMETERS: {
@@ -115,13 +96,18 @@ export function pipelineReducer(
                 trainingjobOutputS3Uri: action.payload.trainingjobOutputS3Uri
             }
         }
+        case Action.UPDATE_PIPELINE_MODEL_NAME: {
+            return {
+                ...state,
+                modelName: action.payload.modelName
+            }
+        }
         case Action.UPDATE_PIPELINE_MODEL_ALGORITHM: {
             return {
                 ...state,
                 modelAlgorithm: action.payload.modelAlgorithm
             }
-        }
-        case Action.UPDATE_PIPELINE_MODEL_MODELPACKAGE_GROUP_NAME: {
+        }        case Action.UPDATE_PIPELINE_MODEL_MODELPACKAGE_GROUP_NAME: {
             return {
                 ...state,
                 modelModelPackageGroupName: action.payload.modelModelPackageGroupName
@@ -133,6 +119,18 @@ export function pipelineReducer(
                 modelModelPackageArn: action.payload.modelModelPackageArn
             }
         }
+        case Action.UPDATE_PIPELINE_MODEL_ENVIRONMENT: {
+            return {
+                ...state,
+                modelEnvironment: action.payload.modelEnvironment
+            }
+        }
+        case Action.UPDATE_PIPELINE_ENDPOINT_NAME: {
+            return {
+                ...state,
+                endpointName: action.payload.endpointName
+            }
+        }        
         case Action.UPDATE_PIPELINE_ENDPOINT_INSTANCE_TYPE: {
             return {
                 ...state,

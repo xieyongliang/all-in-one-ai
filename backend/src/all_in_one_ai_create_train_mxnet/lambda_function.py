@@ -45,6 +45,7 @@ def lambda_handler(event, context):
             
     except Exception as e:
         traceback.print_exc()
+
         return {
             'statusCode': 400,
             'body': str(e)

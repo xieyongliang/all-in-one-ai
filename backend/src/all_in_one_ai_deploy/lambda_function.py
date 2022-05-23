@@ -5,35 +5,40 @@ from datetime import date, datetime
 import traceback
 import helper
 
-
 ssmh = helper.ssm_helper()
 role_arn = ssmh.get_parameter('/all_in_one_ai/config/meta/sagemaker_role_arn')
 
 lambda_client = boto3.client('lambda')
 
 def lambda_handler(event, context):
+    print(event)
+
     request = json.loads(event['body'])
     
     try:
         algorithm = request['model_algorithm']
+        industrial_model = request['industrial_model']
         model_name = request['model_name']
-        model_data = request['model_data']
+        model_environment = json.loads(request['model_environment']) if(request['model_environment'] != '{}') else None
+        model_data_url = request['model_data_url']
         endpoint_name = request['endpoint_name']
         instance_type = request['instance_type']
-        instance_count = request['instance_count']
+        instance_count = request['initial_instance_count']
                 
         if(algorithm == 'yolov5'):            
             source_dir = ssmh.get_parameter('/all_in_one_ai/config/meta/algorithms/{0}/source'.format(algorithm))
 
             payload = {
                 'body': {
+                    'industrial_model': industrial_model,
                     'role': role_arn,
                     'entry_point': 'inference.py',
                     'source_dir': source_dir,
                     'py_version': 'py38',
                     'framework_version': '1.9.1',
                     'model_name': model_name,
-                    'model_data': model_data,
+                    'model_data_url': model_data_url,
+                    'model_environment': model_environment,
                     'endpoint_name': endpoint_name,
                     'instance_type': instance_type,
                     'instance_count': instance_count,
@@ -50,6 +55,7 @@ def lambda_handler(event, context):
 
             payload = {
                 'body': {
+                    'industrial_model': industrial_model,
                     'role': role_arn,
                     'entry_point': 'inference.py',
                     'source_dir': source_dir,
@@ -57,6 +63,7 @@ def lambda_handler(event, context):
                     'framework_version': '1.8.0',
                     'model_name': model_name,
                     'model_data': model_data,
+                    'model_environment': model_environment,
                     'endpoint_name': endpoint_name,
                     'instance_type': instance_type,
                     'instance_count': instance_count,
@@ -73,29 +80,7 @@ def lambda_handler(event, context):
             
             payload = {
                 'body': {
-                    'role': role_arn,
-                    'entry_point': 'inference.py',
-                    'source_dir': source_dir,
-                    'py_version': 'py37',
-                    'framework_version': '1.8.0',
-                    'model_name': model_name,
-                    'model_data': model_data,
-                    'endpoint_name': endpoint_name,
-                    'instance_type': instance_type,
-                    'instance_count': instance_count,
-                }
-            }
-
-            response = lambda_client.invoke(
-                FunctionName = 'all_in_one_ai_create_deploy_huggingface',
-                InvocationType = 'Event',
-                Payload = json.dumps(payload)
-            )
-        elif(algorithm == 't5pegusas'):
-            source_dir = ssmh.get_parameter('/all_in_one_ai/config/meta/algorithms/{0}/source'.format(algorithm))
-            
-            payload = {
-                'body': {
+                    'industrial_model': industrial_model,
                     'role': role_arn,
                     'entry_point': 'inference.py',
                     'source_dir': source_dir,
@@ -103,6 +88,7 @@ def lambda_handler(event, context):
                     'framework_version': '1.9.1',
                     'model_name': model_name,
                     'model_data': model_data,
+                    'model_environment': model_environment,
                     'endpoint_name': endpoint_name,
                     'instance_type': instance_type,
                     'instance_count': instance_count,
@@ -110,7 +96,7 @@ def lambda_handler(event, context):
             }
 
             response = lambda_client.invoke(
-                FunctionName = 'all_in_one_ai_create_deploy_tensorflow',
+                FunctionName = 'all_in_one_ai_create_deploy_pytorch',
                 InvocationType = 'Event',
                 Payload = json.dumps(payload)
             )
@@ -121,10 +107,11 @@ def lambda_handler(event, context):
             }
         
         payload = str(response['Payload'].read())
+        print(payload)
         
         return {
             'statusCode': 200,
-            'body': json.dumps(response, default = defaultencode)
+            'body': json.dumps(str(response), default = defaultencode)
         }
 
     except Exception as e:

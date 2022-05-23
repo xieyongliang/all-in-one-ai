@@ -2,7 +2,6 @@ from decimal import Decimal
 import json
 import boto3
 import helper
-from sagemaker import image_uris
 from boto3.dynamodb.conditions import Key
 from datetime import date, datetime
 import traceback
@@ -24,32 +23,18 @@ def lambda_handler(event, context):
             print(request)
 
             industrial_model = request['industrial_model']
-            model_algorithm = request['model_algorithm']
-            instance_type = request['instance_type'] if 'instance_type' in request else 'ml.m5.xlarge'
-            region_name = boto3.session.Session().region_name
-            if(model_algorithm == 'yolov5'):
-                inference_image = ssmh.get_parameter('/all_in_one_ai/config/meta/algorithms/{0}/sagemaker/image'.format(model_algorithm))
-            elif(model_algorithm == 'gluoncv'):
-                inference_image = image_uris.retrieve(
-                    framework = 'mxnet',
-                    region = region_name,
-                    version = '1.8.0', 
-                    py_version = 'py37', 
-                    image_scope = 'inference', 
-                    instance_type = instance_type
-                )
             payload = {}
             payload['model_name'] = request['model_name']
             payload['role_arn'] = role_arn
             if('model_package_arn' in request):
                 payload['model_package_arn'] = request['model_package_arn']
             else:
-                payload['container_image'] = request['container_image'] if('container_image' in request and request['container_image'] != '') else inference_image
+                payload['inference_image'] = request['inference_image']
                 if('model_data_url' in request):
                     payload['model_data_url'] = request['model_data_url']
                 payload['mode'] = request['mode']
-            if('environment' in request):
-                payload['environment'] = json.loads(request['environment'])
+            if('model_environment' in request):
+                payload['model_environment'] = json.loads(request['model_environment']) if(request['model_environment'] != '{}') else None
             if('tags' in request):
                 payload['tags'] = request['tags']
 

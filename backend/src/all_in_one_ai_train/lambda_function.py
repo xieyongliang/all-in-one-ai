@@ -111,7 +111,7 @@ def lambda_handler(event, context):
 
             default_hyperparameters = {
                 'model_name_or_path': 'fnlp/cpt-large',
-                'num_train_epochs': 20,
+                'num_train_epochs': 10,
                 'per_device_train_batch_size': 4,   
                 'text_column': 'text',
                 'summary_column': 'summary',

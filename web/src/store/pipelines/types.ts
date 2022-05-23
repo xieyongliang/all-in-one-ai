@@ -2,23 +2,22 @@ import { Action } from '../Actions';
 
 export type PipelineState = {
     pipelineType: string;
+    industrialModel: string;
+    scritpMode: boolean;
+    trainingjobName: string;
     trainingjobInstanceType: string;
     trainingjobInstanceCount: number;
     trainingjobVolumeSizeInGB: number;
-    trainingjobImagesS3Uri: string;
-    trainingjobLabelsS3Uri: string;
-    trainingjobWeightsS3Uri: string;
-    trainingjobCfgS3Uri: string;
-    trainingjobTrainingS3Uri: string;
-    trainingjobValidationS3Uri: string;
-    trainingjobTestS3Uri: string;
-    trainingjobHyperparameters: string;
+    trainingjobInputData: any[];
+    trainingjobHyperparameters: any[];
     trainingjobOutputS3Uri: string;
+    modelName: string;
     modelAlgorithm: string;
     modelModelPackageGroupName: string;
     modelModelPackageArn: string;
-    modelEnvironment: Object;
+    modelEnvironment: any[];
     modelDataUrl: string;
+    endpointName: string;
     endpointInstanceType: string;
     endpointAcceleratorType: string;
     endpointInitialInstanceCount: number;
@@ -35,6 +34,27 @@ interface UpdatePipelineType {
     type: typeof Action.UPDATE_PIPELINE_TYPE;
     payload: {
         pipelineType: string;
+    }
+}
+
+interface UpdateIndustrialModel {
+    type: typeof Action.UPDATE_PIPELINE_INDUSTRIAL_MODEL;
+    payload: {
+        industrialModel: string;
+    }
+}
+
+interface UpdateScriptMode {
+    type: typeof Action.UPDATE_PIPELINE_SCRIPT_MODE;
+    payload: {
+        scriptMode: boolean;
+    }
+}
+
+interface UpdateTrainingjobName {
+    type: typeof Action.UPDATE_PIPELINE_TRAINING_JOB_NAME;
+    payload: {
+        trainingjobName: string;
     }
 }
 
@@ -59,59 +79,17 @@ interface UpdateTrainingjobVolumeSizeInGB {
     }
 }
 
-interface UpdateTrainingjobImageS3Uri {
-    type: typeof Action.UPDATE_PIPELINE_TRAINING_JOB_IMAGES_S3URI;
+interface UpdateTrainingjobInputData {
+    type: typeof Action.UPDATE_PIPELINE_TRAINING_JOB_INPUT_DATA;
     payload: {
-        trainingjobImagesS3Uri: string;
-    }
-}
-
-interface UpdateTrainingjobLebelsS3Uri {
-    type: typeof Action.UPDATE_PIPELINE_TRAINING_JOB_LABELS_S3URI;
-    payload: {
-        trainingjobLabelsS3Uri: string;
-    }
-}
-
-interface UpdateTrainingjobWeightsS3Uri {
-    type: typeof Action.UPDATE_PIPELINE_TRAINING_JOB_WEIGHTS_S3URI;
-    payload: {
-        trainingjobWeightsS3Uri: string;
-    }
-}
-
-interface UpdateTrainingjobCfgS3Uri {
-    type: typeof Action.UPDATE_PIPELINE_TRAINING_JOB_CFG_S3URI;
-    payload: {
-        trainingjobCfgS3Uri: string;
-    }
-}
-
-interface UpdateTrainingjobTrainingS3Uri {
-    type: typeof Action.UPDATE_PIPELINE_TRAINING_JOB_TRAINING_S3URI;
-    payload: {
-        trainingjobTrainingS3Uri: string;
-    }
-}
-
-interface UpdateTrainingjobValidationS3Uri {
-    type: typeof Action.UPDATE_PIPELINE_TRAINING_JOB_VALIDATION_S3URI;
-    payload: {
-        trainingjobValidationS3Uri: string;
-    }
-}
-
-interface UpdateTrainingjobTestS3Uri {
-    type: typeof Action.UPDATE_PIPELINE_TRAINING_JOB_TEST_S3URI;
-    payload: {
-        trainingjobTestS3Uri: string;
+        trainingjobInputData: any[];
     }
 }
 
 interface UpdateTrainingjobHyperparameters {
     type: typeof Action.UPDATE_PIPELINE_TRAINING_JOB_HYPERPARAMETERS;
     payload: {
-        trainingjobHyperparameters: string;
+        trainingjobHyperparameters: any[];
     }
 }
 
@@ -119,6 +97,13 @@ interface UpdateTrainingjobOutputS3Uri {
     type: typeof Action.UPDATE_PIPELINE_TRAINING_JOB_OUTPUT_S3URI;
     payload: {
         trainingjobOutputS3Uri: string;
+    }
+}
+
+interface UpdateModelName {
+    type: typeof Action.UPDATE_PIPELINE_MODEL_NAME;
+    payload: {
+        modelName: string;
     }
 }
 
@@ -139,7 +124,7 @@ interface UpdateModelDataUrl {
 interface UpdateModelEnvironment {
     type: typeof Action.UPDATE_PIPELINE_MODEL_ENVIRONMENT;
     payload: {
-        modelEnvironment: Object;
+        modelEnvironment: any[];
     }
 }
 interface UpdateModelModelPackageGroupName {
@@ -153,6 +138,13 @@ interface UpdateModelModelPackageArn {
     type: typeof Action.UPDATE_PIPELINE_MODEL_MODELPACKAGE_ARN;
     payload: {
         modelModelPackageArn: string;
+    }
+}
+
+interface UpdateEndpointName {
+    type: typeof Action.UPDATE_PIPELINE_ENDPOINT_NAME;
+    payload: {
+        endpointName: string;
     }
 }
 
@@ -227,23 +219,22 @@ interface UpdateGreengrassDeploymentComponents {
 }
 
 export type PipelineActionTypes = UpdatePipelineType
+    | UpdateIndustrialModel
+    | UpdateScriptMode
+    | UpdateTrainingjobName
     | UpdateTrainingjobInstanceType
     | UpdateTrainingjobInstanceCount
     | UpdateTrainingjobVolumeSizeInGB
-    | UpdateTrainingjobImageS3Uri
-    | UpdateTrainingjobLebelsS3Uri
-    | UpdateTrainingjobWeightsS3Uri
-    | UpdateTrainingjobCfgS3Uri
-    | UpdateTrainingjobTrainingS3Uri
-    | UpdateTrainingjobValidationS3Uri
-    | UpdateTrainingjobTestS3Uri
+    | UpdateTrainingjobInputData
     | UpdateTrainingjobHyperparameters
     | UpdateTrainingjobOutputS3Uri
+    | UpdateModelName
     | UpdateModelAlgorithm
     | UpdateModelModelPackageGroupName
     | UpdateModelModelPackageArn
     | UpdateModelDataUrl
     | UpdateModelEnvironment
+    | UpdateEndpointName
     | UpdateEndpointInstanceType
     | UpdateEndpointAcceleratorType
     | UpdateEndpointInitialInstanceCount

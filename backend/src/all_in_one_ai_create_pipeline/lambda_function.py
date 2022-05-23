@@ -1,12 +1,9 @@
+import json
 import boto3
 import sagemaker
 from sagemaker.workflow.condition_step import ConditionStep
 from sagemaker.workflow.fail_step import FailStep
 from sagemaker.workflow.pipeline import Pipeline
-from sagemaker.workflow.parameters import (
-    ParameterInteger,
-    ParameterString
-)
 from sagemaker.estimator import Estimator
 from sagemaker.model import Model
 from sagemaker.lambda_helper import Lambda
@@ -21,6 +18,12 @@ from sagemaker.workflow.lambda_step import (
 )
 from sagemaker.lambda_helper import Lambda
 from sagemaker.workflow.conditions import ConditionEquals
+from sagemaker.pytorch import PyTorch
+from sagemaker.mxnet import MXNet
+from sagemaker.huggingface import HuggingFace
+import helper
+
+ssmh = helper.ssm_helper()
 
 sagemaker_client = boto3.client("sagemaker")
 
@@ -30,273 +33,348 @@ sagemaker_session = sagemaker.session.Session(boto_session=boto_session, sagemak
 
 def lambda_handler(event, context):
     print(event)
+
     pipeline_name = event['body']['pipeline_name']
     pipeline_type = event['body']['pipeline_type']
     pipeline_id = event['body']['pipeline_id']
     role = event['body']['role']
     lambda_arn = event['body']['lambda_arn']
-
-    if(pipeline_type == '0'):
-        training_image = event['body']['training_image']
-        training_job_instance_type = event['body']['training_job_instance_type']
-        training_job_instance_count = event['body']['training_job_instance_count']
-        training_job_volume_size_in_gb = event['body']['training_job_volume_size_in_gb']
-        training_job_images_s3uri = event['body']['training_job_images_s3uri']
-        training_job_labels_s3uri = event['body']['training_job_labels_s3uri']
-        training_job_weights_s3uri = event['body']['training_job_weights_s3uri']
-        training_job_cfg_s3uri = event['body']['training_job_cfg_s3uri']
-        training_job_output_s3uri = event['body']['training_job_output_s3uri']
-        greengrass_component_name = event['body']['greengrass_component_name']
-        model_package_group_name = event['body']['model_package_group_name']
-        greengrass_component_version = event['body']['greengrass_component_version']
-        greengrass_deployment_name = event['body']['greengrass_deployment_name']
-        greengrass_deployment_components = event['body']['greengrass_deployment_components']
-        greengrass_deployment_target_arn = event['body']['greengrass_deployment_target_arn']
-    elif(pipeline_type == '1'):
-        training_image = event['body']['training_image']
-        training_job_instance_type = event['body']['training_job_instance_type']
-        training_job_instance_count = event['body']['training_job_instance_count']
-        training_job_volume_size_in_gb = event['body']['training_job_volume_size_in_gb']
-        training_job_images_s3uri = event['body']['training_job_images_s3uri']
-        training_job_labels_s3uri = event['body']['training_job_labels_s3uri']
-        training_job_weights_s3uri = event['body']['training_job_weights_s3uri']
-        training_job_cfg_s3uri = event['body']['training_job_cfg_s3uri']
-        training_job_output_s3uri = event['body']['training_job_output_s3uri']
-        model_package_group_name = event['body']['model_package_group_name']
-    elif(pipeline_type == '2'):
-        model_package_arn = event['body']['model_package_arn']
-        greengrass_component_name = event['body']['greengrass_component_name']
-        greengrass_component_version = event['body']['greengrass_component_version']
-        model_data_url = event['body']['model_data_url']
-        greengrass_deployment_name = event['body']['greengrass_deployment_name']
-        greengrass_deployment_components = event['body']['greengrass_deployment_components']
-        greengrass_deployment_target_arn = event['body']['greengrass_deployment_target_arn']
-    else:
-        model_package_arn = event['body']['model_package_arn']
+    script_mode = event['body']['script_mode']
 
     industrial_model = event['body']['industrial_model']
     model_algorithm = event['body']['model_algorithm']
-    inference_image = event['body']['inference_image']
-    model_name = event['body']['model_name']
-    model_package_group_inference_instances = event['body']['model_package_group_inference_instances']
-    model_environment = event['body']['environment']
-    endpoint_config_name = event['body']['endpoint_config_name']
-    endpoint_name = event['body']['endpoint_name']
-    endpoint_instance_type = event['body']['endpoint_instance_type']
-    endpoint_initial_instance_count = event['body']['endpoint_initial_instance_count']
-    endpoint_initial_variant_weight = event['body']['endpoint_initial_variant_weight']
 
-    if(pipeline_type == '0'):
-        param_training_image = ParameterString(name = 'training_image')
-        param_training_job_instance_type = ParameterString(name = 'training_job_instance_type')
-        param_training_job_instance_count = ParameterInteger(name = 'training_job_instance_count')
-        param_training_job_volume_size_in_gb = ParameterInteger(name = 'training_job_volume_size_in_gb')
-        param_training_job_images_s3uri = ParameterString(name = 'training_job_images_s3uri')
-        param_training_job_labels_s3uri = ParameterString(name = 'training_job_labels_s3uri')
-        param_training_job_weights_s3uri = ParameterString(name = 'training_job_weights_s3uri')
-        param_training_job_cfg_s3uri = ParameterString(name = 'training_job_cfg_s3uri')
-        param_training_job_output_s3uri = ParameterString(name = 'training_job_output_s3uri')
-        param_model_package_group_name = ParameterString(name = 'model_package_group_name')
-        param_greengrass_component_name = ParameterString(name = 'greengrass_component_name')
-        param_greengrass_component_version = ParameterString(name = 'greengrass_component_version')
-        param_greengrass_deployment_name = ParameterString(name = 'greengrass_deployment_name')
-        param_greengrass_deployment_components = ParameterString(name = 'greengrass_deployment_components')
-        param_greengrass_deployment_target_arn = ParameterString(name = 'greengrass_deployment_target_arn')
-    elif(pipeline_type == '1'):
-        param_training_image = ParameterString(name = 'training_image')
-        param_training_job_instance_type = ParameterString(name = 'training_job_instance_type')
-        param_training_job_instance_count = ParameterInteger(name = 'training_job_instance_count')
-        param_training_job_volume_size_in_gb = ParameterInteger(name = 'training_job_volume_size_in_gb')
-        param_training_job_images_s3uri = ParameterString(name = 'training_job_images_s3uri')
-        param_training_job_labels_s3uri = ParameterString(name = 'training_job_labels_s3uri')
-        param_training_job_weights_s3uri = ParameterString(name = 'training_job_weights_s3uri')
-        param_training_job_cfg_s3uri = ParameterString(name = 'training_job_cfg_s3uri')
-        param_training_job_output_s3uri = ParameterString(name = 'training_job_output_s3uri')
-        param_model_package_group_name = ParameterString(name = 'model_package_group_name')
-    elif(pipeline_type == '2'):
-        param_model_package_arn = ParameterString(name = 'model_package_arn')
-        param_greengrass_component_name = ParameterString(name = 'greengrass_component_name')
-        param_greengrass_component_version = ParameterString(name = 'greengrass_component_version')
-        param_greengrass_deployment_name = ParameterString(name = 'greengrass_deployment_name')
-        param_greengrass_deployment_components = ParameterString(name = 'greengrass_deployment_components')
-        param_greengrass_deployment_target_arn = ParameterString(name = 'greengrass_deployment_target_arn')
-        param_model_data_url = ParameterString(name = 'model_data_url')
+    if(script_mode): 
+        training_job_hyperparameters = event['body']['training_job_hyperparameters'] if('training_job_hyperparameters' in event['body']) else {}
+        training_job_instance_type = event['body']['training_job_instance_type']
+        training_job_instance_count = event['body']['training_job_instance_count']
+        training_job_input_data = event['body']['training_job_input_data']
+        model_name = event['body']['model_name']
+        model_environment = json.dumps(event['body']['model_environment'])
+        endpoint_name = event['body']['endpoint_name']
+        endpoint_instance_type = event['body']['endpoint_instance_type']
+        endpoint_initial_instance_count = event['body']['endpoint_initial_instance_count']
     else:
-        param_model_package_arn = ParameterString(name = 'model_package_arn')
+        inference_image = event['body']['inference_image']
+        model_name = event['body']['model_name']
+        model_package_group_inference_instances = event['body']['model_package_group_inference_instances']
+        model_environment = json.dumps(event['body']['model_environment'])
+        endpoint_config_name = event['body']['endpoint_config_name']
+        endpoint_name = event['body']['endpoint_name']
+        endpoint_instance_type = event['body']['endpoint_instance_type']
+        endpoint_initial_instance_count = event['body']['endpoint_initial_instance_count']
+        endpoint_initial_variant_weight = event['body']['endpoint_initial_variant_weight']
         
-    param_industrial_model = ParameterString(name = 'industrial_model')
-    param_model_algorithm = ParameterString(name = 'model_algorithm')
-    param_inference_image = ParameterString(name = 'inference_image')
-    param_model_package_group_inference_instances = ParameterString(name = 'model_package_group_inference_instances')
-    param_model_environment = ParameterString(name = 'model_environment')
-    param_model_name = ParameterString(name = 'model_name')
-    param_endpoint_config_name = ParameterString(name = 'endpoint_config_name')
-    param_endpoint_name = ParameterString(name = 'endpoint_name')
-    param_endpoint_instance_type = ParameterString(name = 'endpoint_instance_type')
-    param_endpoint_initial_instance_count = ParameterInteger(name = 'endpoint_initial_instance_count')
-    param_endpoint_initial_variant_weight = ParameterInteger(name = 'endpoint_initial_variant_weight')
+        if(pipeline_type == '0'):
+            training_image = event['body']['training_image']
+            training_job_instance_type = event['body']['training_job_instance_type']
+            training_job_instance_count = event['body']['training_job_instance_count']
+            training_job_volume_size_in_gb = event['body']['training_job_volume_size_in_gb']
+            training_job_input_data = event['body']['training_job_input_data']
+            training_job_output_s3uri = event['body']['training_job_output_s3uri']
+            greengrass_component_name = event['body']['greengrass_component_name']
+            model_package_group_name = event['body']['model_package_group_name']
+            greengrass_component_version = event['body']['greengrass_component_version']
+            greengrass_deployment_name = event['body']['greengrass_deployment_name']
+            greengrass_deployment_components = event['body']['greengrass_deployment_components']
+            greengrass_deployment_target_arn = event['body']['greengrass_deployment_target_arn']
+        elif(pipeline_type == '1'):
+            training_image = event['body']['training_image']
+            training_job_instance_type = event['body']['training_job_instance_type']
+            training_job_instance_count = event['body']['training_job_instance_count']
+            training_job_volume_size_in_gb = event['body']['training_job_volume_size_in_gb']
+            training_job_input_data = event['body']['training_job_input_data']
+            training_job_output_s3uri = event['body']['training_job_output_s3uri']
+            model_package_group_name = event['body']['model_package_group_name']
+        elif(pipeline_type == '2'):
+            model_package_arn = event['body']['model_package_arn']
+            greengrass_component_name = event['body']['greengrass_component_name']
+            greengrass_component_version = event['body']['greengrass_component_version']
+            model_data_url = event['body']['model_data_url']
+            greengrass_deployment_name = event['body']['greengrass_deployment_name']
+            greengrass_deployment_components = event['body']['greengrass_deployment_components']
+            greengrass_deployment_target_arn = event['body']['greengrass_deployment_target_arn']
+        else:
+            model_package_arn = event['body']['model_package_arn']
 
-    if(pipeline_type == '0' or pipeline_type =='1'):
+    if(script_mode):
+        if(model_algorithm == 'yolov5'):
+            default_hyperparameters = {
+                'data': '/opt/ml/input/data/cfg/data.yaml', 
+                'cfg': 'yolov5s.yaml', 
+                'weight': '/opt/ml/input/data/weights/yolov5s.pt', 
+                'project': '/opt/ml/model/',
+                'name': 'tutorial', 
+                'img': 640, 
+                'batch': 16, 
+                'epochs': 10
+            }
+            training_job_hyperparameters = training_job_hyperparameters
+            for key in default_hyperparameters.keys():
+                if(key not in training_job_hyperparameters.keys()):
+                    training_job_hyperparameters[key] = default_hyperparameters[key]
+            
+            git_config = {'repo': 'https://github.com/ultralytics/yolov5.git', 'branch': 'master'}
+            entry_point = 'train.py'
+            source_dir = '.'
+            framework_version = '1.9.1'
+            py_version = 'py38'
+
+            estimator = PyTorch(
+                entry_point = entry_point,
+                source_dir = source_dir,
+                git_config = git_config,
+                role = role,
+                hyperparameters = training_job_hyperparameters,
+                framework_version = framework_version, 
+                py_version = py_version,
+                instance_type = training_job_instance_type,
+                instance_count = training_job_instance_count
+            )
+        elif(model_algorithm == 'gluoncv'):
+            source_dir = ssmh.get_parameter('/all_in_one_ai/config/meta/algorithms/{0}/source'.format(model_algorithm))
+
+            default_hyperparameters = {
+                "classes": 10, 
+                "batch_size": 8,
+                "epochs": 20, 
+                "learning_rate": 0.001,
+                "momentum": 0.9,
+                "wd": 0.0001,
+                "num_gpus": 1,
+                "num_workers": 8,
+                "model_name": "ResNet50_v2"
+            }
+            training_job_hyperparameters = training_job_hyperparameters
+            for key in default_hyperparameters.keys():
+                if(key not in training_job_hyperparameters.keys()):
+                    training_job_hyperparameters[key] = default_hyperparameters[key]
+
+            entry_point = 'finetune.py'
+            framework_version = '1.8.0'
+            py_version = 'py37'
+            estimator = MXNet(
+                entry_point = entry_point,
+                source_dir = source_dir,
+                role = role,
+                hyperparameters = training_job_hyperparameters,
+                framework_version = framework_version, 
+                py_version = py_version,
+                instance_type = training_job_instance_type,
+                instance_count = training_job_instance_count
+            )
+        elif(model_algorithm == 'cpt'):
+            source_dir = ssmh.get_parameter('/all_in_one_ai/config/meta/algorithms/{0}/source'.format(model_algorithm))
+
+            default_hyperparameters = {
+                'model_name_or_path': 'fnlp/cpt-large',
+                'num_train_epochs': 20,
+                'per_device_train_batch_size': 4,   
+                'text_column': 'text',
+                'summary_column': 'summary',
+                'output_dir': '/opt/ml/model',
+                'train_file': '/opt/ml/input/data/train/train.json',
+                'validation_file':'/opt/ml/input/data/validation/val.json',
+                'test_file': '/opt/ml/input/data/test/test.json',
+                'val_max_target_length': 80,
+                'path': 'json'
+            }
+            training_job_hyperparameters = training_job_hyperparameters
+            for key in default_hyperparameters.keys():
+                if(key not in training_job_hyperparameters.keys()):
+                    training_job_hyperparameters[key] = default_hyperparameters[key]
+
+            entry_point = 'train.py'
+            py_version = 'py38'
+            transformers_version = '4.12.3'
+            pytorch_version='1.9.1'
+            estimator = HuggingFace(
+                entry_point = entry_point,
+                source_dir = source_dir,
+                role = role,
+                hyperparameters = training_job_hyperparameters,
+                py_version = py_version,
+                transformers_version = transformers_version,
+                pytorch_version = pytorch_version,
+                instance_type = training_job_instance_type,
+                instance_count = training_job_instance_count
+            )
+        
+        inputs = training_job_input_data
+
+        step_train_model = TrainingStep(
+            name = 'TrainingJob',
+            estimator = estimator,
+            inputs = inputs
+        )
+    
+        inputs = {
+            'role_arn': role,
+            'pipeline_name' : pipeline_name,
+            'pipeline_type' : pipeline_type,
+            'pipeline_id': pipeline_id,
+            'script_mode': script_mode,
+            'industrial_model' : industrial_model,
+            'model_name' : model_name,
+            'model_algorithm': model_algorithm,
+            'model_data_url': step_train_model.properties.ModelArtifacts.S3ModelArtifacts,
+            'model_environment': model_environment,
+            'endpoint_name': endpoint_name,
+            'instance_type': endpoint_instance_type,
+            'initial_instance_count': endpoint_initial_instance_count
+        }
+
+    elif(pipeline_type == '0' or pipeline_type =='1'):
         estimator = Estimator(
-            image_uri = param_training_image,
+            image_uri = training_image,
             role = role,
-            instance_count = param_training_job_instance_count,
-            instance_type = param_training_job_instance_type,
-            volume_size = param_training_job_volume_size_in_gb,
-            output_path = param_training_job_output_s3uri,
+            instance_count = training_job_instance_count,
+            instance_type = training_job_instance_type,
+            volume_size = training_job_volume_size_in_gb,
+            output_path = training_job_output_s3uri,
             sagemaker_session = sagemaker_session
         )
         
-        inputs = {
-            'images': TrainingInput(s3_data = param_training_job_images_s3uri),
-            'labels': TrainingInput(s3_data = param_training_job_labels_s3uri),
-            'weights': TrainingInput(s3_data = param_training_job_weights_s3uri),
-            'cfg': TrainingInput(s3_data = param_training_job_cfg_s3uri)
-        }
+        inputs = training_job_input_data
     
         step_train_model = TrainingStep(
-            name = 'Yolov5TrainingJob',
+            name = 'TrainingJob',
             estimator = estimator,
             inputs = inputs
         )
     
         step_register_model = RegisterModel(
-            name = "Yolov5RegisterModel",
-            estimator=estimator,
-            model_data=step_train_model.properties.ModelArtifacts.S3ModelArtifacts,
+            name = "RegisterModel",
+            estimator = estimator,
+            model_data = step_train_model.properties.ModelArtifacts.S3ModelArtifacts,
             content_types = ['image/png', 'image/jpg', 'image/jpeg'],
             response_types = ['application/json'],
-            inference_instances = param_model_package_group_inference_instances.split(','),
+            inference_instances = model_package_group_inference_instances.split(','),
             transform_instances = ['ml.g4dn.xlarge'],
-            model_package_group_name = param_model_package_group_name,
-            approval_status = "Approved",
+            model_package_group_name = model_package_group_name,
+            approval_status = "Approved"
         )
     
-    if(pipeline_type == '0'):
-        inputs = {
-            'pipeline_name' : pipeline_name,
-            'pipeline_type' : pipeline_type,
-            'pipeline_id': pipeline_id,
-            'industrial_model' : param_industrial_model,
-            'model_algorithm': param_model_algorithm,
-            'model_name' : param_model_name,
-            'endpoint_config_name' : param_endpoint_config_name,
-            'endpoint_name' : param_endpoint_name,
-            'industrial_model': param_industrial_model,
-            'role_arn': role,
-            'model_name': param_model_name,
-            'environment': param_model_environment,
-            'model_package_arn': step_register_model.steps[0].properties.ModelPackageArn,
-            'endpoint_name': param_endpoint_name,
-            'instance_type': param_endpoint_instance_type,
-            'initial_instance_count': param_endpoint_initial_instance_count,
-            'initial_variant_weight': param_endpoint_initial_variant_weight,
-            'component_name' : param_greengrass_component_name,
-            'component_version' : param_greengrass_component_version,
-            'model_data_url' : step_train_model.properties.ModelArtifacts.S3ModelArtifacts,
-            'components' : param_greengrass_deployment_components,
-            'target_arn' : param_greengrass_deployment_target_arn
-        }
-        if(greengrass_deployment_name != ''):
-            inputs.update(
-                {
-                    'deployment_name' : param_greengrass_deployment_name
-                }
-            )
-    elif(pipeline_type == '1'):
-        inputs = {
-            'pipeline_name' : pipeline_name,
-            'pipeline_type' : pipeline_type,
-            'pipeline_id': pipeline_id,
-            'industrial_model' : param_industrial_model,
-            'model_algorithm': param_model_algorithm,
-            'model_name' : param_model_name,
-            'endpoint_config_name' : param_endpoint_config_name,
-            'endpoint_name' : param_endpoint_name,
-            'industrial_model': param_industrial_model,
-            'role_arn': role,
-            'model_name': param_model_name,
-            'environment': param_model_environment,
-            'model_package_arn': step_register_model.steps[0].properties.ModelPackageArn,
-            'model_name': param_model_name,
-            'endpoint_name': param_endpoint_name,
-            'instance_type': param_endpoint_instance_type,
-            'initial_instance_count': param_endpoint_initial_instance_count,
-            'initial_variant_weight': param_endpoint_initial_variant_weight
-        }
-    elif(pipeline_type == '2'):
-        inputs = {
-            'pipeline_name' : pipeline_name,
-            'pipeline_type' : pipeline_type,
-            'pipeline_id': pipeline_id,
-            'industrial_model' : param_industrial_model,
-            'model_algorithm': param_model_algorithm,
-            'model_name' : param_model_name,
-            'endpoint_config_name' : param_endpoint_config_name,
-            'endpoint_name' : param_endpoint_name,
-            'industrial_model': param_industrial_model,
-            'role_arn': role,
-            'model_name': param_model_name,
-            'environment': param_model_environment,
-            'model_package_arn': param_model_package_arn,
-            'endpoint_name': param_endpoint_name,
-            'instance_type': param_endpoint_instance_type,
-            'initial_instance_count': param_endpoint_initial_instance_count,
-            'initial_variant_weight': param_endpoint_initial_variant_weight,
-            'component_name' : param_greengrass_component_name,
-            'component_version' : param_greengrass_component_version,
-            'model_data_url' : param_model_data_url,
-            'components' : param_greengrass_deployment_components,
-            'target_arn' : param_greengrass_deployment_target_arn
-        }
-        if(greengrass_deployment_name != ''):
-            inputs.update(
-                {
-                    'deployment_name' : param_greengrass_deployment_name
-                }
-            )
-    elif(pipeline_type == '3'):
-        inputs = {
-            'pipeline_name' : pipeline_name,
-            'pipeline_type' : pipeline_type,
-            'pipeline_id': pipeline_id,
-            'industrial_model' : param_industrial_model,
-            'model_algorithm': param_model_algorithm,
-            'model_name' : param_model_name,
-            'endpoint_config_name' : param_endpoint_config_name,
-            'endpoint_name' : param_endpoint_name,
-            'industrial_model': param_industrial_model,
-            'role_arn': role,
-            'model_name': param_model_name,
-            'environment': param_model_environment,
-            'model_package_arn': param_model_package_arn,
-            'endpoint_name': param_endpoint_name,
-            'instance_type': param_endpoint_instance_type,
-            'initial_instance_count': param_endpoint_initial_instance_count,
-            'initial_variant_weight': param_endpoint_initial_variant_weight
-        }
-    else:
-        return {
-            'statusCode': 400,
-            'body': 'Unsupported pipeline_type'
-        }
+        if(pipeline_type == '0'):
+            inputs = {
+                'role_arn': role,
+                'pipeline_name' : pipeline_name,
+                'pipeline_type' : pipeline_type,
+                'pipeline_id': pipeline_id,
+                'script_mode': script_mode,
+                'industrial_model' : industrial_model,
+                'model_name' : model_name,
+                'model_algorithm': model_algorithm,
+                'model_environment': model_environment,
+                'model_package_arn': step_register_model.steps[0].properties.ModelPackageArn,
+                'inference_image': inference_image,
+                'endpoint_config_name' : endpoint_config_name,
+                'endpoint_name': endpoint_name,
+                'instance_type': endpoint_instance_type,
+                'initial_instance_count': endpoint_initial_instance_count,
+                'initial_variant_weight': endpoint_initial_variant_weight,
+                'component_name' : greengrass_component_name,
+                'component_version' : greengrass_component_version,
+                'model_data_url' : step_train_model.properties.ModelArtifacts.S3ModelArtifacts,
+                'components' : greengrass_deployment_components,
+                'target_arn' : greengrass_deployment_target_arn
+            }
+            if(greengrass_deployment_name != ''):
+                inputs.update(
+                    {
+                        'deployment_name' : greengrass_deployment_name
+                    }
+                )
+        elif(pipeline_type == '1'):
+            inputs = {
+                'role_arn': role,
+                'pipeline_name' : pipeline_name,
+                'pipeline_type' : pipeline_type,
+                'pipeline_id': pipeline_id,
+                'script_mode': script_mode,
+                'industrial_model' : industrial_model,
+                'model_name' : model_name,
+                'model_algorithm': model_algorithm,
+                'model_environment': model_environment,
+                'model_package_arn': step_register_model.steps[0].properties.ModelPackageArn,
+                'inference_image': inference_image,
+                'endpoint_config_name' : endpoint_config_name,
+                'endpoint_name': endpoint_name,
+                'instance_type': endpoint_instance_type,
+                'initial_instance_count': endpoint_initial_instance_count,
+                'initial_variant_weight': endpoint_initial_variant_weight
+            }
+        elif(pipeline_type == '2'):
+            inputs = {
+                'role_arn': role,
+                'pipeline_name' : pipeline_name,
+                'pipeline_type' : pipeline_type,
+                'pipeline_id': pipeline_id,
+                'script_mode': script_mode,
+                'industrial_model' : industrial_model,
+                'model_name' : model_name,
+                'model_algorithm': model_algorithm,
+                'model_environment': model_environment,
+                'model_package_arn': model_package_arn,
+                'inference_image': inference_image,
+                'endpoint_config_name' : endpoint_config_name,
+                'endpoint_name': endpoint_name,
+                'instance_type': endpoint_instance_type,
+                'initial_instance_count': endpoint_initial_instance_count,
+                'initial_variant_weight': endpoint_initial_variant_weight,
+                'component_name' : greengrass_component_name,
+                'component_version' : greengrass_component_version,
+                'model_data_url' : model_data_url,
+                'components' : greengrass_deployment_components,
+                'target_arn' : greengrass_deployment_target_arn
+            }
+            if(greengrass_deployment_name != ''):
+                inputs.update(
+                    {
+                        'deployment_name' : greengrass_deployment_name
+                    }
+                )
+        elif(pipeline_type == '3'):
+            inputs = {
+                'role_arn': role,
+                'pipeline_name' : pipeline_name,
+                'pipeline_type' : pipeline_type,
+                'pipeline_id': pipeline_id,
+                'script_mode': script_mode,
+                'industrial_model' : industrial_model,
+                'model_name' : model_name,
+                'model_algorithm': model_algorithm,
+                'model_environment': model_environment,
+                'model_package_arn': model_package_arn,
+                'inference_image': inference_image,
+                'endpoint_config_name' : endpoint_config_name,
+                'endpoint_name': endpoint_name,
+                'instance_type': endpoint_instance_type,
+                'initial_instance_count': endpoint_initial_instance_count,
+                'initial_variant_weight': endpoint_initial_variant_weight
+            }
+        else:
+            return {
+                'statusCode': 400,
+                'body': 'Unsupported pipeline_type'
+            }
     
 
-    output_param_1 = LambdaOutput(output_name="statusCode", output_type=LambdaOutputTypeEnum.Integer)
-    output_param_2 = LambdaOutput(output_name="body", output_type=LambdaOutputTypeEnum.String)
+    output_1 = LambdaOutput(output_name="statusCode", output_type=LambdaOutputTypeEnum.Integer)
+    output_2 = LambdaOutput(output_name="body", output_type=LambdaOutputTypeEnum.String)
     
     step_pipeline_helper_lambda = LambdaStep(
-        name='Yolov5PipelineHelperLambda',
+        name='HelperLambda',
         lambda_func=Lambda(
             function_arn = lambda_arn,
             timeout = 900
         ),
         inputs = inputs,
-        outputs = [output_param_1, output_param_2]
+        outputs = [output_1, output_2]
     )
     
     step_fail_pipeline_helper_lambda = FailStep(
-        name="Yolov5PipelineHelperLambdaFail",
+        name="HelperLambdaFail",
         error_message = step_pipeline_helper_lambda.properties.Outputs['body'] 
     )
     
@@ -306,176 +384,31 @@ def lambda_handler(event, context):
     )
     
     step_cond_pipeline_helper_lambda = ConditionStep(
-        name ="Yolov5PipelineHelperLambdaCondition",
+        name ="HelperLambdaCondition",
         conditions = [cond_eq_pipeline_helper_lambda],
         if_steps = [],
         else_steps = [step_fail_pipeline_helper_lambda]
     )
-
-    parameters = [
-        param_industrial_model,
-        param_model_algorithm,
-        param_inference_image,
-        param_model_package_group_inference_instances,
-        param_model_name,
-        param_model_environment,
-        param_endpoint_config_name,
-        param_endpoint_name,
-        param_endpoint_instance_type,
-        param_endpoint_initial_instance_count,
-        param_endpoint_initial_variant_weight
-    ]
-
-    if(pipeline_type == '0'):
-        parameters += [
-            param_training_image,
-            param_training_job_instance_type,
-            param_training_job_instance_count,
-            param_training_job_volume_size_in_gb,
-            param_training_job_images_s3uri,
-            param_training_job_labels_s3uri,
-            param_training_job_weights_s3uri,
-            param_training_job_cfg_s3uri,
-            param_training_job_output_s3uri,
-            param_model_package_group_name,
-            param_greengrass_component_name,
-            param_greengrass_component_version,
-            param_greengrass_deployment_components,
-            param_greengrass_deployment_target_arn
-        ]
-        if(greengrass_deployment_name != ''):
-            parameters += [
-                param_greengrass_deployment_name
-            ]
-    elif(pipeline_type == '1'):
-        parameters += [
-            param_training_image,
-            param_training_job_instance_type,
-            param_training_job_instance_count,
-            param_training_job_volume_size_in_gb,
-            param_training_job_images_s3uri,
-            param_training_job_labels_s3uri,
-            param_training_job_weights_s3uri,
-            param_training_job_cfg_s3uri,
-            param_training_job_output_s3uri,
-            param_model_package_group_name
-        ]
-    elif(pipeline_type == '2'):
-        parameters += [
-            param_model_package_arn,
-            param_greengrass_component_name,
-            param_greengrass_component_version,
-            param_model_data_url,
-            param_greengrass_deployment_components,
-            param_greengrass_deployment_target_arn
-        ]
-        if(greengrass_deployment_name != ''):
-            parameters += [
-                param_greengrass_deployment_name
-            ]
-
-    else:
-        parameters += [
-            param_model_package_arn
-        ]
     
-    if(pipeline_type == '0' or pipeline_type == '1'):
+    if(script_mode):
         pipeline = Pipeline(
             name = pipeline_name,
-            parameters = parameters,
+            steps = [step_train_model, step_pipeline_helper_lambda, step_cond_pipeline_helper_lambda]
+        )
+    elif(pipeline_type == '0' or pipeline_type == '1'):
+        pipeline = Pipeline(
+            name = pipeline_name,
             steps = [step_train_model, step_register_model, step_pipeline_helper_lambda, step_cond_pipeline_helper_lambda]
         )
     else:
         pipeline = Pipeline(
             name = pipeline_name,
-            parameters = parameters,
             steps = [step_pipeline_helper_lambda, step_cond_pipeline_helper_lambda]
         )
 
     print(pipeline.definition())
     pipeline.upsert(role_arn=role)
 
-    parameters = {
-        'industrial_model': industrial_model,
-        'model_algorithm': model_algorithm,
-        'inference_image': inference_image,
-        'model_package_group_inference_instances': model_package_group_inference_instances,
-        'model_name': model_name,
-        'model_environment': model_environment,
-        'endpoint_config_name': endpoint_config_name,
-        'endpoint_name': endpoint_name,
-        'endpoint_instance_type': endpoint_instance_type,
-        'endpoint_initial_instance_count': endpoint_initial_instance_count,
-        'endpoint_initial_variant_weight': endpoint_initial_variant_weight
-    }
-
-    if(pipeline_type == '0'):
-        parameters.update(
-            {
-                'training_image': training_image,
-                'training_job_instance_type': training_job_instance_type,
-                'training_job_instance_count': training_job_instance_count,
-                'training_job_volume_size_in_gb': training_job_volume_size_in_gb,
-                'training_job_images_s3uri': training_job_images_s3uri,
-                'training_job_labels_s3uri': training_job_labels_s3uri,
-                'training_job_weights_s3uri': training_job_weights_s3uri,
-                'training_job_cfg_s3uri': training_job_cfg_s3uri,
-                'training_job_output_s3uri': training_job_output_s3uri,
-                'model_package_group_name': model_package_group_name,
-                'greengrass_component_name': greengrass_component_name,
-                'greengrass_component_version': greengrass_component_version,
-                'greengrass_deployment_components': greengrass_deployment_components,
-                'greengrass_deployment_target_arn': greengrass_deployment_target_arn
-            }
-        )
-        if(greengrass_deployment_name != ''):
-            parameters.update(
-                {
-                    'greengrass_deployment_name': greengrass_deployment_name
-                }
-            )
-
-    elif(pipeline_type == '1'):
-        parameters.update(
-            {
-                'training_image': training_image,
-                'training_job_instance_type': training_job_instance_type,
-                'training_job_instance_count': training_job_instance_count,
-                'training_job_volume_size_in_gb': training_job_volume_size_in_gb,
-                'training_job_images_s3uri': training_job_images_s3uri,
-                'training_job_labels_s3uri': training_job_labels_s3uri,
-                'training_job_weights_s3uri': training_job_weights_s3uri,
-                'training_job_cfg_s3uri': training_job_cfg_s3uri,
-                'training_job_output_s3uri': training_job_output_s3uri,
-                'model_package_group_name': model_package_group_name
-            }
-        )
-    elif(pipeline_type == '2'):
-        parameters.update(
-            {
-                'model_package_arn': model_package_arn,
-                'greengrass_component_name': greengrass_component_name,
-                'greengrass_component_version': greengrass_component_version,
-                'model_data_url': model_data_url,
-                'greengrass_deployment_components': greengrass_deployment_components,
-                'greengrass_deployment_target_arn': greengrass_deployment_target_arn
-            }
-        )
-        if(greengrass_deployment_name != ''):
-            parameters.update(
-                {
-                    'greengrass_deployment_name': greengrass_deployment_name
-                }
-            )
-
-    else:
-        parameters.update(
-            {
-                'model_package_arn': model_package_arn
-            }
-        )
-    
-    print(parameters)
-    response = pipeline.start(parameters =  parameters)
+    response = pipeline.start()
     
     return response.arn
