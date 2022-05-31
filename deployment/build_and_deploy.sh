@@ -12,21 +12,21 @@ dirlist=$(find ${project_dir}/sagemaker -mindepth 1 -maxdepth 1 -type d)
 for subdir in $dirlist
 do
     cd ${subdir}
-    IFS=', ' read -r -a array <<<  ${subdir}
+    IFS='/' read -a array <<< ${subdir}
     size=${#array[@]}
-    index=expr "$((size - 1))"
+    index=$((size - 1))
     algorithm=${array[$index]}
     if [ -f "$build_and_push.sh" ]; 
     then
         ./build_and_push.sh ${region}
         touch dummy
         tar czvf sourcedir.tar.gz dummy
-        aws s3 cp sourcedir.tar.gz ${s3uri}/algorithms/source/${subdir}/
+        aws s3 cp sourcedir.tar.gz ${s3uri}/algorithms/source/${algorithm}/
         rm dummy
         rm sourcedir.tar.gz
     else
         tar czvf sourcedir.tar.gz *
-        aws s3 cp sourcedir.tar.gz ${s3uri}/algorithms/source/${subdir}/
+        aws s3 cp sourcedir.tar.gz ${s3uri}/algorithms/source/${algorithm}/
         rm sourcedir.tar.gz
     fi
 done
