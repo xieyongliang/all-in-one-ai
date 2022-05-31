@@ -22,7 +22,7 @@ def lambda_handler(event, context):
         industrial_model = request['industrial_model']
         instance_type = request['instance_type']
         instance_count = request['instance_count']
-        hyperparameters = request['hyperparameters'] if('hyperparameters' in request) else {}
+        hyperparameters = request['model_hyperparameters'] if('model_hyperparameters' in request) else {}
         inputs = request['inputs']
         job_name = request['training_job_name']
                 
@@ -131,16 +131,14 @@ def lambda_handler(event, context):
                     'job_name': job_name,
                     'algorithm': algorithm,
                     'industrial_model': industrial_model,
-                    'entry_point': 'train.py',
+                    'entry_point': 'finetune.py',
                     'source_dir': source_dir,
                     'role': role_arn,
                     'instance_type': instance_type,
                     'instance_count': instance_count,
                     'hyperparameters': hyperparameters,
-                    'transformers_version': '4.12.3',
-                    'tensorflow_version': None,
-                    'pytorch_version': '1.9.1',
-                    'py_version': 'py38',
+                    'pytorch_version': '1.7.1',
+                    'py_version': 'py36',
                     'inputs': inputs
                 }
             }
@@ -150,6 +148,54 @@ def lambda_handler(event, context):
                 InvocationType = 'Event',
                 Payload=json.dumps(payload)
             )
+        elif(algorithm == 'gabsa'):
+            source_dir = ssmh.get_parameter('/all_in_one_ai/config/meta/algorithms/{0}/source'.format(algorithm))
+
+            default_hyperparameters = {
+                "task" : "tasd", 
+                "dataset" : "dataset", 
+                "model_name_or_path" : "t5-base", 
+                "paradigm": "extraction",
+                "eval_batch_size" :"16",
+                "train_batch_size" :"2",
+                "learning_rate" :"3e-4",
+                "num_train_epochs":"4",
+                "n_gpu": "1"
+            }
+
+            for key in default_hyperparameters.keys():
+                if(key not in hyperparameters.keys()):
+                    hyperparameters[key] = default_hyperparameters[key]
+            
+            payload = {
+                'body': {
+                    'job_name': job_name,
+                    'algorithm': algorithm,
+                    'industrial_model': industrial_model,
+                    'entry_point': 'finetune.py',
+                    'source_dir': source_dir,
+                    'git_config': None,
+                    'role': role_arn,
+                    'instance_type': instance_type,
+                    'instance_count': instance_count,
+                    'hyperparameters': hyperparameters,
+                    'inputs': inputs,
+                    'framework_version': '1.7.1',
+                    'py_version': 'py36',
+
+                }
+            }
+
+            response = lambda_client.invoke(
+                FunctionName = 'all_in_one_ai_create_train_pytorch',
+                InvocationType = 'Event',
+                Payload=json.dumps(payload)
+            )
+        else:
+            return {
+                'statusCode': 400,
+                'body': 'Unsupported algorithm'
+            }
 
         print(response)
         payload = str(response['Payload'].read())

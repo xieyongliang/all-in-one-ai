@@ -1,5 +1,5 @@
 import { Button, Container, Form, FormField, FormSection, Input, Select, Stack, Textarea } from "aws-northstar";
-import { FunctionComponent, useEffect, useState } from "react";
+import { FunctionComponent, useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import FileUpload from 'aws-northstar/components/FileUpload';
 import { FileMetadata } from "aws-northstar/components/FileUpload/types";
@@ -8,6 +8,7 @@ import { IIndustrialModel } from "../../../store/industrialmodels/reducer";
 import { AppState } from "../../../store";
 import { connect } from "react-redux";
 import { Updateindustrialmodels } from "../../../store/industrialmodels/actionCreators";
+import { ALGORITHMS } from '../../Data/data';
 
 interface IProps {
     updateindustrialmodelsAction : (industrialModels : IIndustrialModel[]) => any
@@ -25,8 +26,6 @@ const InustrialModelProp: FunctionComponent<IProps> = (props) => {
         })
         labels = labels.substring(0, labels.length - 1)
     }
-    const algorithmOptions = [{label: 'Yolov5', value: 'yolov5'}, {label: 'GluonCV', value:'gluoncv'}, {label: 'PaddleOCR', value: 'paddleocr'}, {label: 'Yolov5PaddleOCR', value: 'yolov5paddleocr'}]
-    const selectedAlgorithm = algorithmOptions.find((item) => item.value === props.industrialModel.algorithm)
     const [ modelName, setModelName ] = useState(props.industrialModel.name)
     const [ modelDescription, setModelDescription ] = useState(props.industrialModel.description)
     const [ modelSamples, setModelSamples ] = useState(props.industrialModel.samples)
@@ -34,7 +33,19 @@ const InustrialModelProp: FunctionComponent<IProps> = (props) => {
     const [ iconHttpUri, setIconHttpUri ] = useState('')
     const [ fileName, setFileName ] = useState('')
     const [ processing, setProcessing ] = useState(false)
-    
+
+    const algorithmOptions = useMemo(
+        ()=>[],[]
+    );    
+
+    useEffect(() => {
+        ALGORITHMS.forEach((item)=> {
+            algorithmOptions.push({label: item.label, value: item.value})
+        })
+    }, [algorithmOptions])
+
+    const selectedAlgorithm = algorithmOptions.find((item) => item.value === props.industrialModel.algorithm)
+
     const onChange = (id, event) => {
         if(id === 'formFieldIdModelName')
             setModelName(event)

@@ -9,99 +9,7 @@ import { connect } from 'react-redux';
 import { UpdateEndpointAcceleratorType, UpdateEndpointInitialInstanceCount, UpdateEndpointInitialVariantWeight, UpdateEndpointInstanceType } from '../../../store/pipelines/actionCreators';
 import { IIndustrialModel } from '../../../store/industrialmodels/reducer';
 import { PathParams } from '../../Interfaces/PathParams';
-
-const optionsInstance : SelectOption[]= [
-    {
-        label: 'Standard', 
-        options: [ 
-            { label: 'ml.t2.medium', value: 'ml.t2.medium' }, 
-            { label: 'ml.t2.large', value: 'ml.t2.large' }, 
-            { label: 'ml.t2.xlarge', value: 'ml.t2.xlarge' }, 
-            { label: 'ml.t2.2xlarge', value: 'ml.t2.2xlarge' }, 
-            { label: 'ml.m5.large', value: 'ml.m5.large' }, 
-            { label: 'ml.m5.xlarge', value: 'ml.m5.xlarge' }, 
-            { label: 'ml.m5.2xlarge', value: 'ml.m5.2xlarge' }, 
-            { label: 'ml.m5.4xlarge', value: 'ml.m5.4xlarge' }, 
-            { label: 'ml.m5.12xlarge', value: 'ml.m5.12xlarge' }, 
-            { label: 'ml.m5.24xlarge', value: 'ml.m5.24xlarge' },
-            { label: 'ml.m5d.large', value: 'ml.m5d.large' }, 
-            { label: 'ml.m5d.xlarge', value: 'ml.m5d.xlarge' }, 
-            { label: 'ml.m5d.2xlarge', value: 'ml.m5d.2xlarge' }, 
-            { label: 'ml.m5d.4xlarge', value: 'ml.m5d.4xlarge' }, 
-            { label: 'ml.m5d.12large', value: 'ml.m5d.12large' }, 
-            { label: 'ml.m5d.24xlarge', value: 'ml.m5d.24xlarge' }, 
-        ]
-    },
-    {
-        label: 'Compute optimized', 
-        options: [ 
-            { label: 'ml.c5.xlarge', value: 'ml.c5.xlarge' },
-            { label: 'ml.c5.2xlarge', value: 'ml.c5.2xlarge' },
-            { label: 'ml.c5.4xlarge', value: 'ml.c5.4xlarge' },
-            { label: 'ml.c5.9xlarge', value: 'ml.c5.9xlarge' },
-            { label: 'ml.c5.18xlarge', value: 'ml.c5.18xlarge' },
-            { label: 'ml.c4.large', value: 'ml.c4.large' },
-            { label: 'ml.c4.xlarge', value: 'ml.c4.xlarge' },
-            { label: 'ml.c4.2xlarge', value: 'ml.c4.2xlarge' },
-            { label: 'ml.c4.4xlarge', value: 'ml.c4.4xlarge' },
-            { label: 'ml.c4.8xlarge', value: 'ml.c4.8xlarge' },
-            { label: 'ml.c5d.large', value: 'ml.c5d.large' },
-            { label: 'ml.c5d.xlarge', value: 'ml.c5d.xlarge' },
-            { label: 'ml.c5d.2xlarge', value: 'ml.c5d.2xlarge' },
-            { label: 'ml.c5d.4xlarge', value: 'ml.c5d.4xlarge' },
-            { label: 'ml.c5d.9xlarge', value: 'ml.c5d.9xlarge' },
-            { label: 'ml.c5d.18xlarge', value: 'ml.c5d.18xlarge' }
-        ]
-    },
-    {
-        label: 'Memory optimized', 
-        options: [ 
-            { label: 'ml.r5.large', value: 'ml.r5.large' },
-            { label: 'ml.r5.xlarge', value: 'ml.r5.xlarge' },
-            { label: 'ml.r5.2xlarge', value: 'ml.r5.2xlarge' },
-            { label: 'ml.r5.4xlarge', value: 'ml.r5.4xlarge' },
-            { label: 'ml.r5.12xlarge', value: 'ml.r5.12xlarge' },
-            { label: 'ml.r5.24xlarge', value: 'ml.r5.24xlarge' },
-            { label: 'ml.r5d.large', value: 'ml.r5d.large' },
-            { label: 'ml.r5d.xlarge', value: 'ml.r5d.xlarge' },
-            { label: 'ml.r5d.2xlarge', value: 'ml.r5d.2xlarge' },
-            { label: 'ml.r5d.4xlarge', value: 'ml.r5d.4xlarge' },
-            { label: 'ml.r5d.12xlarge', value: 'ml.r5d.12xlarge' },
-            { label: 'ml.r5d.24xlarge', value: 'ml.r5d.24xlarge' }
-        ]
-    },
-    {
-        label: 'Accelerated computing', 
-        options: [ 
-            { label: 'ml.p3.2xlarge', value: 'ml.p3.2xlarge' },
-            { label: 'ml.p3.8xlarge', value: 'ml.p3.8xlarge' },
-            { label: 'ml.p3.16xlarge', value: 'ml.p3.16xlarge' },
-            { label: 'ml.g4dn.xlarge', value: 'ml.g4dn.xlarge' },
-            { label: 'ml.g4dn.2xlarge', value: 'ml.g4dn.2xlarge' },
-            { label: 'ml.g4dn.4xlarge', value: 'ml.g4dn.4xlarge' },
-            { label: 'ml.g4dn.8xlarge', value: 'ml.g4dn.8xlarge' },
-            { label: 'ml.g4dn.12xlarge', value: 'ml.g4dn.12xlarge' },
-            { label: 'ml.g4dn.16xlarge', value: 'ml.g4dn.16xlarge' },
-            { label: 'ml.inf1.xlarge', value: 'ml.inf1.xlarge' },
-            { label: 'ml.inf1.2xlarge', value: 'ml.inf1.2xlarge' },
-            { label: 'ml.inf1.6xlarge', value: 'ml.inf1.6xlarge' },
-            { label: 'ml.inf1.24xlarge', value: 'ml.inf1.24xlarge' },
-            { label: 'ml.p2.xlarge', value: 'ml.p2.xlarge' },
-            { label: 'ml.p2.8xlarge', value: 'ml.p2.8xlarge' },
-            { label: 'ml.p2.16xlarge', value: 'ml.p2.16xlarge' },
-        ]
-    }
-];
-
-const optionsAcceleratorType : SelectOption[] = [
-    { label: 'none', value: 'none' },
-    { label: 'ml.eia1.medium', value: 'ml.eia1.medium' },
-    { label: 'ml.eia1.large', value: 'ml.eia1.large' },
-    { label: 'ml.eia1.xlarge', value: 'ml.eia1.xlarge' },
-    { label: 'ml.eia2.medium', value: 'ml.eia2.medium' },
-    { label: 'ml.eia2.large', value: 'ml.eia2.large' },
-    { label: 'ml.eia2.xlarge', value: 'ml.eia2.xlarge' },
-]
+import { ENDPOINTOPTIONS, ACCELERALATOROPTIONS } from '../../Data/data'
 
 interface IProps {
     updateEndpointInstanceTypeAction: (endpointInstanceType: string) => any;
@@ -312,7 +220,7 @@ const EndpointForm: FunctionComponent<IProps> = (props) => {
                 <FormField label='Instance type' controlId='formFieldIdInstanceType'>
                     <Select
                             placeholder='Choose an option'
-                            options={optionsInstance}
+                            options={ ENDPOINTOPTIONS }
                             selectedOption={selectedInstanceType}
                             invalid={invalidInstanceType}
                             onChange={(event) => onChange('formFieldIdInstanceType', event)}
@@ -321,7 +229,7 @@ const EndpointForm: FunctionComponent<IProps> = (props) => {
                 <FormField label='Elastic Inference' controlId='formFieldIdAcceleratorType'>
                     <Select
                             placeholder='Choose an option'
-                            options={optionsAcceleratorType}
+                            options={ ACCELERALATOROPTIONS }
                             selectedOption={selectedAcceleratorTypeType}
                             invalid={invalidAcceleratorTypeType}
                             onChange={(event) => onChange('formFieldIdAcceleratorType', event)}

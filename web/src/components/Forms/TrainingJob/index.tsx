@@ -9,48 +9,8 @@ import { AppState } from '../../../store';
 import { UpdateTrainingjobInputData, UpdateTrainingjobInstanceCount, UpdateTrainingjobInstanceType, UpdateTrainingjobVolumeSizeInGB, UpdateTrainingjobOutputS3Uri, UpdateTrainingjobHyperparameters } from '../../../store/pipelines/actionCreators';
 import { IIndustrialModel } from '../../../store/industrialmodels/reducer';
 import { PathParams } from '../../Interfaces/PathParams';
+import { TRAININGOPTIONS } from '../../Data/data';
 import './index.scss';
-
-const instanceOptions : SelectOption[]= [
-    {
-        label: 'Standard', 
-        options: [ 
-            { label: 'ml.m5.large', value: 'ml.m5.large' }, 
-            { label: 'ml.m5.xlarge', value: 'ml.m5.xlarge' }, 
-            { label: 'ml.m5.2xlarge', value: 'ml.m5.2xlarge' }, 
-            { label: 'ml.m5.4xlarge', value: 'ml.m5.4xlarge' }, 
-            { label: 'ml.m5.12xlarge', value: 'ml.m5.12xlarge' }, 
-            { label: 'ml.m5.24xlarge', value: 'ml.m5.24xlarge' } 
-        ]
-    },
-    {
-        label: 'Compute optimized', 
-        options: [ 
-            { label: 'ml.c5.xlarge', value: 'ml.c5.xlarge' },
-            { label: 'ml.c5.2xlarge', value: 'ml.c5.2xlarge' },
-            { label: 'ml.c5.4xlarge', value: 'ml.c5.4xlarge' },
-            { label: 'ml.c5.9xlarge', value: 'ml.c5.9xlarge' },
-            { label: 'ml.c5.18xlarge', value: 'ml.c5.18xlarge' }
-        ]
-    },
-    {
-        label: 'Accelerated computing', 
-        options: [ 
-            { label: 'ml.p2.xlarge', value: 'ml.p2.xlarge'},
-            { label: 'ml.p2.8xlarge', value: 'ml.p2.8xlarge'},
-            { label: 'ml.p2.16xlarge', value: 'ml.p2.16xlarge'},
-            { label: 'ml.p3.2xlarge', value: 'ml.p3.2xlarge'},
-            { label: 'ml.p3.8xlarge', value: 'ml.p3.8xlarge'},
-            { label: 'ml.p3.16xlarge', value: 'ml.p3.16xlarge'},
-            { label: 'ml.g4dn.xlarge', value: 'ml.g4dn.xlarge' },
-            { label: 'ml.g4dn.2xlarge', value: 'ml.g4dn.2xlarge' },
-            { label: 'ml.g4dn.4xlarge', value: 'ml.g4dn.4xlarge' },
-            { label: 'ml.g4dn.8xlarge', value: 'ml.g4dn.8xlarge' },
-            { label: 'ml.g4dn.12xlarge', value: 'ml.g4dn.12xlarge' },
-            { label: 'ml.g4dn.16xlarge', value: 'ml.g4dn.16xlarge' }
-        ]
-    }
-];
 
 const timeUnitOptions : SelectOption[] = [
     {
@@ -115,6 +75,12 @@ const inputDataOptions = {
         },
         {
             key: 'test',
+            value: ''
+        }
+    ],
+    'gabsa': [
+        {
+            key: 'dataset',
             value: ''
         }
     ]
@@ -414,7 +380,7 @@ const TrainingJobForm: FunctionComponent<IProps> = (props) => {
                     <div style={{marginTop: '-20px', marginBottom: '-5px'}}>
                             <Select
                                 placeholder='Choose an option'
-                                options={instanceOptions}
+                                options={ TRAININGOPTIONS }
                                 selectedOption={selectedInstanceType}
                                 onChange={(event) => onChange('formFieldIdInstanceType', event)}
                             />

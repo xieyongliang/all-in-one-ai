@@ -30,6 +30,7 @@ def lambda_handler(event, context):
             source_dir = source_dir,
             git_config = git_config,
             role = role,
+            debugger_hook_config = False,
             hyperparameters = hyperparameters,
             framework_version = framework_version, 
             py_version = py_version,

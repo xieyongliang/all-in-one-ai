@@ -66,10 +66,16 @@ echo "--------------------------------------------------------------------------
 
 lambda_foldes="
 all_in_one_ai_create_api
+all_in_one_ai_create_deploy_huggingface
+all_in_one_ai_create_deploy_pytorch
+all_in_one_ai_create_deploy_mxnet
 all_in_one_ai_create_endpoint
 all_in_one_ai_create_model
 all_in_one_ai_create_pipeline
 all_in_one_ai_create_pipeline_helper
+all_in_one_ai_create_train_huggingface
+all_in_one_ai_create_train_pytorch
+all_in_one_ai_create_train_mxnet
 all_in_one_ai_create_training_job
 all_in_one_ai_create_transform_job
 all_in_one_ai_delete_endpoint
@@ -96,8 +102,8 @@ all_in_one_ai_model_package_group
 all_in_one_ai_s3
 all_in_one_ai_stop_training_job
 all_in_one_ai_stop_transform_job
-all_in_one_ai_transform_job_review
-all_in_one_ai_wait_endpoint_in_service"
+all_in_one_ai_train
+all_in_one_ai_transform_job_review"
 
 for lambda_folder in $lambda_foldes; do
     # build and copy console distribution files
@@ -116,6 +122,7 @@ done
 
 lambda_foldes="
 all_in_one_ai_api
+all_in_one_ai_deploy
 all_in_one_ai_endpoint
 all_in_one_ai_finalize_pipeline
 all_in_one_ai_greengrass_component_version
@@ -126,6 +133,7 @@ all_in_one_ai_model
 all_in_one_ai_model_package
 all_in_one_ai_pipeline
 all_in_one_ai_search_by_image
+all_in_one_ai_train
 all_in_one_ai_training_job
 all_in_one_ai_transform_job"
 

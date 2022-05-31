@@ -28,6 +28,7 @@ def lambda_handler(event, context):
             entry_point = entry_point,
             source_dir = source_dir,
             role = role,
+            debugger_hook_config = False,
             hyperparameters = hyperparameters,
             framework_version = framework_version, 
             py_version = py_version,

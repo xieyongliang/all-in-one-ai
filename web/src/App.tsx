@@ -17,8 +17,6 @@ import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
 import NorthStarThemeProvider from 'aws-northstar/components/NorthStarThemeProvider';
 import AppLayout from './components/AppLayout';
 import Dashboard from './components/Dashboard/index'
-import Yolov5 from './components/Algorithms/Yolov5'
-import PPE from './components/Scenarios/PPE';
 import IndustrialModelOverview from './components/Lists/IndustrialModel';
 import IndustrialModels from './components/IndustrialModels';
 import { FunctionComponent, useEffect } from 'react';
@@ -26,10 +24,13 @@ import { IIndustrialModel } from './store/industrialmodels/reducer';
 import axios from 'axios'; 
 import { store } from '.';
 import { Action } from './store/Actions';
+import Yolov5 from './components/Algorithms/Yolov5'
 import GluonCV from './components/Algorithms/GluonCV';
 import PaddleOCR from './components/Algorithms/PaddleOCR';
 import CPT from './components/Algorithms/CPT';
+import GABSA from './components/Algorithms/GABSA';
 import Track from './components/Scenarios/Track';
+import PPE from './components/Scenarios/PPE';
 import CameraForm from './components/Forms/Camera';
 import MapForm from './components/Forms/Map';
 
@@ -79,6 +80,7 @@ const App : FunctionComponent = () => {
                     <Route sensitive={true} exact path="/algorithms/gluoncv">{withLayout(GluonCV)}</Route>
                     <Route sensitive={true} exact path="/algorithms/paddleocr">{withLayout(PaddleOCR)}</Route>
                     <Route sensitive={true} exact path="/algorithms/cpt">{withLayout(CPT)}</Route>
+                    <Route sensitive={true} exact path="/algorithms/gabsa">{withLayout(GABSA)}</Route>
                     <Route sensitive={true} exact path="/imodels/:id">{withLayout(IndustrialModels)}</Route>
                     <Route sensitive={true} exact path="/imodels">{withLayout(IndustrialModelOverview)}</Route>
                     <Route sensitive={true} exact path="/">{withLayout(Dashboard)}</Route>

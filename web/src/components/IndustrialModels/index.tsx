@@ -37,6 +37,7 @@ import { LoadingIndicator } from 'aws-northstar';
 import PaddleOCRDemoForm from '../Forms/Demo/Single/paddleocr';
 import Yolov5PaddleOCRDemoForm from '../Forms/Demo/Mixed/yolov5&paddleocr';
 import CPTDemoForm from '../Forms/Demo/Single/cpt';
+import GABSADemoFrom from '../Forms/Demo/Single/gabsa';
 
 interface IProps {
     industrialModels : IIndustrialModel[];
@@ -203,6 +204,15 @@ const IndustrialModels: FunctionComponent<IProps> = (
                 label: 'Demo',
                 id: 'demo',
                 content: <CPTDemoForm advancedMode={advancedMode} onAdvancedModeChange={onAdvancedModeChange}/>
+            }
+        ]     
+    }
+    else if(algorithm === 'gabsa'){
+        tabs = [
+            {
+                label: 'Demo',
+                id: 'demo',
+                content: <GABSADemoFrom advancedMode={advancedMode} onAdvancedModeChange={onAdvancedModeChange}/>
             }
         ]     
     }

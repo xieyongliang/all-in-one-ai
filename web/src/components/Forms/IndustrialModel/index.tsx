@@ -1,5 +1,5 @@
 import { Button, Container, Form, FormField, FormSection, Input, Select, Stack, Textarea } from "aws-northstar";
-import { FunctionComponent, useState } from "react";
+import { FunctionComponent, useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import FileUpload from 'aws-northstar/components/FileUpload';
 import { FileMetadata } from "aws-northstar/components/FileUpload/types";
@@ -8,6 +8,7 @@ import { IIndustrialModel } from "../../../store/industrialmodels/reducer";
 import { AppState } from "../../../store";
 import { connect } from "react-redux";
 import { Updateindustrialmodels } from "../../../store/industrialmodels/actionCreators";
+import { ALGORITHMS } from '../../Data/data';
 
 interface IProps {
     updateindustrialmodelsAction : (industrialModels : IIndustrialModel[]) => any
@@ -16,7 +17,6 @@ interface IProps {
 }
 
 const IndustrialModelForm: FunctionComponent<IProps> = (props) => {
-    const algorithmOptions = [{label: 'Yolov5', value: 'yolov5'}, {label: 'GluonCV', value:'gluoncv'}, {label: 'PaddleOCR', value: 'paddleocr'}, {label: 'Yolov5PaddleOCR', value: 'yolov5paddleocr'}, {label: 'cpt', value: 'cpt'}]
     const [ selectedAlgorithm, setSelectedAlgorithm] = useState({label: 'Yolov5', value: 'yolov5'})
     const [ modelName, setModelName ] = useState('')
     const [ modelDescription, setModelDescription ] = useState('')
@@ -24,6 +24,16 @@ const IndustrialModelForm: FunctionComponent<IProps> = (props) => {
     const [ modelLables, setModelLabels ] = useState('')
     const [ fileName, setFileName ] = useState('')
     const [ processing, setProcessing ] = useState(false)
+
+    const algorithmOptions = useMemo(
+        ()=>[],[]
+    );    
+
+    useEffect(() => {
+        ALGORITHMS.forEach((item)=> {
+            algorithmOptions.push({label: item.label, value: item.value})
+        })
+    }, [algorithmOptions])
 
     const onChange = (id, event) => {
         if(id === 'formFieldIdModelName')

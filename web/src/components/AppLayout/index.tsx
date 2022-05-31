@@ -21,9 +21,13 @@ import { connect } from 'react-redux';
 import { AppState } from '../../store';
 import { store } from '../..';
 import { IIndustrialModel } from '../../store/industrialmodels/reducer';
+import { ALGORITHMS } from '../Data/data';
+import { SCENARIOS } from '../Data/data';
 
 const AppLayout: FunctionComponent = ( {children} ) => {
-    const [ items, setItems ] = useState<SideNavigationItem[]>([])
+    const [ industrialModelItems, setIndustrialModelItems ] = useState<SideNavigationItem[]>([])
+    const [ algorithmsItems, setAlgorithmsItems ] = useState<SideNavigationItem[]>([])
+    const [ scenariosItems, setScenariosItems ] = useState<SideNavigationItem[]>([])
     const Header = useMemo(
         () => <HeaderBase title='All-In-One AI' logoPath='/ml.jpg' />,
         []
@@ -46,9 +50,26 @@ const AppLayout: FunctionComponent = ( {children} ) => {
             .forEach((item) => {
                 items.push({text: item.name, type: SideNavigationItemType.LINK, href: `/imodels/${item.id}?tab=demo#sample`})
             })
-        setItems(items)
+            setIndustrialModelItems(items)
      }, [industrialModels])
- 
+
+     useEffect(() => {
+        var items = []
+            ALGORITHMS.forEach((item) => {
+                if(item.type === 'single')
+                    items.push({text: item.label, type: SideNavigationItemType.LINK, href: `/algorithms/${item.value}`})
+            })
+            setAlgorithmsItems(items)
+     }, [])
+
+     useEffect(() => {
+        var items = []
+            SCENARIOS.forEach((item) => {
+                items.push({text: item.label, type: SideNavigationItemType.LINK, href: `/scenarios/${item.value}`})
+            })
+            setScenariosItems(items)
+     }, [])     
+     
     const SideNavigation = useMemo(() => {
         return (
             <SideNavigationBase
@@ -57,30 +78,22 @@ const AppLayout: FunctionComponent = ( {children} ) => {
                     {
                         'type': SideNavigationItemType.SECTION,
                         'text': 'Scenarios',
-                        'items': [
-                            { text: 'PPE detector', type: SideNavigationItemType.LINK, href: '/scenarios/ppe' },
-                            { text: 'Track maintenance', type: SideNavigationItemType.LINK, href: '/scenarios/track' }
-                        ]
+                        'items': scenariosItems
                     },
                     {
                         'type': SideNavigationItemType.SECTION,
                         'text': 'Industrial models',
-                        'items': items
+                        'items': industrialModelItems
                     },
                     {
                         'type': SideNavigationItemType.SECTION,
                         'text': 'Algorithms',
-                        'items': [
-                            { text: 'Yolov5', type: SideNavigationItemType.LINK, href: '/algorithms/yolov5' }, 
-                            { text: 'GluonCV', type: SideNavigationItemType.LINK, href: '/algorithms/gluoncv' },
-                            { text: 'PaddleOCR', type: SideNavigationItemType.LINK, href: '/algorithms/paddleocr' },
-                            { text: 'CPT', type: SideNavigationItemType.LINK, href: '/algorithms/cpt' }
-                        ]
+                        'items': algorithmsItems
                     }
                 ]}
             />
         );
-    }, [items]);
+    }, [industrialModelItems, algorithmsItems, scenariosItems]);
 
     return (
         <AppLayoutBase header={Header} navigation={SideNavigation} >

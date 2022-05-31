@@ -199,6 +199,42 @@ def lambda_handler(event, context):
                 instance_type = training_job_instance_type,
                 instance_count = training_job_instance_count
             )
+        elif(model_algorithm == 'gabsa'):
+            source_dir = ssmh.get_parameter('/all_in_one_ai/config/meta/algorithms/{0}/source'.format(model_algorithm))
+
+            default_hyperparameters = {
+                "task" : "tasd", 
+                "dataset" : "dataset", 
+                "model_name_or_path" : "t5-base", 
+                "paradigm": "extraction",
+                "eval_batch_size" :"16",
+                "train_batch_size" :"2",
+                "learning_rate" :"3e-4",
+                "num_train_epochs":"1",
+                "n_gpu": "1"
+            }
+            training_job_hyperparameters = training_job_hyperparameters
+            for key in default_hyperparameters.keys():
+                if(key not in training_job_hyperparameters.keys()):
+                    training_job_hyperparameters[key] = default_hyperparameters[key]
+            
+            git_config = None
+            entry_point = 'finetune.py'
+            source_dir = '.'
+            framework_version = '1.7.1'
+            py_version = 'py36'
+
+            estimator = PyTorch(
+                entry_point = entry_point,
+                source_dir = source_dir,
+                git_config = git_config,
+                role = role,
+                hyperparameters = training_job_hyperparameters,
+                framework_version = framework_version, 
+                py_version = py_version,
+                instance_type = training_job_instance_type,
+                instance_count = training_job_instance_count
+            )
         
         inputs = training_job_input_data
 
@@ -356,7 +392,7 @@ def lambda_handler(event, context):
         else:
             return {
                 'statusCode': 400,
-                'body': 'Unsupported pipeline_type'
+                'body': 'Unsupported pipeline type'
             }
     
 
