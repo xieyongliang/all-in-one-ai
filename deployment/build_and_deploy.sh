@@ -14,7 +14,7 @@ do
     cd ${subdir}
     IFS=', ' read -r -a array <<<  ${subdir}
     size=${#array[@]} 
-    algorithm="${array["$(($size - 1)"]}"
+    algorithm=${array["$($size - 1)"]}
     if [ -f "$build_and_push.sh" ]; 
     then
         ./build_and_push.sh ${region}
