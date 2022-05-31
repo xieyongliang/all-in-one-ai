@@ -16,7 +16,7 @@ do
     size=${#array[@]}
     index=$((size - 1))
     algorithm=${array[$index]}
-    if [ -f "$build_and_push.sh" ]; 
+    if [ -f "./build_and_push.sh" ]; 
     then
         ./build_and_push.sh ${region}
         touch dummy
