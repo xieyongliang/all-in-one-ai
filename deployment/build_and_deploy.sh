@@ -12,6 +12,9 @@ dirlist=$(find ${project_dir}/sagemaker -mindepth 1 -maxdepth 1 -type d)
 for subdir in $dirlist
 do
     cd ${subdir}
+    IFS=', ' read -r -a array <<<  ${subdir}
+    size=${#array[@]} 
+    algorithm="${array["$(($size - 1)"]}"
     if [ -f "$build_and_push.sh" ]; 
     then
         ./build_and_push.sh ${region}
