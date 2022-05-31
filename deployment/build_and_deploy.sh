@@ -31,5 +31,5 @@ cd ${project_dir}/web
 
 cd ${project_dir}/backend && ./build.sh
 
-aws s3 cp ${project_dir}/backend/build/codes ${s3uri} --recursive
-aws s3 cp ${project_dir}/deployment/templates ${s3uri} --recursive
+aws s3 cp ${project_dir}/backend/build/codes ${s3uri}/codes --recursive
+aws s3 cp ${project_dir}/deployment/templates ${s3uri}/templates --recursive
