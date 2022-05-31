@@ -2,7 +2,7 @@
 #
 # Author: Mike McKerns (mmckerns @caltech and @uqfoundation)
 # Copyright (c) 2008-2016 California Institute of Technology.
-# Copyright (c) 2016-2021 The Uncertainty Quantification Foundation.
+# Copyright (c) 2016-2022 The Uncertainty Quantification Foundation.
 # License: 3-clause BSD.  The full license text is available at:
 #  - https://github.com/uqfoundation/dill/blob/master/LICENSE
 #
@@ -644,7 +644,7 @@ def _namespace(obj):
     # mostly for functions and modules and such
     #FIXME: 'wrong' for decorators and curried functions
     try: #XXX: needs some work and testing on different types
-        module = qual = str(getmodule(obj)).split()[1].strip('"').strip("'")
+        module = qual = str(getmodule(obj)).split()[1].strip('>').strip('"').strip("'")
         qual = qual.split('.')
         if ismodule(obj):
             return qual

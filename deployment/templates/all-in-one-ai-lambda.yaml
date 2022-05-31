@@ -3627,9 +3627,7 @@ Resources:
       Handler: lambda_function.lambda_handler
       Role: !GetAtt AllInOneAICreateTrainPytorchFunctionRole.Arn
       Timeout: 900
-      MemorySize: 10240
-      EphemeralStorage:
-         - Size: 10240      
+      MemorySize: 10240    
       Runtime: python3.9
       VpcConfig:
         SubnetIds: 
@@ -3639,7 +3637,11 @@ Resources:
           - !Ref SecurityGroup
       Layers:
         - !Ref HelperLayer
+        - !Ref SageMakerLayer
         - !Ref GitLayer
+      FileSystemConfigs:
+        - Arn: !Ref EfsAccessPointArn
+          LocalMountPath: "/mnt/efs"
 
   AllInOneAICreateTrainMxnetFunctionRole:
     Type: 'AWS::IAM::Role'
@@ -3706,8 +3708,6 @@ Resources:
       Timeout: 900
       Runtime: python3.9
       MemorySize: 10240
-      EphemeralStorage:
-         - Size: 10240
       VpcConfig:
         SubnetIds: 
           - !Ref PrivateSubnet1
@@ -3716,6 +3716,10 @@ Resources:
           - !Ref SecurityGroup
       Layers:
         - !Ref HelperLayer
+        - !Ref SageMakerLayer
+      FileSystemConfigs:
+        - Arn: !Ref EfsAccessPointArn
+          LocalMountPath: "/mnt/efs"
 
   AllInOneAICreateTrainHuggingfaceFunctionRole:
     Type: 'AWS::IAM::Role'
@@ -3781,8 +3785,6 @@ Resources:
       Role: !GetAtt AllInOneAICreateTrainHuggingfaceFunctionRole.Arn
       Timeout: 900
       MemorySize: 10240
-      EphemeralStorage:
-         - Size: 10240
       Runtime: python3.9
       VpcConfig:
         SubnetIds: 
@@ -3792,6 +3794,10 @@ Resources:
           - !Ref SecurityGroup
       Layers:
         - !Ref HelperLayer
+        - !Ref SageMakerLayer
+      FileSystemConfigs:
+        - Arn: !Ref EfsAccessPointArn
+          LocalMountPath: "/mnt/efs"
 
   ApiGatewayResourceDeploy:
     Type: AWS::ApiGateway::Resource
@@ -3970,8 +3976,6 @@ Resources:
       Role: !GetAtt AllInOneAICreateDeployPytorchFunctionRole.Arn
       Timeout: 900
       MemorySize: 10240
-      EphemeralStorage:
-         - Size: 10240   
       Runtime: python3.9
       VpcConfig:
         SubnetIds: 
@@ -3981,6 +3985,10 @@ Resources:
           - !Ref SecurityGroup
       Layers:
         - !Ref HelperLayer
+        - !Ref SageMakerLayer
+      FileSystemConfigs:
+        - Arn: !Ref EfsAccessPointArn
+          LocalMountPath: "/mnt/efs"
 
   AllInOneAICreateDeployMxnetFunctionRole:
     Type: 'AWS::IAM::Role'
@@ -4045,9 +4053,7 @@ Resources:
       Handler: lambda_function.lambda_handler
       Role: !GetAtt AllInOneAICreateDeployMxnetFunctionRole.Arn
       Timeout: 900
-      MemorySize: 10240
-      EphemeralStorage:
-         - Size: 10240      
+      MemorySize: 10240    
       Runtime: python3.9
       VpcConfig:
         SubnetIds: 
@@ -4057,6 +4063,10 @@ Resources:
           - !Ref SecurityGroup
       Layers:
         - !Ref HelperLayer
+        - !Ref SageMakerLayer
+      FileSystemConfigs:
+        - Arn: !Ref EfsAccessPointArn
+          LocalMountPath: "/mnt/efs"
 
 AllInOneAICreateDeployHuggingfaceFunctionRole:
     Type: 'AWS::IAM::Role'
@@ -4122,8 +4132,6 @@ AllInOneAICreateDeployHuggingfaceFunctionRole:
       Role: !GetAtt AllInOneAICreateDeployHuggingfaceFunctionRole.Arn
       Timeout: 900
       MemorySize: 10240
-      EphemeralStorage:
-         - Size: 10240
       Runtime: python3.9
       VpcConfig:
         SubnetIds: 
@@ -4133,6 +4141,10 @@ AllInOneAICreateDeployHuggingfaceFunctionRole:
           - !Ref SecurityGroup
       Layers:
         - !Ref HelperLayer
+        - !Ref SageMakerLayer
+      FileSystemConfigs:
+        - Arn: !Ref EfsAccessPointArn
+          LocalMountPath: "/mnt/efs"
 
   AllInOneAICreatePipelineFunctionRole:
     Type: 'AWS::IAM::Role'

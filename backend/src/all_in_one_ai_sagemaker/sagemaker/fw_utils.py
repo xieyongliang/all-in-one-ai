@@ -16,6 +16,7 @@ from __future__ import absolute_import
 import logging
 import os
 import re
+import time
 import shutil
 import tempfile
 from collections import namedtuple
@@ -24,6 +25,7 @@ from typing import Optional
 import sagemaker.image_uris
 from sagemaker.session_settings import SessionSettings
 import sagemaker.utils
+from sagemaker.workflow import is_pipeline_variable
 
 from sagemaker.deprecations import renamed_warning
 
@@ -74,6 +76,11 @@ SM_DATAPARALLEL_SUPPORTED_FRAMEWORK_VERSIONS = {
         "2.6",
         "2.6.0",
         "2.6.2",
+        "2.6.3",
+        "2.7",
+        "2.7.1",
+        "2.8",
+        "2.8.0",
     ],
     "pytorch": [
         "1.6",
@@ -88,6 +95,9 @@ SM_DATAPARALLEL_SUPPORTED_FRAMEWORK_VERSIONS = {
         "1.9.1",
         "1.10",
         "1.10.0",
+        "1.10.2",
+        "1.11",
+        "1.11.0",
     ],
 }
 SMDISTRIBUTED_SUPPORTED_STRATEGIES = ["dataparallel", "modelparallel"]
@@ -387,8 +397,10 @@ def model_code_key_prefix(code_location_key_prefix, model_name, image):
     Returns:
         str: the key prefix to be used in uploading code
     """
-    training_job_name = sagemaker.utils.name_from_image(image)
-    return "/".join(filter(None, [code_location_key_prefix, model_name or training_job_name]))
+    name_from_image = f"/model_code/{int(time.time())}"
+    if not is_pipeline_variable(image):
+        name_from_image = sagemaker.utils.name_from_image(image)
+    return "/".join(filter(None, [code_location_key_prefix, model_name or name_from_image]))
 
 
 def warn_if_parameter_server_with_multi_gpu(training_instance_type, distribution):

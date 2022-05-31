@@ -102,11 +102,10 @@ class SKLearnModel(FrameworkModel):
                 model training code (default: 'py3'). Currently, 'py3' is the only
                 supported version. If ``None`` is passed in, ``image_uri`` must be
                 provided.
-            image_uri (str): A Docker image URI (default: None). If not specified, a
-                default image for Scikit-learn will be used.
-
+            image_uri (str): A Docker image URI (default: None). If not specified,
+                a default image for Scikit-learn will be used.
                 If ``framework_version`` or ``py_version`` are ``None``, then
-                ``image_uri`` is required. If also ``None``, then a ``ValueError``
+                ``image_uri`` is required. If ``image_uri`` is also ``None``, then a ``ValueError``
                 will be raised.
             predictor_cls (callable[str, sagemaker.session.Session]): A function
                 to call to create a predictor with an endpoint name and
@@ -152,6 +151,9 @@ class SKLearnModel(FrameworkModel):
         marketplace_cert=False,
         approval_status=None,
         description=None,
+        drift_check_baselines=None,
+        customer_metadata_properties=None,
+        domain=None,
     ):
         """Creates a model package for creating SageMaker models or listing on Marketplace.
 
@@ -176,6 +178,11 @@ class SKLearnModel(FrameworkModel):
             approval_status (str): Model Approval Status, values can be "Approved", "Rejected",
                 or "PendingManualApproval" (default: "PendingManualApproval").
             description (str): Model Package description (default: None).
+            drift_check_baselines (DriftCheckBaselines): DriftCheckBaselines object (default: None).
+            customer_metadata_properties (dict[str, str]): A dictionary of key-value paired
+                metadata properties (default: None).
+            domain (str): Domain values can be "COMPUTER_VISION", "NATURAL_LANGUAGE_PROCESSING",
+                "MACHINE_LEARNING" (default: None).
 
         Returns:
             A `sagemaker.model.ModelPackage` instance.
@@ -203,9 +210,14 @@ class SKLearnModel(FrameworkModel):
             marketplace_cert,
             approval_status,
             description,
+            drift_check_baselines=drift_check_baselines,
+            customer_metadata_properties=customer_metadata_properties,
+            domain=domain,
         )
 
-    def prepare_container_def(self, instance_type=None, accelerator_type=None):
+    def prepare_container_def(
+        self, instance_type=None, accelerator_type=None, serverless_inference_config=None
+    ):
         """Container definition with framework configuration set in model environment variables.
 
         Args:
@@ -215,6 +227,9 @@ class SKLearnModel(FrameworkModel):
                 deploy to the instance for loading and making inferences to the
                 model. This parameter is unused because accelerator types
                 are not supported by SKLearnModel.
+            serverless_inference_config (sagemaker.serverless.ServerlessInferenceConfig):
+                Specifies configuration related to serverless endpoint. Instance type is
+                not provided in serverless inference. So this is used to find image URIs.
 
         Returns:
             dict[str, str]: A container definition object usable with the
@@ -241,12 +256,16 @@ class SKLearnModel(FrameworkModel):
         )
         return sagemaker.container_def(deploy_image, model_data_uri, deploy_env)
 
-    def serving_image_uri(self, region_name, instance_type):
+    def serving_image_uri(self, region_name, instance_type, serverless_inference_config=None):
         """Create a URI for the serving image.
 
         Args:
             region_name (str): AWS region where the image is uploaded.
             instance_type (str): SageMaker instance type.
+            serverless_inference_config (sagemaker.serverless.ServerlessInferenceConfig):
+                Specifies configuration related to serverless endpoint. Instance type is
+                not provided in serverless inference. So this is used to determine device type.
+
 
         Returns:
             str: The appropriate image URI based on the given parameters.
@@ -258,4 +277,5 @@ class SKLearnModel(FrameworkModel):
             version=self.framework_version,
             py_version=self.py_version,
             instance_type=instance_type,
+            serverless_inference_config=serverless_inference_config,
         )

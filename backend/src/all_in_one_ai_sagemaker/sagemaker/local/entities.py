@@ -22,7 +22,7 @@ import time
 
 import sagemaker.local.data
 from sagemaker.local.image import _SageMakerContainer
-from sagemaker.local.utils import copy_directory_structure, move_to_destination
+from sagemaker.local.utils import copy_directory_structure, move_to_destination, get_docker_host
 from sagemaker.utils import DeferredError, get_config_value
 
 logger = logging.getLogger(__name__)
@@ -175,7 +175,7 @@ class _LocalProcessingJob:
 
 
 class _LocalTrainingJob(object):
-    """Placeholder docstring"""
+    """Defines and starts a local training job."""
 
     _STARTING = "Starting"
     _TRAINING = "Training"
@@ -183,14 +183,29 @@ class _LocalTrainingJob(object):
     _states = ["Starting", "Training", "Completed"]
 
     def __init__(self, container):
+        """Creates a local training job.
+
+        Args:
+            container: the local container object.
+        """
         self.container = container
         self.model_artifacts = None
         self.state = "created"
         self.start_time = None
         self.end_time = None
+        self.environment = None
 
-    def start(self, input_data_config, output_data_config, hyperparameters, job_name):
-        """Placeholder docstring."""
+    def start(self, input_data_config, output_data_config, hyperparameters, environment, job_name):
+        """Starts a local training job.
+
+        Args:
+            input_data_config (dict): The Input Data Configuration, this contains data such as the
+                channels to be used for training.
+            output_data_config (dict): The configuration of the output data.
+            hyperparameters (dict): The HyperParameters for the training job.
+            environment (dict): The collection of environment variables passed to the job.
+            job_name (str): Name of the local training job being run.
+        """
         for channel in input_data_config:
             if channel["DataSource"] and "S3DataSource" in channel["DataSource"]:
                 data_distribution = channel["DataSource"]["S3DataSource"]["S3DataDistributionType"]
@@ -216,9 +231,10 @@ class _LocalTrainingJob(object):
 
         self.start_time = datetime.datetime.now()
         self.state = self._TRAINING
+        self.environment = environment
 
         self.model_artifacts = self.container.train(
-            input_data_config, output_data_config, hyperparameters, job_name
+            input_data_config, output_data_config, hyperparameters, environment, job_name
         )
         self.end_time = datetime.datetime.now()
         self.state = self._COMPLETED
@@ -295,7 +311,7 @@ class _LocalTransformJob(object):
         _wait_for_serving_container(serving_port)
 
         # Get capabilities from Container if needed
-        endpoint_url = "http://localhost:%s/execution-parameters" % serving_port
+        endpoint_url = "http://%s:%d/execution-parameters" % (get_docker_host(), serving_port)
         response, code = _perform_request(endpoint_url)
         if code == 200:
             execution_parameters = json.loads(response.read())
@@ -607,7 +623,7 @@ def _wait_for_serving_container(serving_port):
     i = 0
     http = urllib3.PoolManager()
 
-    endpoint_url = "http://localhost:%s/ping" % serving_port
+    endpoint_url = "http://%s:%d/ping" % (get_docker_host(), serving_port)
     while True:
         i += 5
         if i >= HEALTH_CHECK_TIMEOUT_LIMIT:

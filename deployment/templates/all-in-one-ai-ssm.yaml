@@ -31,62 +31,11 @@ Resources:
   Parameter1:
     Type: AWS::SSM::Parameter
     Properties:
-      Name: /all_in_one_ai/config/meta/algorithms/yolov5/sagemaker/image
-      Type: String
-      Value: 
-        !If
-        - Globally
-        - !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/all-in-one-ai-yolov5:latest
-        - !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com.cn/all-in-one-ai-yolov5:latest
-
-  Parameter2:
-    Type: AWS::SSM::Parameter
-    Properties:
-      Name: /all_in_one_ai/config/meta/algorithms/gluoncv/sagemaker/image
-      Type: String
-      Value: 
-        !If
-        - Globally
-        - !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/all-in-one-ai-gluoncv:latest
-        - !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com.cn/all-in-one-ai-gluoncv:latest
-
-  Parameter3:
-    Type: AWS::SSM::Parameter
-    Properties:
-      Name: /all_in_one_ai/config/meta/algorithms/gluoncv/sagemaker/image
-      Type: String
-      Value: 
-        !If
-        - Globally
-        - !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/all-in-one-ai-paddleocr-cpu:latest
-        - !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com.cn/all-in-one-ai-paddleocr-cpu:latest
-
-  Parameter4:
-    Type: AWS::SSM::Parameter
-    Properties:
-      Name: /all_in_one_ai/config/meta/algorithms/gluoncv/sagemaker/image
-      Type: String
-      Value: 
-        !If
-        - Globally
-        - !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/all-in-one-ai-paddleocr-gpu:latest
-        - !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com.cn/all-in-one-ai-paddleocr-gpu:latest
-
-  Parameter5:
-    Type: AWS::SSM::Parameter
-    Properties:
-      Name: /all_in_one_ai/config/meta/algorithms/yolov5/greengrass/components/com.example.yolov5/artifacts
-      Type: String
-      Value: !Sub s3://${S3Bucket}/${S3Key}algorithms/yolov5/greengrass/components/com.example.yolov5/artifacts
-
-  Parameter6:
-    Type: AWS::SSM::Parameter
-    Properties:
       Name: /all_in_one_ai/config/meta/algorithms/yolov5/greengrass/components/com.example.yolov5/template
       Type: String
       Value: !Sub s3://${S3Bucket}/${S3Key}algorithms/yolov5/greengrass/components/com.example.yolov5/template
 
-  Parameter7:
+  Parameter2:
     Type: AWS::SSM::Parameter
     Properties:
       Name: /all_in_one_ai/config/meta/algorithms/yolov5/greengrass/components/com.example.yolov5/deployment/deployment_policy
@@ -103,7 +52,7 @@ Resources:
           }
         }
 
-  Parameter8:
+  Parameter3:
     Type: AWS::SSM::Parameter
     Properties:
       Name: /all_in_one_ai/config/meta/algorithms/yolov5/greengrass/components/com.example.yolov5/deployment/iot_job_configurations
@@ -135,68 +84,103 @@ Resources:
           }
         }
 
-  Parameter9:
-    Type: AWS::SSM::Parameter
-    Properties:
-      Name: /all_in_one_ai/config/meta/api_table
-      Type: String
-      Value: all_in_one_ai_api
-  
-  Parameter10:
-    Type: AWS::SSM::Parameter
-    Properties:
-      Name: /all_in_one_ai/config/meta/endpoint_table
-      Type: String
-      Value: all_in_one_ai_endpoint
-
-  Parameter11:
-    Type: AWS::SSM::Parameter
-    Properties:
-      Name: /all_in_one_ai/config/meta/industrial_model_table
-      Type: String
-      Value: !Sub all_in_one_ai_industrial_model
-
-  Parameter12:
-    Type: AWS::SSM::Parameter
-    Properties:
-      Name: /all_in_one_ai/config/meta/model_table
-      Type: String
-      Value: all_in_one_ai_model
-
-  Parameter13:
-    Type: AWS::SSM::Parameter
-    Properties:
-      Name: /all_in_one_ai/config/meta/pipeline/create_pipeline_helper_lambda_arn
-      Type: String
-      Value: !Ref CreatePipelineHelperLambdaArn
-
-  Parameter14:
-    Type: AWS::SSM::Parameter
-    Properties:
-      Name: /all_in_one_ai/config/meta/pipeline_table
-      Type: String
-      Value: all_in_one_ai_pipeline
-
-  Parameter15:
+  Parameter4:
     Type: AWS::SSM::Parameter
     Properties:
       Name: /all_in_one_ai/config/meta/sagemaker_role_arn
       Type: String
       Value: !Ref SageMakerRole
 
-  Parameter16:
+  Parameter5:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /all_in_one_ai/config/meta/algorithms/yolov5paddleocr/industrialmodels
+      Type: String
+      Value: !Sub s3://${S3Bucket}/${S3Key}algorithms/yolov5paddleocr/industrialmodels/
+
+  Parameter6:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /all_in_one_ai/config/meta/algorithms/yolov5gluoncv/industrialmodels
+      Type: String
+      Value: !Sub s3://${S3Bucket}/${S3Key}algorithms/yolov5gluoncv/industrialmodels/
+
+  Parameter7:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /all_in_one_ai/config/meta/api_table
+      Type: String
+      Value: all_in_one_ai_api
+  
+  Parameter8:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /all_in_one_ai/config/meta/endpoint_table
+      Type: String
+      Value: all_in_one_ai_endpoint
+
+  Parameter9:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /all_in_one_ai/config/meta/industrial_model_table
+      Type: String
+      Value: !Sub all_in_one_ai_industrial_model
+
+  Parameter10:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /all_in_one_ai/config/meta/model_table
+      Type: String
+      Value: all_in_one_ai_model
+
+  Parameter11:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /all_in_one_ai/config/meta/pipeline/create_pipeline_helper_lambda_arn
+      Type: String
+      Value: !Ref CreatePipelineHelperLambdaArn
+
+  Parameter12:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /all_in_one_ai/config/meta/pipeline_table
+      Type: String
+      Value: all_in_one_ai_pipeline
+
+  Parameter13:
     Type: AWS::SSM::Parameter
     Properties:
       Name: /all_in_one_ai/config/meta/training_job_table
       Type: String
       Value: all_in_one_ai_training_job
 
-  Parameter17:
+  Parameter14:
     Type: AWS::SSM::Parameter
     Properties:
       Name: /all_in_one_ai/config/meta/transform_job_table
       Type: String
       Value: all_in_one_ai_transform_job
+
+  Parameter15:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /all_in_one_ai/config/meta/algorithms/yolov5/industrialmodels
+      Type: String
+      Value: !Sub s3://${S3Bucket}/${S3Key}algorithms/yolov5/industrialmodels/
+
+  Parameter16:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /all_in_one_ai/config/meta/algorithms/yolov5/industrialmodels
+      Type: String
+      Value: !Sub s3://${S3Bucket}/${S3Key}algorithms/yolov5/industrialmodels/
+
+  Parameter17:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /all_in_one_ai/config/meta/algorithms/yolov5/source
+      Type: String
+      Value: !Sub s3://${S3Bucket}/${S3Key}algorithms/yolov5/source/
 
   Parameter18:
     Type: AWS::SSM::Parameter
@@ -215,20 +199,48 @@ Resources:
   Parameter20:
     Type: AWS::SSM::Parameter
     Properties:
-      Name: /all_in_one_ai/config/meta/algorithms/paddleocr/industrialmodels
+      Name: /all_in_one_ai/config/meta/algorithms/gluoncv/source
       Type: String
-      Value: !Sub s3://${S3Bucket}/${S3Key}algorithms/paddleocr/industrialmodels/
+      Value: !Sub s3://${S3Bucket}/${S3Key}algorithms/gluoncv/source/
 
   Parameter21:
     Type: AWS::SSM::Parameter
     Properties:
-      Name: /all_in_one_ai/config/meta/algorithms/yolov5paddleocr/industrialmodels
+      Name: /all_in_one_ai/config/meta/algorithms/paddleocr/industrialmodels
       Type: String
-      Value: !Sub s3://${S3Bucket}/${S3Key}algorithms/yolov5paddleocr/industrialmodels/
+      Value: !Sub s3://${S3Bucket}/${S3Key}algorithms/paddleocr/industrialmodels/
 
   Parameter22:
     Type: AWS::SSM::Parameter
     Properties:
-      Name: /all_in_one_ai/config/meta/algorithms/yolov5gluoncv/industrialmodels
+      Name: /all_in_one_ai/config/meta/algorithms/paddleocr/source
       Type: String
-      Value: !Sub s3://${S3Bucket}/${S3Key}algorithms/yolov5gluoncv/industrialmodels/
+      Value: !Sub s3://${S3Bucket}/${S3Key}algorithms/paddleocr/source/
+
+  Parameter23:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /all_in_one_ai/config/meta/algorithms/cpt/industrialmodels
+      Type: String
+      Value: !Sub s3://${S3Bucket}/${S3Key}algorithms/cpt/industrialmodels/
+
+  Parameter24:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /all_in_one_ai/config/meta/algorithms/cpt/source
+      Type: String
+      Value: !Sub s3://${S3Bucket}/${S3Key}algorithms/cpt/source/
+
+  Parameter25:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /all_in_one_ai/config/meta/algorithms/gabsa/industrialmodels
+      Type: String
+      Value: !Sub s3://${S3Bucket}/${S3Key}algorithms/gabsa/industrialmodels/
+
+  Parameter26:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /all_in_one_ai/config/meta/algorithms/gabsa/source
+      Type: String
+      Value: !Sub s3://${S3Bucket}/${S3Key}algorithms/gabsa/source/

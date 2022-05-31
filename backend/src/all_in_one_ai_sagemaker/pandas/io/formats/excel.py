@@ -309,7 +309,9 @@ class CSSToExcelConverter:
             return {"fgColor": self.color_to_excel(fill_color), "patternType": "solid"}
 
     def build_number_format(self, props: Mapping[str, str]) -> dict[str, str | None]:
-        return {"format_code": props.get("number-format")}
+        fc = props.get("number-format")
+        fc = fc.replace("§", ";") if isinstance(fc, str) else fc
+        return {"format_code": fc}
 
     def build_font(
         self, props: Mapping[str, str]
@@ -469,8 +471,8 @@ class ExcelFormatter:
         This is only called for body cells.
     """
 
-    max_rows = 2 ** 20
-    max_cols = 2 ** 14
+    max_rows = 2**20
+    max_cols = 2**14
 
     def __init__(
         self,

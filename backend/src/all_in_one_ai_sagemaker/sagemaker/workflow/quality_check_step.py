@@ -14,7 +14,7 @@
 from __future__ import absolute_import
 
 from abc import ABC
-from typing import List, Union
+from typing import List, Union, Optional
 import os
 import pathlib
 import attr
@@ -22,12 +22,13 @@ import attr
 from sagemaker import s3
 from sagemaker.model_monitor import ModelMonitor
 from sagemaker.processing import ProcessingOutput, ProcessingJob, Processor, ProcessingInput
-from sagemaker.workflow import PipelineNonPrimitiveInputTypes, ExecutionVariable, Parameter
+from sagemaker.workflow import PipelineNonPrimitiveInputTypes, is_pipeline_variable
 
-from sagemaker.workflow.entities import RequestType, Expression
+from sagemaker.workflow.entities import RequestType
 from sagemaker.workflow.properties import (
     Properties,
 )
+from sagemaker.workflow.step_collections import StepCollection
 from sagemaker.workflow.steps import Step, StepTypeEnum, CacheConfig
 from sagemaker.workflow.check_job_config import CheckJobConfig
 
@@ -125,7 +126,7 @@ class QualityCheckStep(Step):
         display_name: str = None,
         description: str = None,
         cache_config: CacheConfig = None,
-        depends_on: Union[List[str], List[Step]] = None,
+        depends_on: Optional[List[Union[str, Step, StepCollection]]] = None,
     ):
         """Constructs a QualityCheckStep.
 
@@ -150,8 +151,9 @@ class QualityCheckStep(Step):
             description (str): The description of the QualityCheckStep step (default: None).
             cache_config (CacheConfig):  A `sagemaker.workflow.steps.CacheConfig` instance
                 (default: None).
-            depends_on (List[str] or List[Step]): A list of step names or step instances
-                this `sagemaker.workflow.steps.QualityCheckStep` depends on (default: None).
+            depends_on (List[Union[str, Step, StepCollection]]): A list of `Step`/`StepCollection`
+                names or `Step` instances or `StepCollection` instances that this `QualityCheckStep`
+                depends on (default: None).
         """
         if not isinstance(quality_check_config, DataQualityCheckConfig) and not isinstance(
             quality_check_config, ModelQualityCheckConfig
@@ -279,7 +281,7 @@ class QualityCheckStep(Step):
                 _CONTAINER_BASE_PATH, _CONTAINER_INPUT_PATH, _BASELINE_DATASET_INPUT_NAME
             )
         )
-        if isinstance(baseline_dataset, (ExecutionVariable, Expression, Parameter, Properties)):
+        if is_pipeline_variable(baseline_dataset):
             baseline_dataset_input = ProcessingInput(
                 source=self.quality_check_config.baseline_dataset,
                 destination=baseline_dataset_des,

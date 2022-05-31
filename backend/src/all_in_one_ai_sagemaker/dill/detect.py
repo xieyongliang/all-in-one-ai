@@ -2,7 +2,7 @@
 #
 # Author: Mike McKerns (mmckerns @caltech and @uqfoundation)
 # Copyright (c) 2008-2016 California Institute of Technology.
-# Copyright (c) 2016-2021 The Uncertainty Quantification Foundation.
+# Copyright (c) 2016-2022 The Uncertainty Quantification Foundation.
 # License: 3-clause BSD.  The full license text is available at:
 #  - https://github.com/uqfoundation/dill/blob/master/LICENSE
 """
@@ -157,21 +157,35 @@ def freevars(func):
         func = getattr(func, func_code).co_freevars # get freevars
     else:
         return {}
-    return dict((name,c.cell_contents) for (name,c) in zip(func,closures))
+
+    def get_cell_contents():
+        for (name,c) in zip(func,closures):
+            try:
+                cell_contents = c.cell_contents
+            except:
+                continue
+            yield (name,c.cell_contents)
+
+    return dict(get_cell_contents())
 
 # thanks to Davies Liu for recursion of globals
 def nestedglobals(func, recurse=True):
     """get the names of any globals found within func"""
     func = code(func)
     if func is None: return list()
+    import sys
     from .temp import capture
+    CAN_NULL = sys.hexversion >= 51052711 #NULL may be prepended >= 3.11a7
     names = set()
     with capture('stdout') as out:
         dis.dis(func) #XXX: dis.dis(None) disassembles last traceback
     for line in out.getvalue().splitlines():
         if '_GLOBAL' in line:
             name = line.split('(')[-1].split(')')[0]
-            names.add(name)
+            if CAN_NULL:
+                names.add(name.replace('NULL + ', ''))
+            else:
+                names.add(name)
     for co in getattr(func, 'co_consts', tuple()):
         if co and recurse and iscode(co):
             names.update(nestedglobals(co, recurse=True))
@@ -201,9 +215,14 @@ def globalvars(func, recurse=True, builtin=False):
         # get references from within closure
         orig_func, func = func, set()
         for obj in getattr(orig_func, func_closure) or {}:
-            _vars = globalvars(obj.cell_contents, recurse, builtin) or {}
-            func.update(_vars) #XXX: (above) be wary of infinte recursion?
-            globs.update(_vars)
+            try:
+                cell_contents = obj.cell_contents
+            except:
+                pass
+            else:
+                _vars = globalvars(cell_contents, recurse, builtin) or {}
+                func.update(_vars) #XXX: (above) be wary of infinte recursion?
+                globs.update(_vars)
         # get globals
         globs.update(getattr(orig_func, func_globals) or {})
         # get names of references

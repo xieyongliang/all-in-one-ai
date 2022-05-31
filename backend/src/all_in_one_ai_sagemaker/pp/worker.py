@@ -2,19 +2,11 @@
 #
 # Author: Mike McKerns (mmckerns @caltech and @uqfoundation)
 # Copyright (c) 2015-2016 California Institute of Technology.
-# Copyright (c) 2016-2021 The Uncertainty Quantification Foundation.
+# Copyright (c) 2016-2022 The Uncertainty Quantification Foundation.
 # License: 3-clause BSD.  The full license text is available at:
 #  - https://github.com/uqfoundation/ppft/blob/master/LICENSE
-"""
-ppft worker: ppworker to communicate with ppserver
-"""
-import sys
-if sys.version_info[0] == 2:
-    from pp.__main__ import *
-    from pp.__main__ import _WorkerProcess, __version__
-else:
-    from ppft.__main__ import *
-    from ppft.__main__ import _WorkerProcess, __version__
+from ppft.worker import *
+from ppft.worker import _WorkerProcess, __version__, __doc__
 
 
 if __name__ == "__main__":

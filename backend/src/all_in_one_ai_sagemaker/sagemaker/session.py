@@ -19,6 +19,7 @@ import os
 import re
 import sys
 import time
+import typing
 import warnings
 from typing import List, Dict, Any, Sequence
 
@@ -551,7 +552,6 @@ class Session(object):  # pylint: disable=too-many-public-methods
             retry_strategy(dict): Defines RetryStrategy for InternalServerFailures.
                 * max_retry_attsmpts (int): Number of times a job should be retried.
                 The key in RetryStrategy is 'MaxRetryAttempts'.
-
         Returns:
             str: ARN of the training job, if it is created.
         """
@@ -585,9 +585,13 @@ class Session(object):  # pylint: disable=too-many-public-methods
             environment=environment,
             retry_strategy=retry_strategy,
         )
-        LOGGER.info("Creating training-job with name: %s", job_name)
-        LOGGER.debug("train request: %s", json.dumps(train_request, indent=4))
-        self.sagemaker_client.create_training_job(**train_request)
+
+        def submit(request):
+            LOGGER.info("Creating training-job with name: %s", job_name)
+            LOGGER.debug("train request: %s", json.dumps(request, indent=4))
+            self.sagemaker_client.create_training_job(**request)
+
+        self._intercept_create_request(train_request, submit)
 
     def _get_train_request(  # noqa: C901
         self,
@@ -763,6 +767,8 @@ class Session(object):  # pylint: disable=too-many-public-methods
             train_request["EnableInterContainerTrafficEncryption"] = encrypt_inter_container_traffic
 
         if use_spot_instances:
+            # estimator.use_spot_instances may be a Pipeline ParameterBoolean object
+            # which is parsed during the Pipeline execution runtime
             train_request["EnableManagedSpotTraining"] = use_spot_instances
 
         if checkpoint_s3_uri:
@@ -910,9 +916,13 @@ class Session(object):  # pylint: disable=too-many-public-methods
             tags=tags,
             experiment_config=experiment_config,
         )
-        LOGGER.info("Creating processing-job with name %s", job_name)
-        LOGGER.debug("process request: %s", json.dumps(process_request, indent=4))
-        self.sagemaker_client.create_processing_job(**process_request)
+
+        def submit(request):
+            LOGGER.info("Creating processing-job with name %s", job_name)
+            LOGGER.debug("process request: %s", json.dumps(request, indent=4))
+            self.sagemaker_client.create_processing_job(**request)
+
+        self._intercept_create_request(process_request, submit)
 
     def _get_process_request(
         self,
@@ -1721,6 +1731,7 @@ class Session(object):  # pylint: disable=too-many-public-methods
             (dict): Return value from the ``DescribeAutoMLJob`` API.
 
         Raises:
+            exceptions.CapacityError: If the auto ml job fails with CapacityError.
             exceptions.UnexpectedStatusException: If the auto ml job fails.
         """
         desc = _wait_until(lambda: _auto_ml_job_status(self.sagemaker_client, job), poll)
@@ -1743,7 +1754,8 @@ class Session(object):  # pylint: disable=too-many-public-methods
                 completion (default: 5).
 
         Raises:
-            exceptions.UnexpectedStatusException: If waiting and the training job fails.
+            exceptions.CapacityError: If waiting and auto ml job fails with CapacityError.
+            exceptions.UnexpectedStatusException: If waiting and auto ml job fails.
         """
 
         description = self.sagemaker_client.describe_auto_ml_job(AutoMLJobName=job_name)
@@ -2082,9 +2094,12 @@ class Session(object):  # pylint: disable=too-many-public-methods
             tags=tags,
         )
 
-        LOGGER.info("Creating hyperparameter tuning job with name: %s", job_name)
-        LOGGER.debug("tune request: %s", json.dumps(tune_request, indent=4))
-        self.sagemaker_client.create_hyper_parameter_tuning_job(**tune_request)
+        def submit(request):
+            LOGGER.info("Creating hyperparameter tuning job with name: %s", job_name)
+            LOGGER.debug("tune request: %s", json.dumps(request, indent=4))
+            self.sagemaker_client.create_hyper_parameter_tuning_job(**request)
+
+        self._intercept_create_request(tune_request, submit)
 
     def _get_tuning_request(
         self,
@@ -2338,13 +2353,17 @@ class Session(object):  # pylint: disable=too-many-public-methods
             training_job_definition["VpcConfig"] = vpc_config
 
         if enable_network_isolation:
-            training_job_definition["EnableNetworkIsolation"] = True
+            training_job_definition["EnableNetworkIsolation"] = enable_network_isolation
 
         if encrypt_inter_container_traffic:
-            training_job_definition["EnableInterContainerTrafficEncryption"] = True
+            training_job_definition[
+                "EnableInterContainerTrafficEncryption"
+            ] = encrypt_inter_container_traffic
 
         if use_spot_instances:
-            training_job_definition["EnableManagedSpotTraining"] = True
+            # use_spot_instances may be a Pipeline ParameterBoolean object
+            # which is parsed during the Pipeline execution runtime
+            training_job_definition["EnableManagedSpotTraining"] = use_spot_instances
 
         if checkpoint_s3_uri:
             checkpoint_config = {"S3Uri": checkpoint_s3_uri}
@@ -2545,9 +2564,12 @@ class Session(object):  # pylint: disable=too-many-public-methods
             model_client_config=model_client_config,
         )
 
-        LOGGER.info("Creating transform job with name: %s", job_name)
-        LOGGER.debug("Transform request: %s", json.dumps(transform_request, indent=4))
-        self.sagemaker_client.create_transform_job(**transform_request)
+        def submit(request):
+            LOGGER.info("Creating transform job with name: %s", job_name)
+            LOGGER.debug("Transform request: %s", json.dumps(request, indent=4))
+            self.sagemaker_client.create_transform_job(**request)
+
+        self._intercept_create_request(transform_request, submit)
 
     def _create_model_request(
         self,
@@ -2657,23 +2679,24 @@ class Session(object):  # pylint: disable=too-many-public-methods
             primary_container=primary_container,
             tags=tags,
         )
-        LOGGER.info("Creating model with name: %s", name)
-        LOGGER.debug("CreateModel request: %s", json.dumps(create_model_request, indent=4))
 
-        try:
-            self.sagemaker_client.create_model(**create_model_request)
-        except ClientError as e:
-            error_code = e.response["Error"]["Code"]
-            message = e.response["Error"]["Message"]
+        def submit(request):
+            LOGGER.info("Creating model with name: %s", name)
+            LOGGER.debug("CreateModel request: %s", json.dumps(request, indent=4))
+            try:
+                self.sagemaker_client.create_model(**request)
+            except ClientError as e:
+                error_code = e.response["Error"]["Code"]
+                message = e.response["Error"]["Message"]
+                if (
+                    error_code == "ValidationException"
+                    and "Cannot create already existing model" in message
+                ):
+                    LOGGER.warning("Using already existing model: %s", name)
+                else:
+                    raise
 
-            if (
-                error_code == "ValidationException"
-                and "Cannot create already existing model" in message
-            ):
-                LOGGER.warning("Using already existing model: %s", name)
-            else:
-                raise
-
+        self._intercept_create_request(create_model_request, submit, self.create_model.__name__)
         return name
 
     def create_model_from_job(
@@ -2779,6 +2802,8 @@ class Session(object):  # pylint: disable=too-many-public-methods
         description=None,
         drift_check_baselines=None,
         customer_metadata_properties=None,
+        validation_specification=None,
+        domain=None,
     ):
         """Get request dictionary for CreateModelPackage API.
 
@@ -2806,10 +2831,11 @@ class Session(object):  # pylint: disable=too-many-public-methods
             drift_check_baselines (DriftCheckBaselines): DriftCheckBaselines object (default: None).
             customer_metadata_properties (dict[str, str]): A dictionary of key-value paired
                 metadata properties (default: None).
-
+            domain (str): Domain values can be "COMPUTER_VISION", "NATURAL_LANGUAGE_PROCESSING",
+                "MACHINE_LEARNING" (default: None).
         """
 
-        request = get_create_model_package_request(
+        model_pkg_request = get_create_model_package_request(
             model_package_name,
             model_package_group_name,
             containers,
@@ -2824,17 +2850,25 @@ class Session(object):  # pylint: disable=too-many-public-methods
             description,
             drift_check_baselines=drift_check_baselines,
             customer_metadata_properties=customer_metadata_properties,
+            validation_specification=validation_specification,
+            domain=domain,
         )
-        if model_package_group_name is not None:
-            try:
-                self.sagemaker_client.describe_model_package_group(
-                    ModelPackageGroupName=request["ModelPackageGroupName"]
-                )
-            except ClientError:
-                self.sagemaker_client.create_model_package_group(
-                    ModelPackageGroupName=request["ModelPackageGroupName"]
-                )
-        return self.sagemaker_client.create_model_package(**request)
+
+        def submit(request):
+            if model_package_group_name is not None:
+                try:
+                    self.sagemaker_client.describe_model_package_group(
+                        ModelPackageGroupName=request["ModelPackageGroupName"]
+                    )
+                except ClientError:
+                    self.sagemaker_client.create_model_package_group(
+                        ModelPackageGroupName=request["ModelPackageGroupName"]
+                    )
+            return self.sagemaker_client.create_model_package(**request)
+
+        return self._intercept_create_request(
+            model_pkg_request, submit, self.create_model_package_from_containers.__name__
+        )
 
     def wait_for_model_package(self, model_package_name, poll=5):
         """Wait for an Amazon SageMaker endpoint deployment to complete.
@@ -2845,6 +2879,10 @@ class Session(object):  # pylint: disable=too-many-public-methods
 
         Returns:
             dict: Return value from the ``DescribeEndpoint`` API.
+
+        Raises:
+            exceptions.CapacityError: If the Model Package job fails with CapacityError.
+            exceptions.UnexpectedStatusException: If waiting and the Model Package job fails.
         """
         desc = _wait_until(
             lambda: _create_model_package_status(self.sagemaker_client, model_package_name), poll
@@ -2853,10 +2891,17 @@ class Session(object):  # pylint: disable=too-many-public-methods
 
         if status != "Completed":
             reason = desc.get("FailureReason", None)
+            message = "Error creating model package {package}: {status} Reason: {reason}".format(
+                package=model_package_name, status=status, reason=reason
+            )
+            if "CapacityError" in str(reason):
+                raise exceptions.CapacityError(
+                    message=message,
+                    allowed_statuses=["InService"],
+                    actual_status=status,
+                )
             raise exceptions.UnexpectedStatusException(
-                message="Error creating model package {package}: {status} Reason: {reason}".format(
-                    package=model_package_name, status=status, reason=reason
-                ),
+                message=message,
                 allowed_statuses=["Completed"],
                 actual_status=status,
             )
@@ -3147,6 +3192,7 @@ class Session(object):  # pylint: disable=too-many-public-methods
             (dict): Return value from the ``DescribeTrainingJob`` API.
 
         Raises:
+            exceptions.CapacityError: If the training job fails with CapacityError.
             exceptions.UnexpectedStatusException: If the training job fails.
         """
         desc = _wait_until_training_done(
@@ -3166,7 +3212,8 @@ class Session(object):  # pylint: disable=too-many-public-methods
             (dict): Return value from the ``DescribeProcessingJob`` API.
 
         Raises:
-            exceptions.UnexpectedStatusException: If the compilation job fails.
+            exceptions.CapacityError: If the processing job fails with CapacityError.
+            exceptions.UnexpectedStatusException: If the processing job fails.
         """
         desc = _wait_until(lambda: _processing_job_status(self.sagemaker_client, job), poll)
         self._check_job_status(job, desc, "ProcessingJobStatus")
@@ -3183,6 +3230,7 @@ class Session(object):  # pylint: disable=too-many-public-methods
             (dict): Return value from the ``DescribeCompilationJob`` API.
 
         Raises:
+            exceptions.CapacityError: If the compilation job fails with CapacityError.
             exceptions.UnexpectedStatusException: If the compilation job fails.
         """
         desc = _wait_until(lambda: _compilation_job_status(self.sagemaker_client, job), poll)
@@ -3200,7 +3248,8 @@ class Session(object):  # pylint: disable=too-many-public-methods
             (dict): Return value from the ``DescribeEdgePackagingJob`` API.
 
         Raises:
-            exceptions.UnexpectedStatusException: If the compilation job fails.
+            exceptions.CapacityError: If the edge packaging job fails with CapacityError.
+            exceptions.UnexpectedStatusException: If the edge packaging job fails.
         """
         desc = _wait_until(lambda: _edge_packaging_job_status(self.sagemaker_client, job), poll)
         self._check_job_status(job, desc, "EdgePackagingJobStatus")
@@ -3217,6 +3266,7 @@ class Session(object):  # pylint: disable=too-many-public-methods
             (dict): Return value from the ``DescribeHyperParameterTuningJob`` API.
 
         Raises:
+            exceptions.CapacityError: If the hyperparameter tuning job fails with CapacityError.
             exceptions.UnexpectedStatusException: If the hyperparameter tuning job fails.
         """
         desc = _wait_until(lambda: _tuning_job_status(self.sagemaker_client, job), poll)
@@ -3245,6 +3295,7 @@ class Session(object):  # pylint: disable=too-many-public-methods
             (dict): Return value from the ``DescribeTransformJob`` API.
 
         Raises:
+            exceptions.CapacityError: If the transform job fails with CapacityError.
             exceptions.UnexpectedStatusException: If the transform job fails.
         """
         desc = _wait_until(lambda: _transform_job_status(self.sagemaker_client, job), poll)
@@ -3283,6 +3334,7 @@ class Session(object):  # pylint: disable=too-many-public-methods
             status_key_name (str): Status key name to check for.
 
         Raises:
+            exceptions.CapacityError: If the training job fails with CapacityError.
             exceptions.UnexpectedStatusException: If the training job fails.
         """
         status = desc[status_key_name]
@@ -3298,10 +3350,17 @@ class Session(object):  # pylint: disable=too-many-public-methods
         elif status != "Completed":
             reason = desc.get("FailureReason", "(No reason provided)")
             job_type = status_key_name.replace("JobStatus", " job")
+            message = "Error for {job_type} {job_name}: {status}. Reason: {reason}".format(
+                job_type=job_type, job_name=job, status=status, reason=reason
+            )
+            if "CapacityError" in str(reason):
+                raise exceptions.CapacityError(
+                    message=message,
+                    allowed_statuses=["Completed", "Stopped"],
+                    actual_status=status,
+                )
             raise exceptions.UnexpectedStatusException(
-                message="Error for {job_type} {job_name}: {status}. Reason: {reason}".format(
-                    job_type=job_type, job_name=job, status=status, reason=reason
-                ),
+                message=message,
                 allowed_statuses=["Completed", "Stopped"],
                 actual_status=status,
             )
@@ -3313,6 +3372,10 @@ class Session(object):  # pylint: disable=too-many-public-methods
             endpoint (str): Name of the ``Endpoint`` to wait for.
             poll (int): Polling interval in seconds (default: 5).
 
+        Raises:
+            exceptions.CapacityError: If the endpoint creation job fails with CapacityError.
+            exceptions.UnexpectedStatusException: If the endpoint creation job fails.
+
         Returns:
             dict: Return value from the ``DescribeEndpoint`` API.
         """
@@ -3321,10 +3384,17 @@ class Session(object):  # pylint: disable=too-many-public-methods
 
         if status != "InService":
             reason = desc.get("FailureReason", None)
+            message = "Error hosting endpoint {endpoint}: {status}. Reason: {reason}.".format(
+                endpoint=endpoint, status=status, reason=reason
+            )
+            if "CapacityError" in str(reason):
+                raise exceptions.CapacityError(
+                    message=message,
+                    allowed_statuses=["InService"],
+                    actual_status=status,
+                )
             raise exceptions.UnexpectedStatusException(
-                message="Error hosting endpoint {endpoint}: {status}. Reason: {reason}.".format(
-                    endpoint=endpoint, status=status, reason=reason
-                ),
+                message=message,
                 allowed_statuses=["InService"],
                 actual_status=status,
             )
@@ -3649,6 +3719,7 @@ class Session(object):  # pylint: disable=too-many-public-methods
                 completion (default: 5).
 
         Raises:
+            exceptions.CapacityError: If the training job fails with CapacityError.
             exceptions.UnexpectedStatusException: If waiting and the training job fails.
         """
 
@@ -4116,6 +4187,21 @@ class Session(object):  # pylint: disable=too-many-public-methods
         )
         return sts_client.get_caller_identity()["Account"]
 
+    def _intercept_create_request(
+        self, request: typing.Dict, create, func_name: str = None  # pylint: disable=unused-argument
+    ):
+        """This function intercepts the create job request.
+
+        PipelineSession inherits this Session class and will override
+        this function to intercept the create request.
+
+        Args:
+            request (dict): the create job request
+            create (functor): a functor calls the sagemaker client create method
+            func_name (str): the name of the function needed intercepting
+        """
+        return create(request)
+
 
 def get_model_package_args(
     content_types,
@@ -4135,6 +4221,8 @@ def get_model_package_args(
     container_def_list=None,
     drift_check_baselines=None,
     customer_metadata_properties=None,
+    validation_specification=None,
+    domain=None,
 ):
     """Get arguments for create_model_package method.
 
@@ -4165,6 +4253,8 @@ def get_model_package_args(
         drift_check_baselines (DriftCheckBaselines): DriftCheckBaselines object (default: None).
         customer_metadata_properties (dict[str, str]): A dictionary of key-value paired
             metadata properties (default: None).
+        domain (str): Domain values can be "COMPUTER_VISION", "NATURAL_LANGUAGE_PROCESSING",
+            "MACHINE_LEARNING" (default: None).
     Returns:
         dict: A dictionary of method argument names and values.
     """
@@ -4204,6 +4294,10 @@ def get_model_package_args(
         model_package_args["tags"] = tags
     if customer_metadata_properties is not None:
         model_package_args["customer_metadata_properties"] = customer_metadata_properties
+    if validation_specification is not None:
+        model_package_args["validation_specification"] = validation_specification
+    if domain is not None:
+        model_package_args["domain"] = domain
     return model_package_args
 
 
@@ -4223,6 +4317,8 @@ def get_create_model_package_request(
     tags=None,
     drift_check_baselines=None,
     customer_metadata_properties=None,
+    validation_specification=None,
+    domain=None,
 ):
     """Get request dictionary for CreateModelPackage API.
 
@@ -4251,6 +4347,8 @@ def get_create_model_package_request(
         drift_check_baselines (DriftCheckBaselines): DriftCheckBaselines object (default: None).
         customer_metadata_properties (dict[str, str]): A dictionary of key-value paired
             metadata properties (default: None).
+        domain (str): Domain values can be "COMPUTER_VISION", "NATURAL_LANGUAGE_PROCESSING",
+            "MACHINE_LEARNING" (default: None).
     """
 
     if all([model_package_name, model_package_group_name]):
@@ -4274,6 +4372,10 @@ def get_create_model_package_request(
         request_dict["MetadataProperties"] = metadata_properties
     if customer_metadata_properties is not None:
         request_dict["CustomerMetadataProperties"] = customer_metadata_properties
+    if validation_specification:
+        request_dict["ValidationSpecification"] = validation_specification
+    if domain is not None:
+        request_dict["Domain"] = domain
     if containers is not None:
         if not all([content_types, response_types, inference_instances, transform_instances]):
             raise ValueError(
