@@ -76,6 +76,16 @@ Resources:
       LayerName: all_in_one_ai_sagemaker
       LicenseInfo: MIT
 
+  ToolsLayer:
+    Type: AWS::Lambda::LayerVersion
+    Properties:
+      Content:
+        S3Bucket: !Ref S3Bucket
+        S3Key: !Sub ${S3Key}codes/all_in_one_ai_tools.zip
+      Description: Tools layer
+      LayerName: all_in_one_ai_tools
+      LicenseInfo: MIT
+
   ApiGatewayRestApi:
     Type: AWS::ApiGateway::RestApi
     Properties:
@@ -3625,7 +3635,7 @@ Resources:
       Layers:
         - !Ref HelperLayer
         - !Ref SageMakerLayer
-        - !Sub 'arn:aws:lambda:us-east-1:${AWS::Region}:layer:git-lambda2:8'
+        - !Ref ToolsLayer
       FileSystemConfigs:
         - Arn: !Ref EfsAccessPointArn
           LocalMountPath: "/mnt/efs"
