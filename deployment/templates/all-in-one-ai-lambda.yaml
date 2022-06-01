@@ -76,15 +76,6 @@ Resources:
       LayerName: all_in_one_ai_sagemaker
       LicenseInfo: MIT
 
-  GitLayer:
-    Type: AWS::Lambda::LayerVersion
-    Properties:
-      CompatibleRuntimes:
-        - python3.9
-      Description: Git layer
-      LayerName: !Sub 'arn:aws:lambda:us-east-1:${AWS::Region}:layer:git-lambda2:8'
-      LicenseInfo: MIT
-
   ApiGatewayRestApi:
     Type: AWS::ApiGateway::RestApi
     Properties:
@@ -3634,7 +3625,7 @@ Resources:
       Layers:
         - !Ref HelperLayer
         - !Ref SageMakerLayer
-        - !Ref GitLayer
+        - !Sub 'arn:aws:lambda:us-east-1:${AWS::Region}:layer:git-lambda2:8'
       FileSystemConfigs:
         - Arn: !Ref EfsAccessPointArn
           LocalMountPath: "/mnt/efs"
