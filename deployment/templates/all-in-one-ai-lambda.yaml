@@ -3587,16 +3587,12 @@ Resources:
           - 'arn:aws-cn:iam::aws:policy/AmazonSageMakerFullAccess'
         - !If
           - Globally                                                  
-          - 'arn:aws:iam::aws:policy/AmazonS3FullAccess'
-          - 'arn:aws-cn:iam::aws:policy/AmazonS3FullAccess'
-        - !If
-          - Globally                                                  
           - 'arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess'
           - 'arn:aws-cn:iam::aws:policy/AmazonDynamoDBFullAccess'   
         - !If
           - Globally                                                  
-          - 'arn:aws:iam::aws:policy/AmazonSageMakerFullAccess'
-          - 'arn:aws-cn:iam::aws:policy/AmazonSageMakerFullAccess'     
+          - 'arn:aws:iam::aws:policy/AmazonSSMFullAccess'
+          - 'arn:aws-cn:iam::aws:policy/AmazonSSMFullAccess'    
   
   AllInOneAICreateTrainPytorchFunctionAdditionalPermission:
     Type: 'AWS::IAM::Policy'
@@ -3666,16 +3662,12 @@ Resources:
           - 'arn:aws-cn:iam::aws:policy/AmazonSageMakerFullAccess'
         - !If
           - Globally                                                  
-          - 'arn:aws:iam::aws:policy/AmazonS3FullAccess'
-          - 'arn:aws-cn:iam::aws:policy/AmazonS3FullAccess'
-        - !If
-          - Globally                                                  
           - 'arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess'
           - 'arn:aws-cn:iam::aws:policy/AmazonDynamoDBFullAccess'   
         - !If
           - Globally                                                  
-          - 'arn:aws:iam::aws:policy/AmazonSageMakerFullAccess'
-          - 'arn:aws-cn:iam::aws:policy/AmazonSageMakerFullAccess'     
+          - 'arn:aws:iam::aws:policy/AmazonSSMFullAccess'
+          - 'arn:aws-cn:iam::aws:policy/AmazonSSMFullAccess'  
   
   AllInOneAICreateTrainMxnetFunctionAdditionalPermission:
     Type: 'AWS::IAM::Policy'
@@ -3744,16 +3736,12 @@ Resources:
           - 'arn:aws-cn:iam::aws:policy/AmazonSageMakerFullAccess'
         - !If
           - Globally                                                  
-          - 'arn:aws:iam::aws:policy/AmazonS3FullAccess'
-          - 'arn:aws-cn:iam::aws:policy/AmazonS3FullAccess'
-        - !If
-          - Globally                                                  
           - 'arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess'
           - 'arn:aws-cn:iam::aws:policy/AmazonDynamoDBFullAccess'   
         - !If
           - Globally                                                  
-          - 'arn:aws:iam::aws:policy/AmazonSageMakerFullAccess'
-          - 'arn:aws-cn:iam::aws:policy/AmazonSageMakerFullAccess'     
+          - 'arn:aws:iam::aws:policy/AmazonSSMFullAccess'
+          - 'arn:aws-cn:iam::aws:policy/AmazonSSMFullAccess'    
   
   AllInOneAICreateTrainHuggingfaceFunctionAdditionalPermission:
     Type: 'AWS::IAM::Policy'
@@ -3943,8 +3931,8 @@ Resources:
           - 'arn:aws-cn:iam::aws:policy/AmazonDynamoDBFullAccess'   
         - !If
           - Globally                                                  
-          - 'arn:aws:iam::aws:policy/AmazonSageMakerFullAccess'
-          - 'arn:aws-cn:iam::aws:policy/AmazonSageMakerFullAccess'     
+          - 'arn:aws:iam::aws:policy/AmazonSSMFullAccess'
+          - 'arn:aws-cn:iam::aws:policy/AmazonSSMFullAccess'       
   
   AllInOneAICreateDeployPytorchFunctionAdditionalPermission:
     Type: 'AWS::IAM::Policy'
@@ -4021,8 +4009,8 @@ Resources:
           - 'arn:aws-cn:iam::aws:policy/AmazonDynamoDBFullAccess'   
         - !If
           - Globally                                                  
-          - 'arn:aws:iam::aws:policy/AmazonSageMakerFullAccess'
-          - 'arn:aws-cn:iam::aws:policy/AmazonSageMakerFullAccess'     
+          - 'arn:aws:iam::aws:policy/AmazonSSMFullAccess'
+          - 'arn:aws-cn:iam::aws:policy/AmazonSSMFullAccess'       
   
   AllInOneAICreateDeployMxnetFunctionAdditionalPermission:
     Type: 'AWS::IAM::Policy'
@@ -4099,8 +4087,8 @@ Resources:
           - 'arn:aws-cn:iam::aws:policy/AmazonDynamoDBFullAccess'   
         - !If
           - Globally                                                  
-          - 'arn:aws:iam::aws:policy/AmazonSageMakerFullAccess'
-          - 'arn:aws-cn:iam::aws:policy/AmazonSageMakerFullAccess'     
+          - 'arn:aws:iam::aws:policy/AmazonSSMFullAccess'
+          - 'arn:aws-cn:iam::aws:policy/AmazonSSMFullAccess'   
   
   AllInOneAICreateDeployHuggingfaceFunctionAdditionalPermission:
     Type: 'AWS::IAM::Policy'
