@@ -4068,7 +4068,7 @@ Resources:
         - Arn: !Ref EfsAccessPointArn
           LocalMountPath: "/mnt/efs"
 
-AllInOneAICreateDeployHuggingfaceFunctionRole:
+  AllInOneAICreateDeployHuggingfaceFunctionRole:
     Type: 'AWS::IAM::Role'
     Properties:
       AssumeRolePolicyDocument:
