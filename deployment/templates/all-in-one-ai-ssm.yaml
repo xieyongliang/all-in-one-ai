@@ -171,74 +171,60 @@ Resources:
   Parameter16:
     Type: AWS::SSM::Parameter
     Properties:
-      Name: /all_in_one_ai/config/meta/algorithms/yolov5/industrialmodels
-      Type: String
-      Value: !Sub s3://${S3Bucket}/${S3Key}algorithms/yolov5/industrialmodels/
-
-  Parameter17:
-    Type: AWS::SSM::Parameter
-    Properties:
       Name: /all_in_one_ai/config/meta/algorithms/yolov5/source
       Type: String
       Value: !Sub s3://${S3Bucket}/${S3Key}algorithms/yolov5/source/
 
-  Parameter18:
-    Type: AWS::SSM::Parameter
-    Properties:
-      Name: /all_in_one_ai/config/meta/algorithms/yolov5/industrialmodels
-      Type: String
-      Value: !Sub s3://${S3Bucket}/${S3Key}algorithms/yolov5/industrialmodels/
-
-  Parameter19:
+  Parameter17:
     Type: AWS::SSM::Parameter
     Properties:
       Name: /all_in_one_ai/config/meta/algorithms/gluoncv/industrialmodels
       Type: String
       Value: !Sub s3://${S3Bucket}/${S3Key}algorithms/gluoncv/industrialmodels/
 
-  Parameter20:
+  Parameter18:
     Type: AWS::SSM::Parameter
     Properties:
       Name: /all_in_one_ai/config/meta/algorithms/gluoncv/source
       Type: String
       Value: !Sub s3://${S3Bucket}/${S3Key}algorithms/gluoncv/source/
 
-  Parameter21:
+  Parameter19:
     Type: AWS::SSM::Parameter
     Properties:
       Name: /all_in_one_ai/config/meta/algorithms/paddleocr/industrialmodels
       Type: String
       Value: !Sub s3://${S3Bucket}/${S3Key}algorithms/paddleocr/industrialmodels/
 
-  Parameter22:
+  Parameter20:
     Type: AWS::SSM::Parameter
     Properties:
       Name: /all_in_one_ai/config/meta/algorithms/paddleocr/source
       Type: String
       Value: !Sub s3://${S3Bucket}/${S3Key}algorithms/paddleocr/source/
 
-  Parameter23:
+  Parameter21:
     Type: AWS::SSM::Parameter
     Properties:
       Name: /all_in_one_ai/config/meta/algorithms/cpt/industrialmodels
       Type: String
       Value: !Sub s3://${S3Bucket}/${S3Key}algorithms/cpt/industrialmodels/
 
-  Parameter24:
+  Parameter22:
     Type: AWS::SSM::Parameter
     Properties:
       Name: /all_in_one_ai/config/meta/algorithms/cpt/source
       Type: String
       Value: !Sub s3://${S3Bucket}/${S3Key}algorithms/cpt/source/
 
-  Parameter25:
+  Parameter23:
     Type: AWS::SSM::Parameter
     Properties:
       Name: /all_in_one_ai/config/meta/algorithms/gabsa/industrialmodels
       Type: String
       Value: !Sub s3://${S3Bucket}/${S3Key}algorithms/gabsa/industrialmodels/
 
-  Parameter26:
+  Parameter24:
     Type: AWS::SSM::Parameter
     Properties:
       Name: /all_in_one_ai/config/meta/algorithms/gabsa/source

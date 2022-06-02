@@ -64,17 +64,7 @@ echo "--------------------------------------------------------------------------
 echo "[Rebuild] all_in_one_ai_tools lambda functions"
 echo "------------------------------------------------------------------------------"
 
-echo ${source_dir}
-cd ${source_dir}/all_in_one_ai_tools
-rm -r ${build_dir}
-
-mkdir -p ${build_dir}/tools/
-
-cp -R * ${build_dir}/tools/
-cd ${build_dir}/tools
-zip -r9 all_in_one_ai_tools.zip .
-cp ${build_dir}/all_in_one_ai_tools.zip $build_dist_dir/all_in_one_ai_tools.zip
-rm ${build_dir}/all_in_one_ai_tools.zip
+cp ${source_dir}/all_in_one_ai_tools/all_in_one_ai_tools.zip $build_dist_dir/all_in_one_ai_tools.zip
 
 echo "------------------------------------------------------------------------------"
 echo "[Rebuild] other all_in_one_ai_* lambda functions"
