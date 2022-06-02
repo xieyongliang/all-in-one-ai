@@ -1,5 +1,5 @@
 import { Button, Container, Form, FormField, FormSection, Input, Select, Stack, Textarea } from "aws-northstar";
-import { FunctionComponent, useEffect, useMemo, useState } from "react";
+import { FunctionComponent, useEffect, useState } from "react";
 import axios from "axios";
 import FileUpload from 'aws-northstar/components/FileUpload';
 import { FileMetadata } from "aws-northstar/components/FileUpload/types";
@@ -24,16 +24,16 @@ const IndustrialModelForm: FunctionComponent<IProps> = (props) => {
     const [ modelLables, setModelLabels ] = useState('')
     const [ fileName, setFileName ] = useState('')
     const [ processing, setProcessing ] = useState(false)
+    const [ algorithmOptions, setAlgorithmOptions ] = useState([])
 
-    const algorithmOptions = useMemo(
-        ()=>[],[]
-    );    
 
     useEffect(() => {
+        var algorithmOptions = []
         ALGORITHMS.forEach((item)=> {
             algorithmOptions.push({label: item.label, value: item.value})
         })
-    }, [algorithmOptions])
+        setAlgorithmOptions(algorithmOptions)
+    }, [])
 
     const onChange = (id, event) => {
         if(id === 'formFieldIdModelName')
