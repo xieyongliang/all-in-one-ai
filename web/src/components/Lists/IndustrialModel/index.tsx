@@ -23,7 +23,7 @@ interface IProps {
 
 const IndustrialModelList: FunctionComponent<IProps> = (props) => {
     const [ itemsModels, setItemsModels ] = useState([])
-    const [ loading, setLoading ] = useState(true)
+    const [ loading, setLoading ] = useState(false)
     const [ industrialModel, setIndustrialModel ] = useState<IIndustrialModel>()
     const [ visibleIndustrialModelForm, setVisibleIndustrialModelForm ] = useState(false)
     const [ visibleIndustrialModelProp, setVisibleIndustrialModelProp ] = useState(false)
@@ -55,16 +55,19 @@ const IndustrialModelList: FunctionComponent<IProps> = (props) => {
 
     const onRefresh = useCallback(()=> {
         var items = []
-        industrialModels.forEach((item) => {
-            var s3uri = item.icon;
-            getHttpUri(s3uri).then((data) => {
-                items.push({id: item.id, name: item.name, description: item.description, algorithm: item.algorithm, icon: s3uri, httpuri: data.payload, samples: item.samples, labels: item.labels});
-                if(items.length === industrialModels.length) {
-                    setItemsModels(items)
-                    setLoading(false)
-                }
+        if(industrialModels.length > 0) {
+            setLoading(true)
+            industrialModels.forEach((item) => {
+                var s3uri = item.icon;
+                getHttpUri(s3uri).then((data) => {
+                    items.push({id: item.id, name: item.name, description: item.description, algorithm: item.algorithm, icon: s3uri, httpuri: data.payload, samples: item.samples, labels: item.labels});
+                    if(items.length === industrialModels.length) {
+                        setItemsModels(items)
+                        setLoading(false)
+                    }
+                })
             })
-        })
+        }
     }, [industrialModels])
 
     const handleClose = () => {

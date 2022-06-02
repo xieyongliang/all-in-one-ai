@@ -18,6 +18,11 @@ Parameters:
     Type: String
     Description: API Prod stage endpoint
 
+  AlbPort:
+    Type: Number
+    Description: Alb port
+    Default: 80
+
   ChinaRegion: 
     Description: Check if the stack to be in CN Region
     Type: String
@@ -42,8 +47,8 @@ Resources:
     Properties:
       GroupId: !Ref EcsSecurityGroup
       IpProtocol: tcp
-      FromPort: 3000
-      ToPort: 3000
+      FromPort: !Sub ${AlbPort}
+      ToPort: !Sub ${AlbPort}
       SourceSecurityGroupId: !Ref AlbSecurityGroup
  
   AlbSecurityGroup:
@@ -57,8 +62,8 @@ Resources:
     Properties:
       GroupId: !Ref AlbSecurityGroup
       IpProtocol: tcp
-      FromPort: 80
-      ToPort: 80
+      FromPort: 3000
+      ToPort: 3000
       CidrIp: 0.0.0.0/0
  
   CloudwatchLogsGroup:
@@ -137,7 +142,7 @@ Resources:
         - Type: forward
           TargetGroupArn: !Ref ECSTG
       LoadBalancerArn: !Ref ECSALB
-      Port: '80'
+      Port: '3000'
       Protocol: HTTP
 
   ECSTG:
