@@ -100,6 +100,11 @@ Parameters:
     Description: "InstanceCount"
     Default: 1
 
+  AlbPort:
+    Type: Number
+    Description: Alb port
+    Default: 80
+
   ChinaRegion: 
     Description: Check if the stack to be in CN Region
     Type: String
@@ -251,6 +256,7 @@ Resources:
         PrivateSubnets: !Join [",", [!GetAtt VPC.Outputs.PrivateSubnet1, !GetAtt VPC.Outputs.PrivateSubnet2]]
         PublicSubnets: !Join [",", [!GetAtt VPC.Outputs.PublicSubnet1, !GetAtt VPC.Outputs.PublicSubnet2]]
         ApiGatewayProdEndpoint: !GetAtt LAMBDA.Outputs.ApiGatewayProdEndpoint
+        AlbPort: !Ref AlbPort
         ChinaRegion: !Ref ChinaRegion
       TemplateURL: 
         !If
