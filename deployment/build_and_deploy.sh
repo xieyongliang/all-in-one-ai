@@ -12,7 +12,7 @@ dirlist=$(find ${project_dir}/sagemaker -mindepth 1 -maxdepth 1 -type d)
 for subdir in $dirlist
 do
     cd ${subdir}
-    IFS='/' read -a array <<< ${subdir}
+    array=($(echo ${subdir} | tr "/" "\n"))
     size=${#array[@]}
     index=$((size - 1))
     algorithm=${array[$index]}
