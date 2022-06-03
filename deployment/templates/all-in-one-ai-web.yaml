@@ -47,8 +47,8 @@ Resources:
     Properties:
       GroupId: !Ref EcsSecurityGroup
       IpProtocol: tcp
-      FromPort: !Sub ${AlbPort}
-      ToPort: !Sub ${AlbPort}
+      FromPort: 3000
+      ToPort: 3000
       SourceSecurityGroupId: !Ref AlbSecurityGroup
  
   AlbSecurityGroup:
@@ -62,8 +62,8 @@ Resources:
     Properties:
       GroupId: !Ref AlbSecurityGroup
       IpProtocol: tcp
-      FromPort: 3000
-      ToPort: 3000
+      FromPort: !Sub ${AlbPort}
+      ToPort: !Sub ${AlbPort}
       CidrIp: 0.0.0.0/0
  
   CloudwatchLogsGroup:
@@ -142,7 +142,7 @@ Resources:
         - Type: forward
           TargetGroupArn: !Ref ECSTG
       LoadBalancerArn: !Ref ECSALB
-      Port: '3000'
+      Port: !Sub ${AlbPort}
       Protocol: HTTP
 
   ECSTG:
