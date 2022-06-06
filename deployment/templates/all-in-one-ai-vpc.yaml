@@ -137,7 +137,7 @@ Resources:
       VpcId: !Ref VPC
       Tags:
         - Key: Name
-          Value: 'RouteTablePublicSubnet'
+          Value: 'Public Route Table'
 
   PublicSubnet1RouteTableAssoc:
     Type: AWS::EC2::SubnetRouteTableAssociation

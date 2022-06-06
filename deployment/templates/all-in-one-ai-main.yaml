@@ -7,7 +7,7 @@ Parameters:
     Type: String
 
   S3Key:
-    Description: S3 Bucket of assets
+    Description: S3 Key of assets
     Type: String
 
   CustomIdentifier:
