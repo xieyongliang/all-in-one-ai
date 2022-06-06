@@ -86,7 +86,7 @@ Parameters:
 
   OpenSearchDomainName:
     Type: String
-    Description: Domain Name
+    Description: OpenSearch Domain
     Default: all-in-one-ai
   
   OpenSearchInstanceType:
@@ -109,10 +109,10 @@ Parameters:
     Description: Check if the stack to be in CN Region
     Type: String
     Default: false
-    AllowedValues: [ true, false ]
+    AllowedValues: [ True, False ]
 
 Conditions:
-  Globally: !Equals [ false, !Ref ChinaRegion ]
+  Globally: !Equals [ False, !Ref ChinaRegion ]
 
 Resources:
   VPC:
