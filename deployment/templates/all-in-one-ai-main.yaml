@@ -13,7 +13,7 @@ Parameters:
   CustomIdentifier:
     Description: AWS Resource CustomIdentifier
     Type: String
-    Default: SpotBot
+    Default: all-in-one-ai
 
   AvailabilityZones:
     Description: >-
@@ -177,8 +177,8 @@ Resources:
       TemplateURL: 
         !If
         - Globally
-        - !Sub https://${S3Bucket}.s3.${AWS::Region}.amazonaws.com/${S3Key}templates/all-in-one-ai-es.yaml
-        - !Sub https://${S3Bucket}.s3.${AWS::Region}.amazonaws.com.cn/${S3Key}templates/all-in-one-ai-es.yaml
+        - !Sub https://${S3Bucket}.s3.${AWS::Region}.amazonaws.com/${S3Key}templates/all-in-one-ai-opensearch.yaml
+        - !Sub https://${S3Bucket}.s3.${AWS::Region}.amazonaws.com.cn/${S3Key}templates/all-in-one-ai-opensearch.yaml
 
   DYNAMODB:
     Type: AWS::CloudFormation::Stack
@@ -229,8 +229,8 @@ Resources:
       TemplateURL: 
         !If
         - Globally
-        - !Sub https://${S3Bucket}.s3.${AWS::Region}.amazonaws.com/${S3Key}templates/all-in-one-ai-lambda.yaml
-        - !Sub https://${S3Bucket}.s3.${AWS::Region}.amazonaws.com.cn/${S3Key}templates/all-in-one-ai-lambda.yaml
+        - !Sub https://${S3Bucket}.s3.${AWS::Region}.amazonaws.com/${S3Key}templates/all-in-one-ai-ssm.yaml
+        - !Sub https://${S3Bucket}.s3.${AWS::Region}.amazonaws.com.cn/${S3Key}templates/all-in-one-ai-ssm.yaml
   
   SQS:
     Type: AWS::CloudFormation::Stack

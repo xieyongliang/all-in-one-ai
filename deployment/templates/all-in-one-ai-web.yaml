@@ -54,7 +54,7 @@ Resources:
   AlbSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupDescription: ECS Security Group
+      GroupDescription: Alb Security Group
       VpcId: !Ref VPC
 
   AlbSecurityGroupHTTPinbound:

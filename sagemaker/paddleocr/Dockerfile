@@ -19,6 +19,8 @@ RUN update-alternatives --install /usr/bin/python python /usr/bin/python3.7 1
 # Set python 3 as the default python
 RUN update-alternatives --set python /usr/bin/python3.7
 
+RUN apt-get update
+
 # Install necessary dependencies for MMS and SageMaker Inference Toolkit
 RUN apt-get -y install --no-install-recommends \
     build-essential \

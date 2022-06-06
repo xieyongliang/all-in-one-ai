@@ -21,12 +21,6 @@ const RestApiForm: FunctionComponent = () => {
     const [ restApisOptions, setRestApisOptions ] = useState([]);
     const [ optionsApis, setOptionsApis ] = useState([]);
     const [ forcedRefresh, setForcedRefresh ] = useState(false)
-    const [ invalidApiName, setInvalidApiName ] = useState(false)
-    const [ invalidRestApi, setInvalidRestApi] = useState(false)
-    const [ invalidApis, setInvalidApis] = useState(false)
-    const [ invalidRestApiName, setInvalidRestApiName ] = useState(false)
-    const [ invalidApiPath, setInvalidApiPath ] = useState(false)
-    const [ invalidApiStage, setInvalidApiStage ] = useState(false)
     const [ processing, setProcessing ] = useState(false)
 
     const history = useHistory();
@@ -82,33 +76,20 @@ const RestApiForm: FunctionComponent = () => {
     }
 
     const onSubmit = () => {
-        if(apiName === '')
-            setInvalidApiName(true)
-        else if(apiType === '1' && selectedRestApis.value === undefined)
-            setInvalidRestApi(true)
-        else if(selectedApis.value === undefined)
-            setInvalidApis(true)
-        else if(apiType === '0' && restApiName === '')
-            setInvalidRestApiName(true)        
-        else if(apiPath === '' || apiPath.startsWith('/') )
-            setInvalidApiPath(true)
-        else if(apiStage === '')
-            setInvalidApiStage(true)
-        else {
-            var body = {
-                'api_name': apiName,
-                'industrial_model': params.id,
-                'rest_api_name' : restApiName,
-                'rest_api_id': selectedRestApis.value,
-                'api_path': apiPath,
-                'api_stage': apiStage,
-                'api_method': apiMethod,
-                'api_function': apiFunction
-            }
-            setProcessing(true)
-            if(tags.length > 1 || (tags.length === 1 && tags[0].key !== '' && tags[0].value !== ''))
-                body['tags'] = tags
-            axios.post('/api', body,  { headers: {'content-type': 'application/json' }}) 
+        var body = {
+            'api_name': apiName,
+            'industrial_model': params.id,
+            'rest_api_name' : restApiName,
+            'rest_api_id': selectedRestApis.value,
+            'api_path': apiPath,
+            'api_stage': apiStage,
+            'api_method': apiMethod,
+            'api_function': apiFunction
+        }
+        setProcessing(true)
+        if(tags.length > 1 || (tags.length === 1 && tags[0].key !== '' && tags[0].value !== ''))
+            body['tags'] = tags
+        axios.post('/api', body,  { headers: {'content-type': 'application/json' }}) 
             .then((response) => {
                 history.goBack()
             }, (error) => {
@@ -116,7 +97,6 @@ const RestApiForm: FunctionComponent = () => {
                 console.log(error);
                 setProcessing(false);
             });
-        }
     }
 
     const onCancel = () => {
@@ -149,7 +129,7 @@ const RestApiForm: FunctionComponent = () => {
             return (
                 <FormSection header='API setting'>
                     <FormField label='API name' controlId='formFieldIdApiName'>
-                        <Input type='text' value={apiName} invalid={invalidApiName} onChange={(event) => onChange('formFieldIdApiName', event)} />
+                        <Input type='text' value={apiName} onChange={(event) => onChange('formFieldIdApiName', event)} />
                     </FormField>
                     <FormField label='API gateway' controlId='formFieldIdApiType'>
                         {renderApiOptions()}
@@ -159,7 +139,6 @@ const RestApiForm: FunctionComponent = () => {
                             placeholder='Choose an option'
                             options={restApisOptions}
                             selectedOption={selectedRestApis}
-                            invalid={invalidRestApi}
                             onChange={(event) => onChange('formFieldIdRestApis', event)}
                         />
                     </FormField>
@@ -170,13 +149,13 @@ const RestApiForm: FunctionComponent = () => {
             return (
                 <FormSection header='API setting'>
                     <FormField label='API name' controlId='formFieldIdName'>
-                        <Input type='text' value={apiName} invalid={invalidApiName} />
+                        <Input type='text' value={apiName} />
                     </FormField>
                     <FormField label='API gateway' controlId='formFieldIdRestApi'>
                         {renderApiOptions()}
                     </FormField>
                     <FormField controlId='formFieldIdRestApiName'>
-                        <Input type='text' value={restApiName} invalid={invalidRestApiName} onChange={(event) => onChange('formFieldIdRestApiName', event)}/>
+                        <Input type='text' value={restApiName} onChange={(event) => onChange('formFieldIdRestApiName', event)}/>
                     </FormField>
                 </FormSection>
             )
@@ -224,17 +203,16 @@ const RestApiForm: FunctionComponent = () => {
         return (
             <FormSection header='Production variants'>
                 <FormField label='API path' controlId='formFieldIdApiPath'>
-                    <Input type='text' value={apiPath} invalid={invalidApiPath} onChange={(event) => onChange('formFieldIdApiPath', event)} />
+                    <Input type='text' value={apiPath} onChange={(event) => onChange('formFieldIdApiPath', event)} />
                 </FormField>
                 <FormField label='API stage' controlId='formFieldIdApiStage'>
-                    <Input type='text' value={apiStage} invalid={invalidApiStage} onChange={(event) => onChange('formFieldIdApiStage', event)}/>
+                    <Input type='text' value={apiStage} onChange={(event) => onChange('formFieldIdApiStage', event)}/>
                 </FormField>
                 <FormField controlId='formFieldIdApis' label='APIs to deployed' >
                     <Select
                         placeholder='Choose an option'
                         options={optionsApis}
                         selectedOption={selectedApis}
-                        invalid={invalidApis}
                         onChange={(event) => onChange('formFieldIdApis', event)}
                     />
                 </FormField>

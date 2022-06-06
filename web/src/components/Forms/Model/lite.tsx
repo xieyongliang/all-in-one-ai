@@ -19,7 +19,6 @@ const LiteModelForm: FunctionComponent<IProps> = (props) => {
     const [ containerIamge, setContainerImage ] = useState('')
     const [ containerModelType, setContainerModelType ] = useState('SingleModel')
     const [ tags, setTags ] = useState([{key:'', value:''}])
-    const [ invalidModelName, setInvalidModelName ] = useState(false)
     const [ processing, setProcessing ] = useState(false)
     const [ environment, setEnvironment ] = useState([{key:'', value:''}])
 
@@ -46,30 +45,25 @@ const LiteModelForm: FunctionComponent<IProps> = (props) => {
         var index = props.industrialModels.findIndex((item) => item.id === params.id)
         var algorithm = props.industrialModels[index].algorithm
 
-        if(modelName === '')
-            setInvalidModelName(true)
-        else
-        {
-            body = {
-                'model_name' : modelName,
-                'industrial_model': params.id,
-                'model_algorithm': algorithm,
-                'container_image': containerIamge,
-                'mode': containerModelType
-            }
-                
-            if(tags.length > 1 || (tags.length === 1 && tags[0].key !== '' && tags[0].value !== ''))
-                body['tags'] = tags
-            setProcessing(true)
-            axios.post('/model', body,  { headers: {'content-type': 'application/json' }}) 
-                .then((response) => {
-                    history.goBack()
-                }, (error) => {
-                    alert('Error occured, please check and try it again');
-                    console.log(error);
-                }
-            );
+        body = {
+            'model_name' : modelName,
+            'industrial_model': params.id,
+            'model_algorithm': algorithm,
+            'container_image': containerIamge,
+            'mode': containerModelType
         }
+                
+        if(tags.length > 1 || (tags.length === 1 && tags[0].key !== '' && tags[0].value !== ''))
+            body['tags'] = tags
+        setProcessing(true)
+        axios.post('/model', body,  { headers: {'content-type': 'application/json' }}) 
+            .then((response) => {
+                history.goBack()
+            }, (error) => {
+                alert('Error occured, please check and try it again');
+                console.log(error);
+            }
+        );
     }
  
     const onCancel = () => {
@@ -96,7 +90,7 @@ const LiteModelForm: FunctionComponent<IProps> = (props) => {
         return (
             <FormSection header='Model settings'>
                 <FormField label='Model name' controlId='formFieldIdModelName'>
-                    <Input type='text' required={true} value={modelName} invalid={invalidModelName} onChange={(event)=>onChange('formFieldIdModelName', event)}/>
+                    <Input type='text' required={true} value={modelName} onChange={(event)=>onChange('formFieldIdModelName', event)}/>
                 </FormField>
             </FormSection>
         )

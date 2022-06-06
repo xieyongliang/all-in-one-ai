@@ -46,9 +46,6 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
     const [ selectedModelPackageGroupVersions, setSelectedModelPackageGroupVersions ] = useState({});
     const [ tags, setTags ] = useState([{key:'', value:''}])
     const [ environments, setEnvironments ] = useState([])
-    const [ invalidModelName, setInvalidModelName ] = useState(false)
-    const [ invalidModelDataUrl, setInvalidModelDataUrl ] = useState(false)
-    const [ invalidModelPackageName, setInvalidModelPackageName ] = useState(false)
     const [ processing, setProcessing ] = useState(false)
     const [ processingModelPackage, setProcessingModelPackage ] = useState(false);
     const [ processingModelPackageGroup, setProcessingModelPackageGroup ] = useState(false);
@@ -173,55 +170,46 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
         var algorithm = props.industrialModels[index].algorithm
 
         if(containerInputType === '0'){
-            if(modelName === '')
-                setInvalidModelName(true)
-            else if(modelDataUrl === '')
-                setInvalidModelDataUrl(true)
-            else {
-                body = {
-                    'model_name' : modelName,
-                    'industrial_model': params.id,
-                    'model_algorithm': algorithm,
-                    'container_image': containerIamge,
-                    'model_data_url': modelDataUrl,
-                    'model_environment': {},
-                    'mode': containerModelType
-                }
-                if(tags.length > 1 || (tags.length === 1 && tags[0].key !== '' && tags[0].value !== ''))
-                    body['tags'] = tags;
-                environments.forEach((environment) => {
-                    body['model_environment'][environment.key] = environment.value
-                })
-                body['model_environment'] = JSON.stringify(body['model_environment'])
-                setProcessing(true)
-                axios.post('/model', body,  { headers: {'content-type': 'application/json' }}) 
-                    .then((response) => {
-                        history.goBack()
-                    }, (error) => {
-                        alert('Error occured, please check and try it again');
-                        console.log(error);
-                        setProcessing(false)
-                    });
+            body = {
+                'model_name' : modelName,
+                'industrial_model': params.id,
+                'model_algorithm': algorithm,
+                'inference_image': containerIamge,
+                'model_data_url': modelDataUrl,
+                'model_environment': {},
+                'mode': containerModelType
             }
+            if(tags.length > 1 || (tags.length === 1 && tags[0].key !== '' && tags[0].value !== ''))
+                body['tags'] = tags;
+            environments.forEach((environment) => {
+                body['model_environment'][environment.key] = environment.value
+            })
+            body['model_environment'] = JSON.stringify(body['model_environment'])
+            setProcessing(true)
+            axios.post('/model', body,  { headers: {'content-type': 'application/json' }}) 
+                .then((response) => {
+                    history.goBack()
+                }, (error) => {
+                    alert('Error occured, please check and try it again');
+                    console.log(error);
+                    setProcessing(false)
+                });
         }
         else if(containerInputType === '1') {
-            if(modelName === '')
-                setInvalidModelName(true)
-            else {
-                var model_package_group_name = selectedModelPackageGroup['name']
-                var model_package_version = selectedModelPackageGroupVersions[model_package_group_name]['value']
-                index = modelPackageVersionItems[model_package_group_name]['versions'].findIndex((version) => version === model_package_version)
-                var model_package_arn = modelPackageVersionItems[model_package_group_name]['arns'][index]
-                body = {
-                    'model_name' : modelName,
-                    'industrial_model': params.id,
-                    'model_algorithm': algorithm,
-                    'model_package_arn': model_package_arn
-                }
-                if(tags.length > 1 || (tags.length === 1 && tags[0].key !== '' && tags[0].value !== ''))
-                    body['tags'] = tags
-                setProcessing(true)
-                axios.post('/model', body,  { headers: {'content-type': 'application/json' }}) 
+            var model_package_group_name = selectedModelPackageGroup['name']
+            var model_package_version = selectedModelPackageGroupVersions[model_package_group_name]['value']
+            index = modelPackageVersionItems[model_package_group_name]['versions'].findIndex((version) => version === model_package_version)
+            var model_package_arn = modelPackageVersionItems[model_package_group_name]['arns'][index]
+            body = {
+                'model_name' : modelName,
+                'industrial_model': params.id,
+                'model_algorithm': algorithm,
+                'model_package_arn': model_package_arn
+            }
+            if(tags.length > 1 || (tags.length === 1 && tags[0].key !== '' && tags[0].value !== ''))
+                body['tags'] = tags
+            setProcessing(true)
+            axios.post('/model', body,  { headers: {'content-type': 'application/json' }}) 
                 .then((response) => {
                     history.goBack()
                 }, (error) => {
@@ -230,7 +218,6 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
                     setProcessing(false)
                 });
             }
-        }
     }
  
     const onCancel = () => {
@@ -254,7 +241,7 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
             return (
                 <FormSection header='Model settings'>
                     <FormField label='Model name' controlId='formFieldIdModelName'>
-                        <Input type='text' required={true} value={modelName} invalid={invalidModelName} onChange={(event)=>onChange('formFieldIdModelName', event)}/>
+                        <Input type='text' required={true} value={modelName} onChange={(event)=>onChange('formFieldIdModelName', event)}/>
                     </FormField>
                 </FormSection>
             )
@@ -409,37 +396,33 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
     }
 
     const onCreateModelPackageGroup = () => {
-        if(modelPackageGroupName === '')
-            setInvalidModelPackageName(true)
-        else{
-            var body = {
-                'model_package_group_name': modelPackageGroupName
-            }
-            setProcessingModelPackageGroup(true)
-            axios.post('/modelpackage/group', body,  { headers: {'content-type': 'application/json' }}) 
-                .then((response) => {
-                    var copyModelPackageGroupItems = JSON.parse(JSON.stringify(modelPackageGroupItems))
-                    copyModelPackageGroupItems.push({name: modelPackageGroupName, creation_time: response.data.creation_time, versions: []})
-                    copyModelPackageGroupItems[modelPackageGroupName] = {
-                        versions: [],
-                        arns: []
-                    }
-                    setModelPackageGroupItems(copyModelPackageGroupItems)
-                    setProcessingModelPackageGroup(false);
-                }, (error) => {
-                    alert('Error occured, please check and try it again');
-                    console.log(error);
-                    setProcessingModelPackageGroup(false);
-                }
-            );
+        var body = {
+            'model_package_group_name': modelPackageGroupName
         }
+        setProcessingModelPackageGroup(true)
+        axios.post('/modelpackage/group', body,  { headers: {'content-type': 'application/json' }}) 
+            .then((response) => {
+                var copyModelPackageGroupItems = JSON.parse(JSON.stringify(modelPackageGroupItems))
+                copyModelPackageGroupItems.push({name: modelPackageGroupName, creation_time: response.data.creation_time, versions: []})
+                copyModelPackageGroupItems[modelPackageGroupName] = {
+                    versions: [],
+                    arns: []
+                }
+                setModelPackageGroupItems(copyModelPackageGroupItems)
+                setProcessingModelPackageGroup(false);
+            }, (error) => {
+                alert('Error occured, please check and try it again');
+                console.log(error);
+                setProcessingModelPackageGroup(false);
+            }
+        );
     }
 
     const renderModelPackageGroupForm = () => {
         return (
             <Stack>
                 <FormField label='Name of model package group' controlId='formFieldIdModelPackageGroup'>
-                    <Input type='text' required={true} value={modelPackageGroupName} invalid={invalidModelPackageName} onChange={(event)=>{onChange('formFieldIdModelPackageGroup', event)}} />
+                    <Input type='text' required={true} value={modelPackageGroupName} onChange={(event)=>{onChange('formFieldIdModelPackageGroup', event)}} />
                 </FormField>
                 <FormField controlId='formfieldIdCreateModelPackageGroup'>
                     <Button onClick={onCreateModelPackageGroup} loading={processingModelPackageGroup}>Create model package group</Button>
@@ -449,26 +432,23 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
     }
 
     const onCreateModelPackage = () => {
-        if(modelDataUrl === '')
-            setInvalidModelDataUrl(true)
-        else{
-            var algorithm;
-            if(!wizard) {
-                var index = props.industrialModels.findIndex((item) => item.id === params.id)
-                algorithm = props.industrialModels[index].algorithm
-            } else {
-                algorithm = props.modelAlgorithm
-            }
+        var algorithm;
+        if(!wizard) {
+            var index = props.industrialModels.findIndex((item) => item.id === params.id)
+            algorithm = props.industrialModels[index].algorithm
+        } else {
+            algorithm = props.modelAlgorithm
+        }
 
-            var body = {
-                'model_algorithm': algorithm,
-                'container_image': containerIamge,
-                'model_data_url': modelDataUrl,
-                'supported_content_types': 'image/png;image/jpg;image/jpeg',
-                'supported_response_mime_types': 'application/json'
-            }
-            setProcessingModelPackage(true)
-            axios.post(`/modelpackage/${selectedModelPackageGroup['name']}`, body,  { headers: {'content-type': 'application/json' }}) 
+        var body = {
+            'model_algorithm': algorithm,
+            'container_image': containerIamge,
+            'model_data_url': modelDataUrl,
+            'supported_content_types': 'image/png;image/jpg;image/jpeg',
+            'supported_response_mime_types': 'application/json'
+        }
+        setProcessingModelPackage(true)
+        axios.post(`/modelpackage/${selectedModelPackageGroup['name']}`, body,  { headers: {'content-type': 'application/json' }}) 
             .then((response) => {
                 getModelPackageVersions(selectedModelPackageGroup['name']).then(value => {
                     var versions = []
@@ -495,7 +475,6 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
                 console.log(error);
                 setProcessingModelPackage(false)
             });
-        }
     }
 
     const renderModelPackageForm = () => {
@@ -505,7 +484,7 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
                     <Input type='text' required={true} value={containerIamge} onChange={(event)=>{onChange('formFieldIdContainerImage', event)}} />
                 </FormField>
                 <FormField label='Location of model artifacts' description='Type the URL where model artifacts are stored in S3.' controlId='formFieldIdModelDataUrl'>
-                    <Input type='text' required={true} value={modelDataUrl} invalid={invalidModelDataUrl} onChange={(event)=>{onChange('formFieldIdModelDataUrl', event)}} />
+                    <Input type='text' required={true} value={modelDataUrl} onChange={(event)=>{onChange('formFieldIdModelDataUrl', event)}} />
                 </FormField>
                 <FormField controlId='formfieldIdCreateModelPackage'>
                     <Button onClick={onCreateModelPackage} loading={processingModelPackage}>Create model package</Button>
@@ -573,10 +552,10 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
                                 {renderContainerModelOptions()}
                             </FormField>
                             <FormField label='Location of inference code image' description='Type the registry path where the inference code image is stored in Amazon ECR.' controlId='formFieldIdContainerImage'>
-                                <Input type='text' required={true} value={containerIamge} placeholder={'default'} onChange={(event)=>{onChange('formFieldIdContainerImage', event)}} />
+                                <Input type='text' required={true} value={containerIamge} onChange={(event)=>{onChange('formFieldIdContainerImage', event)}} />
                             </FormField>
                             <FormField label='Location of model artifacts' description='Type the URL where model artifacts are stored in S3.' controlId='formFieldIdModelDataUrl'>
-                                <Input type='text' required={true} value={modelDataUrl} invalid={invalidModelDataUrl} onChange={(event)=>{onChange('formFieldIdModelDataUrl', event)}} />
+                                <Input type='text' required={true} value={modelDataUrl} onChange={(event)=>{onChange('formFieldIdModelDataUrl', event)}} />
                             </FormField>
                         </Stack>
                     </ExpandableSection>

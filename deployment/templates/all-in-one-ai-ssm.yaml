@@ -173,7 +173,7 @@ Resources:
     Properties:
       Name: /all_in_one_ai/config/meta/algorithms/yolov5/source
       Type: String
-      Value: !Sub s3://${S3Bucket}/${S3Key}algorithms/yolov5/source/
+      Value: !Sub s3://${S3Bucket}/${S3Key}algorithms/yolov5/source/sourcedir.tar.gz
 
   Parameter17:
     Type: AWS::SSM::Parameter
@@ -187,7 +187,7 @@ Resources:
     Properties:
       Name: /all_in_one_ai/config/meta/algorithms/gluoncv/source
       Type: String
-      Value: !Sub s3://${S3Bucket}/${S3Key}algorithms/gluoncv/source/
+      Value: !Sub s3://${S3Bucket}/${S3Key}algorithms/gluoncv/source/sourcedir.tar.gz
 
   Parameter19:
     Type: AWS::SSM::Parameter
@@ -199,32 +199,43 @@ Resources:
   Parameter20:
     Type: AWS::SSM::Parameter
     Properties:
-      Name: /all_in_one_ai/config/meta/algorithms/paddleocr/source
+      Name: /all_in_one_ai/config/meta/algorithms/paddleocr/inference/image
       Type: String
-      Value: !Sub s3://${S3Bucket}/${S3Key}algorithms/paddleocr/source/
+      Value: 
+        !If
+        - Globally
+        - !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/all-in-one-ai-ppocr:latest
+        - !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com.cn/all-in-one-ai-ppocr:latest
 
   Parameter21:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /all_in_one_ai/config/meta/algorithms/paddleocr/model/artifact
+      Type: String
+      Value: !Sub s3://${S3Bucket}/${S3Key}algorithms/paddleocr/artifact/model.tar.gz
+
+  Parameter22:
     Type: AWS::SSM::Parameter
     Properties:
       Name: /all_in_one_ai/config/meta/algorithms/cpt/industrialmodels
       Type: String
       Value: !Sub s3://${S3Bucket}/${S3Key}algorithms/cpt/industrialmodels/
 
-  Parameter22:
+  Parameter23:
     Type: AWS::SSM::Parameter
     Properties:
       Name: /all_in_one_ai/config/meta/algorithms/cpt/source
       Type: String
-      Value: !Sub s3://${S3Bucket}/${S3Key}algorithms/cpt/source/
+      Value: !Sub s3://${S3Bucket}/${S3Key}algorithms/cpt/source/sourcedir.tar.gz
 
-  Parameter23:
+  Parameter24:
     Type: AWS::SSM::Parameter
     Properties:
       Name: /all_in_one_ai/config/meta/algorithms/gabsa/industrialmodels
       Type: String
       Value: !Sub s3://${S3Bucket}/${S3Key}algorithms/gabsa/industrialmodels/
 
-  Parameter24:
+  Parameter25:
     Type: AWS::SSM::Parameter
     Properties:
       Name: /all_in_one_ai/config/meta/algorithms/gabsa/source

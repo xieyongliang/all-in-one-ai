@@ -3,6 +3,8 @@ import traceback
 from utils import persist_meta
 
 def lambda_handler(event, context):
+    print(event)
+    
     try:
         job_name = event['body']['job_name'] if('job_name' in event['body'] and event['body']['job_name'] != '') else None
         industrial_model = event['body']['industrial_model']
@@ -12,7 +14,7 @@ def lambda_handler(event, context):
         role = event['body']['role']
         hyperparameters = event['body']['hyperparameters']
         py_version = event['body']['py_version']
-        framework_version = event['body']['framework_version']
+        pytorch_version = event['body']['pytorch_version']
         instance_type = event['body']['instance_type']
         instance_count = event['body']['instance_count']
         inputs = event['body']['inputs']
@@ -25,8 +27,8 @@ def lambda_handler(event, context):
             debugger_hook_config = False,
             hyperparameters = hyperparameters,
             py_version = py_version,
-            framework_version = framework_version, 
             transformers_version = transformers_version,
+            pytorch_version = pytorch_version,
             instance_count = instance_count,  
             instance_type = instance_type
         )

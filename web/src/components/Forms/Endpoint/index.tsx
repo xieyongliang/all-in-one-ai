@@ -34,12 +34,6 @@ const EndpointForm: FunctionComponent<IProps> = (props) => {
     const [ initialVariantWeight, setInitialVariantWeight ] = useState<number>(props.wizard ? props.endpointInitialVariantWeight : 1);
     const [ tags ] = useState([{key:'', value:''}])
     const [ forcedRefresh, setForcedRefresh ] = useState(false)
-    const [ invalidEndpointName, setInvalidEndpointName ] = useState(false)
-    const [ invalidModelName, setInvalidModelName ] = useState(false);
-    const [ invalidInstanceType, setInvalidInstanceType ] = useState(false);
-    const [ invalidAcceleratorTypeType, setInvalidAcceleratorTypeType ] = useState(false);
-    const [ invalidInitialInstanceCount, setInvalidInitialInstanceCount ] = useState(false);
-    const [ invalidInitialVariantWeight, setInvalidInitialVariantWeight ] = useState(false);
     const [ processing, setProcessing ] = useState(false)
 
     const history = useHistory();
@@ -65,17 +59,14 @@ const EndpointForm: FunctionComponent<IProps> = (props) => {
             setEndpointName(event)
         if(id === 'formFieldIdModelName') {
             setSelectedModelName({label: event.target.value, value: event.target.value});
-            setInvalidModelName(false)
         }
         if(id === 'formFieldIdInstanceType') {
             setSelectedInstanceType({label: event.target.value, value: event.target.value});
             props.updateEndpointInstanceTypeAction(event.target.value)
-            setInvalidInstanceType(false)
         }
         if(id === 'formFieldIdAcceleratorType') {
             setSelectedAcceleratorTypeType({label: event.target.value, value: event.target.value});
             props.updateEndpointAcceleratorTypeAction(event.target.value)
-            setInvalidAcceleratorTypeType(false)
         }
         if(id === 'formFieldIdInitialInstanceCount') {
             setInitialInstanceCount(parseInt(event))
@@ -88,36 +79,23 @@ const EndpointForm: FunctionComponent<IProps> = (props) => {
     }
 
     const onSubmit = () => {
-        if(endpointName === '')
-            setInvalidEndpointName(true)
-        else if(selectedModelName.value === undefined)
-            setInvalidModelName(true)
-        else if(selectedInstanceType.value === undefined)
-            setInvalidInstanceType(true)
-        else if(selectedAcceleratorTypeType.value === undefined)
-            setInvalidAcceleratorTypeType(true)        
-        else if(initialInstanceCount <= 0 )
-            setInvalidInitialInstanceCount(true)
-        else if(initialVariantWeight <= 0)
-            setInvalidInitialVariantWeight(true)
-        else {
-            var index = props.industrialModels.findIndex((item) => item.id === params.id)
-            var algorithm = props.industrialModels[index].algorithm
+        var index = props.industrialModels.findIndex((item) => item.id === params.id)
+        var algorithm = props.industrialModels[index].algorithm
 
-            var body = {
-                'endpoint_name': endpointName,
-                'model_name' : selectedModelName.value,
-                'industrial_model': params.id,
-                'model_algorithm': algorithm,
-                'instance_type': selectedInstanceType.value,
-                'accelerator_type': selectedAcceleratorTypeType.value === 'none' ? '': selectedAcceleratorTypeType.value,
-                'initial_instance_count': initialInstanceCount,
-                'initial_variant_weight': initialVariantWeight
-            }
-            if(tags.length > 1 || (tags.length === 1 && tags[0].key !== '' && tags[0].value !== ''))
-                body['tags'] = tags
-            setProcessing(true)
-            axios.post('/endpoint', body,  { headers: {'content-type': 'application/json' }}) 
+        var body = {
+            'endpoint_name': endpointName,
+            'model_name' : selectedModelName.value,
+            'industrial_model': params.id,
+            'model_algorithm': algorithm,
+            'instance_type': selectedInstanceType.value,
+            'accelerator_type': selectedAcceleratorTypeType.value === 'none' ? '': selectedAcceleratorTypeType.value,
+            'initial_instance_count': initialInstanceCount,
+            'initial_variant_weight': initialVariantWeight
+        }
+        if(tags.length > 1 || (tags.length === 1 && tags[0].key !== '' && tags[0].value !== ''))
+            body['tags'] = tags
+        setProcessing(true)
+        axios.post('/endpoint', body,  { headers: {'content-type': 'application/json' }}) 
             .then((response) => {
                 history.goBack()
             }, (error) => {
@@ -125,7 +103,6 @@ const EndpointForm: FunctionComponent<IProps> = (props) => {
                 console.log(error);
                 setProcessing(false)
             });
-        }
     }
 
     const onCancel = () => {
@@ -153,7 +130,7 @@ const EndpointForm: FunctionComponent<IProps> = (props) => {
             return (
                 <FormSection header='Endpoint setting'>
                     <FormField label='Endpooint name' description='Your application uses this name to access this endpoint.' controlId='formFieldIdEndpointName' hintText='Maximum of 63 alphanumeric characters. Can include hyphens (-), but not spaces. Must be unique within your account in an AWS Region.'>
-                        <Input type='text' value={endpointName} invalid={invalidEndpointName} onChange={(event) => {onChange('formFieldIdEndpointName', event)}} />
+                        <Input type='text' value={endpointName} onChange={(event) => {onChange('formFieldIdEndpointName', event)}} />
                     </FormField>
                 </FormSection>
             )
@@ -212,7 +189,6 @@ const EndpointForm: FunctionComponent<IProps> = (props) => {
                                 placeholder='Choose an option'
                                 options={modelOptions}
                                 selectedOption={selectedModelName}
-                                invalid={invalidModelName}
                                 onChange={(event) => onChange('formFieldIdModelName', event)}
                             />
                     </FormField>
@@ -222,7 +198,6 @@ const EndpointForm: FunctionComponent<IProps> = (props) => {
                             placeholder='Choose an option'
                             options={ ENDPOINTOPTIONS }
                             selectedOption={selectedInstanceType}
-                            invalid={invalidInstanceType}
                             onChange={(event) => onChange('formFieldIdInstanceType', event)}
                         />
                 </FormField>
@@ -231,15 +206,14 @@ const EndpointForm: FunctionComponent<IProps> = (props) => {
                             placeholder='Choose an option'
                             options={ ACCELERALATOROPTIONS }
                             selectedOption={selectedAcceleratorTypeType}
-                            invalid={invalidAcceleratorTypeType}
                             onChange={(event) => onChange('formFieldIdAcceleratorType', event)}
                         />
                 </FormField>
                 <FormField label='Initial instance count' controlId='formFieldIdInitialInstanceCount'>
-                    <Input type='text' value={initialInstanceCount} invalid={invalidInitialInstanceCount} onChange={(event) => {onChange('formFieldIdInitialInstanceCount', event)}} />
+                    <Input type='text' value={initialInstanceCount} onChange={(event) => {onChange('formFieldIdInitialInstanceCount', event)}} />
                 </FormField>
                 <FormField label='Initial weight' controlId='formFieldIdInitialVariantWeight'>
-                    <Input type='text' value={initialVariantWeight} invalid={invalidInitialVariantWeight} onChange={(event) => {onChange('formFieldIdInitialVariantWeight', event)}} />
+                    <Input type='text' value={initialVariantWeight} onChange={(event) => {onChange('formFieldIdInitialVariantWeight', event)}} />
                 </FormField>
             </FormSection>
         )

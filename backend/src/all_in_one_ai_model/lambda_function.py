@@ -33,8 +33,16 @@ def lambda_handler(event, context):
                 if('model_data_url' in request):
                     payload['model_data_url'] = request['model_data_url']
                 payload['mode'] = request['mode']
+
+                if(request['model_algorithm'] == 'paddleocr'):
+                    if(request['inference_image'] == ''):
+                        payload['inference_image'] = ssmh.get_parameter('/all_in_one_ai/config/meta/algorithms/paddleocr/inference/image')
+                    if(request['model_data_url'] == ''):
+                        payload['model_data_url'] = ssmh.get_parameter('/all_in_one_ai/config/meta/algorithms/paddleocr/model/artifact')
+                    
+
             if('model_environment' in request):
-                payload['model_environment'] = json.loads(request['model_environment']) if(request['model_environment'] != '{}') else None
+                payload['model_environment'] = json.loads(request['model_environment'])
             if('tags' in request):
                 payload['tags'] = request['tags']
 

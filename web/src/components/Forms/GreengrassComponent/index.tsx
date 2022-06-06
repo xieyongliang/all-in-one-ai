@@ -34,9 +34,6 @@ const GreengrassComponentForm: FunctionComponent<IProps> = (props) => {
     const optionsComponents = [{label: 'com.example.yolov5', value: 'com.example.yolov5'}];
     const [ selectedComponent, setSelectedComponent ] = useState<SelectOption>(props.wizard ? {label: props.greengrassComponentName, value: props.greengrassComponentName}: {})
     const [ componentVersion, setComponentVersion ] = useState(props.wizard ? props.greengrassComponentVersion : '')
-    const [ invalidModel, setInvalidModel ] = useState(false)
-    const [ invalidComponent, setInvalidComponent ] = useState(false)
-    const [ invalidComponentVersion, setInvalidComponentVersion ] = useState(false)
     const [ itemsModel ] = useState({})
     const [ processing, setProcessing ] = useState(false)
 
@@ -85,29 +82,20 @@ const GreengrassComponentForm: FunctionComponent<IProps> = (props) => {
     }
 
     const onSubmit = () => {
-        if(selectedComponent.value === undefined)
-            setInvalidComponent(true)
-        else if(selectedModel.value === undefined)
-            setInvalidModel(true)
-        else if(componentVersion === '')
-            setInvalidComponentVersion(true)
-        else {
-            var body = {
-                'component_version': componentVersion,
-                'industrial_model': params.id,
-                'model_data_url': itemsModel[selectedModel.value]
-            }
-            setProcessing(true)
-            axios.post(`/greengrass/component/${selectedComponent.value}`, body,  { headers: {'content-type': 'application/json' }}) 
+        var body = {
+            'component_version': componentVersion,
+            'industrial_model': params.id,
+            'model_data_url': itemsModel[selectedModel.value]
+        }
+        setProcessing(true)
+        axios.post(`/greengrass/component/${selectedComponent.value}`, body,  { headers: {'content-type': 'application/json' }}) 
             .then((response) => {
                 history.goBack()
             }, (error) => {
                 alert('Error occured, please check and try it again');
                 console.log(error);
                 setProcessing(false);
-            });
-
-        }
+            })
     }
 
     const onCancel = () => {
@@ -128,7 +116,6 @@ const GreengrassComponentForm: FunctionComponent<IProps> = (props) => {
                             placeholder='Choose an option'
                             options={optionsComponents}
                             selectedOption={selectedComponent}
-                            invalid={invalidComponent}
                             onChange={(event) => onChange('formFieldIdComponents', event)}
                         />
                     </FormField>
@@ -145,12 +132,11 @@ const GreengrassComponentForm: FunctionComponent<IProps> = (props) => {
                                 placeholder='Choose an option'
                                 options={optionsModels}
                                 selectedOption={selectedModel}
-                                invalid={invalidModel}
                                 onChange={(event) => onChange('formFieldIdModels', event)}
                             />
                     </FormField>
                     <FormField label='Component version' controlId='formFieldIdMComponentVersion'>
-                        <Input value={componentVersion} invalid={invalidComponentVersion} onChange={(event) => onChange('formFieldIdMComponentVersion', event)} />
+                        <Input value={componentVersion} onChange={(event) => onChange('formFieldIdMComponentVersion', event)} />
                     </FormField>
                 </FormSection>
             )
@@ -158,7 +144,7 @@ const GreengrassComponentForm: FunctionComponent<IProps> = (props) => {
             return (
                 <FormSection header='Production variants'>
                     <FormField label='Component version' controlId='formFieldIdMComponentVersion'>
-                        <Input value={componentVersion} invalid={invalidComponentVersion} onChange={(event) => onChange('formFieldIdMComponentVersion', event)} />
+                        <Input value={componentVersion} onChange={(event) => onChange('formFieldIdMComponentVersion', event)} />
                     </FormField>
                 </FormSection>
             )

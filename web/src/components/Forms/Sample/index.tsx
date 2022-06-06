@@ -38,6 +38,9 @@ const SampleForm: FunctionComponent<IProps> = (props) => {
     const history = useHistory();
     
     var params : PathParams = useParams();
+    var industrialModels = props.industrialModels
+    var industrialModel = industrialModels.find((item) => item.id === params.id);
+    var algorithm = industrialModel.algorithm;
 
     const getSourceCode = async (uri) => {
         const response = await axios.get('/_file/download', {params: {uri: encodeURIComponent(uri)}, responseType: 'blob'})
@@ -65,8 +68,6 @@ const SampleForm: FunctionComponent<IProps> = (props) => {
             cancel = true;
         }
     }, []);
-
-    var industrialModels = props.industrialModels
 
     useEffect(() => {
         if(industrialModels.length > 0) {
@@ -201,14 +202,14 @@ const SampleForm: FunctionComponent<IProps> = (props) => {
         return (
             <Stack>
                 { renderImagePreview() }
-                { renderQuickStart() }
+                { algorithm !== 'paddleocr' && renderQuickStart() }
             </Stack>
         )
     else
         return (
             <Stack>
                 { renderImageList() }
-                { renderQuickStart() }
+                { algorithm !== 'paddleocr' && renderQuickStart() }
                 { renderSampleCode() }
             </Stack>
         )

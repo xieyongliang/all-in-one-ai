@@ -10,6 +10,7 @@ def lambda_handler(event, context):
         role_arn = event['body']['role_arn']
         tags = event['body']['tags'] if('tags' in event['body']) else []
         model_environment = event['body']['model_environment']
+        
         response = None
     
         if('model_package_arn' in event['body']):

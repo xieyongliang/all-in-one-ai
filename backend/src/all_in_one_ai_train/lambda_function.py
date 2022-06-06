@@ -131,14 +131,16 @@ def lambda_handler(event, context):
                     'job_name': job_name,
                     'algorithm': algorithm,
                     'industrial_model': industrial_model,
-                    'entry_point': 'finetune.py',
+                    'entry_point': 'train.py',
                     'source_dir': source_dir,
                     'role': role_arn,
                     'instance_type': instance_type,
                     'instance_count': instance_count,
                     'hyperparameters': hyperparameters,
-                    'pytorch_version': '1.7.1',
-                    'py_version': 'py36',
+                    'transformers_version' : '4.12.3',
+                    'pytorch_version': '1.9.1',
+                    'tensorflow_version': None,
+                    'py_version': 'py38',
                     'inputs': inputs
                 }
             }

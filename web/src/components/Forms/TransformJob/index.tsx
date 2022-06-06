@@ -78,13 +78,6 @@ const TransformJobForm: FunctionComponent<IProps> = (props) => {
     const [ maxConcurrentTransforms, setMaxConcurrentTransforms ] = useState(1);
     const [ inputS3Uri, setInputS3Uri ] = useState('');
     const [ outputS3Uri, setOutputS3Uri ] = useState('');
-    const [ invalidTransformJobName, setInvalidTransformJobName ] = useState(false);
-    const [ invalidModelName, setInvalidInvalidModelName ] = useState(false);
-    const [ invalidInstanceType, setInvalidInstanceType ] = useState(false);
-    const [ invalidInstanceCount, setInvalidInstanceCount ] = useState(false);
-    const [ invalidMaxConcurrentTransform, setInvalidMaxconcurrentTransform ] = useState(false);
-    const [ invalidInputS3Uri, setInvalidInputS3Uri ] = useState(false);
-    const [ invalidOutputS3Uri, setInvalidOutputS3Uri ] = useState(false);
     const [ processing, setProcessing ] = useState(false)
 
     const history = useHistory();
@@ -135,43 +128,27 @@ const TransformJobForm: FunctionComponent<IProps> = (props) => {
     })
 
     const onSubmit = () => {
-        if(transformJobName === '')
-            setInvalidTransformJobName(true)
-        else if(inputS3Uri === '')
-            setInvalidInputS3Uri(true)
-        else if(outputS3Uri === '')
-            setInvalidOutputS3Uri(true)
-        else if(selectedModelName.value === undefined)
-            setInvalidInvalidModelName(true)
-        else if(selectedInstanceType.value === undefined)
-            setInvalidInstanceType(true)
-        else if(instanceCount < 0)
-            setInvalidInstanceCount(true)
-        else if(maxConcurrentTransforms < 0)
-            setInvalidMaxconcurrentTransform(true)
-        else {
-            var body = {
-                'transform_job_name' : transformJobName,
-                'model_name': selectedModelName.value,
-                's3_data_type': selectedS3DataType.value,
-                'content_type': selectedContentType.value,
-                'instance_type': selectedInstanceType.value,
-                'instance_count': instanceCount,
-                'max_concurrent_transforms': maxConcurrentTransforms,
-                'input_s3uri': inputS3Uri,
-                'output_s3uri': outputS3Uri,
-                'industrial_model': params.id
-            }
-            setProcessing(true)
-            axios.post('/transformjob', body) 
-                .then((response) => {
-                    history.goBack()
-                }, (error) => {
-                    alert('Error occured, please check and try it again');
-                    console.log(error);
-                    setProcessing(false);
-                });
+        var body = {
+            'transform_job_name' : transformJobName,
+            'model_name': selectedModelName.value,
+            's3_data_type': selectedS3DataType.value,
+            'content_type': selectedContentType.value,
+            'instance_type': selectedInstanceType.value,
+            'instance_count': instanceCount,
+            'max_concurrent_transforms': maxConcurrentTransforms,
+            'input_s3uri': inputS3Uri,
+            'output_s3uri': outputS3Uri,
+            'industrial_model': params.id
         }
+        setProcessing(true)
+        axios.post('/transformjob', body) 
+            .then((response) => {
+                history.goBack()
+            }, (error) => {
+                alert('Error occured, please check and try it again');
+                console.log(error);
+                setProcessing(false);
+            });
     }
 
     const onCancel = () => {
@@ -190,14 +167,13 @@ const TransformJobForm: FunctionComponent<IProps> = (props) => {
             }>            
             <FormSection header='Job configuration'>
                 <FormField label='Job name' controlId='formFieldIdJobName'>
-                    <Input value = {transformJobName} invalid={invalidTransformJobName} required={true} onChange={(event) => onChange('formFieldIdTransformJobName', event)}> </Input>
+                    <Input value = {transformJobName} required={true} onChange={(event) => onChange('formFieldIdTransformJobName', event)}> </Input>
                 </FormField>
                 <FormField label='Model name' controlId='formFieldIdModelName'>
                     <Select
                         placeholder='Choose an option'
                         options={optionsModel}
                         selectedOption={selectedModelName}
-                        invalid={invalidModelName}
                         onChange={(event) => onChange('formFieldIdModelName', event)}
                     />
                 </FormField>
@@ -206,15 +182,14 @@ const TransformJobForm: FunctionComponent<IProps> = (props) => {
                         placeholder='Choose an option'
                         options={instanceTypeOptions}
                         selectedOption={selectedInstanceType}
-                        invalid={invalidInstanceType}
                         onChange={(event) => onChange('formFieldIdInstanceType', event)}
                     />
                 </FormField>
                 <FormField label='Instance count' controlId='formFieldIdInstanceCount'>
-                    <Input value = {instanceCount} type={'number'} required={true} invalid={invalidInstanceCount} onChange={(event) => onChange('formFieldIdInstanceCount', event)}> </Input>
+                    <Input value = {instanceCount} type={'number'} required={true} onChange={(event) => onChange('formFieldIdInstanceCount', event)}> </Input>
                 </FormField>
                 <FormField label='Max concurrent transforms' controlId='formFieldId3'>
-                    <Input value = {maxConcurrentTransforms} type={'number'} required={true} invalid={invalidMaxConcurrentTransform} onChange={(event) => onChange('formFieldIdS3Input', event)}/>
+                    <Input value = {maxConcurrentTransforms} type={'number'} required={true} onChange={(event) => onChange('formFieldIdS3Input', event)}/>
                 </FormField>
             </FormSection>
             <FormSection header='Input configuration'>
@@ -227,7 +202,7 @@ const TransformJobForm: FunctionComponent<IProps> = (props) => {
                     />
                 </FormField>
                 <FormField label='S3 input path' controlId='formFieldIdS3InputUri'>
-                    <Input type='text' placeholder='S3Uri' required={true} invalid={invalidInputS3Uri} onChange={(event) => onChange('formFieldIdInputS3Uri', event)}/>
+                    <Input type='text' placeholder='S3Uri' required={true} onChange={(event) => onChange('formFieldIdInputS3Uri', event)}/>
                 </FormField>
 
                 <FormField label='Content type' controlId='formFieldIdContentType'>
@@ -241,7 +216,7 @@ const TransformJobForm: FunctionComponent<IProps> = (props) => {
             </FormSection>
             <FormSection header='Output configuration'>
                 <FormField label='S3 output path' controlId='formFieldIdS3OutputUri'>
-                    <Input type='text' placeholder='S3Uri' required={true} invalid={invalidOutputS3Uri} onChange={(event) => onChange('formFieldIdOutputS3Uri', event)}/>
+                    <Input type='text' placeholder='S3Uri' required={true} onChange={(event) => onChange('formFieldIdOutputS3Uri', event)}/>
                 </FormField>
             </FormSection>
         </Form>

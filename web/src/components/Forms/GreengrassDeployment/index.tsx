@@ -44,8 +44,6 @@ const GreengrassDeploymentForm: FunctionComponent<IProps> = (props) => {
     const [ selectedThingGroup, setSelectedThingGroup ] = useState<SelectOption>({})
     const [ tags ] = useState([])
     const [ forcedRefresh, setForcedRefresh ] = useState(false)
-    const [ invalidCoreDevice, setInvalidCoreDevice ] = useState(false)
-    const [ invalidThingGroup, setInvalidThingGroup ] = useState(false)
     const [ processing, setProcessing ] = useState(false)
     const [ forceRefreshed, setForceRefreshed ] = useState(false)
 
@@ -112,14 +110,12 @@ const GreengrassDeploymentForm: FunctionComponent<IProps> = (props) => {
     const onChange = (id: string, event: any, option?: string) => {
         if(id === 'formFieldIdCoreDevices') {
             setSelectedCoreDevice({label: event.target.value, value: event.target.value});
-            setInvalidCoreDevice(false);
             if(targetType === '0')
                 if(wizard)
                     props.updateGreengrassDeploymentTargetArnAction(event.target.value);
         }
         else if(id === 'formFieldIdThingGroups') {
             setSelectedThingGroup({label: event.target.value, value: event.target.value});
-            setInvalidThingGroup(false);
             if(targetType === '1')
                 if(wizard)
                     props.updateGreengrassDeploymentTargetArnAction(itemsThingGroups[itemsThingGroups.findIndex((item) => item.name === event.target.value)]['arn']);
@@ -141,33 +137,28 @@ const GreengrassDeploymentForm: FunctionComponent<IProps> = (props) => {
     }
 
     const onSubmit = () => {
-        if(targetType === '1' && selectedThingGroup.value === undefined)
-            setInvalidThingGroup(true);
-        else if(targetType ==='0' && selectedCoreDevice.value === undefined)
-            setInvalidCoreDevice(true);
-        else {
-            var target_arn;
-            if(targetType === '1')
-                target_arn = itemsThingGroups[itemsThingGroups.findIndex((item) => item.name === selectedThingGroup.value)]['arn'];
-            else
-                target_arn = itemsCoreDevices[itemsCoreDevices.findIndex((item) => item.name === selectedCoreDevice.value)]['name'];
-            var deployment_name = deploymentName;
+        var target_arn;
+        if(targetType === '1')
+            target_arn = itemsThingGroups[itemsThingGroups.findIndex((item) => item.name === selectedThingGroup.value)]['arn'];
+        else
+            target_arn = itemsCoreDevices[itemsCoreDevices.findIndex((item) => item.name === selectedCoreDevice.value)]['name'];
+        
+        var deployment_name = deploymentName;    
+        var components = {};
             
-            var components = {};
-            
-            itemsComponents.forEach(itemComponent => {
-                if(itemComponent.selected)
-                    components[itemComponent.name] = {componentVersion: selectedComponentVersions[itemComponent.name].value};
-            });
+        itemsComponents.forEach(itemComponent => {
+            if(itemComponent.selected)
+                components[itemComponent.name] = {componentVersion: selectedComponentVersions[itemComponent.name].value};
+        });
 
-            var body = {
-                'deployment_name': deployment_name,
-                'target_arn': target_arn,
-                'components': JSON.stringify(components),
-                'industrial_model': params.id
-            }
-            setProcessing(true)
-            axios.post('/greengrass/deployment', body,  { headers: {'content-type': 'application/json' }}) 
+        var body = {
+            'deployment_name': deployment_name,
+            'target_arn': target_arn,
+            'components': JSON.stringify(components),
+            'industrial_model': params.id
+        }
+        setProcessing(true)
+        axios.post('/greengrass/deployment', body,  { headers: {'content-type': 'application/json' }}) 
             .then((response) => {
                 history.goBack();
             }, (error) => {
@@ -175,8 +166,6 @@ const GreengrassDeploymentForm: FunctionComponent<IProps> = (props) => {
                 console.log(error);
                 setProcessing(false);
             });
-
-        }
     }
 
     const onCancel = () => {
@@ -308,7 +297,6 @@ const GreengrassDeploymentForm: FunctionComponent<IProps> = (props) => {
                             placeholder='Choose an option'
                             options={optionsThingGroups}
                             selectedOption={selectedThingGroup}
-                            invalid={invalidThingGroup}
                             onChange={(event) => onChange('formFieldIdThingGroups', event)}
                         />
                     </FormField>
@@ -326,7 +314,6 @@ const GreengrassDeploymentForm: FunctionComponent<IProps> = (props) => {
                             placeholder='Choose an option'
                             options={optionsCoreDevices}
                             selectedOption={selectedCoreDevice}
-                            invalid={invalidCoreDevice}
                             onChange={(event) => onChange('formFieldIdCoreDevices', event)}
                         />
                     </FormField>

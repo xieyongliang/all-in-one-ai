@@ -20,13 +20,13 @@ do
     then
         ./build_and_push.sh ${region}
         touch dummy
-        tar czvf sourcedir.tar.gz dummy
-        aws s3 cp sourcedir.tar.gz ${s3uri}/algorithms/source/${algorithm}/
+        tar czvf model.tar.gz dummy
+        aws s3 cp model.tar.gz ${s3uri}/algorithms/${algorithm}/artifact/
         rm dummy
-        rm sourcedir.tar.gz
+        rm model.tar.gz
     else
         tar czvf sourcedir.tar.gz *
-        aws s3 cp sourcedir.tar.gz ${s3uri}/algorithms/source/${algorithm}/
+        aws s3 cp sourcedir.tar.gz ${s3uri}/algorithms/${algorithm}/source/
         rm sourcedir.tar.gz
     fi
 done

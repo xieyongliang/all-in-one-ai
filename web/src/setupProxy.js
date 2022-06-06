@@ -5,7 +5,8 @@ const { default: axios } = require('axios');
 const url = require('url');
 var Jimp = require('jimp');
 
-const baseUrl = 'https://s8upvi47qg.execute-api.ap-southeast-1.amazonaws.com/Prod'
+//const baseUrl = 'https://s8upvi47qg.execute-api.ap-southeast-1.amazonaws.com/Prod'
+const baseUrl = 'https://b2yr0i0r6e.execute-api.ap-east-1.amazonaws.com/Prod'
 
 module.exports = function(app) {
     app.post('/_image', (req, res) => {

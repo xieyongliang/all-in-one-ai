@@ -1,7 +1,6 @@
 import json
 import boto3
 import helper
-from sagemaker import image_uris
 from boto3.dynamodb.conditions import Key
 from decimal import Decimal
 from datetime import date, datetime
