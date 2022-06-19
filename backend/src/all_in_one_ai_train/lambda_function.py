@@ -70,15 +70,15 @@ def lambda_handler(event, context):
             source_dir = ssmh.get_parameter('/all_in_one_ai/config/meta/algorithms/{0}/source'.format(algorithm))
 
             default_hyperparameters = {
-                "classes": 10, 
-                "batch_size": 8,
-                "epochs": 20, 
-                "learning_rate": 0.001,
-                "momentum": 0.9,
-                "wd": 0.0001,
-                "num_gpus": 1,
-                "num_workers": 8,
-                "model_name": "ResNet50_v2"
+                'classes': 10, 
+                'batch_size': 8,
+                'epochs': 20, 
+                'learning_rate': 0.001,
+                'momentum': 0.9,
+                'wd': 0.0001,
+                'num_gpus': 1,
+                'num_workers': 8,
+                'model_name': 'ResNet50_v2'
             }
             for key in default_hyperparameters.keys():
                 if(key not in hyperparameters.keys()):
@@ -154,15 +154,15 @@ def lambda_handler(event, context):
             source_dir = ssmh.get_parameter('/all_in_one_ai/config/meta/algorithms/{0}/source'.format(algorithm))
 
             default_hyperparameters = {
-                "task" : "tasd", 
-                "dataset" : "dataset", 
-                "model_name_or_path" : "t5-base", 
-                "paradigm": "extraction",
-                "eval_batch_size" :"16",
-                "train_batch_size" :"2",
-                "learning_rate" :"3e-4",
-                "num_train_epochs":"4",
-                "n_gpu": "1"
+                'task' : 'tasd', 
+                'dataset' : 'dataset', 
+                'model_name_or_path' : 't5-base', 
+                'paradigm': 'extraction',
+                'eval_batch_size' :'16',
+                'train_batch_size' :'2',
+                'learning_rate' :'3e-4',
+                'num_train_epochs':'4',
+                'n_gpu': '1'
             }
 
             for key in default_hyperparameters.keys():
@@ -184,6 +184,52 @@ def lambda_handler(event, context):
                     'inputs': inputs,
                     'framework_version': '1.7.1',
                     'py_version': 'py36',
+
+                }
+            }
+
+            response = lambda_client.invoke(
+                FunctionName = 'all_in_one_ai_create_train_pytorch',
+                InvocationType = 'Event',
+                Payload=json.dumps(payload)
+            )
+        elif(algorithm == 'paddlenlp'):
+            source_dir = ssmh.get_parameter('/all_in_one_ai/config/meta/algorithms/{0}/source'.format(algorithm))
+
+            default_hyperparameters = {
+                'train_path': '/opt/ml/input/data/training/train.txt',
+                'dev_path': '/opt/ml/input/data/training/dev.txt', 
+                'save_dir': '/opt/ml/model',                 
+                'batch_size' : 16, 
+                'learning_rate' : 1e-5, 
+                'max_seq_len' : 512,
+                'num_epochs' : 100,
+                'seed' : 1000,
+                'logging_steps': 10,
+                'valid_steps': 100,
+                'device': 'gpu',
+                'model': 'uie-base'
+            }
+
+            for key in default_hyperparameters.keys():
+                if(key not in hyperparameters.keys()):
+                    hyperparameters[key] = default_hyperparameters[key]
+            
+            payload = {
+                'body': {
+                    'job_name': job_name,
+                    'algorithm': algorithm,
+                    'industrial_model': industrial_model,
+                    'entry_point': 'finetune.py',
+                    'source_dir': source_dir,
+                    'git_config': None,
+                    'role': role_arn,
+                    'instance_type': instance_type,
+                    'instance_count': instance_count,
+                    'hyperparameters': hyperparameters,
+                    'inputs': inputs,
+                    'framework_version': '1.9.1',
+                    'py_version': 'py38',
 
                 }
             }
@@ -219,4 +265,4 @@ def defaultencode(o):
         return int(o)
     if isinstance(o, (datetime, date)):
         return o.isoformat()
-    raise TypeError(repr(o) + " is not JSON serializable")
+    raise TypeError(repr(o) + ' is not JSON serializable')

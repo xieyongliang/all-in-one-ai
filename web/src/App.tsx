@@ -29,6 +29,7 @@ import GluonCV from './components/Algorithms/GluonCV';
 import PaddleOCR from './components/Algorithms/PaddleOCR';
 import CPT from './components/Algorithms/CPT';
 import GABSA from './components/Algorithms/GABSA';
+import PaddleNLP from './components/Algorithms/PaddleNLP';
 import Track from './components/Scenarios/Track';
 import PPE from './components/Scenarios/PPE';
 import CameraForm from './components/Forms/Camera';
@@ -80,7 +81,8 @@ const App : FunctionComponent = () => {
                     <Route sensitive={true} exact path="/algorithms/gluoncv">{withLayout(GluonCV)}</Route>
                     <Route sensitive={true} exact path="/algorithms/paddleocr">{withLayout(PaddleOCR)}</Route>
                     <Route sensitive={true} exact path="/algorithms/cpt">{withLayout(CPT)}</Route>
-                    <Route sensitive={true} exact path="/algorithms/gabsa">{withLayout(GABSA)}</Route>
+                    <Route sensitive={true} exact path="/algorithms/gabsa">{withLayout(GABSA)}</Route>                    
+                    <Route sensitive={true} exact path="/algorithms/paddlenlp">{withLayout(PaddleNLP)}</Route>
                     <Route sensitive={true} exact path="/imodels/:id">{withLayout(IndustrialModels)}</Route>
                     <Route sensitive={true} exact path="/imodels">{withLayout(IndustrialModelOverview)}</Route>
                     <Route sensitive={true} exact path="/">{withLayout(Dashboard)}</Route>

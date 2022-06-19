@@ -241,3 +241,17 @@ Resources:
       Name: /all_in_one_ai/config/meta/algorithms/gabsa/source
       Type: String
       Value: !Sub s3://${S3Bucket}/${S3Key}algorithms/gabsa/source/
+
+  Parameter26:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /all_in_one_ai/config/meta/algorithms/paddlenlp/industrialmodels
+      Type: String
+      Value: !Sub s3://${S3Bucket}/${S3Key}algorithms/paddlenlp/industrialmodels/
+
+  Parameter27:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /all_in_one_ai/config/meta/algorithms/paddlenlp/source
+      Type: String
+      Value: !Sub s3://${S3Bucket}/${S3Key}algorithms/paddlenlp/source/

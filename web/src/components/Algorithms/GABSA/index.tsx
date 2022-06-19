@@ -4,7 +4,7 @@ import { Stack, Container, Text, Link } from 'aws-northstar';
 const GABSA: FunctionComponent = () => {
     return (
         <Stack>
-            <Container title='About CPT'>
+            <Container title='About GABSA'>
                 <Stack>
                 <Text> 
                     Genearative ABSA - Genearative Aspect Based Sentiment Analysis is an novel generative framework transforming

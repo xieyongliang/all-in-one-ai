@@ -4,13 +4,13 @@ import { Stack, Container, Text, Link } from 'aws-northstar';
 const PaddleOCR: FunctionComponent = () => {
     return (
         <Stack>
-            <Container title='About GluonCV'>
+            <Container title='About PaddleOCR'>
                 <Stack>
                 <Text> 
                 PaddleOCR aims to create multilingual, awesome, leading, and practical OCR tools that help users train better models and apply them into practice.
                 </Text>
                 <Text> 
-                    Paddle features:
+                    PaddleOCR features:
                 </Text>
                 <ul dir="auto">
                     <li>PP-OCR - A series of high-quality pre-trained models, comparable to commercial products
