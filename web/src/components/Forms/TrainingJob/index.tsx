@@ -83,6 +83,12 @@ const inputDataOptions = {
             key: 'dataset',
             value: ''
         }
+    ],
+    'paddlenlp': [
+        {
+            key: 'dataset',
+            value: ''
+        }
     ]
 }
 

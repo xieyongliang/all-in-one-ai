@@ -197,8 +197,8 @@ def lambda_handler(event, context):
             source_dir = ssmh.get_parameter('/all_in_one_ai/config/meta/algorithms/{0}/source'.format(algorithm))
 
             default_hyperparameters = {
-                'train_path': '/opt/ml/input/data/training/train.txt',
-                'dev_path': '/opt/ml/input/data/training/dev.txt', 
+                'train_path': '/opt/ml/input/data/dataset/train.txt',
+                'dev_path': '/opt/ml/input/data/dataset/dev.txt', 
                 'save_dir': '/opt/ml/model',                 
                 'batch_size' : 16, 
                 'learning_rate' : 1e-5, 

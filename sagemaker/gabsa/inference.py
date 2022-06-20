@@ -32,7 +32,8 @@ def model_fn(model_dir):
     model_ckpt = torch.load(checkpoint, map_location=device)
     model = T5FineTuner(model_ckpt['hyper_parameters'])
     model.load_state_dict(model_ckpt['state_dict'])
-    tokenizer = T5Tokenizer.from_pretrained('t5-base')
+    pretrained_model = os.environ['pretrained_model'] if('pretrained_model' in os.environ) else 't5-base'
+    tokenizer = T5Tokenizer.from_pretrained(pretrained_model)
 
     model.model.to(device)
     model.model.eval()

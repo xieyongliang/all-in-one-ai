@@ -86,10 +86,6 @@ const EndpointList: FunctionComponent = () => {
         setVisibleDetachConfirmation(true)
     }
 
-    const onDeploy = () => {
-        history.push(`/imodels/${params.id}?tab=deploy#create`)
-    }
-
     const onRefresh = useCallback(() => {
         setLoading(true)
 
@@ -256,7 +252,7 @@ const EndpointList: FunctionComponent = () => {
             <div className='tableaction'>
                 <ButtonDropdown
                     content='Actions'
-                        items={[{ text: 'Deploy', onClick: onDeploy}, { text: 'Delete', onClick: onDelete, disabled: disabledDelete }, { text: 'Attach', onClick: onAttach, disabled: disabledAttach }, { text: 'Detach', onClick: onDetach, disabled: disabledDetach }, { text: 'Add/Edit tags', disabled: true }]}
+                        items={[{ text: 'Delete', onClick: onDelete, disabled: disabledDelete }, { text: 'Attach', onClick: onAttach, disabled: disabledAttach }, { text: 'Detach', onClick: onDetach, disabled: disabledDetach }, { text: 'Add/Edit tags', disabled: true }]}
                 />
             </div>
             <div className='tableaction'>

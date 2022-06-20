@@ -38,6 +38,7 @@ import PaddleOCRDemoForm from '../Forms/Demo/Single/paddleocr';
 import Yolov5PaddleOCRDemoForm from '../Forms/Demo/Mixed/yolov5&paddleocr';
 import CPTDemoForm from '../Forms/Demo/Single/cpt';
 import GABSADemoFrom from '../Forms/Demo/Single/gabsa';
+import PaddleNLPDemoForm from '../Forms/Demo/Single/paddlenlp'
 
 interface IProps {
     industrialModels : IIndustrialModel[];
@@ -158,12 +159,12 @@ const IndustrialModels: FunctionComponent<IProps> = (
             id: 'restapi',
             content: <RestApiList/>
         },
-        {
+        (algorithm === 'yolov5') && {
             label: 'Greengrass components',
             id: 'greengrasscomponentversion',
             content: <GreengrassComponentList/>
         },
-        {
+        (algorithm === 'yolov5') && {
             label: 'Greengrass deployments',
             id: 'greengrassdeployment',
             content: <GreengrassDeploymentList/>
@@ -213,6 +214,15 @@ const IndustrialModels: FunctionComponent<IProps> = (
                 label: 'Demo',
                 id: 'demo',
                 content: <GABSADemoFrom advancedMode={advancedMode} onAdvancedModeChange={onAdvancedModeChange}/>
+            }
+        ]     
+    }
+    else if(algorithm === 'paddlenlp'){
+        tabs = [
+            {
+                label: 'Demo',
+                id: 'demo',
+                content: <PaddleNLPDemoForm advancedMode={advancedMode} onAdvancedModeChange={onAdvancedModeChange}/>
             }
         ]     
     }

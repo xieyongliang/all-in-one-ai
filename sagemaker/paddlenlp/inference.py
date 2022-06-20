@@ -14,40 +14,62 @@
 
 import os
 import json
-
 import argparse
-from uie_predictor import UIEPredictor
-
 
 def model_fn(model_dir):
+
     args = parse_args()
     args.model_path_prefix = os.path.join(model_dir, 'inference')
     args.device = os.environ['device'] if('device' in os.environ) else 'cpu'
     args.schema = json.loads(os.environ['schema'])
+
+    if(args.device == 'gpu'):
+        os.system('pip install -U paddlepaddle-gpu')
+    else:
+        os.system('pip install -U paddlepaddle')
+
+    from uie_predictor import UIEPredictor
+
     predictor = UIEPredictor(args)
     return predictor
 
 
 def input_fn(request_body, request_content_type):
-#     print('[DEBUG] request_body:', type(request_body))
-#     print('[DEBUG] request_content_type:', request_content_type)
-    
-    """An input_fn that loads a pickled tensor"""
+    """
+    Deserialize and prepare the prediction input
+    """
+
     if request_content_type == 'application/json':
-        input_data = json.loads(request_body)
-        return input_data
+        request = json.loads(request_body)
     else:
         # Handle other content-types here or raise an Exception
         # if the content type is not supported.  
-        return request_body
+        request = request_body
+    
+    return request
+
     
 def predict_fn(input_data, model):
-    outputs = model.predict(input_data)
-    return outputs
+    inputs = [ input_data['inputs'] ]
 
+    outputs = model.predict(inputs)
 
-# def output_fn(prediction, content_type):
-#     pass
+    result =  {
+        'result': outputs
+    }
+    return result
+
+def output_fn(prediction, response_content_type):
+    """
+    Serialize and prepare the prediction output
+    """
+
+    if response_content_type == "application/json":
+        response = json.dumps(prediction, ensure_ascii = False, default = defaultencode)
+    else:
+        response = str(prediction)
+
+    return response    
 
 
 def parse_args():
@@ -83,12 +105,9 @@ def parse_args():
     args = parser.parse_args()
     return args
 
-
-if __name__ == "__main__":
-    texts = [
-        '"北京市海淀区人民法院\n民事判决书\n(199x)建初字第xxx号\n原告：张三。\n委托代理人李四，北京市 A律师事务所律师。\n被告：B公司，法定代表人王五，开发公司总经理。\n委托代理人赵六，北京市 C律师事务所律师。"',
-        '原告赵六，2022年5月29日生\n委托代理人孙七，深圳市C律师事务所律师。\n被告周八，1990年7月28日出生\n委托代理人吴九，山东D律师事务所律师'
-    ]
-    model = model_fn('../../checkpoint')
-    result = predict_fn(texts, model)
-    print(result)
+def defaultencode(o):
+    if(type(o) == 'numpy.float32'):
+        return float(o)
+    
+    return str(o)
+    

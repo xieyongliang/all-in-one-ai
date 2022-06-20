@@ -235,6 +235,45 @@ def lambda_handler(event, context):
                 instance_type = training_job_instance_type,
                 instance_count = training_job_instance_count
             )
+        elif(model_algorithm == 'paddlenlp'):
+            source_dir = ssmh.get_parameter('/all_in_one_ai/config/meta/algorithms/{0}/source'.format(model_algorithm))
+
+            default_hyperparameters = {
+                'train_path': '/opt/ml/input/data/dataset/train.txt',
+                'dev_path': '/opt/ml/input/data/dataset/dev.txt', 
+                'save_dir': '/opt/ml/model',                 
+                'batch_size' : 16, 
+                'learning_rate' : 1e-5, 
+                'max_seq_len' : 512,
+                'num_epochs' : 100,
+                'seed' : 1000,
+                'logging_steps': 10,
+                'valid_steps': 100,
+                'device': 'gpu',
+                'model': 'uie-base'
+            }
+            training_job_hyperparameters = training_job_hyperparameters
+            for key in default_hyperparameters.keys():
+                if(key not in training_job_hyperparameters.keys()):
+                    training_job_hyperparameters[key] = default_hyperparameters[key]
+            
+            git_config = None
+            entry_point = 'finetune.py'
+            source_dir = '.'
+            framework_version = '1.9.1'
+            py_version = 'py38'
+
+            estimator = PyTorch(
+                entry_point = entry_point,
+                source_dir = source_dir,
+                git_config = git_config,
+                role = role,
+                hyperparameters = training_job_hyperparameters,
+                framework_version = framework_version, 
+                py_version = py_version,
+                instance_type = training_job_instance_type,
+                instance_count = training_job_instance_count
+            )
         
         inputs = training_job_input_data
 
