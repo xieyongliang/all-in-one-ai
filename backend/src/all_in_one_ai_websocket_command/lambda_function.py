@@ -5,7 +5,7 @@ import helper
 from boto3.dynamodb.conditions import Key
 import traceback
 
-video_connection_table = 'all_in_one_video_connection'
+video_connection_table = 'all_in_one_ai_video_connection'
 ddbh = helper.ddb_helper({'table_name': video_connection_table})
 
 def lambda_handler(event, context):
