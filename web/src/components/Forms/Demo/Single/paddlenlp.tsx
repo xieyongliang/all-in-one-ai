@@ -1,5 +1,5 @@
 import { FunctionComponent, useEffect, useState } from 'react';
-import { Toggle, Link, FormField, FormSection, Textarea, Text, Container, Stack, Inline, Button } from 'aws-northstar';
+import { Toggle, Link, FormField, FormSection, Textarea, Container, Stack, Inline, Button } from 'aws-northstar';
 import axios from 'axios';
 import Select, { SelectOption } from 'aws-northstar/components/Select';
 import { PathParams } from '../../../Interfaces/PathParams';
@@ -11,6 +11,7 @@ import { AppState } from '../../../../store';
 import { connect } from 'react-redux';
 import { IIndustrialModel } from '../../../../store/industrialmodels/reducer';
 import { v4 as uuidv4 } from 'uuid';
+import ReactJson from 'react-json-view';
 
 interface IProps {
     industrialModels: IIndustrialModel[];
@@ -52,7 +53,7 @@ const PaddleNLPDemoForm: FunctionComponent<IProps> = (
         onAdvancedModeChange
     }) => {
     const [ text, setText ] = useState('')
-    const [ extraction, setExtraction ] = useState('')
+    const [ extraction, setExtraction ] = useState('{}')
     const [ endpointOptions, setEndpointOptions ] = useState([])
     const [ selectedEndpoint, setSelectedEndpoint ] = useState<SelectOption>({})
     const [ sampleCode, setSampleCode ] = useState('')
@@ -80,9 +81,6 @@ const PaddleNLPDemoForm: FunctionComponent<IProps> = (
         }
         if(id === 'formFieldIdText') {
             setText(event.target.value)
-        }
-        if(id === 'formFieldIdExtraction'){
-            setExtraction(event.target.value)
         }
     }
 
@@ -152,10 +150,7 @@ const PaddleNLPDemoForm: FunctionComponent<IProps> = (
                 <FormField controlId={uuidv4()}>
                     <Toggle label='Advanced mode' checked={advancedMode} onChange={onAdvancedModeChange}/>
                 </FormField>                
-                <FormField controlId={uuidv4()}>
-                    <Text>
-                        Select endpoint to inference
-                    </Text>
+                <FormField controlId={uuidv4()} description='Select endpoint to inference'>
                     <Select
                         placeholder='Choose endpoint'
                         options={endpointOptions}
@@ -166,9 +161,12 @@ const PaddleNLPDemoForm: FunctionComponent<IProps> = (
                 <FormField controlId={uuidv4()} description='Input the origin text'>
                     <Textarea onChange={(event) => onChange('formFieldIdText', event)} value={text}/>
                 </FormField>
-                <FormField controlId={uuidv4()} description='Output the extracted text'>
-                    <Textarea onChange={(event) => onChange('formFieldIdExtraction', event)} value={extraction}/>
-                </FormField>
+                {
+                    extraction !== '{}' && 
+                    <FormField controlId={uuidv4()} description='Inference result'>
+                        <ReactJson src={JSON.parse(extraction)} collapsed={false} theme='google' />
+                    </FormField>
+                }
                 <div className='run'>
                     <Button onClick={onRun} loading={processing}>Run</Button>
                     </div>

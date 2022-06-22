@@ -1,5 +1,5 @@
 import { FunctionComponent, useEffect, useState } from 'react';
-import { Toggle, Link, FormField, FormSection, Textarea, Text, Container, Stack, Inline, Button } from 'aws-northstar';
+import { Toggle, Link, FormField, FormSection, Textarea, Container, Stack, Inline, Button } from 'aws-northstar';
 import axios from 'axios';
 import Select, { SelectOption } from 'aws-northstar/components/Select';
 import { PathParams } from '../../../Interfaces/PathParams';
@@ -151,10 +151,7 @@ const CPTDemoForm: FunctionComponent<IProps> = (
                 <FormField controlId={uuidv4()}>
                     <Toggle label='Advanced mode' checked={advancedMode} onChange={onAdvancedModeChange}/>
                 </FormField>                
-                <FormField controlId={uuidv4()}>
-                    <Text>
-                        Select endpoint to inference
-                    </Text>
+                <FormField controlId={uuidv4()} description='Select endpoint to inference'>
                     <Select
                         placeholder='Choose endpoint'
                         options={endpointOptions}

@@ -61,7 +61,8 @@
     "react-native-webview": "latest",
     "react-hls-player": "latest",
     "react-player": "latest",
-    "react-image-marker": "latest"
+    "react-image-marker": "latest",
+    "react-json-view": "latest"
   },
   "devDependencies": {
     "@types/file-saver": "^2.0.3",

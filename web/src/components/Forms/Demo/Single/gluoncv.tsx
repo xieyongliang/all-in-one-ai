@@ -1,6 +1,6 @@
 import { FunctionComponent, useEffect, useState } from 'react';
 import { useHistory, useParams } from 'react-router-dom';
-import { Container, Link, Toggle, Select, Stack, FormField, Button, Grid, ProgressBar, LoadingIndicator, Text, Inline } from 'aws-northstar';
+import { Container, Link, Toggle, Select, Stack, FormField, Button, Grid, ProgressBar, LoadingIndicator, Inline } from 'aws-northstar';
 import ImageList from '@mui/material/ImageList';
 import ImageListItem from '@mui/material/ImageListItem';
 import SyntaxHighlighter from 'react-syntax-highlighter';
@@ -331,10 +331,7 @@ const GluonCVDemoForm: FunctionComponent<IProps> = (
     return (
         <Stack>
             <Container title = 'Demo options'>
-                <FormField controlId='formFieldIdChooseEndpoint'>
-                    <Text>
-                        Select endpoint to inference
-                    </Text>
+                <FormField controlId='formFieldIdChooseEndpoint' description='Select endpoint to inference'>
                     <Select
                         placeholder='Choose endpoint'
                         options={endpointOptions}
