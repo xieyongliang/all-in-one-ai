@@ -32,8 +32,7 @@ const EndpointForm: FunctionComponent<IProps> = (props) => {
     const [ selectedAcceleratorTypeType, setSelectedAcceleratorTypeType ] = useState<SelectOption>(props.wizard ? {label: props.endpointAcceleratorType, value: props.endpointAcceleratorType} : {});
     const [ initialInstanceCount, setInitialInstanceCount ] = useState<number>(props.wizard ? props.endpointInitialInstanceCount : 1);
     const [ initialVariantWeight, setInitialVariantWeight ] = useState<number>(props.wizard ? props.endpointInitialVariantWeight : 1);
-    const [ tags ] = useState([{key:'', value:''}])
-    const [ forcedRefresh, setForcedRefresh ] = useState(false)
+    const [ tags, setTags ] = useState([{key:'', value:''}])
     const [ processing, setProcessing ] = useState(false)
 
     const history = useHistory();
@@ -110,14 +109,22 @@ const EndpointForm: FunctionComponent<IProps> = (props) => {
     }
 
     const onAddTag = () => {
-        tags.push({key:'', value:''});
-        setForcedRefresh(!forcedRefresh);
+        var copyTags = JSON.parse(JSON.stringify(tags));
+        copyTags.push({key:'', value:''});
+        setTags(copyTags);
     }
 
     const onRemoveTag = (index) => {
-        tags.splice(index, 1);
-        setForcedRefresh(!forcedRefresh);
+        var copyTags = JSON.parse(JSON.stringify(tags));
+        copyTags.splice(index, 1);
+        setTags(copyTags);
     }
+
+    const onChangeTags = (id: string, event: any, index : number) => {
+        var copyTags = JSON.parse(JSON.stringify(tags));
+        copyTags[index][id] = event
+        setTags(copyTags)
+    }    
 
     var wizard : boolean
     if(props.wizard === undefined)
@@ -161,10 +168,10 @@ const EndpointForm: FunctionComponent<IProps> = (props) => {
                         tags.map((tag, index) => (
                             <Grid container spacing={{ xs: 1, md: 1 }} columns={{ xs: 4, sm: 8, md: 12 }}>
                                 <Grid item xs={2} sm={4} md={4}>
-                                    <Input type='text' value={tag.key}/>
+                                    <Input type='text' value={tag.key} onChange={(event) => onChangeTags('key', event, index)}/>
                                 </Grid>
                                 <Grid item xs={2} sm={4} md={4}>
-                                    <Input type='text' value={tag.value}/>
+                                    <Input type='text' value={tag.value} onChange={(event) => onChangeTags('value', event, index)}/>
                                 </Grid>
                                 <Grid item xs={2} sm={4} md={4}>
                                     <Button onClick={() => onRemoveTag(index)}>Remove</Button>

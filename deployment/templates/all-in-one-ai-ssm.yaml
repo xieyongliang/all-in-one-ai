@@ -255,3 +255,10 @@ Resources:
       Name: /all_in_one_ai/config/meta/algorithms/paddlenlp/source
       Type: String
       Value: !Sub s3://${S3Bucket}/${S3Key}algorithms/paddlenlp/source/
+
+  Parameter28:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /all_in_one_ai/config/meta/algorithms/mdeberta/industrialmodels
+      Type: String
+      Value: !Sub s3://${S3Bucket}/${S3Key}algorithms/mdeberta/industrialmodels/

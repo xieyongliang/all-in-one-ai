@@ -39,6 +39,7 @@ import Yolov5PaddleOCRDemoForm from '../Forms/Demo/Mixed/yolov5&paddleocr';
 import CPTDemoForm from '../Forms/Demo/Single/cpt';
 import GABSADemoFrom from '../Forms/Demo/Single/gabsa';
 import PaddleNLPDemoForm from '../Forms/Demo/Single/paddlenlp'
+import DeBERTaDemoForm from '../Forms/Demo/Single/mdeberta'
 
 interface IProps {
     industrialModels : IIndustrialModel[];
@@ -226,6 +227,15 @@ const IndustrialModels: FunctionComponent<IProps> = (
             }
         ]     
     }
+    else if(algorithm === 'mdeberta'){
+        tabs = [
+            {
+                label: 'Demo',
+                id: 'demo',
+                content: <DeBERTaDemoForm advancedMode={advancedMode} onAdvancedModeChange={onAdvancedModeChange}/>
+            }
+        ]     
+    }
     else {
         tabs = [
             {
@@ -239,6 +249,7 @@ const IndustrialModels: FunctionComponent<IProps> = (
     if(advancedMode)
         tabs = tabs.concat(advancedTabs)
 
+    
     return (
         <Tabs tabs={tabs} variant='container' activeId={tab} onChange={onChange}/>
     )

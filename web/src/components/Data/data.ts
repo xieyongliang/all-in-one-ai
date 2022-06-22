@@ -42,7 +42,8 @@ export const ALGORITHMS = [
     {label: 'Yolov5PaddleOCR', value: 'yolov5paddleocr', type: 'mixed'}, 
     {label: 'CPT', value: 'cpt', type: 'single'}, 
     {label: 'GABSA', value: 'gabsa', type: 'single'},
-    {label: 'PaddleNLP', value: 'paddlenlp', type: 'single'}
+    {label: 'PaddleNLP', value: 'paddlenlp', type: 'single'},
+    {label: 'mDeBERTa', value: 'mdeberta', type: 'single'}
 ]
 
 export const SCENARIOS = [

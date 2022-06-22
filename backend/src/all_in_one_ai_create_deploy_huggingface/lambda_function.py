@@ -1,11 +1,3 @@
-import os
-import sys
-from importlib_metadata import entry_points
-from sklearn import pipeline
-if not os.path.exists('/tmp/package'):
-    os.mkdir('/tmp/package')
-os.system('pip3 install -U sagemaker -t /tmp/package')
-sys.path.append('/tmp/package')
 from sagemaker.huggingface.model import HuggingFaceModel
 import traceback
 from utils import persist_meta
@@ -18,8 +10,7 @@ def lambda_handler(event, context):
         endpoint_name = event['body']['endpoint_name'] if('endpoint_name' in event['body'] and event['body']['endpoint_name'] != '') else None
         industrial_model = event['body']['industrial_model']
         model_data = event['body']['model_data']
-        hf_model_id = event['body']['hf_model_id']
-        hf_task = event['body']['hf_task']
+        hub = event['body']['hub']
         entry_point = event['body']['entry_point'] if('entry_point' in event['body']) else None
         role = event['body']['role']
         transformers_version = event['body']['transformers_version']
@@ -28,11 +19,6 @@ def lambda_handler(event, context):
         py_version = event['body']['py_version']
         instance_type = event['body']['instance_type']
         instance_count = event['body']['instance_count']
-
-        hub = {
-	        'HF_MODEL_ID': hf_model_id,
-	        'HF_TASK': hf_task
-        }
 
         model = HuggingFaceModel(
 	        role = role,

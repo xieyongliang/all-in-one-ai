@@ -20,7 +20,7 @@ def lambda_handler(event, context):
         industrial_model = request['industrial_model']
         model_name = request['model_name']
         model_environment = json.loads(request['model_environment']) if(request['model_environment'] != '{}') else None
-        model_data_url = request['model_data_url']
+        model_data_url = request['model_data_url'] if(request['model_data_url'] != '') else None
         endpoint_name = request['endpoint_name']
         instance_type = request['instance_type']
         instance_count = request['initial_instance_count']
@@ -147,6 +147,32 @@ def lambda_handler(event, context):
 
             response = lambda_client.invoke(
                 FunctionName = 'all_in_one_ai_create_deploy_pytorch',
+                InvocationType = 'Event',
+                Payload = json.dumps(payload)
+            )
+        elif(algorithm == 'mdeberta'):
+            hub = {
+                'HF_MODEL_ID':'MoritzLaurer/mDeBERTa-v3-base-mnli-xnli',
+                'HF_TASK':'zero-shot-classification'
+            }            
+            payload = {
+                'body': {
+                    'industrial_model': industrial_model,
+                    'role': role_arn,
+                    'transformers_version': '4.6.1',
+                    'pytorch_version': '1.7.1',
+                    'py_version': 'py36',
+                    'model_name': model_name,
+                    'model_data': None,
+                    'hub': hub,
+                    'endpoint_name': endpoint_name,
+                    'instance_type': instance_type,
+                    'instance_count': instance_count,
+                }
+            }
+
+            response = lambda_client.invoke(
+                FunctionName = 'all_in_one_ai_create_deploy_huggingface',
                 InvocationType = 'Event',
                 Payload = json.dumps(payload)
             )

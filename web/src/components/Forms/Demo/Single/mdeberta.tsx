@@ -1,5 +1,6 @@
 import { FunctionComponent, useEffect, useState } from 'react';
-import { Toggle, Link, FormField, FormSection, Textarea, Container, Stack, Inline, Button } from 'aws-northstar';
+import { Toggle, Link, FormField, FormSection, Textarea, Container, Stack, Inline, Button, Input } from 'aws-northstar';
+import Grid from '@mui/material/Grid';
 import axios from 'axios';
 import Select, { SelectOption } from 'aws-northstar/components/Select';
 import { PathParams } from '../../../Interfaces/PathParams';
@@ -25,16 +26,12 @@ const sampleFunctionOptions = [
         value: 'all_in_one_ai_train'
     },
     {
-        label: 'all_in_one_ai_create_train_pytorch',
-        value: 'all_in_one_ai_create_train_pytorch'
-    },
-    {
         label: 'all_in_one_ai_deploy',
         value: 'all_in_one_ai_deploy'
     },
     {
-        label: 'all_in_one_ai_create_deploy_pytorch',
-        value: 'all_in_one_ai_create_deploy_pytorch'
+        label: 'all_in_one_ai_create_deploy_huggingface',
+        value: 'all_in_one_ai_create_deploy_huggingface'
     },
     {
         label: 'all_in_one_ai_inference',
@@ -46,14 +43,15 @@ const sampleFunctionOptions = [
     }
 ]
 
-const PaddleNLPDemoForm: FunctionComponent<IProps> = (
+const DeBERTaDemoForm: FunctionComponent<IProps> = (
     {
         industrialModels,        
         advancedMode,
         onAdvancedModeChange
     }) => {
     const [ text, setText ] = useState('')
-    const [ extraction, setExtraction ] = useState('{}')
+    const [ labels, setLabels ] = useState([])
+    const [ result, setResult ] = useState('{}')
     const [ endpointOptions, setEndpointOptions ] = useState([])
     const [ selectedEndpoint, setSelectedEndpoint ] = useState<SelectOption>({})
     const [ sampleCode, setSampleCode ] = useState('')
@@ -127,11 +125,11 @@ const PaddleNLPDemoForm: FunctionComponent<IProps> = (
 
     const onRun = () => {
         var options = {headers: {'content-type': 'application/json'}, params : {endpoint_name: selectedEndpoint.value}};
-        var buffer = {inputs: text}
+        var buffer = {inputs: text, parameters: {candidate_labels : labels}}
         setProcessing(true)
         axios.post('/inference', buffer, options)
             .then((response) => {
-                setExtraction(JSON.stringify(response.data.result))
+                setResult(JSON.stringify(response.data))
                 setProcessing(false);
             }, (error) => {
                     console.log(error);
@@ -143,9 +141,48 @@ const PaddleNLPDemoForm: FunctionComponent<IProps> = (
         );
     }
 
-    const renderTextExtraction = () => {
+    const onAddLabel = () => {
+        var copyLabels = JSON.parse(JSON.stringify(labels));
+        copyLabels.push('');
+        setLabels(copyLabels);
+    }
+
+    const onRemoveLabel = (index) => {
+        var copyLabels = JSON.parse(JSON.stringify(labels));
+        copyLabels.splice(index, 1);
+        setLabels(copyLabels);
+    }
+
+
+    const onChangeLabels = (event: any, index : number) => {
+        var copyLabels = JSON.parse(JSON.stringify(labels));
+        copyLabels[index] = event
+        setLabels(copyLabels)
+    }   
+
+    const renderLabels = () => {
         return (
-            <FormSection header='Name entity recognition'>
+            <FormField controlId={uuidv4()} description='Candidate labels'>
+                {
+                    labels.map((label, index) => (
+                        <Grid container spacing={{ xs: 1, md: 1 }} columns={{ xs: 4, sm: 8, md: 12 }}>
+                            <Grid item xs={2} sm={4} md={4}>
+                                <Input type='text' value={label} onChange={(event) => onChangeLabels(event, index)}/>
+                            </Grid>
+                            <Grid item xs={2} sm={4} md={4}>
+                                <Button onClick={() => onRemoveLabel(index)}>Remove</Button>
+                            </Grid>
+                        </Grid>
+                    ))
+                }
+                <Button variant='link' size='large' onClick={onAddLabel}>Add label</Button>
+                </FormField>
+            )
+    }
+
+    const renderTextClassfication = () => {
+        return (
+            <FormSection header='Zero shot classification'>
                 <FormField controlId={uuidv4()}>
                     <Toggle label='Advanced mode' checked={advancedMode} onChange={onAdvancedModeChange}/>
                 </FormField>                
@@ -161,9 +198,12 @@ const PaddleNLPDemoForm: FunctionComponent<IProps> = (
                     <Textarea onChange={(event) => onChange('formFieldIdText', event)} value={text}/>
                 </FormField>
                 {
-                    extraction !== '{}' && 
+                    renderLabels()
+                }
+                {
+                    result !== '{}' && 
                     <FormField controlId={uuidv4()} description='Inference result'>
-                        <ReactJson src={JSON.parse(extraction)} collapsed={false} theme='google' />
+                        <ReactJson src={JSON.parse(result)} collapsed={false} theme='google' />
                     </FormField>
                 }
                 <div className='run'>
@@ -186,7 +226,7 @@ const PaddleNLPDemoForm: FunctionComponent<IProps> = (
             <Container headingVariant='h4' title = 'Quick start'>
                 <Inline>
                     <div className='quickstartaction'>
-                        <Button onClick={onStartTrain}>Start train</Button>
+                        <Button onClick={onStartTrain} disabled={true}>Start train</Button>
                     </div>
                     <div className='quickstartaction'>
                         <Button onClick={onStartDeploy}>Start deploy</Button>
@@ -222,7 +262,7 @@ const PaddleNLPDemoForm: FunctionComponent<IProps> = (
 
     return (
         <Stack>
-            { renderTextExtraction() }
+            { renderTextClassfication() }
             { renderQuickStart() }
             { renderSampleCode() }
         </Stack>
@@ -235,4 +275,4 @@ const mapStateToProps = (state: AppState) => ({
 
 export default connect(
     mapStateToProps
-)(PaddleNLPDemoForm);
+)(DeBERTaDemoForm);
