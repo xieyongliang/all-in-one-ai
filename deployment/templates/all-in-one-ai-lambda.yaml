@@ -42,6 +42,14 @@ Parameters:
     Type: AWS::EC2::SecurityGroup::Id
     Description: VPC SecurityGroup
 
+  Eip1:
+    Type: AWS::EC2::EIP
+    Description: EIP for Nat1 
+
+  Eip2:
+    Type: AWS::EC2::EIP
+    Description: EIP for Nat2
+
   ChinaRegion: 
     Description: Check if the stack to be in CN Region
     Type: String
@@ -98,7 +106,26 @@ Resources:
         - 'image/png'
         - 'image/jpg'
         - 'image/jpeg'
-      Name: all-in-one-ai-api  
+      Name: all-in-one-ai-api 
+      Policy: !Sub {
+        "Version": "2012-10-17",
+        "Statement": [
+            {
+                "Effect": "Allow",
+                "Principal": "*",
+                "Action": "execute-api:Invoke",
+                "Resource": "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:*/*/*/*",
+                "Condition": {
+                    "IpAddress": {
+                        "aws:SourceIp": [
+                            "${Eip1}/32",
+                            "${Eip2}/32"
+                        ]
+                    }
+                }
+            }
+        ]
+    }
 
   ApiGatewayResourceApi:
     Type: AWS::ApiGateway::Resource

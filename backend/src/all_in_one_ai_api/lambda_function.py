@@ -82,8 +82,9 @@ def lambda_handler(event, context):
             api_name = event['pathParameters']['api_name']
 
         industrial_model = None
-        if 'industrial_model' in event['queryStringParameters'] and industrial_model in event['queryStringParameters']:
-            industrial_model = event['queryStringParameters']['industrial_model']
+        if event['queryStringParameters'] != None:
+            if industrial_model in event['queryStringParameters']:
+                industrial_model = event['queryStringParameters']['industrial_model']
                 
         if api_name == None:
             if industrial_model != None:

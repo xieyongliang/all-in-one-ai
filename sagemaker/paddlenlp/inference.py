@@ -15,8 +15,12 @@
 import os
 import json
 import argparse
+import numpy as np
 
 def model_fn(model_dir):
+    """
+    Load the model for inference
+    """
 
     args = parse_args()
     args.model_path_prefix = os.path.join(model_dir, 'inference')
@@ -65,7 +69,7 @@ def output_fn(prediction, response_content_type):
     """
 
     if response_content_type == "application/json":
-        response = json.dumps(prediction, ensure_ascii = False, default = defaultencode)
+        response = json.dumps(prediction, ensure_ascii = False, cls = MyEncoder)
     else:
         response = str(prediction)
 
@@ -105,9 +109,15 @@ def parse_args():
     args = parser.parse_args()
     return args
 
-def defaultencode(o):
-    if(type(o) == 'numpy.float32'):
-        return float(o)
-    
-    return str(o)
+class MyEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, np.integer):
+            return int(obj)
+        elif isinstance(obj, np.floating):
+            return float(obj)
+        elif isinstance(obj, np.ndarray):
+            return obj.tolist()
+        else:
+            return super(MyEncoder, self).default(obj)
+
     

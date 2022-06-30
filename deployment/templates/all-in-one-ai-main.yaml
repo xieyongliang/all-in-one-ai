@@ -207,6 +207,8 @@ Resources:
         OpensearchEndpoint: !GetAtt OPENSEARCH.Outputs.OpensearchEndpoint
         EfsAccessPointArn: !GetAtt EFS.Outputs.EfsAccessPointArn
         SecurityGroup: !GetAtt VPC.Outputs.DefaultSecurityGroup
+        Eip1: !GetAtt VPC.Outputs.Eip1
+        Eip2: !GetAtt VPC.Outputs.Eip2
         ChinaRegion: !Ref ChinaRegion
       TemplateURL:
         !If

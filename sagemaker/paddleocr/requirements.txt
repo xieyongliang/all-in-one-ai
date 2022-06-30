@@ -1,0 +1,6 @@
+paddleocr
+Pillow
+protobuf==3.20.0
+scipy==1.6.0
+numpy==1.19.1
+boto3

@@ -376,4 +376,11 @@ Outputs:
   DefaultSecurityGroup:
     Description: DefaultSecurityGroup
     Value: !Ref DefaultSecurityGroup
+  Eip1:
+    Description: EIP for Nat1
+    Value: !Ref NatGw1ElasticIP
+  Eip2:
+    Description: EIP for Nat2
+    Value: !Ref NatGw2ElasticIP
+
     
