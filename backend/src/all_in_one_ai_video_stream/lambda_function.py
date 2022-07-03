@@ -13,6 +13,7 @@ video_connection_table = 'all_in_one_ai_video_stream'
 ddbh = helper.ddb_helper({'table_name': video_connection_table})
 
 def lambda_handler(event, context):
+    print(event['queryStringParameters'])
     if event['httpMethod'] == 'GET':
         try:
             camera_id = event['queryStringParameters']['camera_id']
@@ -71,14 +72,28 @@ def lambda_handler(event, context):
                 }
                 payload['camera_id'] = camera_id
                 response = lambda_client.invoke(
-                    FunctionName = 'all_in_one_video_command',
+                    FunctionName = 'all_in_one_ai_websocket_command',
                     InvocationType = 'RequestResponse',
                     Payload=json.dumps({'body': payload})
                 )
 
-                return {
-                    'statusCode': 200
-                }
+                if('FunctionError' not in response):
+                    payload = response["Payload"].read().decode("utf-8")
+                    payload = json.loads(payload)
+                    if(payload['statusCode'] == 200):
+                        return {
+                            'statusCode': 200
+                        }
+                    else:
+                        return {
+                            'statusCode': 400,
+                            'body': payload['body']
+                        }
+                else:
+                    return {
+                        'statusCode': 400,
+                        'body': payload['body']
+                    }
             elif(action == 'query'):
                 items = ddbh.scan(FilterExpression=Key('camera_id').eq(camera_id))
 
@@ -145,22 +160,37 @@ def lambda_handler(event, context):
                 }
                 payload['camera_id'] = camera_id
                 response = lambda_client.invoke(
-                    FunctionName = 'all_in_one_video_command',
+                    FunctionName = 'all_in_one_ai_websocket_command',
                     InvocationType = 'RequestResponse',
                     Payload=json.dumps({'body': payload})
                 )
-                if(action == 'delete'):
-                    params = {}
-                    params['camera_id'] = camera_id
-                    params['stream_name'] = stream_name
-                    ddbh.delete_item(params)
-                    
-                    response = kvs_client.delete_stream(
-                        StreamARN = stream_arn
-                    )
-                return {
-                    'statusCode': 200
-                }
+                
+                if('FunctionError' not in response):
+                    payload = response["Payload"].read().decode("utf-8")
+                    payload = json.loads(payload)
+                    if(payload['statusCode'] == 200):
+                        if(action == 'delete'):
+                            params = {}
+                            params['camera_id'] = camera_id
+                            params['stream_name'] = stream_name
+                            ddbh.delete_item(params)
+                            
+                            response = kvs_client.delete_stream(
+                                StreamARN = stream_arn
+                            )
+                        return {
+                            'statusCode': 200
+                        }
+                    else:
+                        return {
+                            'statusCode': 400,
+                            'body': payload['body']
+                        }
+                else:
+                    return {
+                        'statusCode': 400,
+                        'body': payload['body']
+                    }
             else:
                 return {
                     'statusCode': 400,

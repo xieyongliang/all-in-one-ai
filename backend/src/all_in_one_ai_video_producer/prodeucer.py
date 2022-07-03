@@ -3,16 +3,26 @@ import json
 import subprocess
 import os
 import signal
+import ssl
+import time
+from pathlib import Path
+import traceback
 
 endpoint_url = os.environ['WEBSOCKET_API']
 print(endpoint_url)
-ws = websocket.WebSocket()
+ws = websocket.WebSocket(sslopt={"cert_reqs": ssl.CERT_NONE})
 ws.connect(endpoint_url)
-CAMERA_NUM = 10
 FFM_NUM = 10
 
-for i in range(CAMERA_NUM):
-    ws.send(json.dumps({"action":"login","camera_id":"00{0}".format(i)}))
+source_path = Path(__file__).resolve()
+source_dir = source_path.parent
+
+producer_conig = '{0}/producer.config'.format(source_dir)
+file1 = open(producer_conig, 'r')
+lines = file1.readlines()
+for line in lines:
+    camera_id = line[0: len(line) - 1]
+    ws.send(json.dumps({"action":"login","camera_id":camera_id}))
 
 ffm = []
 for i in range(FFM_NUM):
@@ -38,7 +48,10 @@ try:
                 print(e.output)
                 ws.send(json.dumps({"action":"monitor","rtsp_uri": rtsp_uri}))
 
-        data = json.loads(ws.recv())
+        data = ws.recv()
+        print(data)
+
+        data = json.loads(data)
         print(data)
         
         action = data['action']
@@ -71,10 +84,11 @@ try:
                         if(ffm[i]['status'] == 'idle'):
                             ffm[i]['status'] = 'used'
                             ffserver_rtsp_uri = 'rtsp://localhost:8091/rtsp{0}.sdp'.format(i)
-                            args = ['ffmpeg', '-i', rtsp_uri, '-c:v', 'h264', '-i', dummay_aac, '-c:a', 'aac', 'http://localhost:8090/feed{0}.ffm'.format(i)]
-                            p = subprocess.Popen(args)
+                            ffserver_ffm_uri = 'http://localhost:8090/feed{0}.ffm'.format(i)
+                            args = ['ffmpeg -i {0} -c:v h264 -i {1} -c:a aac {2}'.format(rtsp_uri, dummay_aac, ffserver_ffm_uri)]
+                            p = subprocess.Popen(args, shell=True)
+                            time.sleep(5)
                             process[p] = {'rtsp_uri': rtsp_uri, 'stream_name': stream_name, 'codec_name': codec_name, 'ffm_id': i}
-                            gst_launcher = 'gst-launch-1.0'
                             args = ['gst-launch-1.0 -v rtspsrc location={0} short-header=TRUE ! rtph264depay ! h264parse ! kvssink stream-name={1} storage-size=128'.format(ffserver_rtsp_uri, stream_name)]
                             p = subprocess.Popen(args, shell=True)
                             process[p] = {'rtsp_uri': rtsp_uri, 'stream_name': stream_name, 'codec_name': codec_name, 'ffm_id': i}
@@ -83,6 +97,8 @@ try:
                             pass
             except subprocess.CalledProcessError as e:
                 print(e.output)
+                ws.send(json.dumps({"action":"monitor","rtsp_uri": rtsp_uri}))
+
         elif(action == 'stop'):
             rtsp_uri = None
             stream_name = None
@@ -93,20 +109,26 @@ try:
             for p in process:
                 if(rtsp_uri != None and stream_name != None):
                     if(rtsp_uri == process[p]['rtsp_uri'] and stream_name == process[p]['stream_name']):
-                        os.kill(p.pid, signal.SIGTERM)
-                        if(process[p]['codec_name'] != 'h265'):
+                        os.kill(p.pid + 1, signal.SIGTERM)
+                        if(process[p]['codec_name'] == 'h264'):
+                            os.kill(p.pid, signal.SIGTERM)
+                        else:
+                            os.kill(p.pid + 1, signal.SIGTERM)
                             ffm_id = process[p]['ffm_id']
                             ffm[ffm_id]['status'] = 'idle'
                 elif(rtsp_uri != None):
                     if(rtsp_uri == process[p]['rtsp_uri']):
-                        os.kill(p.pid, signal.SIGTERM)
-                        if(process[p]['codec_name'] != 'h265'):
+                        if(process[p]['codec_name'] == 'h264'):
+                            os.kill(p.pid, signal.SIGTERM)
+                        else:
                             ffm_id = process[p]['ffm_id']
                             ffm[ffm_id]['status'] = 'idle'
                 elif(stream_name != None):
                     if(stream_name == process[p]['stream_name']):
-                        os.kill(p.pid, signal.SIGTERM)
-                        if(process[p]['codec_name'] != 'h265'):
+                        if(process[p]['codec_name'] == 'h264'):
+                            os.kill(p.pid, signal.SIGTERM)
+                        else:
+                            os.kill(p.pid + 1, signal.SIGTERM)
                             ffm_id = process[p]['ffm_id']
                             ffm[ffm_id]['status'] = 'idle'
                 else:
@@ -114,4 +136,7 @@ try:
         else:
             pass
 except KeyboardInterrupt:
-  ws.close()
+    ws.close()
+except Exception as e:
+    traceback.print_exc()
+    print(e)

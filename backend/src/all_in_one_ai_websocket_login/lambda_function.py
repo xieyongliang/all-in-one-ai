@@ -10,9 +10,6 @@ ddbh = helper.ddb_helper({'table_name': video_connection_table})
 def lambda_handler(event, context):
     print(event)
 
-    endpoint_url = "https://" + event["requestContext"]["domainName"] + "/" + event["requestContext"]["stage"]
-    gatewayapi = boto3.client("apigatewaymanagementapi", endpoint_url = endpoint_url)
-    
     payload = json.loads(event['body'])
     camera_id = payload['camera_id']
     
@@ -39,7 +36,9 @@ def lambda_handler(event, context):
     
     except Exception as e:
         traceback.print_exc()
+        print(e)
     
         return {
             'statusCode': 400,
+            'body': str(e)
         }
