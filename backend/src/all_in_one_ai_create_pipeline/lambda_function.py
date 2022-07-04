@@ -117,7 +117,7 @@ def lambda_handler(event, context):
             git_config = {'repo': 'https://github.com/ultralytics/yolov5.git', 'branch': 'master'}
             entry_point = 'train.py'
             source_dir = '.'
-            framework_version = '1.9.1'
+            framework_version = '1.9.0'
             py_version = 'py38'
 
             estimator = PyTorch(
@@ -187,7 +187,7 @@ def lambda_handler(event, context):
             entry_point = 'train.py'
             py_version = 'py38'
             transformers_version = '4.12.3'
-            pytorch_version='1.9.1'
+            pytorch_version='1.9.0'
             estimator = HuggingFace(
                 entry_point = entry_point,
                 source_dir = source_dir,
@@ -260,7 +260,7 @@ def lambda_handler(event, context):
             git_config = None
             entry_point = 'finetune.py'
             source_dir = '.'
-            framework_version = '1.9.1'
+            framework_version = '1.9.0'
             py_version = 'py38'
 
             estimator = PyTorch(
