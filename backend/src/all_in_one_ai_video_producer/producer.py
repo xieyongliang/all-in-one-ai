@@ -30,8 +30,8 @@ for i in range(FFM_NUM):
 
 process = {}
 
-try:
-    while True:
+while True:
+    try:
         for p in process:
             rtsp_uri = process[p]['rtsp_uri']
             cmd=[
@@ -51,9 +51,13 @@ try:
         data = ws.recv()
         print(data)
 
+        if(data == ''):
+            ws.connect(endpoint_url)
+            continue
+
         data = json.loads(data)
         print(data)
-        
+
         action = data['action']
 
         if(action == 'start'):
@@ -135,8 +139,8 @@ try:
                     pass
         else:
             pass
-except KeyboardInterrupt:
-    ws.close()
-except Exception as e:
-    traceback.print_exc()
-    print(e)
+    except KeyboardInterrupt:
+        ws.close()
+    except Exception as e:
+        traceback.print_exc()
+        print(e)
