@@ -30,7 +30,7 @@ def lambda_handler(event, context):
 
                 response = kvs_client.create_stream(
                     StreamName = stream_name,
-                    DataRetentionInHours = data_retention_in_hours,
+                    DataRetentionInHours = data_retention_in_hours
                 )
 
                 items = ddbh.scan(FilterExpression=Key('camera_id').eq(camera_id))
@@ -117,6 +117,10 @@ def lambda_handler(event, context):
                 if event['queryStringParameters'] !=None and 'end_timestamp' in event['queryStringParameters']:
                     end_timestamp = datetime(event['queryStringParameters']['end_timestamp'])
 
+                expires = 60 * 60
+                if event['queryStringParameters'] !=None and 'expires' in event['queryStringParameters']:
+                    expires = event['queryStringParameters']['expires']
+
                 response = kvs_client.get_data_endpoint(StreamName=stream_name, APIName='GET_HLS_STREAMING_SESSION_URL')
                 data_endpoint = response['DataEndpoint']
                 kvs_archieved_client = boto3.client('kinesis-video-archived-media', endpoint_url=data_endpoint)
@@ -135,7 +139,8 @@ def lambda_handler(event, context):
                                 'StartTimestamp': start_timestamp,
                                 'EndTimestamp': end_timestamp
                             }
-                        }
+                        },
+                        Expires = expires
                     )
                 return {
                     'statusCode': 200,

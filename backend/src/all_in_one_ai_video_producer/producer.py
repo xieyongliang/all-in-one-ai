@@ -141,6 +141,8 @@ while True:
             pass
     except KeyboardInterrupt:
         ws.close()
+    except websocket.WebSocketConnectionClosedException as e:
+        ws.connect(endpoint_url)
     except Exception as e:
         traceback.print_exc()
         print(e)
