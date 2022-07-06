@@ -174,7 +174,7 @@ const SampleForm: FunctionComponent<IProps> = (props) => {
             <Container headingVariant='h4' title = 'Quick start'>
                 <Inline>
                     <div className='quickstartaction'>
-                        <Button onClick={onStartTrain}>Start train</Button>
+                        <Button onClick={onStartTrain} disabled={algorithm === 'paddleocr'}>Start train</Button>
                     </div>
                     <div className='quickstartaction'>
                         <Button onClick={onStartDeploy}>Start deploy</Button>
@@ -202,14 +202,14 @@ const SampleForm: FunctionComponent<IProps> = (props) => {
         return (
             <Stack>
                 { renderImagePreview() }
-                { algorithm !== 'paddleocr' && renderQuickStart() }
+                { renderQuickStart() }
             </Stack>
         )
     else
         return (
             <Stack>
                 { renderImageList() }
-                { algorithm !== 'paddleocr' && renderQuickStart() }
+                { renderQuickStart() }
                 { renderSampleCode() }
             </Stack>
         )
