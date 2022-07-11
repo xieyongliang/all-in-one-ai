@@ -1,18 +1,10 @@
-print('0')
 import io
-print('1')
 import os
-print('2')
 import json
-print('3')
 import boto3
-print('4')
 import numpy as np
-print('5')
 from PIL import Image
-print('6')
 from numpy import asarray
-print('7')
 
 s3_client = boto3.client('s3')
 
