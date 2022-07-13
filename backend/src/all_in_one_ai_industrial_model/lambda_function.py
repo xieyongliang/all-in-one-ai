@@ -48,12 +48,8 @@ def lambda_handler(event, context):
 
                 if(model_algorithm == 'yolov5'):
                     industrialmodels_s3uri = ssmh.get_parameter('/all_in_one_ai/config/meta/algorithms/yolov5/industrialmodels')
-                    industrialmodels_s3bucket, industrialmodels_s3key = get_bucket_and_key(industrialmodels_s3uri)
-                    s3bucketcopy(industrialmodels_s3bucket, '{0}default/data/cfg'.format(industrialmodels_s3key), '{0}{1}/data/cfg'.format(industrialmodels_s3key, model_id))
-                    s3bucketcopy(industrialmodels_s3bucket, '{0}default/data/weights'.format(industrialmodels_s3key), '{0}{1}/data/weights'.format(industrialmodels_s3key, model_id))
-                    data_yaml_template_s3uri = '{0}default/data/cfg/data.yaml'.format(industrialmodels_s3uri)
                     data_yaml_output_s3uri = '{0}{1}/data/cfg/data.yaml'.format(industrialmodels_s3uri, model_id)
-                    generate_data_yaml(data_yaml_template_s3uri, data_yaml_output_s3uri, params['model_labels'])
+                    generate_data_yaml(data_yaml_output_s3uri, params['model_labels'])
             
                 params['model_id'] = model_id
                 params['model_algorithm'] = request['model_algorithm']
@@ -170,17 +166,10 @@ def get_presigned_url(bucket, key):
         raise
     return url
 
-def generate_data_yaml(data_yaml_template_s3uri, data_yaml_output_s3uri, labels):
-    data_yaml_template_bucket, data_yaml_tempalte_key = get_bucket_and_key(data_yaml_template_s3uri)
+def generate_data_yaml(data_yaml_output_s3uri, labels):
     data_yaml_output_bucket, data_yaml_output_key = get_bucket_and_key(data_yaml_output_s3uri)
     
-    s3_object = s3_client.get_object(
-        Bucket = data_yaml_template_bucket, 
-        Key = data_yaml_tempalte_key
-    )
-    
-    bytes = s3_object["Body"].read()
-    content = bytes.decode('utf8')
+    content = open('./yolov5/data.yaml').read()
     content =  content.replace('<<nc>>', str(len(labels)))
     names = ''
     for label in labels:

@@ -33,6 +33,8 @@ def lambda_handler(event, context):
                     if('Contents' in page):
                         for content in page['Contents']:
                             filename = content['Key']
+                            if(check_s3_prefix(bucket, filename) == 0):
+                                continue
                             if(index >= ((page_num - 1) * page_size) and index < page_num * page_size):
                                 payload.append({
                                         'httpuri': get_presigned_url(bucket, filename),
