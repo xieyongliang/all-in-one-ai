@@ -89,7 +89,17 @@ const inputDataOptions = {
             key: 'dataset',
             value: ''
         }
-    ]
+    ],
+    'paddleocr': [
+        {
+            key: 'dataset',
+            value: ''
+        },
+        {
+            key: 'pretrained_models',
+            value: ''
+        }
+    ]    
 }
 
 interface IProps {

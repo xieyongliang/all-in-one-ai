@@ -174,7 +174,7 @@ const SampleForm: FunctionComponent<IProps> = (props) => {
             <Container headingVariant='h4' title = 'Quick start'>
                 <Inline>
                     <div className='quickstartaction'>
-                        <Button onClick={onStartTrain} disabled={algorithm === 'paddleocr'}>Start train</Button>
+                        <Button onClick={onStartTrain} >Start train</Button>
                     </div>
                     <div className='quickstartaction'>
                         <Button onClick={onStartDeploy}>Start deploy</Button>

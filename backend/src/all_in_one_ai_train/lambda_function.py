@@ -30,7 +30,7 @@ def lambda_handler(event, context):
             default_hyperparameters = {
                 'data': '/opt/ml/input/data/cfg/data.yaml', 
                 'cfg': 'yolov5s.yaml', 
-                'weight': '/opt/ml/input/data/weights/yolov5s.pt', 
+                'weight': 'yolov5s.pt', 
                 'project': '/opt/ml/model/',
                 'name': 'tutorial', 
                 'img': 640, 
@@ -57,7 +57,7 @@ def lambda_handler(event, context):
                     'hyperparameters': hyperparameters,
                     'inputs': inputs,
                     'py_version': 'py38',
-                    'framework_version': '1.9.1'
+                    'framework_version': '1.9.0'
                 }
             }
 
@@ -138,7 +138,7 @@ def lambda_handler(event, context):
                     'instance_count': instance_count,
                     'hyperparameters': hyperparameters,
                     'transformers_version' : '4.12.3',
-                    'pytorch_version': '1.9.1',
+                    'pytorch_version': '1.9.0',
                     'tensorflow_version': None,
                     'py_version': 'py38',
                     'inputs': inputs
@@ -228,7 +228,7 @@ def lambda_handler(event, context):
                     'instance_count': instance_count,
                     'hyperparameters': hyperparameters,
                     'inputs': inputs,
-                    'framework_version': '1.9.1',
+                    'framework_version': '1.9.0',
                     'py_version': 'py38',
 
                 }
@@ -239,7 +239,33 @@ def lambda_handler(event, context):
                 InvocationType = 'Event',
                 Payload=json.dumps(payload)
             )
-        else:
+        elif(algorithm == 'paddleocr'):
+            source_dir = ssmh.get_parameter('/all_in_one_ai/config/meta/algorithms/{0}/source'.format(algorithm))
+            
+            payload = {
+                'body': {
+                    'job_name': job_name,
+                    'algorithm': algorithm,
+                    'industrial_model': industrial_model,
+                    'entry_point': 'finetune.py',
+                    'source_dir': source_dir,
+                    'git_config': None,
+                    'role': role_arn,
+                    'instance_type': instance_type,
+                    'instance_count': instance_count,
+                    'hyperparameters': hyperparameters,
+                    'inputs': inputs,
+                    'framework_version': '1.9.0',
+                    'py_version': 'py38',
+
+                }
+            }
+
+            response = lambda_client.invoke(
+                FunctionName = 'all_in_one_ai_create_train_pytorch',
+                InvocationType = 'Event',
+                Payload=json.dumps(payload)
+            )
             return {
                 'statusCode': 400,
                 'body': 'Unsupported algorithm'

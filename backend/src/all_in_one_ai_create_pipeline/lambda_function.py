@@ -102,7 +102,7 @@ def lambda_handler(event, context):
             default_hyperparameters = {
                 'data': '/opt/ml/input/data/cfg/data.yaml', 
                 'cfg': 'yolov5s.yaml', 
-                'weight': '/opt/ml/input/data/weights/yolov5s.pt', 
+                'weight': 'yolov5s.pt', 
                 'project': '/opt/ml/model/',
                 'name': 'tutorial', 
                 'img': 640, 
@@ -220,7 +220,6 @@ def lambda_handler(event, context):
             
             git_config = None
             entry_point = 'finetune.py'
-            source_dir = '.'
             framework_version = '1.7.1'
             py_version = 'py36'
 
@@ -259,7 +258,6 @@ def lambda_handler(event, context):
             
             git_config = None
             entry_point = 'finetune.py'
-            source_dir = '.'
             framework_version = '1.9.0'
             py_version = 'py38'
 
@@ -274,7 +272,31 @@ def lambda_handler(event, context):
                 instance_type = training_job_instance_type,
                 instance_count = training_job_instance_count
             )
-        
+        elif(model_algorithm == 'paddleocr'):
+            source_dir = ssmh.get_parameter('/all_in_one_ai/config/meta/algorithms/{0}/source'.format(model_algorithm))
+            
+            git_config = None
+            entry_point = 'train.py'
+            framework_version = '1.9.0'
+            py_version = 'py38'
+
+            estimator = PyTorch(
+                entry_point = entry_point,
+                source_dir = source_dir,
+                git_config = git_config,
+                role = role,
+                hyperparameters = training_job_hyperparameters,
+                framework_version = framework_version, 
+                py_version = py_version,
+                instance_type = training_job_instance_type,
+                instance_count = training_job_instance_count
+            )
+        else:
+            return {
+                'statusCode': 400,
+                'body': 'Unsupported algorithm'
+            }
+
         inputs = training_job_input_data
 
         step_train_model = TrainingStep(
