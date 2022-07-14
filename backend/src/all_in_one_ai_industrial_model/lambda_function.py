@@ -45,11 +45,6 @@ def lambda_handler(event, context):
                 )
                 icon_s3uri = 's3://{0}/{1}'.format(icon_s3bucket, icon_s3key)
                 params['model_icon'] = icon_s3uri
-
-                if(model_algorithm == 'yolov5'):
-                    industrialmodels_s3uri = ssmh.get_parameter('/all_in_one_ai/config/meta/algorithms/yolov5/industrialmodels')
-                    data_yaml_output_s3uri = '{0}{1}/data/cfg/data.yaml'.format(industrialmodels_s3uri, model_id)
-                    generate_data_yaml(data_yaml_output_s3uri, params['model_labels'])
             
                 params['model_id'] = model_id
                 params['model_algorithm'] = request['model_algorithm']
@@ -75,7 +70,12 @@ def lambda_handler(event, context):
                 }
                 
                 ddbh.update_item(keys, params)
-                
+
+            if(model_algorithm == 'yolov5'):
+                industrialmodels_s3uri = ssmh.get_parameter('/all_in_one_ai/config/meta/algorithms/yolov5/industrialmodels')
+                data_yaml_output_s3uri = '{0}{1}/data/cfg/data.yaml'.format(industrialmodels_s3uri, model_id)
+                generate_data_yaml(data_yaml_output_s3uri, params['model_labels'])
+
             print(request)
             response = {
                 'statusCode': 200,
