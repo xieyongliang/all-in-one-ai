@@ -152,7 +152,9 @@ def lambda_handler(event, context):
             )
         elif(algorithm == 'paddleocr'):
             source_dir = ssmh.get_parameter('/all_in_one_ai/config/meta/algorithms/{0}/source'.format(algorithm))
-            
+            if(model_data_url == None):
+                model_data_url =  ssmh.get_parameter('/all_in_one_ai/config/meta/algorithms/paddleocr/model/artifact')
+
             payload = {
                 'body': {
                     'industrial_model': industrial_model,

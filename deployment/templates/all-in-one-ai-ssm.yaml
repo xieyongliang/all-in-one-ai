@@ -199,64 +199,53 @@ Resources:
   Parameter20:
     Type: AWS::SSM::Parameter
     Properties:
-      Name: /all_in_one_ai/config/meta/algorithms/paddleocr/inference/image
-      Type: String
-      Value: 
-        !If
-        - Globally
-        - !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/all-in-one-ai-ppocr:latest
-        - !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com.cn/all-in-one-ai-ppocr:latest
-
-  Parameter21:
-    Type: AWS::SSM::Parameter
-    Properties:
       Name: /all_in_one_ai/config/meta/algorithms/paddleocr/model/artifact
       Type: String
       Value: !Sub s3://${S3Bucket}/${S3Key}algorithms/paddleocr/artifact/model.tar.gz
 
-  Parameter22:
+  Parameter21:
     Type: AWS::SSM::Parameter
     Properties:
       Name: /all_in_one_ai/config/meta/algorithms/cpt/industrialmodels
       Type: String
       Value: !Sub s3://${S3Bucket}/${S3Key}algorithms/cpt/industrialmodels/
 
-  Parameter23:
+  Parameter22:
     Type: AWS::SSM::Parameter
     Properties:
       Name: /all_in_one_ai/config/meta/algorithms/cpt/source
       Type: String
       Value: !Sub s3://${S3Bucket}/${S3Key}algorithms/cpt/source/sourcedir.tar.gz
 
-  Parameter24:
+  Parameter23:
     Type: AWS::SSM::Parameter
     Properties:
       Name: /all_in_one_ai/config/meta/algorithms/gabsa/industrialmodels
       Type: String
       Value: !Sub s3://${S3Bucket}/${S3Key}algorithms/gabsa/industrialmodels/
 
-  Parameter25:
+  Parameter24:
     Type: AWS::SSM::Parameter
     Properties:
       Name: /all_in_one_ai/config/meta/algorithms/gabsa/source
       Type: String
       Value: !Sub s3://${S3Bucket}/${S3Key}algorithms/gabsa/source/
 
-  Parameter26:
+  Parameter25:
     Type: AWS::SSM::Parameter
     Properties:
       Name: /all_in_one_ai/config/meta/algorithms/paddlenlp/industrialmodels
       Type: String
       Value: !Sub s3://${S3Bucket}/${S3Key}algorithms/paddlenlp/industrialmodels/
 
-  Parameter27:
+  Parameter26:
     Type: AWS::SSM::Parameter
     Properties:
       Name: /all_in_one_ai/config/meta/algorithms/paddlenlp/source
       Type: String
       Value: !Sub s3://${S3Bucket}/${S3Key}algorithms/paddlenlp/source/
 
-  Parameter28:
+  Parameter27:
     Type: AWS::SSM::Parameter
     Properties:
       Name: /all_in_one_ai/config/meta/algorithms/mdeberta/industrialmodels
