@@ -18,10 +18,29 @@ Parameters:
     Type: String
     Description: API Prod stage endpoint
 
-  AlbPort:
-    Type: Number
-    Description: Alb port
-    Default: 80
+  DomainName:
+    Type: String
+    Description: Domain Name
+
+  Certificate:
+    Type: String
+    Description: Certificate of ALB
+
+  UserPool:
+    Type: String
+    Description: UserPool Id
+
+  UserPoolClient:
+    Type: String
+    Description: UserPoolClient Id
+
+  UserPoolDomain:
+    Type: String
+    Description: Endpoint of UserPoolDomain
+
+  CognitoRegion:
+    Type: String
+    Description: Cognito Region
 
   ChinaRegion: 
     Description: Check if the stack to be in CN Region
@@ -62,8 +81,8 @@ Resources:
     Properties:
       GroupId: !Ref AlbSecurityGroup
       IpProtocol: tcp
-      FromPort: !Sub ${AlbPort}
-      ToPort: !Sub ${AlbPort}
+      FromPort: 443
+      ToPort: 443
       CidrIp: 0.0.0.0/0
  
   CloudwatchLogsGroup:
@@ -122,6 +141,18 @@ Resources:
           Environment:
             - Name: API_GATEWAY_PROD_ENDPOINT
               Value: !Ref ApiGatewayProdEndpoint
+            - Name: UserPool
+              Value: !Ref UserPool
+            - Name: UserPoolClient
+              Value: !Ref UserPoolClient
+            - Name: UserPoolDomain
+              Value: !Ref UserPoolDomain
+            - Name: CognitoRegion
+              Value: !Ref CognitoRegion
+            - Name: CallbackURL
+              Value: !Sub https://${DomainName}/callback
+            - Name: LogoutURL
+              Value: !Sub https://${DomainName}
 
   ECSALB:
     Type: 'AWS::ElasticLoadBalancingV2::LoadBalancer'
@@ -144,6 +175,18 @@ Resources:
       LoadBalancerArn: !Ref ECSALB
       Port: !Sub ${AlbPort}
       Protocol: HTTP
+
+  ALBListener:
+    Type: 'AWS::ElasticLoadBalancingV2::Listener'
+    Properties:
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: !Ref ECSTG
+      LoadBalancerArn: !Ref ECSALB
+      Port: '443'
+      Protocol: HTTPS
+      Certificates: 
+        - CertificateArn: !Ref Certificate
 
   ECSTG:
     Type: 'AWS::ElasticLoadBalancingV2::TargetGroup'

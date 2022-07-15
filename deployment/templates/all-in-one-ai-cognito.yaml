@@ -1,0 +1,91 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Template for Cognito
+
+Parameters:
+  Domain:
+    Type: String
+    Description: "Domain of UserPoolDomain"
+    Default: 'all-in-one-ai'
+
+  ClientName:
+    Type: String
+    Description: "Client Name of UserPoolClient"
+    Default: 'all-in-one-ai'
+
+  Username:
+    Type: String
+    Description: "Usernmae of adminuser"
+    Default: 'admin'
+  
+  Email:
+    Type: String
+    Description: "Email of adminuser"
+
+  DomainName:
+    Type: String
+    Description: Domain Name
+
+Resources:
+  UserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      Schema:
+        - Name: email
+          Required: true
+          Mutable: true
+      AccountRecoverySetting:
+        RecoveryMechanisms: 
+        - Name: verified_email
+          Priority: 1
+      UsernameConfiguration:
+        CaseSensitive: True
+
+  UserPoolClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      UserPoolId: !Ref UserPool
+      ClientName: !Ref ClientName
+      GenerateSecret: False
+      AllowedOAuthScopes: 
+        - email
+        - openid
+      AllowedOAuthFlows:
+        - code
+        - implicit
+      AllowedOAuthFlowsUserPoolClient: True
+      CallbackURLs:
+        - !Sub https://${DomainName}/callback
+      LogoutURLs:
+        - !Sub https://${DomainName}
+      SupportedIdentityProviders:
+        - COGNITO
+      ReadAttributes:
+        - email
+        - email_verified
+      WriteAttributes:
+        - email
+  
+  UserPoolDomain:
+    Type: AWS::Cognito::UserPoolDomain 
+    Properties:
+      UserPoolId: !Ref UserPool
+      Domain: !Ref Domain
+
+  UserPoolUser:
+    Type: AWS::Cognito::UserPoolUser
+    Properties:
+      Username: !Ref Username
+      UserPoolId: !Ref UserPool
+      UserAttributes: 
+        - Name: email
+          Value: !Ref Email
+        - Name: email_verified
+          Value: True
+
+Outputs:
+  UserPool:
+    Value: !Ref UserPool
+  UserPoolDomain:
+    Value: !Sub https://${Domain}.auth.${AWS::Region}.amazoncognito.com
+  UserPoolClient:
+    Value: !Ref UserPoolClient

@@ -100,10 +100,29 @@ Parameters:
     Description: "InstanceCount"
     Default: 1
 
-  AlbPort:
-    Type: Number
-    Description: Alb port
-    Default: 80
+  DomainName:
+    Type: String
+    Description: Domain Name
+
+  Certificate:
+    Type: String
+    Description: Certificate of ALB
+
+  UserPool:
+    Type: String
+    Description: UserPool Id
+
+  UserPoolClient:
+    Type: String
+    Description: UserPoolClient Id
+
+  UserPoolDomain:
+    Type: String
+    Description: Endpoint of UserPoolDomain
+
+  CognitoRegion:
+    Type: String
+    Description: Cognito Region
 
   ChinaRegion: 
     Description: Check if the stack to be in CN Region
@@ -113,6 +132,7 @@ Parameters:
 
 Conditions:
   Globally: !Equals [ False, !Ref ChinaRegion ]
+
 
 Resources:
   VPC:
@@ -233,7 +253,7 @@ Resources:
         - Globally
         - !Sub https://${S3Bucket}.s3.${AWS::Region}.amazonaws.com/${S3Key}templates/all-in-one-ai-ssm.yaml
         - !Sub https://${S3Bucket}.s3.${AWS::Region}.amazonaws.com.cn/${S3Key}templates/all-in-one-ai-ssm.yaml
-  
+
   SQS:
     Type: AWS::CloudFormation::Stack
     DependsOn: 
@@ -258,7 +278,12 @@ Resources:
         PrivateSubnets: !Join [",", [!GetAtt VPC.Outputs.PrivateSubnet1, !GetAtt VPC.Outputs.PrivateSubnet2]]
         PublicSubnets: !Join [",", [!GetAtt VPC.Outputs.PublicSubnet1, !GetAtt VPC.Outputs.PublicSubnet2]]
         ApiGatewayProdEndpoint: !GetAtt LAMBDA.Outputs.ApiGatewayProdEndpoint
-        AlbPort: !Ref AlbPort
+        DomainName: !Ref DomainName
+        Certificate: !Ref Certificate
+        UserPool: !Ref UserPool
+        UserPoolClient: !Ref UserPoolClient
+        UserPoolDomain: !Ref UserPoolDomain
+        CognitoRegion: !Ref CognitoRegion
         ChinaRegion: !Ref ChinaRegion
       TemplateURL: 
         !If
@@ -267,6 +292,9 @@ Resources:
         - !Sub https://${S3Bucket}.s3.${AWS::Region}.amazonaws.com.cn/${S3Key}templates/all-in-one-ai-web.yaml
 
 Outputs:
-  WebPortalUrl:
-    Description: Web Portal URL
+  WebPortalDNS:
+    Description: Web Portal DNS Name
     Value: !GetAtt WEB.Outputs.DNSName
+  WebPortalUrl:
+    Description: Web Portal DNS Url
+    Value: !Sub https://${DomainName}

@@ -43,11 +43,11 @@ Parameters:
     Description: VPC SecurityGroup
 
   Eip1:
-    Type: AWS::EC2::EIP
+    Type: String
     Description: EIP for Nat1 
 
   Eip2:
-    Type: AWS::EC2::EIP
+    Type: String
     Description: EIP for Nat2
 
   ChinaRegion: 
@@ -107,7 +107,7 @@ Resources:
         - 'image/jpg'
         - 'image/jpeg'
       Name: all-in-one-ai-api 
-      Policy: !Sub {
+      Policy: {
         "Version": "2012-10-17",
         "Statement": [
             {
@@ -125,7 +125,7 @@ Resources:
                 }
             }
         ]
-    }
+      }
 
   ApiGatewayResourceApi:
     Type: AWS::ApiGateway::Resource

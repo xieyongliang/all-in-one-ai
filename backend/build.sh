@@ -70,6 +70,7 @@ echo "--------------------------------------------------------------------------
 echo "[Rebuild] other all_in_one_ai_* lambda functions"
 echo "------------------------------------------------------------------------------"
 
+
 lambda_foldes="
 all_in_one_ai_create_api
 all_in_one_ai_create_deploy_huggingface
