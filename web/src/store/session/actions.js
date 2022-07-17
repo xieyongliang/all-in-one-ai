@@ -7,16 +7,12 @@ export const clearSession = () => ({
 
 // Initialise the Cognito sesson from a callback href
 export function initSessionFromCallbackURI (callbackHref) {
-    return async function (dispatch) {
-        try {
-            await cognitoUtils.parseCognitoWebResponse(callbackHref) // parse the callback URL
-            var session = await cognitoUtils.getCognitoSession() // get a new session
-            dispatch({ type: SET_SESSION, session })
-        }
-        catch(error)
-        {
-            console.log(error)
-        }
+    return function (dispatch) {
+        return cognitoUtils.parseCognitoWebResponse(callbackHref) // parse the callback URL
+                .then(() => cognitoUtils.getCognitoSession()) // get a new session
+                .then((session) => {
+                    dispatch({ type: SET_SESSION, session })
+                })
     }
 }
 
