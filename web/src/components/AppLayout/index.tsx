@@ -94,7 +94,7 @@ const AppLayout: FunctionComponent = ( {children} ) => {
     }, [industrialModelItems, algorithmsItems, scenariosItems]);
 
     useEffect(() => {
-        if (!window.location.pathname.startsWith('/callback') && !store.getState().session.isLogin) {
+        if (store.getState().general.env['cognitoRegion'] !== '' && !window.location.pathname.startsWith('/callback') && !store.getState().session.isLogin) {
             cognitoUtils.getCognitoSignInUri().then(data => {
                 window.location.href = data
             }).catch((error) => {

@@ -1,17 +1,17 @@
 import { CognitoAuth } from 'amazon-cognito-auth-js/dist/amazon-cognito-auth'
 import { CognitoUserPool } from 'amazon-cognito-identity-js'
 import { config as AWSConfig } from 'aws-sdk'
-// import appConfig from '../config/app-config.json'
+import { store } from '../'
 
 import axios from 'axios'
 
 // Creates a CognitoAuth instance
 const createCognitoAuth = () => {
-  	return new Promise((resolve, reject) => {
+	return new Promise((resolve, reject) => {
     	const HEADERS = {'Content-Type': 'application/json'};
     	axios({ method: 'GET', url: '/env' , headers: HEADERS}).then(response => {
-      		if (response.status === 200) {
-        		let appConfig = {
+			if (response.status === 200) {
+				var appConfig = {
 					"region": response.data.CognitoRegion,
 					"userPool": response.data.UserPool,
 					"userPoolBaseUri": response.data.UserPoolDomain,
@@ -121,11 +121,11 @@ const getCognitoSignInUri = () => {
 }
 
 // Parse the response from a Cognito callback URI (assumed a token or code is in the supplied href). Returns a promise.
-const parseCognitoWebResponse = async (href) => {
+const parseCognitoWebResponse = (href) => {
 	return new Promise((resolve, reject) => {
 		createCognitoAuth().then((auth)=>{
 			auth.userhandler = {
-					onSuccess: function (result) {
+				onSuccess: function (result) {
 					resolve(result)
 				},
 				onFailure: function (err) {
@@ -133,10 +133,10 @@ const parseCognitoWebResponse = async (href) => {
 				}
 			}
 			auth.parseCognitoWebResponse(href)
-		})
-  	})
+		  })
+	})
 }
-
+  
 // Gets a new Cognito session. Returns a promise.
 const getCognitoSession = async () => {
 	return new Promise((resolve, reject) => {

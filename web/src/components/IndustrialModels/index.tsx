@@ -44,12 +44,14 @@ import DeBERTaDemoForm from '../Forms/Demo/Single/mdeberta'
 interface IProps {
     industrialModels : IIndustrialModel[];
     isLogin: boolean;
+    env: Object;
 }
 
 const IndustrialModels: FunctionComponent<IProps> = (
     {
         industrialModels,
-        isLogin
+        isLogin,
+        env
     }) => {
     const [ cookies, setCookie ] = useCookies();
     const [ advancedMode, setAdvancedMode ] = useState(cookies.advancedMode !== undefined? (cookies.advancedMode === 'true') : false)
@@ -252,7 +254,7 @@ const IndustrialModels: FunctionComponent<IProps> = (
         tabs = tabs.concat(advancedTabs)
 
     
-    if(isLogin)
+    if(env['cognitoRegion'] === '' || isLogin)
         return (
             <Tabs tabs={tabs} variant='container' activeId={tab} onChange={onChange}/>
         )
@@ -264,7 +266,8 @@ const IndustrialModels: FunctionComponent<IProps> = (
 
 const mapStateToProps = (state: AppState) => ({
     industrialModels : state.industrialmodel.industrialModels,
-    isLogin: state.session.isLogin
+    isLogin: state.session.isLogin,
+    env: state.general.env
 });
 
 export default connect(

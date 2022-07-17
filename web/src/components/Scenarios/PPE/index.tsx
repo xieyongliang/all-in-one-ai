@@ -3,7 +3,7 @@ import { Stack, Container, Text, Link } from 'aws-northstar';
 import { store } from '../../..';
 
 const PPE: FunctionComponent = () => {
-    if(store.getState().session.isLogin)
+    if(store.getState().general.env['cognitoRegion'] === '' || store.getState().session.isLogin)
         return (
             <Stack>
                 <Container title='About PPE'>

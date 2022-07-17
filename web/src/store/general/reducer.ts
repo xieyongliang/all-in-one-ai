@@ -18,7 +18,8 @@ const initialState: GeneralState = {
         subType: null,
         name: 'my-project-name',
     },
-    zoom: ViewPointSettings.MIN_ZOOM
+    zoom: ViewPointSettings.MIN_ZOOM,
+    env: {}
 };
 
 export function generalReducer(
@@ -92,6 +93,12 @@ export function generalReducer(
                 enablePerClassColoration: action.payload.enablePerClassColoration
             }
         }
+        case Action.UPDATE_ENV: {
+            return {
+                ...state,
+                env: action.payload.env
+            }
+        }        
         default:
             return state;
     }

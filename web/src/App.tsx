@@ -51,6 +51,12 @@ const App : FunctionComponent = () => {
         return response.data
     }
 
+    const getEnv = async () => {
+        var response = await axios.get(`/env`)
+
+        return response.data
+    }
+
     useEffect(() => {
         getModels().then((data) => {
             var industrialModels : IIndustrialModel[] = []
@@ -67,10 +73,26 @@ const App : FunctionComponent = () => {
                 industrialModels.push(industrialModel)
             })
             store.dispatch({ type: Action.UPDATE_INDUSTRIAL_MODELS, payload: {industrialModels : industrialModels}})
-         }, (error) => {
-             console.log(error);
-         });
-     }, [])
+        }, (error) => {
+            console.log(error);
+        });
+
+        getEnv().then((data) => {
+            var env = {};
+            env['cognitoRegion'] = data.CognitoRegion;
+            env['userPool'] = data.UserPool;
+            env['userPoolBaseUri'] = data.userPoolBaseUri;
+            env['clientId'] = data.clientId;
+            env['callbackUri'] = data.callbackUri;
+            env['signoutUri'] = data.signoutUri;
+            env['tokenScopes'] = data.tokenScopes;
+            env['apiUri'] = data.LogoutURL;
+
+            store.dispatch({ type: Action.UPDATE_ENV, payload: {env : env}})
+        }, (error) => {
+            console.log(error);
+        });
+    }, [])
 
     return (
         <NorthStarThemeProvider>

@@ -102,3 +102,12 @@ export function updatePerClassColorationStatus(enablePerClassColoration: boolean
         },
     };
 }
+
+export function updateENV(env: boolean): GeneralActionTypes {
+    return {
+        type: Action.UPDATE_ENV,
+        payload: {
+            env,
+        },
+    };
+}

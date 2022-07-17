@@ -20,6 +20,7 @@ interface IProps {
     updateIndustrialModelsAction: (industrialModels: IIndustrialModel[]) => any;
     industrialModels: IIndustrialModel[];
     isLogin: boolean;
+    env: Object;
 }
 
 const IndustrialModelList: FunctionComponent<IProps> = (props) => {
@@ -214,7 +215,7 @@ const IndustrialModelList: FunctionComponent<IProps> = (props) => {
         )
     }
 
-    if(props.isLogin) {
+    if(props.env['cognitoRegion'] === '' || props.isLogin) {
         if(visibleIndustrialModelForm)
             return (
                 <IndustrialModelForm onClose={onClose}/>
@@ -240,7 +241,8 @@ const IndustrialModelList: FunctionComponent<IProps> = (props) => {
 
 const mapStateToProps = (state: AppState) => ({
     industrialModels : state.industrialmodel.industrialModels,
-    isLogin: state.session.isLogin
+    isLogin: state.session.isLogin,
+    env: state.general.env
 });
 
 const mapDispatchToProps = {

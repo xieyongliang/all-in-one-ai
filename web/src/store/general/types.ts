@@ -23,6 +23,7 @@ export type GeneralState = {
     activeContext: ContextType;
     projectData: ProjectData;
     zoom: number;
+    env: Object;
 }
 
 interface UpdateProjectData {
@@ -102,6 +103,13 @@ interface UpdatePerClassColoration {
     }
 }
 
+interface UpdateENV {
+    type: typeof Action.UPDATE_ENV,
+    payload: {
+        env: Object;
+    }
+}
+
 export type GeneralActionTypes = UpdateProjectData
     | UpdateWindowSize
     | UpdateActivePopupType
@@ -113,3 +121,4 @@ export type GeneralActionTypes = UpdateProjectData
     | updateReverseLineColor
     | UpdateZoom
     | UpdatePerClassColoration
+    | UpdateENV

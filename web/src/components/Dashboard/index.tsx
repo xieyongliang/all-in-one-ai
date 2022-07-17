@@ -3,7 +3,7 @@ import { Heading, Paper, Stack, Box, Text } from 'aws-northstar';
 import { store } from '../..';
 
 const Dashboard: FunctionComponent = () => {
-    if(store.getState().session.isLogin)
+    if(store.getState().general.env['cognitoRegion'] === '' || store.getState().session.isLogin)
         return (
             <Paper>
                 <Box p={1} width='100%'>
