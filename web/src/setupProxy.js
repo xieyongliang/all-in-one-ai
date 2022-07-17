@@ -9,6 +9,17 @@ var Jimp = require('jimp');
 const baseUrl = 'https://b2yr0i0r6e.execute-api.ap-east-1.amazonaws.com/Prod'
 
 module.exports = function(app) {
+    app.get('/env', (req, res) => {
+        result = {
+            UserPool:process.env.UserPool,
+            UserPoolClient:process.env.UserPoolClient,
+            UserPoolDomain:process.env.UserPoolDomain,
+            CallbackURL:process.env.CallbackURL,
+            LogoutURL:process.env.LogoutURL,
+            CognitoRegion:process.env.CognitoRegion
+        }
+        res.send(result)
+    })
     app.post('/_image', (req, res) => {
         var data = [];
         req.on('data', chunk => {

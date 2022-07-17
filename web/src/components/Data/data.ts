@@ -36,14 +36,14 @@ export const APIS = {
 }
 
 export const ALGORITHMS = [
-    {label: 'Yolov5', value: 'yolov5', type: 'single'}, 
-    {label: 'GluonCV', value:'gluoncv', type: 'single'}, 
-    {label: 'PaddleOCR', value: 'paddleocr', type: 'single'}, 
+    {label: 'Yolov5', value: 'yolov5', type: 'single', trainable: true}, 
+    {label: 'GluonCV', value:'gluoncv', type: 'single', trainable: true}, 
+    {label: 'PaddleOCR', value: 'paddleocr', type: 'single', trainable: true}, 
     {label: 'Yolov5PaddleOCR', value: 'yolov5paddleocr', type: 'mixed'}, 
-    {label: 'CPT', value: 'cpt', type: 'single'}, 
-    {label: 'GABSA', value: 'gabsa', type: 'single'},
-    {label: 'PaddleNLP', value: 'paddlenlp', type: 'single'},
-    {label: 'mDeBERTa', value: 'mdeberta', type: 'single'}
+    {label: 'CPT', value: 'cpt', type: 'single', trainable: true}, 
+    {label: 'GABSA', value: 'gabsa', type: 'single', trainable: true},
+    {label: 'PaddleNLP', value: 'paddlenlp', type: 'single', trainable: true},
+    {label: 'mDeBERTa', value: 'mdeberta', type: 'single', trainable: false}
 ]
 
 export const SCENARIOS = [

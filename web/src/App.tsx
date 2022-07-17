@@ -30,11 +30,11 @@ import PaddleOCR from './components/Algorithms/PaddleOCR';
 import CPT from './components/Algorithms/CPT';
 import GABSA from './components/Algorithms/GABSA';
 import PaddleNLP from './components/Algorithms/PaddleNLP';
-import mDeBERTa from './components/Algorithms/mDeBERTa';
+import MDeBERTa from './components/Algorithms/mDeBERTa';
 import Track from './components/Scenarios/Track';
 import PPE from './components/Scenarios/PPE';
-import CameraForm from './components/Forms/Camera';
-import MapForm from './components/Forms/Map';
+import Callback from './components/Cognito/Callback';
+import SignOut from './components/Cognito/SignOut';
 
 const App : FunctionComponent = () => {
     const withLayout = (Component : any, props? : any) => {
@@ -84,12 +84,12 @@ const App : FunctionComponent = () => {
                     <Route sensitive={true} exact path="/algorithms/cpt">{withLayout(CPT)}</Route>
                     <Route sensitive={true} exact path="/algorithms/gabsa">{withLayout(GABSA)}</Route>                    
                     <Route sensitive={true} exact path="/algorithms/paddlenlp">{withLayout(PaddleNLP)}</Route>
-                    <Route sensitive={true} exact path="/algorithms/mdeberta">{withLayout(mDeBERTa)}</Route>
+                    <Route sensitive={true} exact path="/algorithms/mdeberta">{withLayout(MDeBERTa)}</Route>
                     <Route sensitive={true} exact path="/imodels/:id">{withLayout(IndustrialModels)}</Route>
                     <Route sensitive={true} exact path="/imodels">{withLayout(IndustrialModelOverview)}</Route>
-                    <Route sensitive={true} exact path="/">{withLayout(Dashboard)}</Route>
-                    <Route sensitive={true} exact path="/mtr">{withLayout(CameraForm)}</Route>                    
-                    <Route sensitive={true} exact path="/map">{withLayout(MapForm)}</Route>                                      
+                    <Route sensitive={true} exact path="/">{withLayout(Dashboard)}</Route>                 
+                    <Route sensitive={true} exact path="/callback">{withLayout(Callback)}</Route>
+                    <Route sensitive={true} exact path="/signout">{withLayout(SignOut)}</Route>                                  
                 </Switch>
             </Router>
         </NorthStarThemeProvider>

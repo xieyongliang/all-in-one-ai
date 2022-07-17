@@ -43,15 +43,17 @@ import DeBERTaDemoForm from '../Forms/Demo/Single/mdeberta'
 
 interface IProps {
     industrialModels : IIndustrialModel[];
+    isLogin: boolean;
 }
 
 const IndustrialModels: FunctionComponent<IProps> = (
     {
-        industrialModels
+        industrialModels,
+        isLogin
     }) => {
     const [ cookies, setCookie ] = useCookies();
     const [ advancedMode, setAdvancedMode ] = useState(cookies.advancedMode !== undefined? (cookies.advancedMode === 'true') : false)
-    
+
     var params : PathParams = useParams();
 
     const history = useHistory();
@@ -250,14 +252,19 @@ const IndustrialModels: FunctionComponent<IProps> = (
         tabs = tabs.concat(advancedTabs)
 
     
-    return (
-        <Tabs tabs={tabs} variant='container' activeId={tab} onChange={onChange}/>
-    )
-
+    if(isLogin)
+        return (
+            <Tabs tabs={tabs} variant='container' activeId={tab} onChange={onChange}/>
+        )
+    else
+        return (
+            <div></div>
+        )
 }
 
 const mapStateToProps = (state: AppState) => ({
-    industrialModels : state.industrialmodel.industrialModels
+    industrialModels : state.industrialmodel.industrialModels,
+    isLogin: state.session.isLogin
 });
 
 export default connect(

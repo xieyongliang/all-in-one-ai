@@ -16,6 +16,7 @@ import { AppState } from '../../../store';
 import { connect } from 'react-redux';
 import { IIndustrialModel } from '../../../store/industrialmodels/reducer';
 import { ProjectSubType, ProjectType } from '../../../data/enums/ProjectType';
+import { ALGORITHMS } from '../../Data/data';
 import './index.scss'
 
 interface IProps {
@@ -41,6 +42,7 @@ const SampleForm: FunctionComponent<IProps> = (props) => {
     var industrialModels = props.industrialModels
     var industrialModel = industrialModels.find((item) => item.id === params.id);
     var algorithm = industrialModel.algorithm;
+    var trainable = ALGORITHMS.find((item) => item.value === algorithm)
 
     const getSourceCode = async (uri) => {
         const response = await axios.get('/_file/download', {params: {uri: encodeURIComponent(uri)}, responseType: 'blob'})
@@ -174,7 +176,7 @@ const SampleForm: FunctionComponent<IProps> = (props) => {
             <Container headingVariant='h4' title = 'Quick start'>
                 <Inline>
                     <div className='quickstartaction'>
-                        <Button onClick={onStartTrain} >Start train</Button>
+                        <Button onClick={onStartTrain} disabled={!trainable}>Start train</Button>
                     </div>
                     <div className='quickstartaction'>
                         <Button onClick={onStartDeploy}>Start deploy</Button>

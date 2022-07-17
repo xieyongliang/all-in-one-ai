@@ -9,6 +9,17 @@ var Jimp = require('jimp');
 
 const baseUrl = process.env.API_GATEWAY_PROD_ENDPOINT
 
+app.get('/env', (req, res) => {
+    result = {
+        UserPool:process.env.UserPool,
+        UserPoolClient:process.env.UserPoolClient,
+        UserPoolDomain:process.env.UserPoolDomain,
+        CallbackURL:process.env.CallbackURL,
+        LogoutURL:process.env.LogoutURL,
+        CognitoRegion:process.env.CognitoRegion
+    }
+    res.send(result)
+})
 app.post('/_image', (req, res) => {
     var data = [];
     req.on('data', chunk => {

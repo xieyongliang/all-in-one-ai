@@ -62,7 +62,11 @@
     "react-hls-player": "latest",
     "react-player": "latest",
     "react-image-marker": "latest",
-    "react-json-view": "latest"
+    "react-json-view": "latest",
+    "@reduxjs/toolkit": "^1.7.1",
+    "amazon-cognito-auth-js": "^1.3.3",
+    "amazon-cognito-identity-js": "^5.2.0",
+    "aws-sdk": "^2.787.0"
   },
   "devDependencies": {
     "@types/file-saver": "^2.0.3",

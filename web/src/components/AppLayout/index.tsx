@@ -17,12 +17,11 @@ import { FunctionComponent, useEffect, useMemo, useState } from 'react';
 import AppLayoutBase from 'aws-northstar/layouts/AppLayout';
 import HeaderBase from 'aws-northstar/components/Header';
 import SideNavigationBase, { SideNavigationItem, SideNavigationItemType } from 'aws-northstar/components/SideNavigation';
-import { connect } from 'react-redux';
-import { AppState } from '../../store';
 import { store } from '../..';
 import { IIndustrialModel } from '../../store/industrialmodels/reducer';
 import { ALGORITHMS } from '../Data/data';
 import { SCENARIOS } from '../Data/data';
+import cognitoUtils from '../../lib/cognitoUtils';
 
 const AppLayout: FunctionComponent = ( {children} ) => {
     const [ industrialModelItems, setIndustrialModelItems ] = useState<SideNavigationItem[]>([])
@@ -31,8 +30,7 @@ const AppLayout: FunctionComponent = ( {children} ) => {
     const Header = useMemo(
         () => <HeaderBase title='All-In-One AI' logoPath='/ml.jpg' />,
         []
-    );
-
+    );        
     var industrialModels = store.getState().industrialmodel.industrialModels
 
     useEffect(() => {
@@ -95,17 +93,24 @@ const AppLayout: FunctionComponent = ( {children} ) => {
         );
     }, [industrialModelItems, algorithmsItems, scenariosItems]);
 
+    useEffect(() => {
+        if (!window.location.pathname.startsWith('/callback') && !store.getState().session.isLogin) {
+            cognitoUtils.getCognitoSignInUri().then(data => {
+                window.location.href = data
+            }).catch((error) => {
+                console.log(error)
+            });
+        }
+    }, []);
+
     return (
-        <AppLayoutBase header={Header} navigation={SideNavigation} >
+        <
+            AppLayoutBase header={Header}
+            navigation={store.getState().session.isLogin ? SideNavigation : null}
+        >
             {children}
         </AppLayoutBase>
     );
 };
 
-const mapStateToProps = (state: AppState) => ({
-    industrialModels : state.industrialmodel.industrialModels
-});
-
-export default connect(
-    mapStateToProps
-)(AppLayout);
+export default (AppLayout);

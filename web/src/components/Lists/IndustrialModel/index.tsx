@@ -19,6 +19,7 @@ import Image from '../../Utils/Image';
 interface IProps {
     updateIndustrialModelsAction: (industrialModels: IIndustrialModel[]) => any;
     industrialModels: IIndustrialModel[];
+    isLogin: boolean;
 }
 
 const IndustrialModelList: FunctionComponent<IProps> = (props) => {
@@ -213,27 +214,33 @@ const IndustrialModelList: FunctionComponent<IProps> = (props) => {
         )
     }
 
-    if(visibleIndustrialModelForm)
-        return (
-            <IndustrialModelForm onClose={onClose}/>
-        )
-    else if(visibleIndustrialModelProp)
-        return (
-            <IndustrialModelProp industrialModel={industrialModel} onClose={onClose}/>
-        )
+    if(props.isLogin) {
+        if(visibleIndustrialModelForm)
+            return (
+                <IndustrialModelForm onClose={onClose}/>
+            )
+        else if(visibleIndustrialModelProp)
+            return (
+                <IndustrialModelProp industrialModel={industrialModel} onClose={onClose}/>
+            )
+        else
+            return (
+                <Stack>
+                    { visibleConfirmationDialog && renderDeleteConfirmationDialog() }
+                    { renderIndustrialModelTable() }
+                    { renderCreateIndustrialModel() }
+                </Stack>
+            )
+    }
     else
         return (
-            <Stack>
-                { visibleConfirmationDialog && renderDeleteConfirmationDialog() }
-                { renderIndustrialModelTable() }
-                { renderCreateIndustrialModel() }
-            </Stack>
+            <div></div>
         )
-    
 }
 
 const mapStateToProps = (state: AppState) => ({
-    industrialModels : state.industrialmodel.industrialModels
+    industrialModels : state.industrialmodel.industrialModels,
+    isLogin: state.session.isLogin
 });
 
 const mapDispatchToProps = {
