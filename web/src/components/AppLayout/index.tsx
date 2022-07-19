@@ -21,7 +21,6 @@ import { store } from '../..';
 import { IIndustrialModel } from '../../store/industrialmodels/reducer';
 import { ALGORITHMS } from '../Data/data';
 import { SCENARIOS } from '../Data/data';
-import cognitoUtils from '../../lib/cognitoUtils';
 
 const AppLayout: FunctionComponent = ( {children} ) => {
     const [ industrialModelItems, setIndustrialModelItems ] = useState<SideNavigationItem[]>([])
@@ -93,20 +92,10 @@ const AppLayout: FunctionComponent = ( {children} ) => {
         );
     }, [industrialModelItems, algorithmsItems, scenariosItems]);
 
-    useEffect(() => {
-        if (store.getState().general.env['cognitoRegion'] !== '' && !window.location.pathname.startsWith('/callback') && !store.getState().session.isLogin) {
-            cognitoUtils.getCognitoSignInUri().then(data => {
-                window.location.href = data
-            }).catch((error) => {
-                console.log(error)
-            });
-        }
-    }, []);
-
     return (
         <
             AppLayoutBase header={Header}
-            navigation={store.getState().session.isLogin ? SideNavigation : null}
+            navigation={store.getState().general.env['cognitoRegion'] === '' || store.getState().general.env['cognitoRegion'] === undefined || store.getState().session.isLogin ? SideNavigation : null}
         >
             {children}
         </AppLayoutBase>

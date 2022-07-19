@@ -1,9 +1,20 @@
 import { FunctionComponent } from 'react';
 import { Stack, Container, Text, Link } from 'aws-northstar';
-import { store } from '../../..';
+import cognitoUtils from '../../../lib/cognitoUtils';
+import { connect } from 'react-redux';
+import { AppState } from '../../../store';
 
-const Track: FunctionComponent = () => {
-    if(store.getState().general.env['cognitoRegion'] === '' || store.getState().session.isLogin)
+interface IProps {
+    isLogin: boolean;
+    env: Object;
+}
+
+const Track: FunctionComponent<IProps> = (
+    {
+        isLogin,
+        env
+    }) => {
+    if(env['cognitoRegion'] === undefined || isLogin)
         return (
             <Stack>
                 <Container title='About track maintenance'>
@@ -41,10 +52,22 @@ const Track: FunctionComponent = () => {
                 </Container>
             </Stack>
         );
-    else
-        return (
-            <div></div>
-        )
+    else {
+        if(env['cognitoRegion'] !== undefined)
+            cognitoUtils.getCognitoSignInUri().then(data => {
+                window.location.href = data
+            }).catch((error) => {
+                console.log(error)
+            });
+        return (<div></div>)
+    }
 }
 
-export default Track;
+const mapStateToProps = (state: AppState) => ({
+    isLogin: state.session.isLogin,
+    env: state.general.env
+});
+
+export default connect(
+    mapStateToProps
+)(Track);

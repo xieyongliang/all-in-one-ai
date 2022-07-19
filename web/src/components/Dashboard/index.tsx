@@ -1,9 +1,20 @@
 import { FunctionComponent } from 'react';
 import { Heading, Paper, Stack, Box, Text } from 'aws-northstar';
-import { store } from '../..';
+import cognitoUtils from '../../lib/cognitoUtils';
+import { connect } from 'react-redux';
+import { AppState } from '../../store';
 
-const Dashboard: FunctionComponent = () => {
-    if(store.getState().general.env['cognitoRegion'] === '' || store.getState().session.isLogin)
+interface IProps {
+    isLogin: boolean;
+    env: Object;
+}
+
+const Dashboard: FunctionComponent<IProps> = (
+    {
+        isLogin,
+        env
+    }) => {
+    if(env['cognitoRegion'] === '' || isLogin)
         return (
             <Paper>
                 <Box p={1} width='100%'>
@@ -35,10 +46,22 @@ const Dashboard: FunctionComponent = () => {
                     </Box>
                 </Paper>
             )
-    else
-        return (
-            <div></div>
-        )
+    else {
+        if(env['cognitoRegion'] !== undefined )
+            cognitoUtils.getCognitoSignInUri().then(data => {
+                window.location.href = data
+            }).catch((error) => {
+                console.log(error)
+            });
+        return (<div></div>)
+    } 
 }
 
-export default Dashboard;
+const mapStateToProps = (state: AppState) => ({
+    isLogin: state.session.isLogin,
+    env: state.general.env
+});
+
+export default connect(
+    mapStateToProps
+)(Dashboard);

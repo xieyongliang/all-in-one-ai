@@ -15,6 +15,7 @@ import { red } from '@mui/material/colors';
 import { ListItemIcon, ListItemText, Menu, MenuList, Button, IconButton, Typography, Stack, Card, CardHeader, CardContent, CardActions, Avatar  } from '@mui/material';
 import { useHistory } from 'react-router-dom';
 import Image from '../../Utils/Image';
+import cognitoUtils from '../../../lib/cognitoUtils';
 
 interface IProps {
     updateIndustrialModelsAction: (industrialModels: IIndustrialModel[]) => any;
@@ -224,7 +225,7 @@ const IndustrialModelList: FunctionComponent<IProps> = (props) => {
             return (
                 <IndustrialModelProp industrialModel={industrialModel} onClose={onClose}/>
             )
-        else
+        else {
             return (
                 <Stack>
                     { visibleConfirmationDialog && renderDeleteConfirmationDialog() }
@@ -232,11 +233,17 @@ const IndustrialModelList: FunctionComponent<IProps> = (props) => {
                     { renderCreateIndustrialModel() }
                 </Stack>
             )
+        }
     }
-    else
-        return (
-            <div></div>
-        )
+    else {
+        if(props.env['cognitoRegion'] !== undefined)
+            cognitoUtils.getCognitoSignInUri().then(data => {
+                window.location.href = data
+            }).catch((error) => {
+                console.log(error)
+            });
+        return (<div></div>)
+    }
 }
 
 const mapStateToProps = (state: AppState) => ({

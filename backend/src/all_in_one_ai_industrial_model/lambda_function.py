@@ -152,19 +152,6 @@ def get_bucket_and_key(s3uri):
     bucket = s3uri[5 : pos]
     key = s3uri[pos + 1 : ]
     return bucket, key
-    
-def get_presigned_url(bucket, key):
-    try:
-        url = s3_client.generate_presigned_url(
-          ClientMethod='get_object',
-          Params={'Bucket': bucket, 'Key': key}, 
-          ExpiresIn=1000
-        )
-        print("Got presigned URL: {}".format(url))
-    except ClientError as e:
-        print(str(e))
-        raise
-    return url
 
 def generate_data_yaml(data_yaml_output_s3uri, labels):
     data_yaml_output_bucket, data_yaml_output_key = get_bucket_and_key(data_yaml_output_s3uri)
@@ -182,35 +169,6 @@ def generate_data_yaml(data_yaml_output_s3uri, labels):
         Bucket = data_yaml_output_bucket,
         Key = data_yaml_output_key
     )
-
-def s3bucketcopy(s3_bucket, old_key, new_key):
-    print(s3_bucket)
-    print(old_key)
-    print(new_key)
-    try:
-        paginator = s3_client.get_paginator('list_objects_v2')
-        pages = paginator.paginate(Bucket = s3_bucket, Prefix = old_key)
-        for page in pages:
-            keycount = page['KeyCount']
-            if(keycount > 0):
-                for key in page['Contents']:
-                    file = key['Key']
-                    try:
-                        output = file.split(old_key)
-                        newfile = new_key + output[1]
-                        input_source = {'Bucket': s3_bucket,'Key' : file }
-                        s3_resource.Object(s3_bucket, newfile).copy_from(CopySource = input_source)
-                    except ClientError as e:
-                        print(e.page['Error']['Message'])
-                    else:
-                        print('Success')
-
-            else:
-                print('No matching records')
-    except ClientError as e:
-        print(str(e))
-    else:
-        print('Operatio completed')
 
 def defaultencode(o):
     if isinstance(o, Decimal):

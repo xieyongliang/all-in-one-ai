@@ -120,7 +120,7 @@ for lambda_folder in $lambda_foldes; do
     rm -r ${build_dir}
 
     mkdir -p ${build_dir}/
-    cp -R *.py ${build_dir}/
+    cp -R * ${build_dir}/
     cd ${build_dir}
     zip -r9 ${lambda_folder}.zip .
     cp ${build_dir}/${lambda_folder}.zip $build_dist_dir/${lambda_folder}.zip
@@ -152,7 +152,7 @@ for lambda_folder in $lambda_foldes; do
     rm -r ${build_dir}
 
     mkdir -p ${build_dir}/
-    cp -R *.py ${build_dir}/
+    cp -R * ${build_dir}/
     cd ${build_dir}
     zip -r9 ${lambda_folder}.zip .
     cp ${build_dir}/${lambda_folder}.zip $build_dist_dir/${lambda_folder}.zip

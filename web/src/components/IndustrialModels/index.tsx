@@ -40,6 +40,7 @@ import CPTDemoForm from '../Forms/Demo/Single/cpt';
 import GABSADemoFrom from '../Forms/Demo/Single/gabsa';
 import PaddleNLPDemoForm from '../Forms/Demo/Single/paddlenlp'
 import DeBERTaDemoForm from '../Forms/Demo/Single/mdeberta'
+import cognitoUtils from '../../lib/cognitoUtils';
 
 interface IProps {
     industrialModels : IIndustrialModel[];
@@ -258,10 +259,15 @@ const IndustrialModels: FunctionComponent<IProps> = (
         return (
             <Tabs tabs={tabs} variant='container' activeId={tab} onChange={onChange}/>
         )
-    else
-        return (
-            <div></div>
-        )
+    else {
+        if(env['cognitoRegion'] !== undefined)
+            cognitoUtils.getCognitoSignInUri().then(data => {
+                window.location.href = data
+            }).catch((error) => {
+                console.log(error)
+            });
+        return (<div></div>)
+    }
 }
 
 const mapStateToProps = (state: AppState) => ({
