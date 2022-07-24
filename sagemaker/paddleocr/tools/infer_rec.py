@@ -24,7 +24,7 @@ import json
 
 __dir__ = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(__dir__)
-sys.path.append(os.path.abspath(os.path.join(__dir__, '..')))
+sys.path.insert(0, os.path.abspath(os.path.join(__dir__, '..')))
 
 os.environ["FLAGS_allocator_strategy"] = 'auto_growth'
 
@@ -51,8 +51,28 @@ def main():
         if config['Architecture']["algorithm"] in ["Distillation",
                                                    ]:  # distillation model
             for key in config['Architecture']["Models"]:
-                config['Architecture']["Models"][key]["Head"][
-                    'out_channels'] = char_num
+                if config['Architecture']['Models'][key]['Head'][
+                        'name'] == 'MultiHead':  # for multi head
+                    out_channels_list = {}
+                    if config['PostProcess'][
+                            'name'] == 'DistillationSARLabelDecode':
+                        char_num = char_num - 2
+                    out_channels_list['CTCLabelDecode'] = char_num
+                    out_channels_list['SARLabelDecode'] = char_num + 2
+                    config['Architecture']['Models'][key]['Head'][
+                        'out_channels_list'] = out_channels_list
+                else:
+                    config['Architecture']["Models"][key]["Head"][
+                        'out_channels'] = char_num
+        elif config['Architecture']['Head'][
+                'name'] == 'MultiHead':  # for multi head loss
+            out_channels_list = {}
+            if config['PostProcess']['name'] == 'SARLabelDecode':
+                char_num = char_num - 2
+            out_channels_list['CTCLabelDecode'] = char_num
+            out_channels_list['SARLabelDecode'] = char_num + 2
+            config['Architecture']['Head'][
+                'out_channels_list'] = out_channels_list
         else:  # base rec model
             config['Architecture']["Head"]['out_channels'] = char_num
 
@@ -130,14 +150,14 @@ def main():
                             "label": post_result[key][0][0],
                             "score": float(post_result[key][0][1]),
                         }
-                info = json.dumps(rec_info)
+                info = json.dumps(rec_info, ensure_ascii=False)
             else:
                 if len(post_result[0]) >= 2:
                     info = post_result[0][0] + "\t" + str(post_result[0][1])
 
             if info is not None:
                 logger.info("\t result: {}".format(info))
-                fout.write(os.path.basename(file) + "\t" + info + "\n")
+                fout.write(file + "\t" + info + "\n")
     logger.info("success!")
 
 

@@ -14,6 +14,7 @@
 
 import os
 import sys
+import importlib
 
 __dir__ = os.path.dirname(__file__)
 
@@ -26,6 +27,10 @@ import logging
 import numpy as np
 from pathlib import Path
 
+tools = importlib.import_module('.', 'tools')
+ppocr = importlib.import_module('.', 'ppocr')
+ppstructure = importlib.import_module('.', 'ppstructure')
+
 from tools.infer import predict_system
 from ppocr.utils.logging import get_logger
 
@@ -34,7 +39,7 @@ from ppocr.utils.utility import check_and_read_gif, get_image_file_list
 from ppocr.utils.network import maybe_download, download_with_progressbar, is_link, confirm_model_dir_url
 from tools.infer.utility import draw_ocr, str2bool, check_gpu
 from ppstructure.utility import init_args, draw_structure_result
-from ppstructure.predict_system import OCRSystem, save_structure_res
+from ppstructure.predict_system import StructureSystem, save_structure_res
 
 __all__ = [
     'PaddleOCR', 'PPStructure', 'draw_ocr', 'draw_structure_result',
@@ -42,14 +47,100 @@ __all__ = [
 ]
 
 SUPPORT_DET_MODEL = ['DB']
-VERSION = '2.4'
-SUPPORT_REC_MODEL = ['CRNN']
+VERSION = '2.5.0.3'
+SUPPORT_REC_MODEL = ['CRNN', 'SVTR_LCNet']
 BASE_DIR = os.path.expanduser("~/.paddleocr/")
 
-DEFAULT_OCR_MODEL_VERSION = 'PP-OCR'
-DEFAULT_STRUCTURE_MODEL_VERSION = 'STRUCTURE'
+DEFAULT_OCR_MODEL_VERSION = 'PP-OCRv3'
+SUPPORT_OCR_MODEL_VERSION = ['PP-OCR', 'PP-OCRv2', 'PP-OCRv3']
+DEFAULT_STRUCTURE_MODEL_VERSION = 'PP-STRUCTURE'
+SUPPORT_STRUCTURE_MODEL_VERSION = ['PP-STRUCTURE']
 MODEL_URLS = {
     'OCR': {
+        'PP-OCRv3': {
+            'det': {
+                'ch': {
+                    'url':
+                    'https://paddleocr.bj.bcebos.com/PP-OCRv3/chinese/ch_PP-OCRv3_det_infer.tar',
+                },
+                'en': {
+                    'url':
+                    'https://paddleocr.bj.bcebos.com/PP-OCRv3/english/en_PP-OCRv3_det_infer.tar',
+                },
+                'ml': {
+                    'url':
+                    'https://paddleocr.bj.bcebos.com/PP-OCRv3/multilingual/Multilingual_PP-OCRv3_det_infer.tar'
+                }
+            },
+            'rec': {
+                'ch': {
+                    'url':
+                    'https://paddleocr.bj.bcebos.com/PP-OCRv3/chinese/ch_PP-OCRv3_rec_infer.tar',
+                    'dict_path': './ppocr/utils/ppocr_keys_v1.txt'
+                },
+                'en': {
+                    'url':
+                    'https://paddleocr.bj.bcebos.com/PP-OCRv3/english/en_PP-OCRv3_rec_infer.tar',
+                    'dict_path': './ppocr/utils/en_dict.txt'
+                },
+                'korean': {
+                    'url':
+                    'https://paddleocr.bj.bcebos.com/PP-OCRv3/multilingual/korean_PP-OCRv3_rec_infer.tar',
+                    'dict_path': './ppocr/utils/dict/korean_dict.txt'
+                },
+                'japan': {
+                    'url':
+                    'https://paddleocr.bj.bcebos.com/PP-OCRv3/multilingual/japan_PP-OCRv3_rec_infer.tar',
+                    'dict_path': './ppocr/utils/dict/japan_dict.txt'
+                },
+                'chinese_cht': {
+                    'url':
+                    'https://paddleocr.bj.bcebos.com/PP-OCRv3/multilingual/chinese_cht_PP-OCRv3_rec_infer.tar',
+                    'dict_path': './ppocr/utils/dict/chinese_cht_dict.txt'
+                },
+                'ta': {
+                    'url':
+                    'https://paddleocr.bj.bcebos.com/PP-OCRv3/multilingual/ta_PP-OCRv3_rec_infer.tar',
+                    'dict_path': './ppocr/utils/dict/ta_dict.txt'
+                },
+                'te': {
+                    'url':
+                    'https://paddleocr.bj.bcebos.com/PP-OCRv3/multilingual/te_PP-OCRv3_rec_infer.tar',
+                    'dict_path': './ppocr/utils/dict/te_dict.txt'
+                },
+                'ka': {
+                    'url':
+                    'https://paddleocr.bj.bcebos.com/PP-OCRv3/multilingual/ka_PP-OCRv3_rec_infer.tar',
+                    'dict_path': './ppocr/utils/dict/ka_dict.txt'
+                },
+                'latin': {
+                    'url':
+                    'https://paddleocr.bj.bcebos.com/PP-OCRv3/multilingual/latin_PP-OCRv3_rec_infer.tar',
+                    'dict_path': './ppocr/utils/dict/latin_dict.txt'
+                },
+                'arabic': {
+                    'url':
+                    'https://paddleocr.bj.bcebos.com/PP-OCRv3/multilingual/arabic_PP-OCRv3_rec_infer.tar',
+                    'dict_path': './ppocr/utils/dict/arabic_dict.txt'
+                },
+                'cyrillic': {
+                    'url':
+                    'https://paddleocr.bj.bcebos.com/PP-OCRv3/multilingual/cyrillic_PP-OCRv3_rec_infer.tar',
+                    'dict_path': './ppocr/utils/dict/cyrillic_dict.txt'
+                },
+                'devanagari': {
+                    'url':
+                    'https://paddleocr.bj.bcebos.com/PP-OCRv3/multilingual/devanagari_PP-OCRv3_rec_infer.tar',
+                    'dict_path': './ppocr/utils/dict/devanagari_dict.txt'
+                },
+            },
+            'cls': {
+                'ch': {
+                    'url':
+                    'https://paddleocr.bj.bcebos.com/dygraph_v2.0/ch/ch_ppocr_mobile_v2.0_cls_infer.tar',
+                }
+            },
+        },
         'PP-OCRv2': {
             'det': {
                 'ch': {
@@ -63,9 +154,15 @@ MODEL_URLS = {
                     'https://paddleocr.bj.bcebos.com/PP-OCRv2/chinese/ch_PP-OCRv2_rec_infer.tar',
                     'dict_path': './ppocr/utils/ppocr_keys_v1.txt'
                 }
-            }
+            },
+            'cls': {
+                'ch': {
+                    'url':
+                    'https://paddleocr.bj.bcebos.com/dygraph_v2.0/ch/ch_ppocr_mobile_v2.0_cls_infer.tar',
+                }
+            },
         },
-        DEFAULT_OCR_MODEL_VERSION: {
+        'PP-OCR': {
             'det': {
                 'ch': {
                     'url':
@@ -166,7 +263,7 @@ MODEL_URLS = {
         }
     },
     'STRUCTURE': {
-        DEFAULT_STRUCTURE_MODEL_VERSION: {
+        'PP-STRUCTURE': {
             'table': {
                 'en': {
                     'url':
@@ -190,15 +287,18 @@ def parse_args(mMain=True):
     parser.add_argument(
         "--ocr_version",
         type=str,
-        default='PP-OCRv2',
+        choices=SUPPORT_OCR_MODEL_VERSION,
+        default='PP-OCRv3',
         help='OCR Model version, the current model support list is as follows: '
-        '1. PP-OCRv2 Support Chinese detection and recognition model. '
-        '2. PP-OCR support Chinese detection, recognition and direction classifier and multilingual recognition model.'
+        '1. PP-OCRv3 Support Chinese and English detection and recognition model, and direction classifier model'
+        '2. PP-OCRv2 Support Chinese detection and recognition model. '
+        '3. PP-OCR support Chinese detection, recognition and direction classifier and multilingual recognition model.'
     )
     parser.add_argument(
         "--structure_version",
         type=str,
-        default='STRUCTURE',
+        choices=SUPPORT_STRUCTURE_MODEL_VERSION,
+        default='PP-STRUCTURE',
         help='Model version, the current model support list is as follows:'
         ' 1. STRUCTURE Support en table structure model.')
 
@@ -219,7 +319,7 @@ def parse_lang(lang):
         'af', 'az', 'bs', 'cs', 'cy', 'da', 'de', 'es', 'et', 'fr', 'ga', 'hr',
         'hu', 'id', 'is', 'it', 'ku', 'la', 'lt', 'lv', 'mi', 'ms', 'mt', 'nl',
         'no', 'oc', 'pi', 'pl', 'pt', 'ro', 'rs_latin', 'sk', 'sl', 'sq', 'sv',
-        'sw', 'tl', 'tr', 'uz', 'vi'
+        'sw', 'tl', 'tr', 'uz', 'vi', 'french', 'german'
     ]
     arabic_lang = ['ar', 'fa', 'ug', 'ur']
     cyrillic_lang = [
@@ -245,8 +345,10 @@ def parse_lang(lang):
         det_lang = "ch"
     elif lang == 'structure':
         det_lang = 'structure'
-    else:
+    elif lang in ["en", "latin"]:
         det_lang = "en"
+    else:
+        det_lang = "ml"
     return lang, det_lang
 
 
@@ -257,26 +359,20 @@ def get_model_config(type, version, model_type, lang):
         DEFAULT_MODEL_VERSION = DEFAULT_STRUCTURE_MODEL_VERSION
     else:
         raise NotImplementedError
+
     model_urls = MODEL_URLS[type]
     if version not in model_urls:
-        logger.warning('version {} not in {}, auto switch to version {}'.format(
-            version, model_urls.keys(), DEFAULT_MODEL_VERSION))
         version = DEFAULT_MODEL_VERSION
     if model_type not in model_urls[version]:
         if model_type in model_urls[DEFAULT_MODEL_VERSION]:
-            logger.warning(
-                'version {} not support {} models, auto switch to version {}'.
-                format(version, model_type, DEFAULT_MODEL_VERSION))
             version = DEFAULT_MODEL_VERSION
         else:
             logger.error('{} models is not support, we only support {}'.format(
                 model_type, model_urls[DEFAULT_MODEL_VERSION].keys()))
             sys.exit(-1)
+
     if lang not in model_urls[version][model_type]:
         if lang in model_urls[DEFAULT_MODEL_VERSION][model_type]:
-            logger.warning(
-                'lang {} is not support in {}, auto switch to version {}'.
-                format(lang, version, DEFAULT_MODEL_VERSION))
             version = DEFAULT_MODEL_VERSION
         else:
             logger.error(
@@ -296,6 +392,8 @@ class PaddleOCR(predict_system.TextSystem):
         """
         params = parse_args(mMain=False)
         params.__dict__.update(**kwargs)
+        assert params.ocr_version in SUPPORT_OCR_MODEL_VERSION, "ocr_version must in {}, but get {}".format(
+            SUPPORT_OCR_MODEL_VERSION, params.ocr_version)
         params.use_gpu = check_gpu(params.use_gpu)
 
         if not params.show_log:
@@ -308,20 +406,22 @@ class PaddleOCR(predict_system.TextSystem):
                                             det_lang)
         params.det_model_dir, det_url = confirm_model_dir_url(
             params.det_model_dir,
-            os.path.join(BASE_DIR, VERSION, 'ocr', 'det', det_lang),
+            os.path.join(BASE_DIR, 'whl', 'det', det_lang),
             det_model_config['url'])
         rec_model_config = get_model_config('OCR', params.ocr_version, 'rec',
                                             lang)
         params.rec_model_dir, rec_url = confirm_model_dir_url(
             params.rec_model_dir,
-            os.path.join(BASE_DIR, VERSION, 'ocr', 'rec', lang),
-            rec_model_config['url'])
+            os.path.join(BASE_DIR, 'whl', 'rec', lang), rec_model_config['url'])
         cls_model_config = get_model_config('OCR', params.ocr_version, 'cls',
                                             'ch')
         params.cls_model_dir, cls_url = confirm_model_dir_url(
             params.cls_model_dir,
-            os.path.join(BASE_DIR, VERSION, 'ocr', 'cls'),
-            cls_model_config['url'])
+            os.path.join(BASE_DIR, 'whl', 'cls'), cls_model_config['url'])
+        if params.ocr_version == 'PP-OCRv3':
+            params.rec_image_shape = "3, 48, 320"
+        else:
+            params.rec_image_shape = "3, 32, 320"
         # download model
         maybe_download(params.det_model_dir, det_url)
         maybe_download(params.rec_model_dir, rec_url)
@@ -338,7 +438,7 @@ class PaddleOCR(predict_system.TextSystem):
             params.rec_char_dict_path = str(
                 Path(__file__).parent / rec_model_config['dict_path'])
 
-        print(params)
+        logger.debug(params)
         # init det_model and rec_model
         super().__init__(params)
 
@@ -346,7 +446,7 @@ class PaddleOCR(predict_system.TextSystem):
         """
         ocr with paddleocr
         args：
-            img: img for ocr, support ndarray, img_path and list or ndarray
+            img: img for ocr, support ndarray, img_path and list of ndarray
             det: use text detection or not. If false, only rec will be exec. Default is True
             rec: use text recognition or not. If false, only det will be exec. Default is True
             cls: use angle classifier or not. Default is True. If true, the text with rotation of 180 degrees can be recognized. If no text is rotated by 180 degrees, use cls=False to get better performance. Text with rotation of 90 or 270 degrees can be recognized even if cls=False.
@@ -357,7 +457,7 @@ class PaddleOCR(predict_system.TextSystem):
             exit(0)
         if cls == True and self.use_angle_cls == False:
             logger.warning(
-                'Since the angle classifier is not initialized, the angle classifier will not be used during the forward process'
+                'Since the angle classifier is not initialized, the angle classifier will not be uesd during the forward process'
             )
 
         if isinstance(img, str):
@@ -395,10 +495,12 @@ class PaddleOCR(predict_system.TextSystem):
             return rec_res
 
 
-class PPStructure(OCRSystem):
+class PPStructure(StructureSystem):
     def __init__(self, **kwargs):
         params = parse_args(mMain=False)
         params.__dict__.update(**kwargs)
+        assert params.structure_version in SUPPORT_STRUCTURE_MODEL_VERSION, "structure_version must in {}, but get {}".format(
+            SUPPORT_STRUCTURE_MODEL_VERSION, params.structure_version)
         params.use_gpu = check_gpu(params.use_gpu)
 
         if not params.show_log:
@@ -410,20 +512,18 @@ class PPStructure(OCRSystem):
                                             det_lang)
         params.det_model_dir, det_url = confirm_model_dir_url(
             params.det_model_dir,
-            os.path.join(BASE_DIR, VERSION, 'ocr', 'det', det_lang),
+            os.path.join(BASE_DIR, 'whl', 'det', det_lang),
             det_model_config['url'])
         rec_model_config = get_model_config('OCR', params.ocr_version, 'rec',
                                             lang)
         params.rec_model_dir, rec_url = confirm_model_dir_url(
             params.rec_model_dir,
-            os.path.join(BASE_DIR, VERSION, 'ocr', 'rec', lang),
-            rec_model_config['url'])
+            os.path.join(BASE_DIR, 'whl', 'rec', lang), rec_model_config['url'])
         table_model_config = get_model_config(
             'STRUCTURE', params.structure_version, 'table', 'en')
         params.table_model_dir, table_url = confirm_model_dir_url(
             params.table_model_dir,
-            os.path.join(BASE_DIR, VERSION, 'ocr', 'table'),
-            table_model_config['url'])
+            os.path.join(BASE_DIR, 'whl', 'table'), table_model_config['url'])
         # download model
         maybe_download(params.det_model_dir, det_url)
         maybe_download(params.rec_model_dir, rec_url)
@@ -436,10 +536,10 @@ class PPStructure(OCRSystem):
             params.table_char_dict_path = str(
                 Path(__file__).parent / table_model_config['dict_path'])
 
-        print(params)
+        logger.debug(params)
         super().__init__(params)
 
-    def __call__(self, img):
+    def __call__(self, img, return_ocr_result_in_table=False):
         if isinstance(img, str):
             # download net image
             if img.startswith('http'):
@@ -457,7 +557,7 @@ class PPStructure(OCRSystem):
         if isinstance(img, np.ndarray) and len(img.shape) == 2:
             img = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
 
-        res = super().__call__(img)
+        res = super().__call__(img, return_ocr_result_in_table)
         return res
 
 

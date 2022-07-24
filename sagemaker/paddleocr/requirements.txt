@@ -16,3 +16,5 @@ cython
 lxml
 premailer
 openpyxl
+rapidfuzz
+attrdict

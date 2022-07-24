@@ -63,7 +63,18 @@ const IndustrialModelList: FunctionComponent<IProps> = (props) => {
             industrialModels.forEach((item) => {
                 var s3uri = item.icon;
                 getHttpUri(s3uri).then((data) => {
-                    items.push({id: item.id, name: item.name, description: item.description, algorithm: item.algorithm, icon: s3uri, httpuri: data.payload, samples: item.samples, labels: item.labels});
+                    items.push(
+                        {
+                            id: item.id, 
+                            name: item.name, 
+                            description: item.description, 
+                            algorithm: item.algorithm, 
+                            icon: s3uri, 
+                            httpuri: data.payload[0].httpuri, 
+                            samples: item.samples, 
+                            labels: item.labels
+                        }
+                    );
                     if(items.length === industrialModels.length) {
                         setItemsModels(items)
                         setLoading(false)

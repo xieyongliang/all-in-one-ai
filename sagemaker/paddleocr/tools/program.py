@@ -21,14 +21,17 @@ import sys
 import platform
 import yaml
 import time
+import datetime
 import paddle
 import paddle.distributed as dist
 from tqdm import tqdm
+from argparse import ArgumentParser, RawDescriptionHelpFormatter
 
 from ppocr.utils.stats import TrainingStats
 from ppocr.utils.save_load import save_model
-from ppocr.utils.utility import print_dict
+from ppocr.utils.utility import print_dict, AverageMeter
 from ppocr.utils.logging import get_logger
+from ppocr.utils.loggers import VDLLogger, WandbLogger, Loggers
 from ppocr.utils import profiler
 from ppocr.data import build_dataloader
 
@@ -56,6 +59,25 @@ def check_device(use_gpu, use_xpu=False):
         pass
 
 
+def check_xpu(use_xpu):
+    """
+    Log error and exit when set use_xpu=true in paddlepaddle
+    cpu/gpu version.
+    """
+    err = "Config use_xpu cannot be set as true while you are " \
+          "using paddlepaddle cpu/gpu version ! \nPlease try: \n" \
+          "\t1. Install paddlepaddle-xpu to run model on XPU \n" \
+          "\t2. Set use_xpu as false in config file to run " \
+          "model on CPU/GPU"
+
+    try:
+        if use_xpu and not paddle.is_compiled_with_xpu():
+            print(err)
+            sys.exit(1)
+    except Exception as e:
+        pass
+
+
 def train(config,
           train_dataloader,
           valid_dataloader,
@@ -68,10 +90,11 @@ def train(config,
           eval_class,
           pre_best_model_dict,
           logger,
-          vdl_writer=None,
+          log_writer=None,
           scaler=None):
     cal_metric_during_train = config['Global'].get('cal_metric_during_train',
                                                    False)
+    calc_epoch_interval = config['Global'].get('calc_epoch_interval', 1)
     log_smooth_window = config['Global']['log_smooth_window']
     epoch_num = config['Global']['epoch_num']
     print_batch_step = config['Global']['print_batch_step']
@@ -87,11 +110,13 @@ def train(config,
         eval_batch_step = eval_batch_step[1]
         if len(valid_dataloader) == 0:
             logger.info(
-                'No Images in eval dataset, evaluation during training will be disabled'
+                'No Images in eval dataset, evaluation during training ' \
+                'will be disabled'
             )
             start_eval_step = 1e111
         logger.info(
-            "During the training process, after the {}th iteration, an evaluation is run every {} iterations".
+            "During the training process, after the {}th iteration, " \
+            "an evaluation is run every {} iterations".
             format(start_eval_step, eval_batch_step))
     save_epoch_step = config['Global']['save_epoch_step']
     save_model_dir = config['Global']['save_model_dir']
@@ -105,30 +130,45 @@ def train(config,
     model.train()
 
     use_srn = config['Architecture']['algorithm'] == "SRN"
-    extra_input = config['Architecture'][
-        'algorithm'] in ["SRN", "NRTR", "SAR", "SEED"]
+    extra_input_models = ["SRN", "NRTR", "SAR", "SEED", "SVTR"]
+    extra_input = False
+    if config['Architecture']['algorithm'] == 'Distillation':
+        for key in config['Architecture']["Models"]:
+            extra_input = extra_input or config['Architecture']['Models'][key][
+                'algorithm'] in extra_input_models
+    else:
+        extra_input = config['Architecture']['algorithm'] in extra_input_models
     try:
         model_type = config['Architecture']['model_type']
     except:
         model_type = None
+
     algorithm = config['Architecture']['algorithm']
 
-    if 'start_epoch' in best_model_dict:
-        start_epoch = best_model_dict['start_epoch']
-    else:
-        start_epoch = 1
+    start_epoch = best_model_dict[
+        'start_epoch'] if 'start_epoch' in best_model_dict else 1
+
+    total_samples = 0
+    train_reader_cost = 0.0
+    train_batch_cost = 0.0
+    reader_start = time.time()
+    eta_meter = AverageMeter()
+
+    max_iter = len(train_dataloader) - 1 if platform.system(
+    ) == "Windows" else len(train_dataloader)
 
     for epoch in range(start_epoch, epoch_num + 1):
-        train_dataloader = build_dataloader(
-            config, 'Train', device, logger, seed=epoch)
-        train_reader_cost = 0.0
-        train_run_cost = 0.0
-        total_samples = 0
-        reader_start = time.time()
-        max_iter = len(train_dataloader) - 1 if platform.system(
-        ) == "Windows" else len(train_dataloader)
+        print('0')
+        if train_dataloader.dataset.need_reset:
+            train_dataloader = build_dataloader(
+                config, 'Train', device, logger, seed=epoch)
+            max_iter = len(train_dataloader) - 1 if platform.system(
+            ) == "Windows" else len(train_dataloader)
+        print('1')
         for idx, batch in enumerate(train_dataloader):
+            print('2')
             profiler.add_profiler_step(profiler_options)
+            print('3')
             train_reader_cost += time.time() - reader_start
             if idx >= max_iter:
                 break
@@ -137,34 +177,70 @@ def train(config,
             if use_srn:
                 model_average = True
 
-            train_start = time.time()
+            print('4')
             # use amp
             if scaler:
                 with paddle.amp.auto_cast():
                     if model_type == 'table' or extra_input:
+                        print('5')
                         preds = model(images, data=batch[1:])
+                        print('6')
                     else:
+                        print('7')
                         preds = model(images)
+                        print('8')
             else:
                 if model_type == 'table' or extra_input:
+                    print('9')
                     preds = model(images, data=batch[1:])
-                elif model_type == "kie":
+                    print('10')
+                elif model_type in ["kie", 'vqa']:
+                    print('11')
                     preds = model(batch)
+                    print('12')
                 else:
+                    print('13')
                     preds = model(images)
+                    print('14')
+
             loss = loss_class(preds, batch)
             avg_loss = loss['loss']
 
+            print('15')
             if scaler:
+                print('16')
                 scaled_avg_loss = scaler.scale(avg_loss)
                 scaled_avg_loss.backward()
                 scaler.minimize(optimizer, scaled_avg_loss)
+                print('17')
             else:
+                print('18')
                 avg_loss.backward()
                 optimizer.step()
+                print('19')
             optimizer.clear_grad()
+            print('20')
 
-            train_run_cost += time.time() - train_start
+            if cal_metric_during_train and epoch % calc_epoch_interval == 0:  # only rec and cls need
+                batch = [item.numpy() for item in batch]
+                if model_type in ['table', 'kie']:
+                    eval_class(preds, batch)
+                else:
+                    if config['Loss']['name'] in ['MultiLoss', 'MultiLoss_v2'
+                                                  ]:  # for multi head loss
+                        post_result = post_process_class(
+                            preds['ctc'], batch[1])  # for CTC head out
+                    else:
+                        post_result = post_process_class(preds, batch[1])
+                    eval_class(post_result, batch)
+                metric = eval_class.get_metric()
+                train_stats.update(metric)
+
+            print('21')
+            train_batch_time = time.time() - reader_start
+            train_batch_cost += train_batch_time
+            eta_meter.update(train_batch_time)
+            global_step += 1
             total_samples += len(images)
 
             if not isinstance(lr_scheduler, float):
@@ -175,37 +251,36 @@ def train(config,
             stats['lr'] = lr
             train_stats.update(stats)
 
-            if cal_metric_during_train and model_type is not "det":  # only rec and cls need
-                batch = [item.numpy() for item in batch]
-                if model_type in ['table', 'kie']:
-                    eval_class(preds, batch)
-                else:
-                    post_result = post_process_class(preds, batch[1])
-                    eval_class(post_result, batch)
-                metric = eval_class.get_metric()
-                train_stats.update(metric)
+            print('22')
+            if log_writer is not None and dist.get_rank() == 0:
+                log_writer.log_metrics(metrics=train_stats.get(), prefix="TRAIN", step=global_step)
 
-            if vdl_writer is not None and dist.get_rank() == 0:
-                for k, v in train_stats.get().items():
-                    vdl_writer.add_scalar('TRAIN/{}'.format(k), v, global_step)
-                vdl_writer.add_scalar('TRAIN/lr', lr, global_step)
-
+            print('23')
             if dist.get_rank() == 0 and (
                 (global_step > 0 and global_step % print_batch_step == 0) or
                 (idx >= len(train_dataloader) - 1)):
                 logs = train_stats.log()
-                strs = 'epoch: [{}/{}], iter: {}, {}, reader_cost: {:.5f} s, batch_cost: {:.5f} s, samples: {}, ips: {:.5f}'.format(
-                    epoch, epoch_num, global_step, logs, train_reader_cost /
-                    print_batch_step, (train_reader_cost + train_run_cost) /
-                    print_batch_step, total_samples,
-                    total_samples / (train_reader_cost + train_run_cost))
+
+                eta_sec = ((epoch_num + 1 - epoch) * \
+                    len(train_dataloader) - idx - 1) * eta_meter.avg
+                eta_sec_format = str(datetime.timedelta(seconds=int(eta_sec)))
+                strs = 'epoch: [{}/{}], global_step: {}, {}, avg_reader_cost: ' \
+                       '{:.5f} s, avg_batch_cost: {:.5f} s, avg_samples: {}, ' \
+                       'ips: {:.5f} samples/s, eta: {}'.format(
+                    epoch, epoch_num, global_step, logs,
+                    train_reader_cost / print_batch_step,
+                    train_batch_cost / print_batch_step,
+                    total_samples / print_batch_step,
+                    total_samples / train_batch_cost, eta_sec_format)
                 logger.info(strs)
-                train_reader_cost = 0.0
-                train_run_cost = 0.0
+
                 total_samples = 0
+                train_reader_cost = 0.0
+                train_batch_cost = 0.0
             # eval
             if global_step > start_eval_step and \
-                    (global_step - start_eval_step) % eval_batch_step == 0 and dist.get_rank() == 0:
+                    (global_step - start_eval_step) % eval_batch_step == 0 \
+                    and dist.get_rank() == 0:
                 if model_average:
                     Model_Average = paddle.incubate.optimizer.ModelAverage(
                         0.15,
@@ -225,11 +300,9 @@ def train(config,
                 logger.info(cur_metric_str)
 
                 # logger metric
-                if vdl_writer is not None:
-                    for k, v in cur_metric.items():
-                        if isinstance(v, (float, int)):
-                            vdl_writer.add_scalar('EVAL/{}'.format(k),
-                                                  cur_metric[k], global_step)
+                if log_writer is not None:
+                    log_writer.log_metrics(metrics=cur_metric, prefix="EVAL", step=global_step)
+
                 if cur_metric[main_indicator] >= best_model_dict[
                         main_indicator]:
                     best_model_dict.update(cur_metric)
@@ -239,6 +312,7 @@ def train(config,
                         optimizer,
                         save_model_dir,
                         logger,
+                        config,
                         is_best=True,
                         prefix='best_accuracy',
                         best_model_dict=best_model_dict,
@@ -249,12 +323,13 @@ def train(config,
                 ]))
                 logger.info(best_str)
                 # logger best metric
-                if vdl_writer is not None:
-                    vdl_writer.add_scalar('EVAL/best_{}'.format(main_indicator),
-                                          best_model_dict[main_indicator],
-                                          global_step)
-            global_step += 1
-            optimizer.clear_grad()
+                if log_writer is not None:
+                    log_writer.log_metrics(metrics={
+                        "best_{}".format(main_indicator): best_model_dict[main_indicator]
+                        }, prefix="EVAL", step=global_step)
+                    
+                    log_writer.log_model(is_best=True, prefix="best_accuracy", metadata=best_model_dict)
+
             reader_start = time.time()
         if dist.get_rank() == 0:
             save_model(
@@ -262,27 +337,36 @@ def train(config,
                 optimizer,
                 save_model_dir,
                 logger,
+                config,
                 is_best=False,
                 prefix='latest',
                 best_model_dict=best_model_dict,
                 epoch=epoch,
                 global_step=global_step)
+
+            if log_writer is not None:
+                log_writer.log_model(is_best=False, prefix="latest")
+
         if dist.get_rank() == 0 and epoch > 0 and epoch % save_epoch_step == 0:
             save_model(
                 model,
                 optimizer,
                 save_model_dir,
                 logger,
+                config,
                 is_best=False,
                 prefix='iter_epoch_{}'.format(epoch),
                 best_model_dict=best_model_dict,
                 epoch=epoch,
                 global_step=global_step)
+            if log_writer is not None:
+                log_writer.log_model(is_best=False, prefix='iter_epoch_{}'.format(epoch))
+
     best_str = 'best metric, {}'.format(', '.join(
         ['{}: {}'.format(k, v) for k, v in best_model_dict.items()]))
     logger.info(best_str)
-    if dist.get_rank() == 0 and vdl_writer is not None:
-        vdl_writer.close()
+    if dist.get_rank() == 0 and log_writer is not None:
+        log_writer.close()
     return
 
 
@@ -310,19 +394,28 @@ def eval(model,
             start = time.time()
             if model_type == 'table' or extra_input:
                 preds = model(images, data=batch[1:])
-            elif model_type == "kie":
+            elif model_type in ["kie", 'vqa']:
                 preds = model(batch)
             else:
                 preds = model(images)
-            batch = [item.numpy() for item in batch]
+
+            batch_numpy = []
+            for item in batch:
+                if isinstance(item, paddle.Tensor):
+                    batch_numpy.append(item.numpy())
+                else:
+                    batch_numpy.append(item)
             # Obtain usable results from post-processing methods
             total_time += time.time() - start
             # Evaluate the results of the current batch
             if model_type in ['table', 'kie']:
-                eval_class(preds, batch)
+                eval_class(preds, batch_numpy)
+            elif model_type in ['vqa']:
+                post_result = post_process_class(preds, batch_numpy)
+                eval_class(post_result, batch_numpy)
             else:
-                post_result = post_process_class(preds, batch[1])
-                eval_class(post_result, batch)
+                post_result = post_process_class(preds, batch_numpy[1])
+                eval_class(post_result, batch_numpy)
 
             pbar.update(1)
             total_frame += len(images)
@@ -384,7 +477,7 @@ def get_center(model, eval_dataloader, post_process_class):
     return char_center
 
 
-def preprocess(config, is_train=False):    
+def preprocess(config, is_train=False):
     if is_train:
         # save_config
         save_model_dir = config['Global']['save_model_dir']
@@ -395,23 +488,24 @@ def preprocess(config, is_train=False):
         log_file = '{}/train.log'.format(save_model_dir)
     else:
         log_file = None
-    logger = get_logger(name='root', log_file=log_file)
+    logger = get_logger(log_file=log_file)
 
     # check if set use_gpu=True in paddlepaddle cpu version
     use_gpu = config['Global']['use_gpu']
     use_xpu = config['Global'].get('use_xpu', False)
 
+    # check if set use_xpu=True in paddlepaddle cpu/gpu version
+    use_xpu = False
+    if 'use_xpu' in config['Global']:
+        use_xpu = config['Global']['use_xpu']
+    check_xpu(use_xpu)
+
     alg = config['Architecture']['algorithm']
     assert alg in [
         'EAST', 'DB', 'SAST', 'Rosetta', 'CRNN', 'STARNet', 'RARE', 'SRN',
         'CLS', 'PGNet', 'Distillation', 'NRTR', 'TableAttn', 'SAR', 'PSE',
-        'SEED', 'SDMGR'
+        'SEED', 'SDMGR', 'LayoutXLM', 'LayoutLM', 'PREN', 'FCE', 'SVTR'
     ]
-    windows_not_support_list = ['PSE']
-    if platform.system() == "Windows" and alg in windows_not_support_list:
-        logger.warning('{} is not support in Windows now'.format(
-            windows_not_support_list))
-        sys.exit()
 
     if use_xpu:
         device = 'xpu:{0}'.format(os.getenv('FLAGS_selected_xpus', 0))
@@ -424,15 +518,32 @@ def preprocess(config, is_train=False):
 
     config['Global']['distributed'] = dist.get_world_size() != 1
 
-    if config['Global']['use_visualdl']:
-        from visualdl import LogWriter
+    loggers = []
+
+    if 'use_visualdl' in config['Global'] and config['Global']['use_visualdl']:
         save_model_dir = config['Global']['save_model_dir']
         vdl_writer_path = '{}/vdl/'.format(save_model_dir)
-        os.makedirs(vdl_writer_path, exist_ok=True)
-        vdl_writer = LogWriter(logdir=vdl_writer_path)
+        log_writer = VDLLogger(save_model_dir)
+        loggers.append(log_writer)
+    if ('use_wandb' in config['Global'] and config['Global']['use_wandb']) or 'wandb' in config:
+        save_dir = config['Global']['save_model_dir']
+        wandb_writer_path = "{}/wandb".format(save_dir)
+        if "wandb" in config:
+            wandb_params = config['wandb']
+        else:
+            wandb_params = dict()
+        wandb_params.update({'save_dir': save_model_dir})
+        log_writer = WandbLogger(**wandb_params, config=config)
+        loggers.append(log_writer)
     else:
-        vdl_writer = None
+        log_writer = None
     print_dict(config, logger)
+
+    if loggers:
+        log_writer = Loggers(loggers)
+    else:
+        log_writer = None
+
     logger.info('train with paddle {} and device {}'.format(paddle.__version__,
                                                             device))
-    return device, logger, vdl_writer
+    return device, logger, log_writer

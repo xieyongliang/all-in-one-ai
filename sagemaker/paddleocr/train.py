@@ -23,7 +23,7 @@ from argparse import ArgumentParser, RawDescriptionHelpFormatter
 
 __dir__ = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(__dir__)
-sys.path.append(os.path.abspath(os.path.join(__dir__, '..')))
+sys.path.insert(0, os.path.abspath(os.path.join(__dir__, '..')))
 
 # Link cudnn to cuda
 os.system('ln -s /usr/lib/x86_64-linux-gnu/libcudnn.so.8 /usr/local/cuda/lib64/libcudnn.so')
@@ -62,14 +62,54 @@ def main(config, device, logger, vdl_writer):
         if config['Architecture']["algorithm"] in ["Distillation",
                                                    ]:  # distillation model
             for key in config['Architecture']["Models"]:
-                config['Architecture']["Models"][key]["Head"][
-                    'out_channels'] = char_num
+                if config['Architecture']['Models'][key]['Head'][
+                        'name'] == 'MultiHead':  # for multi head
+                    if config['PostProcess'][
+                            'name'] == 'DistillationSARLabelDecode':
+                        char_num = char_num - 2
+                    # update SARLoss params
+                    assert list(config['Loss']['loss_config_list'][-1].keys())[
+                        0] == 'DistillationSARLoss'
+                    config['Loss']['loss_config_list'][-1][
+                        'DistillationSARLoss']['ignore_index'] = char_num + 1
+                    out_channels_list = {}
+                    out_channels_list['CTCLabelDecode'] = char_num
+                    out_channels_list['SARLabelDecode'] = char_num + 2
+                    config['Architecture']['Models'][key]['Head'][
+                        'out_channels_list'] = out_channels_list
+                else:
+                    config['Architecture']["Models"][key]["Head"][
+                        'out_channels'] = char_num
+        elif config['Architecture']['Head'][
+                'name'] == 'MultiHead':  # for multi head
+            if config['PostProcess']['name'] == 'SARLabelDecode':
+                char_num = char_num - 2
+            # update SARLoss params
+            assert list(config['Loss']['loss_config_list'][1].keys())[
+                0] == 'SARLoss'
+            if config['Loss']['loss_config_list'][1]['SARLoss'] is None:
+                config['Loss']['loss_config_list'][1]['SARLoss'] = {
+                    'ignore_index': char_num + 1
+                }
+            else:
+                config['Loss']['loss_config_list'][1]['SARLoss'][
+                    'ignore_index'] = char_num + 1
+            out_channels_list = {}
+            out_channels_list['CTCLabelDecode'] = char_num
+            out_channels_list['SARLabelDecode'] = char_num + 2
+            config['Architecture']['Head'][
+                'out_channels_list'] = out_channels_list
         else:  # base rec model
             config['Architecture']["Head"]['out_channels'] = char_num
+
+        if config['PostProcess']['name'] == 'SARLabelDecode':  # for SAR model
+            config['Loss']['ignore_index'] = char_num - 1
 
     model = build_model(config['Architecture'])
     if config['Global']['distributed']:
         model = paddle.DataParallel(model)
+
+    model = apply_to_static(model, config, logger)
 
     # build loss
     loss_class = build_loss(config['Loss'])
@@ -79,12 +119,13 @@ def main(config, device, logger, vdl_writer):
         config['Optimizer'],
         epochs=config['Global']['epoch_num'],
         step_each_epoch=len(train_dataloader),
-        parameters=model.parameters())
+        model=model)
 
     # build metric
     eval_class = build_metric(config['Metric'])
     # load pretrain model
-    pre_best_model_dict = load_model(config, model, optimizer)
+    pre_best_model_dict = load_model(config, model, optimizer,
+                                     config['Architecture']["model_type"])
     logger.info('train dataloader has {} iters'.format(len(train_dataloader)))
     if valid_dataloader is not None:
         logger.info('valid dataloader has {} iters'.format(
@@ -110,7 +151,7 @@ def main(config, device, logger, vdl_writer):
     program.train(config, train_dataloader, valid_dataloader, device, model,
                   loss_class, optimizer, lr_scheduler, post_process_class,
                   eval_class, pre_best_model_dict, logger, vdl_writer, scaler)
-    export_model(config, {{'Global.pretrained_model': '{0}/best_accuracy'.format(config['Global']['save_model_dir']), 'Global.save_inference_dir': './opt/ml/model/'}})
+
 
 def test_reader(config, device, logger):
     loader = build_dataloader(config, 'Train', device, logger)
@@ -141,7 +182,8 @@ class ArgsParser(ArgumentParser):
             '--profiler_options',
             type=str,
             default=None,
-            help='The option of profiler, which should be in format \"key1=value1;key2=value2;key3=value3\".'
+            help='The option of profiler, which should be in format ' \
+                 '\"key1=value1;key2=value2;key3=value3\".'
         )
 
     def parse_args(self, argv=None):
@@ -161,24 +203,6 @@ class ArgsParser(ArgumentParser):
             config[k] = yaml.load(v, Loader=yaml.Loader)
         return config
 
-
-class AttrDict(dict):
-    """Single level attribute dict, NOT recursive"""
-
-    def __init__(self, **kwargs):
-        super(AttrDict, self).__init__()
-        super(AttrDict, self).update(kwargs)
-
-    def __getattr__(self, key):
-        if key in self:
-            return self[key]
-        raise AttributeError("object has no attribute '{}'".format(key))
-
-
-global_config = AttrDict()
-
-default_config = {'Global': {'debug': False}}
-
 def load_config(file_path):
     """
     Load config from yml/yaml file.
@@ -186,46 +210,47 @@ def load_config(file_path):
         file_path (str): Path of the config file to be loaded.
     Returns: global config
     """
-    merge_config(default_config)
     _, ext = os.path.splitext(file_path)
     assert ext in ['.yml', '.yaml'], "only support yaml files for now"
-    merge_config(yaml.load(open(file_path, 'rb'), Loader=yaml.Loader))
-    return global_config
+    config = yaml.load(open(file_path, 'rb'), Loader=yaml.Loader)
+    return config
 
 
-def merge_config(config):
+def merge_config(config, opts):
     """
     Merge config into global config.
     Args:
         config (dict): Config to be merged.
     Returns: global config
     """
-    for key, value in config.items():
+    for key, value in opts.items():
         if "." not in key:
-            if isinstance(value, dict) and key in global_config:
-                global_config[key].update(value)
+            if isinstance(value, dict) and key in config:
+                config[key].update(value)
             else:
-                global_config[key] = value
+                config[key] = value
         else:
             sub_keys = key.split('.')
             assert (
-                sub_keys[0] in global_config
-            ), "the sub_keys can only be one of global_config: {}, but get: {}, please check your running command".format(
-                global_config.keys(), sub_keys[0])
-            cur = global_config[sub_keys[0]]
+                sub_keys[0] in config
+            ), "the sub_keys can only be one of global_config: {}, but get: " \
+               "{}, please check your running command".format(
+                config.keys(), sub_keys[0])
+            cur = config[sub_keys[0]]
             for idx, sub_key in enumerate(sub_keys[1:]):
                 if idx == len(sub_keys) - 2:
                     cur[sub_key] = value
                 else:
                     cur = cur[sub_key]
+    return config
 
 if __name__ == '__main__':
     FLAGS = ArgsParser().parse_args()
     profiler_options = FLAGS.profiler_options
     config = load_config(FLAGS.config)
-    merge_config(FLAGS.opt)
-    profile_dic = {"profiler_options": profiler_options}
-    merge_config(profile_dic)
+    config = merge_config(config, FLAGS.opt)
+    profile_dic = {"profiler_options": FLAGS.profiler_options}
+    config = merge_config(config, profile_dic)
 
     use_gpu = config['Global']['use_gpu']
     if(use_gpu):
@@ -236,7 +261,11 @@ if __name__ == '__main__':
     import paddle
     import paddle.distributed as dist
 
-    paddle.seed(2)
+    paddle.utils.run_check()
+
+    import yaml
+    import paddle
+    import paddle.distributed as dist
 
     from ppocr.data import build_dataloader
     from ppocr.modeling.architectures import build_model
@@ -245,12 +274,15 @@ if __name__ == '__main__':
     from ppocr.postprocess import build_post_process
     from ppocr.metrics import build_metric
     from ppocr.utils.save_load import load_model
+    from ppocr.utils.utility import set_seed
+    from ppocr.modeling.architectures import apply_to_static
     import tools.program as program
-    from tools.export_model import export_model
-
-    device, logger, vdl_writer = program.preprocess(config, is_train=True)
 
     dist.get_world_size()
+
+    device, logger, vdl_writer = program.preprocess(config, is_train=True)
+    seed = config['Global']['seed'] if 'seed' in config['Global'] else 1024
+    set_seed(seed)
 
     main(config, device, logger, vdl_writer)
     # test_reader(config, device, logger)

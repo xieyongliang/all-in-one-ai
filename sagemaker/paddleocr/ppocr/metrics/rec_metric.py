@@ -12,14 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import Levenshtein
+from rapidfuzz.distance import Levenshtein
 import string
 
 
 class RecMetric(object):
-    def __init__(self, main_indicator='acc', is_filter=False, **kwargs):
+    def __init__(self,
+                 main_indicator='acc',
+                 is_filter=False,
+                 ignore_space=True,
+                 **kwargs):
         self.main_indicator = main_indicator
         self.is_filter = is_filter
+        self.ignore_space = ignore_space
+        self.eps = 1e-5
         self.reset()
 
     def _normalize_text(self, text):
@@ -33,13 +39,13 @@ class RecMetric(object):
         all_num = 0
         norm_edit_dis = 0.0
         for (pred, pred_conf), (target, _) in zip(preds, labels):
-            pred = pred.replace(" ", "")
-            target = target.replace(" ", "")
+            if self.ignore_space:
+                pred = pred.replace(" ", "")
+                target = target.replace(" ", "")
             if self.is_filter:
                 pred = self._normalize_text(pred)
                 target = self._normalize_text(target)
-            norm_edit_dis += Levenshtein.distance(pred, target) / max(
-                len(pred), len(target), 1)
+            norm_edit_dis += Levenshtein.normalized_distance(pred, target)
             if pred == target:
                 correct_num += 1
             all_num += 1
@@ -47,8 +53,8 @@ class RecMetric(object):
         self.all_num += all_num
         self.norm_edit_dis += norm_edit_dis
         return {
-            'acc': correct_num / all_num,
-            'norm_edit_dis': 1 - norm_edit_dis / (all_num + 1e-3)
+            'acc': correct_num / (all_num + self.eps),
+            'norm_edit_dis': 1 - norm_edit_dis / (all_num + self.eps)
         }
 
     def get_metric(self):
@@ -58,8 +64,8 @@ class RecMetric(object):
                  'norm_edit_dis': 0,
             }
         """
-        acc = 1.0 * self.correct_num / (self.all_num + 1e-3)
-        norm_edit_dis = 1 - self.norm_edit_dis / (self.all_num + 1e-3)
+        acc = 1.0 * self.correct_num / (self.all_num + self.eps)
+        norm_edit_dis = 1 - self.norm_edit_dis / (self.all_num + self.eps)
         self.reset()
         return {'acc': acc, 'norm_edit_dis': norm_edit_dis}
 

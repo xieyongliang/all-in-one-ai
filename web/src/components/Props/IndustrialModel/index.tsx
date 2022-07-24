@@ -75,7 +75,7 @@ const InustrialModelProp: FunctionComponent<IProps> = (props) => {
 
     useEffect(() => {
         getHttpUri(props.industrialModel.icon).then((data) => {
-            setIconHttpUri(data.payload)
+            setIconHttpUri(data.payload[0].httpuri)
         })
      }, [props.industrialModel.icon])
 

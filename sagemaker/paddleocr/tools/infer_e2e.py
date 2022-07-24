@@ -23,7 +23,7 @@ import sys
 
 __dir__ = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(__dir__)
-sys.path.append(os.path.abspath(os.path.join(__dir__, '..')))
+sys.path.insert(0, os.path.abspath(os.path.join(__dir__, '..')))
 
 os.environ["FLAGS_allocator_strategy"] = 'auto_growth'
 
@@ -104,7 +104,7 @@ def main():
             preds = model(images)
             post_result = post_process_class(preds, shape_list)
             points, strs = post_result['points'], post_result['texts']
-            # write resule
+            # write result
             dt_boxes_json = []
             for poly, str in zip(points, strs):
                 tmp_json = {"transcription": str}

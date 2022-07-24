@@ -15,6 +15,7 @@
 import argparse
 import os
 import sys
+import platform
 import cv2
 import numpy as np
 import paddle
@@ -54,6 +55,7 @@ def init_args():
     parser.add_argument("--max_batch_size", type=int, default=10)
     parser.add_argument("--use_dilation", type=str2bool, default=False)
     parser.add_argument("--det_db_score_mode", type=str, default="fast")
+    parser.add_argument("--vis_seg_map", type=str2bool, default=False)
     # EAST parmas
     parser.add_argument("--det_east_score_thresh", type=float, default=0.8)
     parser.add_argument("--det_east_cover_thresh", type=float, default=0.1)
@@ -68,13 +70,20 @@ def init_args():
     parser.add_argument("--det_pse_thresh", type=float, default=0)
     parser.add_argument("--det_pse_box_thresh", type=float, default=0.85)
     parser.add_argument("--det_pse_min_area", type=float, default=16)
-    parser.add_argument("--det_pse_box_type", type=str, default='box')
+    parser.add_argument("--det_pse_box_type", type=str, default='quad')
     parser.add_argument("--det_pse_scale", type=int, default=1)
 
+    # FCE parmas
+    parser.add_argument("--scales", type=list, default=[8, 16, 32])
+    parser.add_argument("--alpha", type=float, default=1.0)
+    parser.add_argument("--beta", type=float, default=1.0)
+    parser.add_argument("--fourier_degree", type=int, default=5)
+    parser.add_argument("--det_fce_box_type", type=str, default='poly')
+
     # params for text recognizer
-    parser.add_argument("--rec_algorithm", type=str, default='CRNN')
+    parser.add_argument("--rec_algorithm", type=str, default='SVTR_LCNet')
     parser.add_argument("--rec_model_dir", type=str)
-    parser.add_argument("--rec_image_shape", type=str, default="3, 32, 320")
+    parser.add_argument("--rec_image_shape", type=str, default="3, 48, 320")
     parser.add_argument("--rec_batch_num", type=int, default=6)
     parser.add_argument("--max_text_length", type=int, default=25)
     parser.add_argument(
@@ -115,7 +124,6 @@ def init_args():
     #
     parser.add_argument(
         "--draw_img_save_dir", type=str, default="./inference_results")
-    parser.add_argument("--is_visualize", type=str2bool, default=True)
     parser.add_argument("--save_crop_res", type=str2bool, default=False)
     parser.add_argument("--crop_res_save_dir", type=str, default="./output")
 
@@ -187,7 +195,7 @@ def create_predictor(args, mode, logger):
             gpu_id = get_infer_gpuid()
             if gpu_id is None:
                 logger.warning(
-                    "GPU is not found in current device by nvidia-smi. Please check your device or ignore it if run on jeston."
+                    "GPU is not found in current device by nvidia-smi. Please check your device or ignore it if run on jetson."
                 )
             config.enable_use_gpu(args.gpu_mem, 0)
             if args.use_tensorrt:
@@ -263,11 +271,13 @@ def create_predictor(args, mode, logger):
                 max_input_shape.update(max_pact_shape)
                 opt_input_shape.update(opt_pact_shape)
             elif mode == "rec":
-                if args.rec_algorithm != "CRNN":
+                if args.rec_algorithm not in ["CRNN", "SVTR_LCNet"]:
                     use_dynamic_shape = False
-                min_input_shape = {"x": [1, 3, 32, 10]}
-                max_input_shape = {"x": [args.rec_batch_num, 3, 32, 1536]}
-                opt_input_shape = {"x": [args.rec_batch_num, 3, 32, 320]}
+                imgH = int(args.rec_image_shape.split(',')[-2])
+                min_input_shape = {"x": [1, 3, imgH, 10]}
+                max_input_shape = {"x": [args.rec_batch_num, 3, imgH, 2304]}
+                opt_input_shape = {"x": [args.rec_batch_num, 3, imgH, 320]}
+                config.exp_disable_tensorrt_ops(["transpose2"])
             elif mode == "cls":
                 min_input_shape = {"x": [1, 3, 48, 10]}
                 max_input_shape = {"x": [args.rec_batch_num, 3, 48, 1024]}
@@ -296,8 +306,8 @@ def create_predictor(args, mode, logger):
         # enable memory optim
         config.enable_memory_optim()
         config.disable_glog_info()
-
         config.delete_pass("conv_transpose_eltwiseadd_bn_fuse_pass")
+        config.delete_pass("matmul_transpose_reshape_fuse_pass")
         if mode == 'table':
             config.delete_pass("fc_fuse_pass")  # not supported for table
         config.switch_use_feed_fetch_ops(False)
@@ -315,7 +325,7 @@ def create_predictor(args, mode, logger):
 def get_output_tensors(args, mode, predictor):
     output_names = predictor.get_output_names()
     output_tensors = []
-    if mode == "rec" and args.rec_algorithm == "CRNN":
+    if mode == "rec" and args.rec_algorithm in ["CRNN", "SVTR_LCNet"]:
         output_name = 'softmax_0.tmp_0'
         if output_name in output_names:
             return [predictor.get_output_handle(output_name)]
@@ -331,11 +341,10 @@ def get_output_tensors(args, mode, predictor):
 
 
 def get_infer_gpuid():
-    if os.name == 'nt':
-        try:
-            return int(os.environ['CUDA_VISIBLE_DEVICES'].split(',')[0])
-        except KeyError:
-            return 0
+    sysstr = platform.system()
+    if sysstr == "Windows":
+        return 0
+
     if not paddle.fluid.core.is_compiled_with_rocm():
         cmd = "env | grep CUDA_VISIBLE_DEVICES"
     else:
@@ -580,7 +589,7 @@ def text_visual(texts,
 def base64_to_cv2(b64str):
     import base64
     data = base64.b64decode(b64str.encode('utf8'))
-    data = np.fromstring(data, np.uint8)
+    data = np.frombuffer(data, np.uint8)
     data = cv2.imdecode(data, cv2.IMREAD_COLOR)
     return data
 

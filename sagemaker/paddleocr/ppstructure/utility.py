@@ -12,9 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import ast
 from PIL import Image
 import numpy as np
-from tools.infer.utility import draw_ocr_box_txt, init_args as infer_args
+from tools.infer.utility import draw_ocr_box_txt, str2bool, init_args as infer_args
 
 
 def init_args():
@@ -25,27 +26,41 @@ def init_args():
     # params for table structure
     parser.add_argument("--table_max_len", type=int, default=488)
     parser.add_argument("--table_model_dir", type=str)
-    parser.add_argument("--table_char_type", type=str, default='en')
     parser.add_argument(
         "--table_char_dict_path",
         type=str,
         default="../ppocr/utils/dict/table_structure_dict.txt")
+    # params for layout
     parser.add_argument(
         "--layout_path_model",
         type=str,
         default="lp://PubLayNet/ppyolov2_r50vd_dcn_365e_publaynet/config")
-
-    # params for ser
-    parser.add_argument("--model_name_or_path", type=str)
-    parser.add_argument("--max_seq_length", type=int, default=512)
     parser.add_argument(
-        "--label_map_path", type=str, default='./vqa/labels/labels_ser.txt')
-
+        "--layout_label_map",
+        type=ast.literal_eval,
+        default=None,
+        help='label map according to ppstructure/layout/README_ch.md')
+    # params for inference
     parser.add_argument(
         "--mode",
         type=str,
         default='structure',
         help='structure and vqa is supported')
+    parser.add_argument(
+        "--layout",
+        type=str2bool,
+        default=True,
+        help='Whether to enable layout analysis')
+    parser.add_argument(
+        "--table",
+        type=str2bool,
+        default=True,
+        help='In the forward, whether the table area uses table recognition')
+    parser.add_argument(
+        "--ocr",
+        type=str2bool,
+        default=True,
+        help='In the forward, whether the non-table area is recognition by ocr')
     return parser
 
 
@@ -62,10 +77,10 @@ def draw_structure_result(image, result, font_path):
         if region['type'] == 'Table':
             pass
         else:
-            for box, rec_res in zip(region['res'][0], region['res'][1]):
-                boxes.append(np.array(box).reshape(-1, 2))
-                txts.append(rec_res[0])
-                scores.append(rec_res[1])
+            for text_result in region['res']:
+                boxes.append(np.array(text_result['text_region']))
+                txts.append(text_result['text'])
+                scores.append(text_result['confidence'])
     im_show = draw_ocr_box_txt(
         image, boxes, txts, scores, font_path=font_path, drop_score=0)
     return im_show

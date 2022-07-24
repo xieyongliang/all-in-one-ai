@@ -186,6 +186,10 @@ const EditorContainer: React.FC<IProps> = (
                     )   && 
                     <EditorTopNavigationBar 
                         key="editor-top-navigation-bar"
+                        imageColors = {imageColors}
+                        imageLabels = {imageLabels}
+                        imageName = {imageName}
+    
                     />
                 }
                 {

@@ -13,16 +13,29 @@
   See the License for the specific language governing permissions and
   limitations under the License.                                                                              *
  ******************************************************************************************************************** */
-import { FunctionComponent, useEffect, useMemo, useState } from 'react';
+import { FunctionComponent, ReactNode, useEffect, useMemo, useState } from 'react';
 import AppLayoutBase from 'aws-northstar/layouts/AppLayout';
 import HeaderBase from 'aws-northstar/components/Header';
 import SideNavigationBase, { SideNavigationItem, SideNavigationItemType } from 'aws-northstar/components/SideNavigation';
-import { store } from '../..';
 import { IIndustrialModel } from '../../store/industrialmodels/reducer';
 import { ALGORITHMS } from '../Data/data';
 import { SCENARIOS } from '../Data/data';
+import { connect } from 'react-redux';
+import { AppState } from '../../store';
 
-const AppLayout: FunctionComponent = ( {children} ) => {
+interface IProps {
+    industrialModels : IIndustrialModel[];
+    isLogin: boolean;
+    env: Object;
+    children: ReactNode;
+}
+
+const AppLayout: FunctionComponent<IProps> = ( {
+    industrialModels,
+    isLogin,
+    env,
+    children
+} ) => {
     const [ industrialModelItems, setIndustrialModelItems ] = useState<SideNavigationItem[]>([])
     const [ algorithmsItems, setAlgorithmsItems ] = useState<SideNavigationItem[]>([])
     const [ scenariosItems, setScenariosItems ] = useState<SideNavigationItem[]>([])
@@ -30,24 +43,22 @@ const AppLayout: FunctionComponent = ( {children} ) => {
         () => <HeaderBase title='All-In-One AI' logoPath='/ml.jpg' />,
         []
     );        
-    var industrialModels = store.getState().industrialmodel.industrialModels
 
     useEffect(() => {
         var items = []
         items.push({ text: 'Overview', type: SideNavigationItemType.LINK, href: '/imodels' })
-        store.getState().industrialmodel.industrialModels
-            .sort((itemModel1 : IIndustrialModel, itemModel2: IIndustrialModel) => {
-                if(itemModel1.name > itemModel2.name)
-                    return 1;
-                else if(itemModel1.name === itemModel2.name)
-                    return 0;
-                else
-                    return -1;
-            })
-            .forEach((item) => {
-                items.push({text: item.name, type: SideNavigationItemType.LINK, href: `/imodels/${item.id}?tab=demo#sample`})
-            })
-            setIndustrialModelItems(items)
+        industrialModels.sort((itemModel1 : IIndustrialModel, itemModel2: IIndustrialModel) => {
+            if(itemModel1.name > itemModel2.name)
+                return 1;
+            else if(itemModel1.name === itemModel2.name)
+                return 0;
+            else
+                return -1;
+        })
+        .forEach((item) => {
+            items.push({text: item.name, type: SideNavigationItemType.LINK, href: `/imodels/${item.id}?tab=demo#sample`})
+        })
+        setIndustrialModelItems(items)
      }, [industrialModels])
 
      useEffect(() => {
@@ -95,11 +106,19 @@ const AppLayout: FunctionComponent = ( {children} ) => {
     return (
         <
             AppLayoutBase header={Header}
-            navigation={store.getState().general.env['cognitoRegion'] === '' || store.getState().general.env['cognitoRegion'] === undefined || store.getState().session.isLogin ? SideNavigation : null}
+            navigation={env['cognitoRegion'] === '' || env['cognitoRegion'] === undefined || isLogin ? SideNavigation : null}
         >
             {children}
         </AppLayoutBase>
     );
 };
 
-export default (AppLayout);
+const mapStateToProps = (state: AppState) => ({
+    industrialModels : state.industrialmodel.industrialModels,
+    isLogin: state.session.isLogin,
+    env: state.general.env
+});
+
+export default connect(
+    mapStateToProps
+)(AppLayout);
