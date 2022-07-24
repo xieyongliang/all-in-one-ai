@@ -1,8 +1,10 @@
 .watermarked {
     position: relative;
+    padding: 0px;
+    border: 0px;
 }
   
-.watermarked:after {
+.watermarked::after {
     content: '';
     display: block;
     width: 100%;

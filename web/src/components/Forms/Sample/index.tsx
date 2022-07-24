@@ -148,6 +148,7 @@ const SampleForm: FunctionComponent<IProps> = (props) => {
                                 <ImageListItem key={item.httpuri} rows={2}>
                                     <Image
                                         src={item.httpuri}
+                                        tooltip={`bucket=${item.bucket}\r\nkey=${item.key}`}
                                         width={128}
                                         height={128}
                                         current={curImageItem}
