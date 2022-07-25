@@ -14,9 +14,9 @@ import { AppState } from '../../../../store';
 import { connect } from 'react-redux';
 import { IIndustrialModel } from '../../../../store/industrialmodels/reducer';
 import { SelectOption } from 'aws-northstar/components/Select';
-import FileUpload from 'aws-northstar/components/FileUpload';
-import { FileMetadata } from 'aws-northstar/components/FileUpload/types';
+import FileUpload from '../../../Utils/FileUpload';
 import ImagePreview from '../../../Utils/ImagePreview';
+import { v4 as uuidv4 } from 'uuid';
 import '../index.scss'
 
 interface IProps {
@@ -32,10 +32,10 @@ const GluonCVDemoForm: FunctionComponent<IProps> = (
         onAdvancedModeChange
     }) => {
     const [ originImageItems, setOriginImageItems ] = useState([])
-    const [ searchImageItems, setSearchSearchItems ] = useState([])
+    const [ searchImageItems, setSearchImageItems ] = useState([])
     const [ curOriginImageItem, setCurOriginImageItem ] = useState('')
     const [ curSearchImageItem, setCurSearchImageItem ] = useState('')
-    const [ curImagePreviewItem, setCurImagePreviewItem ] = useState('')
+    const [ searchImage, setSearchImage ] = useState('')
     const [ endpointOptions, setEndpointOptions ] = useState([])
     const [ selectedEndpoint, setSelectedEndpoint ] = useState<SelectOption>({})
     const [ sampleCode, setSampleCode ] = useState('')
@@ -45,7 +45,8 @@ const GluonCVDemoForm: FunctionComponent<IProps> = (
     const [ srcImagePreview, setSrcImagePreview ] = useState('')
     const [ visibleSampleCode, setVisibleSampleCode ] = useState(false)
     const [ visibleSearchImage, setVisibleSearchImage ] = useState(false)
-    const [ visibleImagePreview, setVisibleImagePreview ] = useState(false)
+    const [ visibleOriginImagePreview, setVisibleOriginImagePreview ] = useState(false)
+    const [ visibleSearchImagePreview, setVisibleSearchImagePreview ] = useState(false)
     const [ loading, setLoading ] = useState(true);
     const [ processing, setProcessing ] = useState(false);
     const [ importing, setImporting ] = useState(false);
@@ -109,13 +110,23 @@ const GluonCVDemoForm: FunctionComponent<IProps> = (
         }
     },[imagePage, industrialModel]);
 
-    const onImageClick = (src) => {
+    const onOriginImageClick = (src) => {
         setSrcImagePreview(src)
-        setVisibleImagePreview(true)
+        setVisibleOriginImagePreview(true)
+    }
+
+    const onSearchImageClick = () => {
+        setSrcImagePreview(`/_image/${searchImage}`)
+        setVisibleSearchImagePreview(true)
     }
     
-    const onImageClose = () => {
-        setVisibleImagePreview(false);
+    const onOriginImageClose = () => {
+        setVisibleOriginImagePreview(false);
+        setSrcImagePreview('')
+    }
+
+    const onSearchImageClose = () => {
+        setVisibleSearchImagePreview(false);
         setSrcImagePreview('')
     }
 
@@ -145,7 +156,6 @@ const GluonCVDemoForm: FunctionComponent<IProps> = (
             .then((response) => {
                 var current = response.data.current;
                 setImportedCount(Math.floor((current * 100) / imageCount));
-                console.log(`Loaded ${current} / ${imageCount}`)
             }, (error) => {
                 console.log(error);
             })
@@ -170,10 +180,11 @@ const GluonCVDemoForm: FunctionComponent<IProps> = (
                                 <ImageListItem key={item.httpuri} rows={2}>
                                     <Image
                                         src={item.httpuri}
+                                        tooltip={`bucket=${item.bucket}\r\nkey=${item.key}`}
                                         width={128}
                                         height={128}
                                         current={curOriginImageItem}
-                                        onClick={(src)=> {setCurOriginImageItem(src);onImageClick(src)}}
+                                        onClick={(src)=> {setCurOriginImageItem(src);onOriginImageClick(src)}}
                                     />
                                 </ImageListItem>
                             ))
@@ -182,12 +193,12 @@ const GluonCVDemoForm: FunctionComponent<IProps> = (
                     <Pagination page={imagePage} onChange={(event, value) => onChange('formFieldIdPage', value)} count={Math.floor(imageCount / 20) + 1} />
                         <Grid container spacing={3}>
                             <Grid item xs={4}>
-                                <FormField controlId='formFieldIdImportSamples'>
+                                <FormField controlId={uuidv4()}>
                                     <Button onClick={onImportSamples} loading={importing}> Start to import</Button>
                                 </FormField>
                             </Grid>
                             <Grid item xs={8}>
-                                <FormField controlId='formFieldIdImportProgress'>
+                                <FormField controlId={uuidv4()}>
                                     <ProgressBar value={importedCount} label="Import progress"/>
                             </FormField>
                             </Grid>
@@ -196,12 +207,12 @@ const GluonCVDemoForm: FunctionComponent<IProps> = (
             )
     }
 
-    const onFileChange = (files: (File | FileMetadata)[]) => {
-        axios.post('/_image', files[0])
+    const onFileChange = (file: File) => {
+        axios.post('/_image', file)
             .then((response) => {
                 var file_name : string = response.data;
-                setCurImagePreviewItem(file_name);
-                setSearchSearchItems([])
+                setSearchImage(file_name);
+                setSearchImageItems([])
                 setCurSearchImageItem('');
                 setVisibleSearchImage(false);
             }, (error) => {
@@ -211,9 +222,9 @@ const GluonCVDemoForm: FunctionComponent<IProps> = (
 
     const onSearch = () => {
         setProcessing(true)
-        axios.get('/_search/image', { params: {industrial_model: industrialModel.id, endpoint_name: selectedEndpoint.value, file_name: curImagePreviewItem}})
+        axios.get('/_search/image', { params: {industrial_model: industrialModel.id, endpoint_name: selectedEndpoint.value, file_name: searchImage}})
             .then((response) => {
-                setSearchSearchItems(response.data);
+                setSearchImageItems(response.data);
                 setVisibleSearchImage(true);
                 setProcessing(false)
             }, (error) => {
@@ -223,47 +234,35 @@ const GluonCVDemoForm: FunctionComponent<IProps> = (
             });
     }
 
-    const renderImagePreview = () => {
+    const renderOriginImagePreview = () => {
         return (
-            <ImagePreview src={srcImagePreview} width={"100%"} height={"100%"} visible={visibleImagePreview} onClose={onImageClose}/>
+            <ImagePreview src={srcImagePreview} width={"100%"} height={"100%"} visible={visibleOriginImagePreview} onClose={onOriginImageClose}/>
+        )
+    }
+
+    const renderSearchImagePreview = () => {
+        return (
+            <ImagePreview src={srcImagePreview} width={"100%"} height={"100%"} visible={visibleSearchImagePreview} onClose={onSearchImageClose}/>
         )
     }
 
     const renderUploadImage = () => {
-        if(curImagePreviewItem === '') 
-            return (
-                <Container headingVariant='h4' title='Select image file from local disk and Preview'>
-                    <Inline>
-                    <div className='quickstartaction'>
-                        <FileUpload
-                            controlId='fileImage'
-                            onChange={onFileChange}
-                        >
-                        </FileUpload>
-                    </div>
-                    <div className='quickstartaction'>
-                        <FormField controlId='1'>
-                            <Button variant='primary' disabled={curImagePreviewItem === ''} onClick={onSearch} loading={processing}>Search by image</Button>
-                        </FormField>
-                    </div>
-                    </Inline>
-                </Container>
-            )
-        else 
             return (
                 <Container headingVariant='h4' title='Select image file from local disk and Preview'>
                     <Inline>
                         <div className='quickstartaction'>
                             <FileUpload
-                                controlId='fileImage'
+                                text='Choose file'
                                 onChange={onFileChange}
                             />
                         </div>
                         <div className='quickstartaction'>
-                            <Button variant='primary' disabled={curImagePreviewItem === ''} onClick={onSearch} loading={processing}>Search by image</Button>
+                            <Button disabled={searchImage === ''} onClick={onSearchImageClick}>Preview</Button>
+                        </div>
+                        <div className='quickstartaction'>
+                            <Button variant='primary' disabled={searchImage === ''} onClick={onSearch} loading={processing}>Search by image</Button>
                         </div>
                     </Inline>
-                    <Image src={`/_image/${curImagePreviewItem}`} width={"100%"} height={"100%"} current='' onClick={onImageClick}/>
                 </Container>
             )
     }
@@ -277,10 +276,11 @@ const GluonCVDemoForm: FunctionComponent<IProps> = (
                             <ImageListItem key={item} rows={2}>
                                 <Image
                                     src={item}
+                                    tooltip={`bucket=${item.bucket}\r\nkey=${item.key}`}
                                     width={128}
                                     height={128}
                                     current={curSearchImageItem}
-                                    onClick={(src) => {setCurSearchImageItem(src);onImageClick(src)}}
+                                    onClick={(src) => {setCurSearchImageItem(src);onOriginImageClick(src)}}
                                 />
                             </ImageListItem>
                         ))
@@ -331,7 +331,7 @@ const GluonCVDemoForm: FunctionComponent<IProps> = (
     return (
         <Stack>
             <Container title = 'Demo options'>
-                <FormField controlId='formFieldIdChooseEndpoint' description='Select endpoint to inference'>
+                <FormField controlId={uuidv4()} description='Select endpoint to inference'>
                     <Select
                         placeholder='Choose endpoint'
                         options={endpointOptions}
@@ -339,11 +339,12 @@ const GluonCVDemoForm: FunctionComponent<IProps> = (
                         onChange={(event) => onChange('formFieldIdEndpoint', event)}
                     />
                 </FormField>
-                <FormField controlId='Advanced mode'>
+                <FormField controlId={uuidv4()}>
                     <Toggle label='Advanced mode' checked={advancedMode} onChange={onAdvancedModeChange}/>
                 </FormField>
             </Container>
-            { renderImagePreview() }
+            { renderOriginImagePreview() }
+            { renderSearchImagePreview() }
             { renderOriginImageList() }
             { renderUploadImage() }
             { visibleSearchImage && renderSearchImageList() }

@@ -21,6 +21,7 @@ def lambda_handler(event, context):
             page_num = int(event['queryStringParameters']['page_num'])
     
         index = 0
+        num_directories = 0
         if(s3uri != None):
             bucket, key = get_bucket_and_key(s3uri)
             s3_bucket = s3_resource.Bucket(bucket)
@@ -28,6 +29,9 @@ def lambda_handler(event, context):
     
             payload = []
             for obj in objs:
+                if(obj.get()['ContentType'].startswith('application/x-directory')):
+                    num_directories += 1
+                    continue
                 if(index >= (page_num - 1) * page_size and index < page_num * page_size):
                     payload.append({
                         'httpuri': get_presigned_url(bucket, obj.key),
@@ -35,12 +39,14 @@ def lambda_handler(event, context):
                         'key': obj.key
                     })
                 index += 1
+            print(payload)
+            print(objs)
             return {
                 'statusCode': 200,
                 'body': json.dumps(
                     {
                         'payload': payload,
-                        'count': len(objs)
+                        'count': len(objs) - num_directories
                     }
                 )
             }

@@ -283,10 +283,10 @@ const EditorTopNavigationBar: React.FC<IProps> = (
                     onClick = {crossHairOnClick}
                 />
                 <ButtonWithTooltip
-                    key = 'export-lables'
-                    tooltipMessage = 'export labels'
+                    key = 'export-annotations'
+                    tooltipMessage = 'export annotations'
                     imageSrc = '/ico/export-labels.png'
-                    imageAlt = 'export-labels'
+                    imageAlt = 'export-annotations'
                     isActive = {false}
                     fileMode = {false}
                     href = {undefined}

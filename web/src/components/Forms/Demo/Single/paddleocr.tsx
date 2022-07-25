@@ -5,6 +5,7 @@ import SampleForm from '../../Sample';
 import { useParams, useLocation, useHistory } from 'react-router-dom';
 import { PathParams } from '../../../Interfaces/PathParams';
 import { ProjectType } from '../../../../data/enums/ProjectType';
+import { v4 as uuidv4 } from 'uuid';
 
 interface IProps {
     advancedMode: boolean;
@@ -43,10 +44,10 @@ const PaddleOCRDemoForm: FunctionComponent<IProps> = (
     return (
         <Stack>
             <Container title = 'Demo option'>
-                <FormField controlId='Demo options'>            
+                <FormField controlId={uuidv4()}>            
                     {renderDemoOptions()}
                 </FormField>
-                <FormField controlId='Advanced mode'>
+                <FormField controlId={uuidv4()}>
                     <Toggle label='Advanced mode' checked={advancedMode} onChange={onAdvancedModeChange}/>
                 </FormField>
             </Container>

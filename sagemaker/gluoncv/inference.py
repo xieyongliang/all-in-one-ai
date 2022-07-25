@@ -27,10 +27,10 @@ def model_fn(model_dir):
     Load the model for inference
     """
     
-    classes = os.environ['classes'] if ('classes' in os.environ) else 10
+    classes = int(os.environ['classes']) if ('classes' in os.environ) else 10
     model_name = os.environ['model_name'] if('model_name' in os.environ) else 'ResNet50_v2'
 
-    num_gpus = os.environ['num_gpus'] if ('num_gpus' in os.environ) else 0
+    num_gpus = int(os.environ['num_gpus']) if ('num_gpus' in os.environ) else 0
     ctx = [mx.gpu(i) for i in range(num_gpus)] if num_gpus > 0 else [mx.cpu()]
     saved_params = os.path.join(model_dir, 'model-0000.params')
     if not os.path.exists(saved_params):
@@ -69,8 +69,7 @@ def input_fn(request_body, request_content_type):
         bytes = request_body
         return mx.image.imdecode(request_body)
     elif request_content_type == 'application/json':
-        data = request_body.decode('utf-8')
-        data = json.loads(data)
+        data = json.loads(request_body)
         bucket = data['bucket']
         image_uri = data['image_uri']
         s3_object = s3_client.get_object(Bucket = bucket, Key = image_uri) 

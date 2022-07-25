@@ -18,6 +18,8 @@ def lambda_handler(event, context):
         model_samples = event['body']['model_samples']
         endpoint_name = event['body']['endpoint_name']
         index = industrial_model
+        num_success = 0
+        num_failed = 0
 
         queue = sqs_resource.get_queue_by_name(QueueName='all_in_one_ai_sqs')
         sqs_client.purge_queue(
@@ -35,6 +37,14 @@ def lambda_handler(event, context):
                     }
                 )
             )
+            print(response['ResponseMetadata']['HTTPStatusCode'])
+            if(response['ResponseMetadata']['HTTPStatusCode'] == 200):
+                num_success += 1
+            else:
+                num_failed += 1
+        print(num_success)
+        print(num_failed)
+        print(len(s3uris))
         return {
             'statusCode': 200,
             'body': len(s3uris)
@@ -63,7 +73,8 @@ def get_s3_images(bucket, key):
                 for key in page['Contents']:
                     file = key['Key']
                     print(file)
-                    if(file.endswith('.png') or file.endswith('.jpg') or file.endswith('.jpeg')):
+                    file_in_lowercase = file.lower()
+                    if(file_in_lowercase.endswith('.png') or file_in_lowercase.endswith('.jpg') or file_in_lowercase.endswith('.jpeg')):
                         s3uris.append('s3://{0}/{1}'.format(bucket, file))
             else:
                 print('No matching records')

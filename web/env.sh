@@ -1,4 +1,5 @@
-export API_GATEWAY_PROD_ENDPOINT=https://yap9lutw21.execute-api.ap-northeast-1.amazonaws.com/Prod
+#export API_GATEWAY_PROD_ENDPOINT=https://yap9lutw21.execute-api.ap-northeast-1.amazonaws.com/Prod
+export API_GATEWAY_PROD_ENDPOINT=https://b2yr0i0r6e.execute-api.ap-east-1.amazonaws.com/Prod
 #export CallbackURL=http://localhost:3000/callback
 #export CognitoRegion=ap-southeast-1
 export CognitoRegion=
