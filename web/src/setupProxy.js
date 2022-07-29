@@ -138,7 +138,7 @@ module.exports = function(app) {
                 var s3uri = `s3://${bucket}/${key}`
                 axios.get(baseUrl + '/s3', {params : { s3uri : s3uri}})
                     .then((response) => {
-                        var httpuri = response.data.payload;
+                        var httpuri = response.data.payload[0].httpuri;
                         Jimp.read(httpuri, function (err, image) {
                             var rect = JSON.parse(crop)
                             var width = image.bitmap.width

@@ -37,7 +37,7 @@ def lambda_handler(event, context):
                     'py_version': 'py38',
                     'framework_version': '1.9.0',
                     'model_name': model_name,
-                    'model_data_url': model_data_url,
+                    'model_data': model_data_url,
                     'model_environment': model_environment,
                     'endpoint_name': endpoint_name,
                     'instance_type': instance_type,

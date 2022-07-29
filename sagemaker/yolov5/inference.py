@@ -29,7 +29,7 @@ def input_fn(request_body, request_content_type):
         bytes = request_body
         return Image.open(io.BytesIO(bytes))
     elif request_content_type == 'application/json':
-        data = request_body.decode('utf-8')
+        data = request_body
         data = json.loads(data)
         bucket = data['bucket']
         image_uri = data['image_uri']

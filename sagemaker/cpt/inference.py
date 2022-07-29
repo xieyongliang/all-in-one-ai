@@ -25,7 +25,7 @@ def predict_fn(input_data, model):
 
     data = input_data['inputs']
     inputs = tokenizer(data, return_tensors="pt",max_length=512)
-    outputs = model.generate(inputs['input_ids'], max_length=64, top_p=0.95)
+    outputs = model.generate(inputs['input_ids'], max_length=512, top_p=0.95)
     result =  {
         'result': tokenizer.decode(outputs[0])
     }

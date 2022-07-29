@@ -46,7 +46,7 @@ aws ecr set-repository-policy \
     --region ${region}
 
 # Build the docker image, tag with full name and then push it to ECR
-docker build --no-cache -t ${image} -f Dockerfile .
+docker build -t ${image} -f Dockerfile .
 
 docker tag ${image} ${fullname}
 docker push ${fullname}

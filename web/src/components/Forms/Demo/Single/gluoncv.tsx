@@ -275,8 +275,8 @@ const GluonCVDemoForm: FunctionComponent<IProps> = (
                         searchImageItems.map((item) => (
                             <ImageListItem key={item} rows={2}>
                                 <Image
-                                    src={item}
-                                    tooltip={`bucket=${item.bucket}\r\nkey=${item.key}`}
+                                    src={item.httpuri}
+                                    tooltip={`score=${item.score}`}
                                     width={128}
                                     height={128}
                                     current={curSearchImageItem}

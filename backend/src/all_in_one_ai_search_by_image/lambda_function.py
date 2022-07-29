@@ -63,15 +63,22 @@ def lambda_handler(event, context):
                         'query': {'knn': {'img_vector': {'vector': prediction, 'k': k_neighbors}}}}
                     )
                 print(response)
-                s3uris = [response['hits']['hits'][x]['_source']['image'] for x in range(k_neighbors)]
-                httpuris = []
-                for s3uri in s3uris:
+                payload = []
+                for x in range(k_neighbors):
+                    s3uri = response['hits']['hits'][x]['_source']['image']
                     bucket, key = get_bucket_and_key(s3uri)
                     httpuri = get_presigned_url(bucket, key)
-                    httpuris.append(httpuri)
+                    score = response['hits']['hits'][x]['_score']
+                
+                    payload.append({
+                        'httpuri': httpuri,
+                        'score': score,
+                        'bucket': bucket,
+                        'key': key
+                    })
             return {
                 'statusCode': 200,
-                'body': json.dumps(httpuris)
+                'body': json.dumps(payload)
             }
         else:
             return {

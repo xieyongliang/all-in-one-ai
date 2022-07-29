@@ -153,7 +153,6 @@ const PipelineForm: FunctionComponent<IProps> = (props) => {
                 body['model_data_url'] = props.modelDataUrl            
         }
         setProcessing(true)
-        console.log(JSON.stringify(body))
         axios.post('/pipeline', body,  { headers: {'content-type': 'application/json' }}) 
         .then((response) => {
             history.goBack()

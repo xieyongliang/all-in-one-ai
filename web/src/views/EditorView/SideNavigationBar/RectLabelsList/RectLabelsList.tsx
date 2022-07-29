@@ -210,8 +210,6 @@ const RectLabelsList: React.FC<IProps> = (
 
     const onInference = () => {
         getInference().then(data => {
-            console.log(data)
-
             var imageData = LabelsSelector.getActiveImageData();
             imageData.labelRects.splice(0, imageData.labelRects.length);
             store.dispatch(updateLabelImageData([imageData]));
