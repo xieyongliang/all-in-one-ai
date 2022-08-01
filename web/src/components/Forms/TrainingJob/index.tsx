@@ -245,7 +245,8 @@ const TrainingJobForm: FunctionComponent<IProps> = (props) => {
             inputData.forEach((channel) => {
                 var key = channel.key;
                 var value = channel.value;
-                body1['inputs'][key] = value;
+                if(value != '')
+                    body1['inputs'][key] = value;
             });
             if(tags.length > 1 || (tags.length === 1 && tags[0].key !== '' && tags[0].value !== ''))
                 body1['tags'] = tags
@@ -273,7 +274,8 @@ const TrainingJobForm: FunctionComponent<IProps> = (props) => {
             inputData.forEach((channel) => {
                 var key = channel.key;
                 var value = channel.value;
-                body2['inputs'][key] = value
+                if(key != '' && value != '')
+                    body2['inputs'][key] = value
             });
             if(tags.length > 1 || (tags.length === 1 && tags[0].key !== '' && tags[0].value !== ''))
                 body2['tags'] = tags
