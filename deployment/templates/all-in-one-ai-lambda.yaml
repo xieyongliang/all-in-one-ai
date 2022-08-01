@@ -129,7 +129,7 @@ Resources:
             ]
           }
         - Eip1 : !Ref Eip1
-          Eip1 : !Ref Eip2
+          Eip2 : !Ref Eip2
 
   ApiGatewayResourceApi:
     Type: AWS::ApiGateway::Resource
