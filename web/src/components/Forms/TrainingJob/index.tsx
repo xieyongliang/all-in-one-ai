@@ -245,7 +245,7 @@ const TrainingJobForm: FunctionComponent<IProps> = (props) => {
             inputData.forEach((channel) => {
                 var key = channel.key;
                 var value = channel.value;
-                if(value != '')
+                if(value !== '')
                     body1['inputs'][key] = value;
             });
             if(tags.length > 1 || (tags.length === 1 && tags[0].key !== '' && tags[0].value !== ''))
@@ -274,7 +274,7 @@ const TrainingJobForm: FunctionComponent<IProps> = (props) => {
             inputData.forEach((channel) => {
                 var key = channel.key;
                 var value = channel.value;
-                if(key != '' && value != '')
+                if(key !== '' && value !== '')
                     body2['inputs'][key] = value
             });
             if(tags.length > 1 || (tags.length === 1 && tags[0].key !== '' && tags[0].value !== ''))
@@ -283,7 +283,6 @@ const TrainingJobForm: FunctionComponent<IProps> = (props) => {
                 body2['model_hyperparameters'][hyperparameter.key] = hyperparameter.value
             })
             setProcessing(true)
-            console.log(body2)
             axios.post('/train', body2,  { headers: {'content-type': 'application/json' }}) 
                 .then((response) => {
                     history.goBack()

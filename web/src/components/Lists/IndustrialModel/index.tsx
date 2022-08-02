@@ -202,7 +202,10 @@ const IndustrialModelList: FunctionComponent<IProps> = (props) => {
         setProssing(true)
         axios.delete(`/industrialmodel/${industrialModel.id}`, {params: {model_algorithm: industrialModel.algorithm}})
             .then((response) => {
-                props.updateIndustrialModelsAction(props.industrialModels.filter((item) => item.id !== industrialModel.id))
+                var copyIndustrialModels = JSON.parse(JSON.stringify(props.industrialModels))
+                var index = copyIndustrialModels.findIndex((item) => item.id === industrialModel.id)
+                copyIndustrialModels.splice(index, 1)
+                props.updateIndustrialModelsAction(copyIndustrialModels)
                 onRefresh()
                 setVisibleConfirmationDialog(false)
                 setProssing(false)
