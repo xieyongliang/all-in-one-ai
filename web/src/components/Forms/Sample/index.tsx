@@ -34,7 +34,7 @@ const SampleForm: FunctionComponent<IProps> = (props) => {
     const [ visibleSampleCode, setVisibleSampleCode ] = useState(false)
     const [ imagePage, setImagePage ] = useState(1)
     const [ imageCount, setImageCount ] = useState(0)
-    const [ loading, setLoading ] = useState(true);
+    const [ loading, setLoading ] = useState(false);
     const [ visibleImagePreview, setVisibleImagePreview ] = useState(false)
     const history = useHistory();
     

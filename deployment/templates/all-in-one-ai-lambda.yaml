@@ -107,29 +107,55 @@ Resources:
         - 'image/jpg'
         - 'image/jpeg'
       Name: all-in-one-ai-api 
-      Policy: !Sub 
-        - |
-          {
-            "Version": "2012-10-17",
-            "Statement": [
-                {
-                    "Effect": "Allow",
-                    "Principal": "*",
-                    "Action": "execute-api:Invoke",
-                    "Resource": "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:*/*/*/*",
-                    "Condition": {
-                        "IpAddress": {
-                            "aws:SourceIp": [
-                                "${Eip1}/32",
-                                "${Eip2}/32"
-                            ]
+      Policy: 
+        !If
+          - Globally
+          - !Sub 
+            - |
+              {
+                "Version": "2012-10-17",
+                "Statement": [
+                    {
+                        "Effect": "Allow",
+                        "Principal": "*",
+                        "Action": "execute-api:Invoke",
+                        "Resource": "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:*/*/*/*",
+                        "Condition": {
+                            "IpAddress": {
+                                "aws:SourceIp": [
+                                    "${Eip1}/32",
+                                    "${Eip2}/32"
+                                ]
+                            }
                         }
                     }
-                }
-            ]
-          }
-        - Eip1 : !Ref Eip1
-          Eip2 : !Ref Eip2
+                ]
+              }
+            - Eip1 : !Ref Eip1
+              Eip2 : !Ref Eip2
+          - !Sub 
+            - |
+              {
+                "Version": "2012-10-17",
+                "Statement": [
+                    {
+                        "Effect": "Allow",
+                        "Principal": "*",
+                        "Action": "execute-api:Invoke",
+                        "Resource": "arn:aws-cn:execute-api:${AWS::Region}:${AWS::AccountId}:*/*/*/*",
+                        "Condition": {
+                            "IpAddress": {
+                                "aws:SourceIp": [
+                                    "${Eip1}/32",
+                                    "${Eip2}/32"
+                                ]
+                            }
+                        }
+                    }
+                ]
+              }
+            - Eip1 : !Ref Eip1
+              Eip2 : !Ref Eip2
 
   ApiGatewayResourceApi:
     Type: AWS::ApiGateway::Resource

@@ -54,13 +54,11 @@ const IndustrialModelList: FunctionComponent<IProps> = (props) => {
         return response.data
     }
 
-    var industrialModels = props.industrialModels
-
     const onRefresh = useCallback(()=> {
         var items = []
-        if(industrialModels.length > 0) {
+        if(props.industrialModels.length > 0) {
             setLoading(true)
-            industrialModels.forEach((item) => {
+            props.industrialModels.forEach((item) => {
                 var s3uri = item.icon;
                 getHttpUri(s3uri).then((data) => {
                     items.push(
@@ -75,14 +73,17 @@ const IndustrialModelList: FunctionComponent<IProps> = (props) => {
                             labels: item.labels
                         }
                     );
-                    if(items.length === industrialModels.length) {
+                    if(items.length === props.industrialModels.length) {
                         setItemsModels(items)
                         setLoading(false)
                     }
                 })
             })
         }
-    }, [industrialModels])
+        else {
+            setItemsModels(items)
+        }
+    }, [props.industrialModels])
 
     const handleClose = () => {
         setAnchorEl(null);
