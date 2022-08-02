@@ -29,9 +29,11 @@ def lambda_handler(event, context):
     
             payload = []
             for obj in objs:
-                if(obj.get()['ContentType'].startswith('application/x-directory')):
-                    num_directories += 1
-                    continue
+                filename = obj.key[obj.key.rfind('/') + 1 : ]
+                if(filename.find('.') == -1):
+                    if(obj.get()['ContentType'].startswith('application/x-directory')):
+                        num_directories += 1
+                        continue
                 if(index >= (page_num - 1) * page_size and index < page_num * page_size):
                     payload.append({
                         'httpuri': get_presigned_url(bucket, obj.key),
@@ -82,6 +84,6 @@ def get_presigned_url(bucket, key):
         )
         print("Got presigned URL: {}".format(url))
     except ClientError as e:
-        logging.info(str(e))
+        print(str(e))
         raise
     return url
