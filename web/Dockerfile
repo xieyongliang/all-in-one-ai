@@ -7,8 +7,8 @@ COPY . /user/src/app
 
 RUN curl -o- -L https://yarnpkg.com/install.sh | bash
 RUN $HOME/.yarn/bin/yarn install
-RUN npm install -g webpack && npm install --legacy-peer-deps && yarn build
+RUN export NODE_OPTIONS=--openssl-legacy-provider && npm install -g webpack && npm install --legacy-peer-deps && yarn build
  
 EXPOSE 3000
- 
+
 CMD ["node","run.js"]

@@ -73,17 +73,18 @@ const SampleForm: FunctionComponent<IProps> = (props) => {
 
     useEffect(() => {
         if(industrialModels.length > 0) {
-            setLoading(true)
             var index = industrialModels.findIndex((item) => item.id === params.id)
             var s3uri = industrialModels[index].samples
             setImageLabels(industrialModels[index].labels)
-            axios.get('/s3', {params : { s3uri : s3uri, page_num: imagePage, page_size: 20 }})
-                .then((response) => {
-                    setImageItems(response.data.payload);
-                    setImageCount(response.data.count);
-                    setLoading(false);
-                }
-            )
+            if(s3uri !== '') {
+                setLoading(true)
+                axios.get('/s3', {params : { s3uri : s3uri, page_num: imagePage, page_size: 20 }})
+                    .then((response) => {
+                        setImageItems(response.data.payload);
+                        setImageCount(response.data.count);
+                        setLoading(false);
+                    })
+            }
         }
     },[params.id, imagePage, industrialModels]);
 

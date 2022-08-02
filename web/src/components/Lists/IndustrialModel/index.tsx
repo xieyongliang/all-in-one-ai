@@ -205,6 +205,7 @@ const IndustrialModelList: FunctionComponent<IProps> = (props) => {
                 var copyIndustrialModels = JSON.parse(JSON.stringify(props.industrialModels))
                 var index = copyIndustrialModels.findIndex((item) => item.id === industrialModel.id)
                 copyIndustrialModels.splice(index, 1)
+                props.industrialModels.splice(index, 1)
                 props.updateIndustrialModelsAction(copyIndustrialModels)
                 onRefresh()
                 setVisibleConfirmationDialog(false)
