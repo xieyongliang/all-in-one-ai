@@ -5,6 +5,8 @@ WORKDIR /user/src/app
  
 COPY . /user/src/app
 
+RUN mkdir -p /user/src/app/images
+
 RUN curl -o- -L https://yarnpkg.com/install.sh | bash
 RUN $HOME/.yarn/bin/yarn install
 RUN export NODE_OPTIONS=--openssl-legacy-provider && npm install -g webpack && npm install --legacy-peer-deps && yarn build

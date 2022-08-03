@@ -258,14 +258,11 @@ if __name__ == '__main__':
     else:
         os.system('pip install -U paddlepaddle')        
 
+    import yaml
     import paddle
     import paddle.distributed as dist
 
     paddle.utils.run_check()
-
-    import yaml
-    import paddle
-    import paddle.distributed as dist
 
     from ppocr.data import build_dataloader
     from ppocr.modeling.architectures import build_model
