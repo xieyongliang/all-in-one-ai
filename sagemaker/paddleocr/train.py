@@ -26,7 +26,11 @@ sys.path.append(__dir__)
 sys.path.insert(0, os.path.abspath(os.path.join(__dir__, '..')))
 
 # Link cudnn to cuda
-os.system('ln -s /usr/lib/x86_64-linux-gnu/libcudnn.so.8 /usr/local/cuda/lib64/libcudnn.so')
+os.system('chmod 777 /tmp')
+os.system('rm /etc/apt/sources.list.d/cuda.list')
+os.system('rm /etc/apt/sources.list.d/nvidia-ml.list')
+os.system('apt-get update && apt-get install -y python3-opencv')
+os.system('ln -s /usr/lib/x86_64-linux-gnu/libcudnn.so.7 /usr/local/cuda/lib64/libcudnn.so')
 
 def main(config, device, logger, vdl_writer):
     # init dist environment
@@ -185,6 +189,7 @@ class ArgsParser(ArgumentParser):
             help='The option of profiler, which should be in format ' \
                  '\"key1=value1;key2=value2;key3=value3\".'
         )
+        self.add_argument("-m", "--model_dir", help="model directory")
 
     def parse_args(self, argv=None):
         args = super(ArgsParser, self).parse_args(argv)

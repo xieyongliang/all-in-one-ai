@@ -175,7 +175,7 @@ def lambda_handler(event, context):
                     'job_name': job_name,
                     'algorithm': algorithm,
                     'industrial_model': industrial_model,
-                    'entry_point': 'finetune.py',
+                    'entry_point': 'train.py',
                     'source_dir': source_dir,
                     'git_config': None,
                     'role': role_arn,
@@ -248,7 +248,7 @@ def lambda_handler(event, context):
                     'job_name': job_name,
                     'algorithm': algorithm,
                     'industrial_model': industrial_model,
-                    'entry_point': 'finetune.py',
+                    'entry_point': 'train.py',
                     'source_dir': source_dir,
                     'git_config': None,
                     'role': role_arn,
@@ -256,14 +256,14 @@ def lambda_handler(event, context):
                     'instance_count': instance_count,
                     'hyperparameters': hyperparameters,
                     'inputs': inputs,
-                    'framework_version': '1.9.0',
-                    'py_version': 'py38',
+                    'framework_version': '2.2.2',
+                    'py_version': 'py37',
 
                 }
             }
 
             response = lambda_client.invoke(
-                FunctionName = 'all_in_one_ai_create_train_pytorch',
+                FunctionName = 'all_in_one_ai_create_train_tensorflow',
                 InvocationType = 'Event',
                 Payload=json.dumps(payload)
             )

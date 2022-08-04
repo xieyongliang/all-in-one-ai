@@ -20,7 +20,7 @@ def read_line_examples_from_file(data_path):
                 words, tuples = line.split('####')
                 sents.append(words.split())
                 labels.append(eval(tuples))
-    print(f"Total examples = {len(sents)}")
+    print(f"Total examples = {len(sents)} for {data_path}")
     return sents, labels
 
 
@@ -241,7 +241,9 @@ def get_transformed_io(data_path, paradigm, task):
 
 class ABSADataset(Dataset):
     def __init__(self, tokenizer, data_dir, data_type, paradigm, task, max_len=128):
-        # 'data/aste/rest16/train.txt'
+        # 'data/aste/rest16/train.py.txt'
+        #self.data_path = f'data/{task}/{data_dir}/{data_type}.txt'
+        #change for s3 path
         self.data_path = f'/opt/ml/input/data/{data_dir}/{data_type}.txt'
         self.paradigm = paradigm
         self.task = task

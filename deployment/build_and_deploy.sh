@@ -23,11 +23,10 @@ do
         aws s3 cp model.tar.gz ${s3uri}/algorithms/${algorithm}/artifact/
         rm dummy
         rm model.tar.gz
-    else
-        tar czvf sourcedir.tar.gz *
-        aws s3 cp sourcedir.tar.gz ${s3uri}/algorithms/${algorithm}/source/
-        rm sourcedir.tar.gz
     fi
+    tar czvf sourcedir.tar.gz *
+    aws s3 cp sourcedir.tar.gz ${s3uri}/algorithms/${algorithm}/source/
+    rm sourcedir.tar.gz
 done
 cd ${project_dir}/web
 ./build_and_push.sh ${region}

@@ -3622,7 +3622,7 @@ Resources:
           - __Stage__: '*'
             __ApiId__: !Ref ApiGatewayRestApi
 
-  AllInOneAICreateTrainPytorchFunctionRole:
+  AllInOneAICreateTrainPyTorchFunctionRole:
     Type: 'AWS::IAM::Role'
     Properties:
       AssumeRolePolicyDocument:
@@ -3652,7 +3652,7 @@ Resources:
           - 'arn:aws:iam::aws:policy/AmazonSSMFullAccess'
           - 'arn:aws-cn:iam::aws:policy/AmazonSSMFullAccess'    
   
-  AllInOneAICreateTrainPytorchFunctionAdditionalPermission:
+  AllInOneAICreateTrainPyTorchFunctionAdditionalPermission:
     Type: 'AWS::IAM::Policy'
     Properties:
       PolicyName: all_in_one_ai_create_train_pytorch
@@ -3666,9 +3666,9 @@ Resources:
             Resource: '*'
             Effect: Allow
       Roles:
-        - !Ref AllInOneAICreateTrainPytorchFunctionRole
+        - !Ref AllInOneAICreateTrainPyTorchFunctionRole
 
-  AllInOneAICreateTrainPytorchFunction:
+  AllInOneAICreateTrainPyTorchFunction:
     Type: AWS::Lambda::Function
     Properties:
       Code:
@@ -3679,7 +3679,7 @@ Resources:
         - Value: Name
           Key: 'AllInOneAIApi'
       Handler: lambda_function.lambda_handler
-      Role: !GetAtt AllInOneAICreateTrainPytorchFunctionRole.Arn
+      Role: !GetAtt AllInOneAICreateTrainPyTorchFunctionRole.Arn
       Timeout: 900
       MemorySize: 10240    
       Runtime: python3.9
@@ -3771,6 +3771,80 @@ Resources:
         - Arn: !Ref EfsAccessPointArn
           LocalMountPath: "/mnt/efs"
 
+  AllInOneAICreateTrainTensorFlowFunctionRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'sts:AssumeRole'
+            Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+      ManagedPolicyArns:
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
+          - 'arn:aws-cn:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/AmazonSageMakerFullAccess'
+          - 'arn:aws-cn:iam::aws:policy/AmazonSageMakerFullAccess'
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess'
+          - 'arn:aws-cn:iam::aws:policy/AmazonDynamoDBFullAccess'   
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/AmazonSSMFullAccess'
+          - 'arn:aws-cn:iam::aws:policy/AmazonSSMFullAccess'    
+  
+  AllInOneAICreateTrainTensorFlowFunctionAdditionalPermission:
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName: all_in_one_ai_create_train_tensorflow
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'logs:*'
+              - 'lambda:*'
+              - 'cloudwatch:*'
+            Resource: '*'
+            Effect: Allow
+      Roles:
+        - !Ref AllInOneAICreateTrainTensorFlowFunctionRole
+
+  AllInOneAICreateTrainTensorFlowFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket: !Ref S3Bucket
+        S3Key: !Sub ${S3Key}codes/all_in_one_ai_create_train_tensorflow.zip
+      FunctionName: all_in_one_ai_create_train_tensorflow
+      Tags:
+        - Value: Name
+          Key: 'AllInOneAIApi'
+      Handler: lambda_function.lambda_handler
+      Role: !GetAtt AllInOneAICreateTrainTensorFlowFunctionRole.Arn
+      Timeout: 900
+      MemorySize: 10240    
+      Runtime: python3.9
+      VpcConfig:
+        SubnetIds: 
+          - !Ref PrivateSubnet1
+          - !Ref PrivateSubnet2
+        SecurityGroupIds: 
+          - !Ref SecurityGroup
+      Layers:
+        - !Ref HelperLayer
+        - !Ref SageMakerLayer
+      FileSystemConfigs:
+        - Arn: !Ref EfsAccessPointArn
+          LocalMountPath: "/mnt/efs"
+    
   AllInOneAICreateTrainHuggingfaceFunctionRole:
     Type: 'AWS::IAM::Role'
     Properties:
@@ -3958,7 +4032,7 @@ Resources:
           - __Stage__: '*'
             __ApiId__: !Ref ApiGatewayRestApi
 
-  AllInOneAICreateDeployPytorchFunctionRole:
+AllInOneAICreateDeployPyTorchFunctionRole:
     Type: 'AWS::IAM::Role'
     Properties:
       AssumeRolePolicyDocument:
@@ -3992,7 +4066,7 @@ Resources:
           - 'arn:aws:iam::aws:policy/AmazonSSMFullAccess'
           - 'arn:aws-cn:iam::aws:policy/AmazonSSMFullAccess'       
   
-  AllInOneAICreateDeployPytorchFunctionAdditionalPermission:
+  AllInOneAICreateDeployPyTorchFunctionAdditionalPermission:
     Type: 'AWS::IAM::Policy'
     Properties:
       PolicyName: all_in_one_ai_create_deploy_pytorch
@@ -4006,9 +4080,9 @@ Resources:
             Resource: '*'
             Effect: Allow
       Roles:
-        - !Ref AllInOneAICreateDeployPytorchFunctionRole
+        - !Ref AllInOneAICreateDeployPyTorchFunctionRole
 
-  AllInOneAICreateDeployPytorchFunction:
+  AllInOneAICreateDeployPyTorchFunction:
     Type: AWS::Lambda::Function
     Properties:
       Code:
@@ -4019,7 +4093,7 @@ Resources:
         - Value: Name
           Key: 'AllInOneAIApi'
       Handler: lambda_function.lambda_handler
-      Role: !GetAtt AllInOneAICreateDeployPytorchFunctionRole.Arn
+      Role: !GetAtt AllInOneAICreateDeployPyTorchFunctionRole.Arn
       Timeout: 900
       MemorySize: 10240
       Runtime: python3.9
@@ -4100,6 +4174,84 @@ Resources:
       Role: !GetAtt AllInOneAICreateDeployMxnetFunctionRole.Arn
       Timeout: 900
       MemorySize: 10240    
+      Runtime: python3.9
+      VpcConfig:
+        SubnetIds: 
+          - !Ref PrivateSubnet1
+          - !Ref PrivateSubnet2
+        SecurityGroupIds: 
+          - !Ref SecurityGroup
+      Layers:
+        - !Ref HelperLayer
+        - !Ref SageMakerLayer
+      FileSystemConfigs:
+        - Arn: !Ref EfsAccessPointArn
+          LocalMountPath: "/mnt/efs"
+
+AllInOneAICreateDeployTensorFlowFunctionRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'sts:AssumeRole'
+            Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+      ManagedPolicyArns:
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
+          - 'arn:aws-cn:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/AmazonSageMakerFullAccess'
+          - 'arn:aws-cn:iam::aws:policy/AmazonSageMakerFullAccess'
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/AmazonS3FullAccess'
+          - 'arn:aws-cn:iam::aws:policy/AmazonS3FullAccess'
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess'
+          - 'arn:aws-cn:iam::aws:policy/AmazonDynamoDBFullAccess'   
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/AmazonSSMFullAccess'
+          - 'arn:aws-cn:iam::aws:policy/AmazonSSMFullAccess'       
+  
+  AllInOneAICreateDeployTensorFlowFunctionAdditionalPermission:
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName: all_in_one_ai_create_deploy_tensorflow
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'logs:*'
+              - 'lambda:*'
+              - 'cloudwatch:*'
+            Resource: '*'
+            Effect: Allow
+      Roles:
+        - !Ref AllInOneAICreateDeployTensorFlowFunctionRole
+
+  AllInOneAICreateDeployTensorFlowFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket: !Ref S3Bucket
+        S3Key: !Sub ${S3Key}codes/all_in_one_ai_create_deploy_tensorflow.zip
+      FunctionName: all_in_one_ai_create_deploy_tensorflow
+      Tags:
+        - Value: Name
+          Key: 'AllInOneAIApi'
+      Handler: lambda_function.lambda_handler
+      Role: !GetAtt AllInOneAICreateDeployTensorFlowFunctionRole.Arn
+      Timeout: 900
+      MemorySize: 10240
       Runtime: python3.9
       VpcConfig:
         SubnetIds: 

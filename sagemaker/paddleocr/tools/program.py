@@ -158,17 +158,13 @@ def train(config,
     ) == "Windows" else len(train_dataloader)
 
     for epoch in range(start_epoch, epoch_num + 1):
-        print('0')
         if train_dataloader.dataset.need_reset:
             train_dataloader = build_dataloader(
                 config, 'Train', device, logger, seed=epoch)
             max_iter = len(train_dataloader) - 1 if platform.system(
             ) == "Windows" else len(train_dataloader)
-        print('1')
         for idx, batch in enumerate(train_dataloader):
-            print('2')
             profiler.add_profiler_step(profiler_options)
-            print('3')
             train_reader_cost += time.time() - reader_start
             if idx >= max_iter:
                 break
@@ -177,49 +173,32 @@ def train(config,
             if use_srn:
                 model_average = True
 
-            print('4')
             # use amp
             if scaler:
                 with paddle.amp.auto_cast():
                     if model_type == 'table' or extra_input:
-                        print('5')
                         preds = model(images, data=batch[1:])
-                        print('6')
                     else:
-                        print('7')
                         preds = model(images)
-                        print('8')
             else:
                 if model_type == 'table' or extra_input:
-                    print('9')
                     preds = model(images, data=batch[1:])
-                    print('10')
                 elif model_type in ["kie", 'vqa']:
-                    print('11')
                     preds = model(batch)
-                    print('12')
                 else:
-                    print('13')
                     preds = model(images)
-                    print('14')
 
             loss = loss_class(preds, batch)
             avg_loss = loss['loss']
 
-            print('15')
             if scaler:
-                print('16')
                 scaled_avg_loss = scaler.scale(avg_loss)
                 scaled_avg_loss.backward()
                 scaler.minimize(optimizer, scaled_avg_loss)
-                print('17')
             else:
-                print('18')
                 avg_loss.backward()
                 optimizer.step()
-                print('19')
             optimizer.clear_grad()
-            print('20')
 
             if cal_metric_during_train and epoch % calc_epoch_interval == 0:  # only rec and cls need
                 batch = [item.numpy() for item in batch]
@@ -236,7 +215,6 @@ def train(config,
                 metric = eval_class.get_metric()
                 train_stats.update(metric)
 
-            print('21')
             train_batch_time = time.time() - reader_start
             train_batch_cost += train_batch_time
             eta_meter.update(train_batch_time)
@@ -251,11 +229,9 @@ def train(config,
             stats['lr'] = lr
             train_stats.update(stats)
 
-            print('22')
             if log_writer is not None and dist.get_rank() == 0:
                 log_writer.log_metrics(metrics=train_stats.get(), prefix="TRAIN", step=global_step)
 
-            print('23')
             if dist.get_rank() == 0 and (
                 (global_step > 0 and global_step % print_batch_step == 0) or
                 (idx >= len(train_dataloader) - 1)):
