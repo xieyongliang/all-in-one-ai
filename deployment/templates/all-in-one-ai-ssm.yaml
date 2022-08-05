@@ -199,14 +199,14 @@ Resources:
   Parameter20:
     Type: AWS::SSM::Parameter
     Properties:
-      Name: /all_in_one_ai/config/meta/algorithms/paddleocr/model/artifact
+      Name: /all_in_one_ai/config/meta/algorithms/paddleocr/artifact
       Type: String
       Value: !Sub s3://${S3Bucket}/${S3Key}algorithms/paddleocr/artifact/model.tar.gz
 
   Parameter21:
     Type: AWS::SSM::Parameter
     Properties:
-      Name: /all_in_one_ai/config/meta/algorithms/paddleocr/model/artifact
+      Name: /all_in_one_ai/config/meta/algorithms/paddleocr/source
       Type: String
       Value: !Sub s3://${S3Bucket}/${S3Key}algorithms/paddleocr/source/sourcedir.tar.gz
 
