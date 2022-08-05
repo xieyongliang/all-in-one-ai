@@ -4032,7 +4032,7 @@ Resources:
           - __Stage__: '*'
             __ApiId__: !Ref ApiGatewayRestApi
 
-AllInOneAICreateDeployPyTorchFunctionRole:
+  AllInOneAICreateDeployPyTorchFunctionRole:
     Type: 'AWS::IAM::Role'
     Properties:
       AssumeRolePolicyDocument:
@@ -4188,7 +4188,7 @@ AllInOneAICreateDeployPyTorchFunctionRole:
         - Arn: !Ref EfsAccessPointArn
           LocalMountPath: "/mnt/efs"
 
-AllInOneAICreateDeployTensorFlowFunctionRole:
+  AllInOneAICreateDeployTensorFlowFunctionRole:
     Type: 'AWS::IAM::Role'
     Properties:
       AssumeRolePolicyDocument:
