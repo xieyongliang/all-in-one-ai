@@ -4,7 +4,7 @@ Global:
   epoch_num: 1200
   log_smooth_window: 20
   print_batch_step: 10
-  save_model_dir: ./output/db_mv3/
+  save_model_dir: /opt/ml/model/db_mv3/
   save_epoch_step: 1200
   # evaluation is run every 2000 iterations
   eval_batch_step: [0, 2000]

@@ -2,7 +2,7 @@ import os
 import json
 import warnings
 import torch
-from finetune import T5FineTuner
+from train import T5FineTuner
 from transformers import (
     T5Tokenizer
 )

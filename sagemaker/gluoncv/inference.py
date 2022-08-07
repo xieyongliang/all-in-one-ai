@@ -11,7 +11,8 @@ s3_client = boto3.client('s3')
 def get_embedding_advance(input_pic, seq_net, use_layer):
     img = input_pic
     
-    ctx = [mx.cpu()]
+    num_gpus = int(os.environ['num_gpus']) if ('num_gpus' in os.environ) else 0
+    ctx = [mx.gpu(i) for i in range(num_gpus)] if num_gpus > 0 else [mx.cpu()]
     img = transform_eval(img).copyto(ctx[0])
     pred = None
     for i in range(len(seq_net)):
@@ -56,7 +57,9 @@ def predict_fn(input_data, model):
     Apply model to the incoming request
     """
 
-    pred = get_embedding_advance(input_data, model, use_layer=len(model) - 1)
+    task = os.environ['task'] if('task' in os.environ) else 'search'
+    use_layer = len(model) - 1 if(task == 'search') else len(model)
+    pred = get_embedding_advance(input_data, model, use_layer=use_layer)
     result = pred.tolist()
     return json.dumps({'predictions': [result]})
 

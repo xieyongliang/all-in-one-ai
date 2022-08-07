@@ -8,24 +8,24 @@ def model_fn(model_dir):
     Load the model for inference
     """
 
-    model = CPTForConditionalGeneration.from_pretrained(model_dir)
+    engine = CPTForConditionalGeneration.from_pretrained(model_dir)
     tokenizer = BertTokenizer.from_pretrained(model_dir)
 
-    model_dict = {'model': model, 'tokenizer':tokenizer}
-    
-    return model_dict
+    return engine, tokenizer
 
 def predict_fn(input_data, model):
     """
     Apply model to the incoming request
     """
 
-    tokenizer = model['tokenizer']
-    model = model['model']
+    engine, tokenizer = model
 
     data = input_data['inputs']
-    inputs = tokenizer(data, return_tensors="pt",max_length=512)
-    outputs = model.generate(inputs['input_ids'], max_length=512, top_p=0.95)
+    input_max_length = int(os.environ['input_max_length']) if ('input_max_length' in os.environ) else 512
+    inputs = tokenizer(data, return_tensors="pt",max_length=input_max_length)
+    output_max_length = int(os.environ['output_max_length']) if ('output_max_length' in os.environ) else 512
+    top_p = float(os.environ['top_p']) if ('top_p' in os.environ) else 0.95
+    outputs = engine.generate(inputs['input_ids'], max_length=output_max_length, top_p=top_p)
     result =  {
         'result': tokenizer.decode(outputs[0])
     }

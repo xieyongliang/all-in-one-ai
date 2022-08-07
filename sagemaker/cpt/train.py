@@ -13,7 +13,7 @@ from lib.utils import DataTrainingArguments, ModelArguments
 from lib.modeling_cpt import CPTForConditionalGeneration
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--model_name_or_path", default='/path/to/model', type=str)
+parser.add_argument("--model_name_or_path", default='fnlp/cpt-large', type=str)
 parser.add_argument("--learning_rate", default=2e-5, type=float)
 parser.add_argument("--per_device_train_batch_size", default='50', type=str)
 parser.add_argument("--num_train_epochs", default='5', type=str)
@@ -22,9 +22,9 @@ parser.add_argument("--test_file", default="/path/to/test_file", type=str)
 parser.add_argument("--validation_file", default="/path/to/validation_file", type=str)
 parser.add_argument("--text_column", default="text", type=str)
 parser.add_argument("--summary_column", default="summary", type=str)
-parser.add_argument("--output_dir", default="/path/to/output", type=str)
+parser.add_argument("--output_dir", default="/opt/ml/model", type=str)
 parser.add_argument("--val_max_target_length", default="80", type=str)
-parser.add_argument("--path", default="csv", type=str)
+parser.add_argument("--path", default="json", type=str)
 
 args = parser.parse_args()
 arg_dict = args.__dict__
