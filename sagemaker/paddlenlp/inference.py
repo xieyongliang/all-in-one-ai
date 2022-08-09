@@ -29,8 +29,11 @@ def model_fn(model_dir):
 
     if(args.device == 'gpu'):
         os.system('pip install -U paddlepaddle-gpu')
+        os.system('pip install -U onnxruntime-gpu')
+        os.system('pip install nvgpu')
     else:
         os.system('pip install -U paddlepaddle')
+        os.system('pip install -U onnxruntime')
 
     from uie_predictor import UIEPredictor
 

@@ -1,4 +1,3 @@
 paddlenlp
 onnx
-onnxruntime
-onnxconverter_common
+onnxconverter_common 
