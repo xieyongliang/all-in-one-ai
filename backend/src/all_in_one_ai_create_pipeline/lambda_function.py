@@ -5,9 +5,7 @@ from sagemaker.workflow.condition_step import ConditionStep
 from sagemaker.workflow.fail_step import FailStep
 from sagemaker.workflow.pipeline import Pipeline
 from sagemaker.estimator import Estimator
-from sagemaker.model import Model
 from sagemaker.lambda_helper import Lambda
-from sagemaker.inputs import TrainingInput
 from sagemaker.workflow.steps import TrainingStep
 from sagemaker.workflow.step_collections import RegisterModel
 from sagemaker.workflow.lambda_step import LambdaStep
@@ -20,6 +18,7 @@ from sagemaker.lambda_helper import Lambda
 from sagemaker.workflow.conditions import ConditionEquals
 from sagemaker.pytorch import PyTorch
 from sagemaker.mxnet import MXNet
+from sagemaker.tensorflow import TensorFlow
 from sagemaker.huggingface import HuggingFace
 import helper
 
@@ -219,7 +218,7 @@ def lambda_handler(event, context):
                     training_job_hyperparameters[key] = default_hyperparameters[key]
             
             git_config = None
-            entry_point = 'finetune.py'
+            entry_point = 'train.py'
             framework_version = '1.7.1'
             py_version = 'py36'
 
@@ -277,10 +276,10 @@ def lambda_handler(event, context):
             
             git_config = None
             entry_point = 'train.py'
-            framework_version = '1.9.0'
-            py_version = 'py38'
+            framework_version = '2.2.2'
+            py_version = 'py37'
 
-            estimator = PyTorch(
+            estimator = TensorFlow(
                 entry_point = entry_point,
                 source_dir = source_dir,
                 git_config = git_config,

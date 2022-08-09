@@ -236,7 +236,7 @@ Resources:
     Properties:
       Name: /all_in_one_ai/config/meta/algorithms/gabsa/source
       Type: String
-      Value: !Sub s3://${S3Bucket}/${S3Key}algorithms/gabsa/source/
+      Value: !Sub s3://${S3Bucket}/${S3Key}algorithms/gabsa/source/sourcedir.tar.gz
 
   Parameter26:
     Type: AWS::SSM::Parameter
@@ -250,7 +250,7 @@ Resources:
     Properties:
       Name: /all_in_one_ai/config/meta/algorithms/paddlenlp/source
       Type: String
-      Value: !Sub s3://${S3Bucket}/${S3Key}algorithms/paddlenlp/source/
+      Value: !Sub s3://${S3Bucket}/${S3Key}algorithms/paddlenlp/source/sourcedir.tar.gz
 
   Parameter28:
     Type: AWS::SSM::Parameter
