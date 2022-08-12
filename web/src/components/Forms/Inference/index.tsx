@@ -13,6 +13,7 @@ import { AppState } from '../../../store';
 import { connect } from 'react-redux';
 import { IIndustrialModel } from '../../../store/industrialmodels/reducer';
 import { ProjectSubType, ProjectType } from '../../../data/enums/ProjectType';
+import { v4 as uuidv4 } from 'uuid';
 import './index.scss'
 
 interface FileMetadata {
@@ -121,7 +122,7 @@ const InferenceForm: FunctionComponent<IProps> = (props) => {
         return (
             <Container title='Select image file from local disk'>
                 <FileUpload
-                    controlId='fileImage'
+                    controlId={uuidv4()}
                     onChange={onFileChange}
                 ></FileUpload>
             </Container>

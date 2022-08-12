@@ -9,6 +9,7 @@ import { AppState } from "../../../store";
 import { connect } from "react-redux";
 import { Updateindustrialmodels } from "../../../store/industrialmodels/actionCreators";
 import { ALGORITHMS } from '../../Data/data';
+import { v4 as uuidv4 } from 'uuid';
 
 interface IProps {
     updateindustrialmodelsAction : (industrialModels : IIndustrialModel[]) => any
@@ -63,7 +64,7 @@ const IndustrialModelForm: FunctionComponent<IProps> = (props) => {
             return (
                 <Container title='Select an icon for your industrial model'>
                     <FileUpload
-                        controlId='fileImage'
+                        controlId={uuidv4()}
                         onChange={onFileChange}
                     />
                 </Container>
@@ -73,10 +74,10 @@ const IndustrialModelForm: FunctionComponent<IProps> = (props) => {
                 <Stack>
                     <Container title='Select an icon for your industrial model'>
                         <FileUpload
-                            controlId='fileImage'
+                            controlId={uuidv4()}
                             onChange={onFileChange}
                         />
-                        <FormField controlId='button'>
+                        <FormField controlId={uuidv4()}>
                             <Image src={`/_image/${fileName}`} width={128} height={128} current={""} public={true}/>
                         </FormField>          
                     </Container>
@@ -87,10 +88,10 @@ const IndustrialModelForm: FunctionComponent<IProps> = (props) => {
     const renderClassDefinition = () => {
         return (
             <FormSection header="Industrial model class and samples settings" >
-                <FormField label="Paste your model class definition here" controlId="formFieldIdModelLabels">
+                <FormField label="Paste your model class definition here" controlId={uuidv4()}>
                     <Textarea value={modelLables} onChange={(event) => onChange('formFieldIdModelLabels', event)} />        
                 </FormField>
-                <FormField label="Paste your model class sample images s3 uri here" controlId="formFieldIdModelSamples">
+                <FormField label="Paste your model class sample images s3 uri here" controlId={uuidv4()}>
                     <Input type="text" value={modelSamples} onChange={(event) => onChange('formFieldIdModelSamples', event)} />        
                 </FormField>
             </FormSection>
@@ -100,13 +101,13 @@ const IndustrialModelForm: FunctionComponent<IProps> = (props) => {
     const renderModelSetting = () => {
         return (
             <FormSection header="Industrial model settings" >
-                <FormField label="Industrial model name" controlId="formFieldIdModelName">
+                <FormField label="Industrial model name" controlId={uuidv4()}>
                     <Input type="text" value={modelName} onChange={(event) => onChange('formFieldIdModelName', event)}/>
                 </FormField>
-                <FormField label="Industrial model description" controlId="formFieldIdModelDescription">
+                <FormField label="Industrial model description" controlId={uuidv4()}>
                     <Input type="text" value={modelDescription} onChange={(event) => onChange('formFieldIdModelDescription', event)}/>
                 </FormField>
-                <FormField label="Industrial model algorithm" controlId="formFieldIdModelType">
+                <FormField label="Industrial model algorithm" controlId={uuidv4()}>
                     <Select
                         placeholder='Choose an option'
                         options={algorithmOptions}

@@ -1,6 +1,6 @@
 import { FunctionComponent, useEffect, useState } from 'react';
 import { useHistory, useLocation } from 'react-router-dom';
-import { KeyValuePair, StatusIndicator, Button, Form, FormSection, LoadingIndicator } from 'aws-northstar';
+import { KeyValuePair, StatusIndicator, Button, Form, FormSection, LoadingIndicator, Text } from 'aws-northstar';
 import axios from 'axios';
 import Grid from '@mui/material/Grid';
 import { getUtcDate } from '../../Utils/Helper';
@@ -22,6 +22,7 @@ const TrainingJobProp: FunctionComponent = () => {
     const [ hyperParameters, setHyperParameters ] = useState({})
     const [ stoppingCondition, setStoppingCondition ] = useState({})
     const [ enableManagedSpotTraining, setEnableManagedSpotTraining ] = useState('')
+    const [ tags, setTags ] = useState([])
     const [ loading, setLoading ] = useState(true);
 
     const history = useHistory();
@@ -51,6 +52,7 @@ const TrainingJobProp: FunctionComponent = () => {
                 setModelArtifacts(response.data[0].ModelArtifacts)
                 setStoppingCondition(response.data[0].StoppingCondition)
                 setEnableManagedSpotTraining(response.data[0].EnableManagedSpotTraining)
+                setTags(response.data[0].Tags)
                 setLoading(false);
             }
         }, (error) => {
@@ -216,6 +218,36 @@ const TrainingJobProp: FunctionComponent = () => {
         )
     }
 
+    const renderTrainingJobTags = () => {
+        return (
+            <FormSection header='Tags'>
+                {
+                    tags.length>0 && 
+                    <Grid container spacing={{ xs: 2, md: 2 }} columns={{ xs: 4, sm: 8, md: 8 }}>
+                        <Grid item xs={2} sm={4} md={4}>
+                            <Text> Key </Text>
+                        </Grid>
+                        <Grid item xs={2} sm={4} md={4}>
+                            <Text> Value </Text> 
+                        </Grid>
+                    </Grid>
+                }
+                {
+                    tags.map((tag, index) => (
+                        <Grid container spacing={{ xs: 2, md: 2 }} columns={{ xs: 4, sm: 8, md: 8 }}>
+                            <Grid item xs={2} sm={4} md={4}>
+                                <Text>{tag.key}</Text>
+                            </Grid>
+                            <Grid item xs={2} sm={4} md={4}>
+                                <Text>{tag.value}</Text>
+                            </Grid>
+                        </Grid>
+                    ))
+                }
+            </FormSection>
+        )
+    }
+
     return (
         <Form
             header='Review training job'
@@ -232,6 +264,7 @@ const TrainingJobProp: FunctionComponent = () => {
             { !loading && renderInputDataConfiguration() }
             { !loading && renderOutputConfiguration() }
             { !loading && renderOutput() }
+            { !loading && renderTrainingJobTags() }
         </Form>
     )
 }

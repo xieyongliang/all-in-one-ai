@@ -10,6 +10,7 @@ import { PathParams } from '../../Interfaces/PathParams';
 import Select, { SelectOption } from 'aws-northstar/components/Select';
 import { UpdateEndpointInitialInstanceCount, UpdateEndpointInstanceType, UpdateEndpointName, UpdateModelEnvironment, UpdateModelName } from '../../../store/pipelines/actionCreators';
 import { ENDPOINTOPTIONS } from '../../Data/data'
+import { v4 as uuidv4 } from 'uuid';
 
 interface IProps {
     updateModelNameAction: (modelName: string) => any;
@@ -83,21 +84,21 @@ const DeployForm: FunctionComponent<IProps> = (props) => {
         if(environments.length > 0) {
             var environment = {}
             environments.forEach((item) => {
-                    environment[item['key']] = item['value'];
-                })
-                body['model_environment'] = JSON.stringify(environment)
-            }
+                environment[item['key']] = item['value'];
+            })
+            body['model_environment'] = JSON.stringify(environment)
+        }
                 
-            setProcessing(true)
-            axios.post('/deploy', body,  { headers: {'content-type': 'application/json' }}) 
-                .then((response) => {
-                    history.goBack()
-                }, (error) => {
-                    alert('Error occured, please check and try it again');
-                    setProcessing(false)
-                    console.log(error);
-                }
-            );
+        setProcessing(true)
+        axios.post('/deploy', body,  { headers: {'content-type': 'application/json' }}) 
+            .then((response) => {
+                history.goBack()
+            }, (error) => {
+                alert('Error occured, please check and try it again');
+                setProcessing(false)
+                console.log(error);
+            }
+        );
     }
  
     const onCancel = () => {
@@ -107,19 +108,19 @@ const DeployForm: FunctionComponent<IProps> = (props) => {
     const renderDeploySetting = () => {
         return (
             <FormSection header='Deploy settings'>
-                <FormField label='Model name' controlId='formFieldIdModelName'>
+                <FormField label='Model name' controlId={uuidv4()}>
                     <Input type='text' required={true} value={modelName} onChange={(event)=>onChange('formFieldIdModelName', event)}/>
                 </FormField>
                 {
                     !props.wizard && 
-                    <FormField label='Model data' controlId='formFieldIdModelData'>
+                    <FormField label='Model data' controlId={uuidv4()}>
                         <Input type='text' required={true} value={modelData} onChange={(event)=>onChange('formFieldIdModelData', event)}/>
                     </FormField>
                 }
-                <FormField label='Endpoint name' controlId='formFieldIdEndpointName'>
+                <FormField label='Endpoint name' controlId={uuidv4()}>
                     <Input type='text' required={true} value={endpointName} onChange={(event)=>onChange('formFieldIdEndpointName', event)}/>
                 </FormField>
-                <FormField label='Instance type' controlId='formFieldIdInstanceType'>
+                <FormField label='Instance type' controlId={uuidv4()}>
                     <Select
                         placeholder='Choose an option'
                         options={ ENDPOINTOPTIONS }
@@ -127,7 +128,7 @@ const DeployForm: FunctionComponent<IProps> = (props) => {
                         onChange={(event) => onChange('formFieldIdInstanceType', event)}
                     />
                 </FormField>
-                <FormField label='Instance count' controlId='formFieldIdInstanceCount'>
+                <FormField label='Instance count' controlId={uuidv4()}>
                     <Input type='number' value={instanceCount} required={true} onChange={(event) => onChange('formFieldIdInstanceCount', event)} />
                 </FormField>
                 { renderEnvironment() }

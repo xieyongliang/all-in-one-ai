@@ -9,6 +9,7 @@ const ModelProp: FunctionComponent = () => {
     const [ creationTime, setCreationTime ] = useState('')
     const [ primaryContainer, setPrimaryContainer ] = useState({})
     const [ containers, setContainers ] = useState([])
+    const [ tags, setTags ] = useState([])
     const [ loading, setLoading ] = useState(true);
 
     const history = useHistory();
@@ -24,6 +25,7 @@ const ModelProp: FunctionComponent = () => {
                 setCreationTime(response.data[0].CreationTime);
                 setPrimaryContainer(response.data[0].PrimaryContainer);
                 setContainers(response.data[0].Containers);
+                setTags(response.data[0].Tags);
                 setLoading(false);
             }
         }, (error) => {
@@ -144,6 +146,36 @@ const ModelProp: FunctionComponent = () => {
         )
     }
 
+    const renderModelTags = () => {
+        return (
+            <FormSection header='Tags'>
+                {
+                    tags.length>0 && 
+                    <Grid container spacing={{ xs: 2, md: 2 }} columns={{ xs: 4, sm: 8, md: 8 }}>
+                        <Grid item xs={2} sm={4} md={4}>
+                            <Text> Key </Text>
+                        </Grid>
+                        <Grid item xs={2} sm={4} md={4}>
+                            <Text> Value </Text> 
+                        </Grid>
+                    </Grid>
+                }
+                {
+                    tags.map((tag, index) => (
+                        <Grid container spacing={{ xs: 2, md: 2 }} columns={{ xs: 4, sm: 8, md: 8 }}>
+                            <Grid item xs={2} sm={4} md={4}>
+                                <Text>{tag.key}</Text>
+                            </Grid>
+                            <Grid item xs={2} sm={4} md={4}>
+                                <Text>{tag.value}</Text>
+                            </Grid>
+                        </Grid>
+                    ))
+                }
+            </FormSection>
+        )
+    }
+
     return (
         <Form
             header='Review model'
@@ -156,6 +188,7 @@ const ModelProp: FunctionComponent = () => {
             { loading && <LoadingIndicator label='Loading...'/> }
             { !loading && renderModelSummary() }
             { !loading && renderContainerDefinition() }
+            { !loading && renderModelTags() }
         </Form>
     )
 }

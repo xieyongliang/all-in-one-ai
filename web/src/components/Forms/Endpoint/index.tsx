@@ -10,6 +10,7 @@ import { UpdateEndpointAcceleratorType, UpdateEndpointInitialInstanceCount, Upda
 import { IIndustrialModel } from '../../../store/industrialmodels/reducer';
 import { PathParams } from '../../Interfaces/PathParams';
 import { ENDPOINTOPTIONS, ACCELERALATOROPTIONS } from '../../Data/data'
+import { v4 as uuidv4 } from 'uuid';
 
 interface IProps {
     updateEndpointInstanceTypeAction: (endpointInstanceType: string) => any;
@@ -136,7 +137,7 @@ const EndpointForm: FunctionComponent<IProps> = (props) => {
         if(!wizard) {
             return (
                 <FormSection header='Endpoint setting'>
-                    <FormField label='Endpooint name' description='Your application uses this name to access this endpoint.' controlId='formFieldIdEndpointName' hintText='Maximum of 63 alphanumeric characters. Can include hyphens (-), but not spaces. Must be unique within your account in an AWS Region.'>
+                    <FormField label='Endpooint name' description='Your application uses this name to access this endpoint.' controlId={uuidv4()} hintText='Maximum of 63 alphanumeric characters. Can include hyphens (-), but not spaces. Must be unique within your account in an AWS Region.'>
                         <Input type='text' value={endpointName} onChange={(event) => {onChange('formFieldIdEndpointName', event)}} />
                     </FormField>
                 </FormSection>
@@ -191,7 +192,7 @@ const EndpointForm: FunctionComponent<IProps> = (props) => {
         return (
             <FormSection header='Production variants'>
                 {   !wizard && 
-                    <FormField label='Model name' controlId='formFieldIdModel'>
+                    <FormField label='Model name' controlId={uuidv4()}>
                         <Select
                                 placeholder='Choose an option'
                                 options={modelOptions}
@@ -200,7 +201,7 @@ const EndpointForm: FunctionComponent<IProps> = (props) => {
                             />
                     </FormField>
                 }
-                <FormField label='Instance type' controlId='formFieldIdInstanceType'>
+                <FormField label='Instance type' controlId={uuidv4()}>
                     <Select
                             placeholder='Choose an option'
                             options={ ENDPOINTOPTIONS }
@@ -208,7 +209,7 @@ const EndpointForm: FunctionComponent<IProps> = (props) => {
                             onChange={(event) => onChange('formFieldIdInstanceType', event)}
                         />
                 </FormField>
-                <FormField label='Elastic Inference' controlId='formFieldIdAcceleratorType'>
+                <FormField label='Elastic Inference' controlId={uuidv4()}>
                     <Select
                             placeholder='Choose an option'
                             options={ ACCELERALATOROPTIONS }
@@ -216,10 +217,10 @@ const EndpointForm: FunctionComponent<IProps> = (props) => {
                             onChange={(event) => onChange('formFieldIdAcceleratorType', event)}
                         />
                 </FormField>
-                <FormField label='Initial instance count' controlId='formFieldIdInitialInstanceCount'>
+                <FormField label='Initial instance count' controlId={uuidv4()}>
                     <Input type='text' value={initialInstanceCount} onChange={(event) => {onChange('formFieldIdInitialInstanceCount', event)}} />
                 </FormField>
-                <FormField label='Initial weight' controlId='formFieldIdInitialVariantWeight'>
+                <FormField label='Initial weight' controlId={uuidv4()}>
                     <Input type='text' value={initialVariantWeight} onChange={(event) => {onChange('formFieldIdInitialVariantWeight', event)}} />
                 </FormField>
             </FormSection>

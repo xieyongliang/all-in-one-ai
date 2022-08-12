@@ -6,6 +6,7 @@ import Grid from '@mui/material/Grid';
 import axios from 'axios';
 import { PathParams } from '../../Interfaces/PathParams';
 import { APIS } from '../../Data/data';
+import { v4 as uuidv4 } from 'uuid';
 
 const RestApiForm: FunctionComponent = () => {
     const [ apiName, setApiName ] = useState('')
@@ -128,13 +129,13 @@ const RestApiForm: FunctionComponent = () => {
         if(apiType === '1') {
             return (
                 <FormSection header='API setting'>
-                    <FormField label='API name' controlId='formFieldIdApiName'>
+                    <FormField label='API name' controlId={uuidv4()}>
                         <Input type='text' value={apiName} onChange={(event) => onChange('formFieldIdApiName', event)} />
                     </FormField>
-                    <FormField label='API gateway' controlId='formFieldIdApiType'>
+                    <FormField label='API gateway' controlId={uuidv4()}>
                         {renderApiOptions()}
                     </FormField>
-                    <FormField controlId='formFieldIdRestApis'>
+                    <FormField controlId={uuidv4()}>
                         <Select
                             placeholder='Choose an option'
                             options={restApisOptions}
@@ -154,7 +155,7 @@ const RestApiForm: FunctionComponent = () => {
                     <FormField label='API gateway' controlId='formFieldIdRestApi'>
                         {renderApiOptions()}
                     </FormField>
-                    <FormField controlId='formFieldIdRestApiName'>
+                    <FormField controlId={uuidv4()}>
                         <Input type='text' value={restApiName} onChange={(event) => onChange('formFieldIdRestApiName', event)}/>
                     </FormField>
                 </FormSection>
@@ -202,13 +203,13 @@ const RestApiForm: FunctionComponent = () => {
     const renderRestApiFormContent = () => {
         return (
             <FormSection header='Production variants'>
-                <FormField label='API path' controlId='formFieldIdApiPath'>
+                <FormField label='API path' controlId={uuidv4()}>
                     <Input type='text' value={apiPath} onChange={(event) => onChange('formFieldIdApiPath', event)} />
                 </FormField>
-                <FormField label='API stage' controlId='formFieldIdApiStage'>
+                <FormField label='API stage' controlId={uuidv4()}>
                     <Input type='text' value={apiStage} onChange={(event) => onChange('formFieldIdApiStage', event)}/>
                 </FormField>
-                <FormField controlId='formFieldIdApis' label='APIs to deployed' >
+                <FormField controlId={uuidv4()} label='APIs to deployed' >
                     <Select
                         placeholder='Choose an option'
                         options={optionsApis}

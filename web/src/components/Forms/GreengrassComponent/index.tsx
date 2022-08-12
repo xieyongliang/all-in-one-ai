@@ -7,6 +7,7 @@ import { PathParams } from '../../Interfaces/PathParams';
 import { UpdateGreengrassComponentName, UpdateGreengrassComponentVersion } from '../../../store/pipelines/actionCreators';
 import { AppState } from '../../../store';
 import { connect } from 'react-redux';
+import { v4 as uuidv4 } from 'uuid';
 
 interface IProps {
     updateGreengrassComponentNameAction: (greengrassComponentName: string) => any;
@@ -111,7 +112,7 @@ const GreengrassComponentForm: FunctionComponent<IProps> = (props) => {
     const renderGreengrassComponentSetting = () => {
         return (
             <FormSection header='Greengrass component setting'>
-                <FormField label='Component name' controlId='formFieldIdComponents'>
+                <FormField label='Component name' controlId={uuidv4()}>
                     <Select
                             placeholder='Choose an option'
                             options={optionsComponents}
@@ -127,7 +128,7 @@ const GreengrassComponentForm: FunctionComponent<IProps> = (props) => {
         if(!wizard)
             return (
                 <FormSection header='Production variants'>
-                    <FormField label='Model name' controlId='formFieldIdModels'>
+                    <FormField label='Model name' controlId={uuidv4()}>
                         <Select
                                 placeholder='Choose an option'
                                 options={optionsModels}
@@ -135,7 +136,7 @@ const GreengrassComponentForm: FunctionComponent<IProps> = (props) => {
                                 onChange={(event) => onChange('formFieldIdModels', event)}
                             />
                     </FormField>
-                    <FormField label='Component version' controlId='formFieldIdMComponentVersion'>
+                    <FormField label='Component version' controlId={uuidv4()}>
                         <Input value={componentVersion} onChange={(event) => onChange('formFieldIdMComponentVersion', event)} />
                     </FormField>
                 </FormSection>
@@ -143,7 +144,7 @@ const GreengrassComponentForm: FunctionComponent<IProps> = (props) => {
         else
             return (
                 <FormSection header='Production variants'>
-                    <FormField label='Component version' controlId='formFieldIdMComponentVersion'>
+                    <FormField label='Component version' controlId={uuidv4()}>
                         <Input value={componentVersion} onChange={(event) => onChange('formFieldIdMComponentVersion', event)} />
                     </FormField>
                 </FormSection>

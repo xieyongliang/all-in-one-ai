@@ -9,6 +9,7 @@ import { connect } from 'react-redux';
 import { AppState } from '../../../store';
 import { UpdateGreengrassDeploymentComponents, UpdateGreengrassDeploymentName, UpdateGreengrassDeploymentTargetArn, UpdateGreengrassDeploymentTargetType } from '../../../store/pipelines/actionCreators';
 import { PathParams } from '../../Interfaces/PathParams';
+import { v4 as uuidv4 } from 'uuid';
 
 interface IProps {
     updateGreengrassDeploymentNameAction: (greengrassDeploymentName: string) => any;
@@ -265,7 +266,7 @@ const GreengrassDeploymentForm: FunctionComponent<IProps> = (props) => {
         if(!wizard) {
             return (
                 <FormSection header='Greengrass deployment setting'>
-                    <FormField label='Deployment name' description='A friendly name lets you identify this deployment. If you leave it blank, the deployment displays its ID instead of a name.' controlId='formFieldIdDeploymentName'>
+                    <FormField label='Deployment name' description='A friendly name lets you identify this deployment. If you leave it blank, the deployment displays its ID instead of a name.' controlId={uuidv4()}>
                         <Input type='text' value={deploymentName} onChange={(event)=>{onChange('formFieldIdDeploymentName', event)}}/>
                     </FormField>
                 </FormSection>
@@ -289,10 +290,10 @@ const GreengrassDeploymentForm: FunctionComponent<IProps> = (props) => {
         if(targetType === '1') {
             return (
                 <FormSection header='Deployment target' description='You can deploy to a single Greengrass core device or a group of core devices.'>
-                    <FormField label='Target type' controlId='formFieldIdTargetType'>
+                    <FormField label='Target type' controlId={uuidv4()}>
                         {renderTargetOptions()}
                     </FormField>
-                    <FormField label='Target name' controlId='formFieldIdThingGroups'>
+                    <FormField label='Target name' controlId={uuidv4()}>
                         <Select
                             placeholder='Choose an option'
                             options={optionsThingGroups}
@@ -306,10 +307,10 @@ const GreengrassDeploymentForm: FunctionComponent<IProps> = (props) => {
         else {
             return (
                 <FormSection header='Deployment target' description='You can deploy to a single Greengrass core device or a group of core devices.'>
-                    <FormField label='Target type' controlId='formFieldIdTargetType'>
+                    <FormField label='Target type' controlId={uuidv4()}>
                         {renderTargetOptions()}
                     </FormField>
-                    <FormField label='Target name' controlId='formFieldIdTargetName'>
+                    <FormField label='Target name' controlId={uuidv4()}>
                         <Select
                             placeholder='Choose an option'
                             options={optionsCoreDevices}

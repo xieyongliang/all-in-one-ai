@@ -1,6 +1,6 @@
 import { FunctionComponent, useEffect, useState } from 'react';
 import { useHistory, useLocation } from 'react-router-dom';
-import { KeyValuePair, StatusIndicator, Button, Form, FormSection, Stack, LoadingIndicator } from 'aws-northstar';
+import { KeyValuePair, StatusIndicator, Button, Form, FormSection, Stack, LoadingIndicator, Text } from 'aws-northstar';
 import axios from 'axios';
 import Grid from '@mui/material/Grid';
 import { getUtcDate } from '../../Utils/Helper';
@@ -12,6 +12,7 @@ const EndpointProp: FunctionComponent = () => {
     const [ endpointStatus, setEndpointStatus ] = useState('')
     const [ endpointConfig, setEndpointConfig ] = useState({})
     const [ productionVariants, setProductionVariants] = useState([])
+    const [ tags, setTags ] = useState([])
     const [ loading, setLoading ] = useState(true);
 
     const history = useHistory();
@@ -29,6 +30,7 @@ const EndpointProp: FunctionComponent = () => {
                 setEndpointStatus(response.data[0].EndpointStatus)
                 setEndpointConfig(response.data[0].EndpointConfig)
                 setProductionVariants(response.data[0].ProductionVariants)
+                setTags(response.data[0].Tags)
                 setLoading(false);
             }
         }, (error) => {
@@ -107,6 +109,36 @@ const EndpointProp: FunctionComponent = () => {
         )
     }
 
+    const renderEndpointTags = () => {
+        return (
+            <FormSection header='Tags'>
+                {
+                    tags.length>0 && 
+                    <Grid container spacing={{ xs: 2, md: 2 }} columns={{ xs: 4, sm: 8, md: 8 }}>
+                        <Grid item xs={2} sm={4} md={4}>
+                            <Text> Key </Text>
+                        </Grid>
+                        <Grid item xs={2} sm={4} md={4}>
+                            <Text> Value </Text> 
+                        </Grid>
+                    </Grid>
+                }
+                {
+                    tags.map((tag, index) => (
+                        <Grid container spacing={{ xs: 2, md: 2 }} columns={{ xs: 4, sm: 8, md: 8 }}>
+                            <Grid item xs={2} sm={4} md={4}>
+                                <Text>{tag.key}</Text>
+                            </Grid>
+                            <Grid item xs={2} sm={4} md={4}>
+                                <Text>{tag.value}</Text>
+                            </Grid>
+                        </Grid>
+                    ))
+                }
+            </FormSection>
+        )
+    }
+
     const renderEndpointConfigurationSettings = () => {
         return (
             <FormSection header='Endpoint configuration settings'>
@@ -150,6 +182,7 @@ const EndpointProp: FunctionComponent = () => {
             { !loading && renderEndpointSummary() }
             { !loading && renderEndpointRuntimeSettings() }
             { !loading && renderEndpointConfigurationSettings() }
+            { !loading && renderEndpointTags() }
         </Form>
     )
 }

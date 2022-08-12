@@ -10,6 +10,7 @@ import { UpdateModelModelPackageGroupName, UpdateModelModelPackageArn, UpdateMod
 import { IIndustrialModel } from '../../../store/industrialmodels/reducer';
 import { PathParams } from '../../Interfaces/PathParams';
 import { getUtcDate } from '../../Utils/Helper';
+import { v4 as uuidv4 } from 'uuid';
 
 interface ModelPackageItem {
     name: string;
@@ -240,7 +241,7 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
         if(!wizard) {
             return (
                 <FormSection header='Model settings'>
-                    <FormField label='Model name' controlId='formFieldIdModelName'>
+                    <FormField label='Model name' controlId={uuidv4()}>
                         <Input type='text' required={true} value={modelName} onChange={(event)=>onChange('formFieldIdModelName', event)}/>
                     </FormField>
                 </FormSection>
@@ -421,10 +422,10 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
     const renderModelPackageGroupForm = () => {
         return (
             <Stack>
-                <FormField label='Name of model package group' controlId='formFieldIdModelPackageGroup'>
+                <FormField label='Name of model package group' controlId={uuidv4()}>
                     <Input type='text' required={true} value={modelPackageGroupName} onChange={(event)=>{onChange('formFieldIdModelPackageGroup', event)}} />
                 </FormField>
-                <FormField controlId='formfieldIdCreateModelPackageGroup'>
+                <FormField controlId={uuidv4()}>
                     <Button onClick={onCreateModelPackageGroup} loading={processingModelPackageGroup}>Create model package group</Button>
                 </FormField>
             </Stack>
@@ -480,13 +481,13 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
     const renderModelPackageForm = () => {
         return (
             <Stack>
-                <FormField label='Location of inference code image' description='Type the registry path where the inference code image is stored in Amazon ECR.' controlId='formFieldIdContainerImage'>
+                <FormField label='Location of inference code image' description='Type the registry path where the inference code image is stored in Amazon ECR.' controlId={uuidv4()}>
                     <Input type='text' required={true} value={containerIamge} onChange={(event)=>{onChange('formFieldIdContainerImage', event)}} />
                 </FormField>
-                <FormField label='Location of model artifacts' description='Type the URL where model artifacts are stored in S3.' controlId='formFieldIdModelDataUrl'>
+                <FormField label='Location of model artifacts' description='Type the URL where model artifacts are stored in S3.' controlId={uuidv4()}>
                     <Input type='text' required={true} value={modelDataUrl} onChange={(event)=>{onChange('formFieldIdModelDataUrl', event)}} />
                 </FormField>
-                <FormField controlId='formfieldIdCreateModelPackage'>
+                <FormField controlId={uuidv4()}>
                     <Button onClick={onCreateModelPackage} loading={processingModelPackage}>Create model package</Button>
                 </FormField>
             </Stack>
@@ -548,13 +549,13 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
                     <ExpandableSection header="Container input options" expanded={true}>{renderContainerInputOptions()}</ExpandableSection>  
                     <ExpandableSection header="Provide model artifacts and inference image options" expanded={true}>
                         <Stack>
-                            <FormField controlId='formFieldIdContainerModelOptions'>
+                            <FormField controlId={uuidv4()}>
                                 {renderContainerModelOptions()}
                             </FormField>
-                            <FormField label='Location of inference code image' description='Type the registry path where the inference code image is stored in Amazon ECR.' controlId='formFieldIdContainerImage'>
+                            <FormField label='Location of inference code image' description='Type the registry path where the inference code image is stored in Amazon ECR.' controlId={uuidv4()}>
                                 <Input type='text' required={true} value={containerIamge} onChange={(event)=>{onChange('formFieldIdContainerImage', event)}} />
                             </FormField>
-                            <FormField label='Location of model artifacts' description='Type the URL where model artifacts are stored in S3.' controlId='formFieldIdModelDataUrl'>
+                            <FormField label='Location of model artifacts' description='Type the URL where model artifacts are stored in S3.' controlId={uuidv4()}>
                                 <Input type='text' required={true} value={modelDataUrl} onChange={(event)=>{onChange('formFieldIdModelDataUrl', event)}} />
                             </FormField>
                         </Stack>

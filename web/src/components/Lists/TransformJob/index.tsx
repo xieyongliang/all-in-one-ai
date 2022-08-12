@@ -260,7 +260,7 @@ const TransformJobList: FunctionComponent<IProps> = (props) => {
     })
 
     const onCreate = () => {
-        history.push(`/imodels/${params.id}?tab=demo#review`)
+        history.push(`/imodels/${params.id}?tab=transformjob#create`)
     }
 
     const onReview = () => {
@@ -390,7 +390,7 @@ const TransformJobList: FunctionComponent<IProps> = (props) => {
             accessor: 'transformJobName',
             Cell: ({ row  }) => {
                 if (row && row.original) {
-                    return <a href={`/imodels/${params.id}?tab=demo#prop:id=${row.original.transformJobName}`}> {row.original.transformJobName} </a>;
+                    return <a href={`/imodels/${params.id}?tab=transformjob#prop:id=${row.original.transformJobName}`}> {row.original.transformJobName} </a>;
                 }
                 return null;
             }

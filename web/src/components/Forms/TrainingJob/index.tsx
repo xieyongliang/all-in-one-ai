@@ -10,6 +10,7 @@ import { UpdateTrainingjobInputData, UpdateTrainingjobInstanceCount, UpdateTrain
 import { IIndustrialModel } from '../../../store/industrialmodels/reducer';
 import { PathParams } from '../../Interfaces/PathParams';
 import { TRAININGOPTIONS } from '../../Data/data';
+import { v4 as uuidv4 } from 'uuid';
 import './index.scss';
 
 const timeUnitOptions : SelectOption[] = [
@@ -359,7 +360,7 @@ const TrainingJobForm: FunctionComponent<IProps> = (props) => {
                 {
                     !wizard && 
                     <div style={{marginBottom: '5px'}}>
-                        <FormField controlId='formFieldIdTrainingMode' description='Use SageMaker built-in container image or your own container image.'>
+                        <FormField controlId={uuidv4()} description='Use SageMaker built-in container image or your own container image.'>
                             <RadioGroup onChange={onChangeOptions}
                                 items={[
                                     <RadioButton value='BYOS' checked={scriptMode}>Bring your own script.</RadioButton>, 
@@ -549,7 +550,7 @@ const TrainingJobForm: FunctionComponent<IProps> = (props) => {
     const renderManagedSpotTraining = () => {
         return (
             <FormSection header='Managed spot training'>
-                <FormField controlId='formFieldIdSpotTrainingEnabled'>
+                <FormField controlId={uuidv4()}>
                 <Toggle label="Enable managed spot training - optional" description="Save compute costs for jobs that have flexibility in start and end times. Amazon SageMaker will use spare capacity only to run this job." onChange={(event) => onChange('formFieldIdSpotTrainingEnabled', event)} />   
                 </FormField>
                 <Grid container spacing={{ xs: 2, md: 2 }} columns={{ xs: 4, sm: 8, md: 8 }}>
