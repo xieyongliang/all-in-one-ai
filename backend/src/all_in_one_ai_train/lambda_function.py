@@ -29,13 +29,13 @@ def lambda_handler(event, context):
         if(algorithm == 'yolov5'):
             default_hyperparameters = {
                 'data': '/opt/ml/input/data/cfg/data.yaml', 
-                'cfg': '/opt/ml/input/data/cfg/yolov5s.yaml', 
-                'weight': '/opt/ml/input/data/weights/yolov5s.pt', 
+                'cfg': 'yolov5s.yaml', 
+                'weight': 'yolov5s.pt', 
                 'project': '/opt/ml/model/',
                 'name': 'tutorial', 
                 'img': 640, 
                 'batch': 16, 
-                'epochs': 10,
+                'epochs': 100,
                 'device': 0
             }
             for key in default_hyperparameters.keys():
@@ -58,7 +58,7 @@ def lambda_handler(event, context):
                     'hyperparameters': hyperparameters,
                     'inputs': inputs,
                     'py_version': 'py38',
-                    'framework_version': '1.9.0'
+                    'framework_version': '1.10.2'
                 }
             }
 
