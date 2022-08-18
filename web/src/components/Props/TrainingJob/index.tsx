@@ -36,6 +36,7 @@ const TrainingJobProp: FunctionComponent = () => {
         axios.get(`/trainingjob/${id}`)
             .then((response) => {
             if(response.data.length > 0) {
+                console.log(response.data[0])
                 setTrainingJobName(response.data[0].TrainingJobName)
                 setCreationTime(getUtcDate(response.data[0].CreationTime))
                 setLastModifiedTime(getUtcDate(response.data[0].LastModifiedTime))
@@ -222,7 +223,7 @@ const TrainingJobProp: FunctionComponent = () => {
         return (
             <FormSection header='Tags'>
                 {
-                    tags.length>0 && 
+                    tags !== undefined && 
                     <Grid container spacing={{ xs: 2, md: 2 }} columns={{ xs: 4, sm: 8, md: 8 }}>
                         <Grid item xs={2} sm={4} md={4}>
                             <Text> Key </Text>
@@ -233,7 +234,7 @@ const TrainingJobProp: FunctionComponent = () => {
                     </Grid>
                 }
                 {
-                    tags.map((tag, index) => (
+                    tags !== undefined && tags.map((tag, index) => (
                         <Grid container spacing={{ xs: 2, md: 2 }} columns={{ xs: 4, sm: 8, md: 8 }}>
                             <Grid item xs={2} sm={4} md={4}>
                                 <Text>{tag.key}</Text>
