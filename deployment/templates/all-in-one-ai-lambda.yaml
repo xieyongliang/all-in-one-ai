@@ -157,15 +157,15 @@ Resources:
             - Eip1 : !Ref Eip1
               Eip2 : !Ref Eip2
 
-AnnotationGatewayResourceAnnotation:
-    Type: AWS::AnnotationGateway::Resource
+  AnnotationGatewayResourceAnnotation:
+    Type: AWS::ApiGateway::Resource
     Properties:
-      ParentId: !GetAtt AnnotationGatewayRestAnnotation.RootResourceId
+      ParentId: !GetAtt ApiGatewayRestApi.RootResourceId
       PathPart: 'annotation'
-      RestAnnotationId: !Ref AnnotationGatewayRestAnnotation
+      RestAnnotationId: !Ref ApiGatewayRestApi
 
   AnnotationGatewayMethodAnnotationGet:
-    Type: AWS::AnnotationGateway::Method
+    Type: AWS::ApiGateway::Method
     Properties:
       AnnotationKeyRequired: false
       AuthorizationType: NONE
@@ -182,7 +182,7 @@ AnnotationGatewayResourceAnnotation:
       RestAnnotationId: !Ref ApiGatewayRestApi   
 
   AnnotationGatewayMethodAnnotationPost:
-    Type: AWS::AnnotationGateway::Method
+    Type: AWS::ApiGateway::Method
     Properties:
       AnnotationKeyRequired: false
       AuthorizationType: NONE
