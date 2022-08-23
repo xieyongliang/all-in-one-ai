@@ -66,11 +66,11 @@ export function addLabelImageData(imageData: LabelImageData[]): LabelsActionType
     };
 }
 
-export function updateLabelImageData(imageData: LabelImageData[]): LabelsActionTypes {
+export function updateLabelImageData(imagesData: LabelImageData[]): LabelsActionTypes {
     return {
         type: Action.UPDATE_LABEL_IMAGES_DATA,
         payload: {
-            imageData,
+            imagesData,
         },
     };
 }

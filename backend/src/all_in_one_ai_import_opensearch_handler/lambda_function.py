@@ -3,7 +3,6 @@ import os
 import helper
 import boto3
 from botocore.exceptions import ClientError
-from elasticsearch import Elasticsearch
 import traceback
 
 sqs_resource = boto3.resource('sqs')
@@ -81,5 +80,3 @@ def get_s3_images(bucket, key):
         return s3uris
     except ClientError as e:
         print(str(e))
-    else:
-        print('Operatio completed')

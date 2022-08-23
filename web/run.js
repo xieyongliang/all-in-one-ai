@@ -414,7 +414,16 @@ app.use(createProxyMiddleware('/deploy', {
     changeOrigin: true,
     secure: false,
     ws: false,
-})); 
+}));    
+app.use(createProxyMiddleware('/annotation', {
+    target: baseUrl + '/annotation',
+    pathRewrite: {
+        '^/annotation': ''
+    },
+    changeOrigin: true,
+    secure: false,
+    ws: false,
+}));  
 
 app.use(express.static(path.join(__dirname, 'build')));
 

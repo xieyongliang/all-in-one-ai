@@ -33,7 +33,6 @@ const TransformJobProp: FunctionComponent = () => {
         axios.get(`/transformjob/${id}`)
             .then((response) => {
             if(response.data.length > 0) {
-                console.log(response.data[0])
                 setTransformJobName(response.data[0].TransformJobName);
                 setCreationTime(response.data[0].CreationTime);
                 setTransformStartTime(response.data[0].TransformStartTime);
@@ -49,8 +48,7 @@ const TransformJobProp: FunctionComponent = () => {
                 setDataProcessing(response.data[0].DataProcessing)
                 setTransformResources(response.data[0].TransformResources);
                 setEnvironment(response.data[0].Environment);
-                if('tags' in response.data[0])
-                    setTags(response.data[0].tags)
+                setTags(response.data[0].tags)
                 setLoading(false);
             }
         }, (error) => {
@@ -243,7 +241,7 @@ const TransformJobProp: FunctionComponent = () => {
                     </Grid>
                 }
                 {
-                    tags.map((tag, index) => (
+                    tags !== undefined && tags.map((tag, index) => (
                         <Grid container spacing={{ xs: 2, md: 2 }} columns={{ xs: 4, sm: 8, md: 8 }}>
                             <Grid item xs={2} sm={4} md={4}>
                                 <Text>{tag.key}</Text>

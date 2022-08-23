@@ -167,13 +167,13 @@ const GluonCVDemoForm: FunctionComponent<IProps> = (
     const renderOriginImageList = () => {
         if(loading)
             return (
-                <Container headingVariant='h4' title = 'Browse image file from sample list'>
+                <Container headingVariant='h4' title = 'Sample data'>
                     <LoadingIndicator label='Loading...'/>
                 </Container>
             )
         else
             return (
-                <Container headingVariant='h4' title = 'Browse image file from sample list'>
+                <Container headingVariant='h4' title = 'Sample data'>
                     <ImageList cols={10} rowHeight={64} gap={10} variant={'quilted'}>
                         {
                             originImageItems.map((item) => (

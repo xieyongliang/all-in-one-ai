@@ -16,7 +16,7 @@ import {connect} from "react-redux";
 import LabelInputField from "../LabelInputField/LabelInputField";
 import {LabelActions} from "../../../../logic/actions/LabelActions";
 import {LabelStatus} from "../../../../data/enums/LabelStatus";
-import {findLast} from "lodash";
+import { findLast } from "lodash";
 import { Typography } from '@mui/material';
 import axios from 'axios';
 import { AnnotationFormatType } from '../../../../data/enums/AnnotationFormatType';
@@ -25,32 +25,36 @@ import { ImporterSpecData } from '../../../../data/ImporterSpecData';
 import { useParams } from 'react-router-dom';
 import { PathParams } from '../../../../components/Interfaces/PathParams';
 import { store } from '../../../..';
-import { Stack, Select, Button } from 'aws-northstar';
+import { Stack, Button } from 'aws-northstar';
 import { SelectOption } from 'aws-northstar/components/Select';
 import { LabelsSelector } from '../../../../store/selectors/LabelsSelector';
+import { ProjectSubType } from '../../../../data/enums/ProjectType';
+import Select from '../../../../components/Utils/Select';
 
 interface IProps {
     size: ISize;
     imageData: LabelImageData;
     activeLabelId: string;
+    activeImageIndex: number;
     highlightedLabelId: string;
     labelNames: LabelName[];
-    imageBucket?: string;
-    imageKey?: string;
+    projectSubType: ProjectSubType;
+    imageBuckets?: string[];
+    imageKeys?: string[];
     imageId?: string;
     imageLabels: string[];
     imageColors: string[];
     imageAnnotations?: string[];
-    imageName: string;
+    imageNames: string[];
     updateActiveLabelId: (activeLabelId: string) => any;
     updateActiveLabelNameId: (activeLabelId: string) => any;
     updateLabelImageDataById: (id: string, newImageData: LabelImageData) => any;
     updateLabelImageData: (imagesData) => any;
     updateLabelNames: (labelNames) => any;
     updateActiveLabelType : (LabelType) => any;
+    onLoaded: () => any;
     onProcessing: () => any;
     onProcessed: () => any;
-    onLoaded: () => any;
 }
 
 const RectLabelsList: React.FC<IProps> = (
@@ -58,21 +62,23 @@ const RectLabelsList: React.FC<IProps> = (
     size, 
     imageData, 
     labelNames, 
+    projectSubType,
     activeLabelId, 
+    activeImageIndex,
     highlightedLabelId, 
-    imageBucket,
-    imageKey,
+    imageBuckets,
+    imageKeys,
     imageId,
     imageLabels,
     imageColors,
     imageAnnotations,
-    imageName,
+    imageNames,
     updateLabelImageDataById,
     updateActiveLabelNameId, 
     updateActiveLabelId,
+    onLoaded,
     onProcessing,
-    onProcessed,
-    onLoaded
+    onProcessed
 }) => {
     const [ yolov5Endpoints, setYolov5Endpoints ] = useState([]);
     const [ selectedYolov5Endpoint, setSelectedYolov5Endpoint ] = useState<SelectOption>();
@@ -159,18 +165,14 @@ const RectLabelsList: React.FC<IProps> = (
         });
     };
 
-    const onChange = (id, event) => {
-        setSelectedYolov5Endpoint({label: event.target.value, value: event.target.value})
-    }
-
     const getInference = async () => {
         onProcessing()
 
         var response = undefined
-        if(imageBucket !== undefined && imageKey!== undefined)
-            response = await axios.get('/_inference/sample', { params : { endpoint_name: selectedYolov5Endpoint.value, bucket: imageBucket, key: imageKey } })
+        if(imageBuckets !== undefined && imageKeys !== undefined && imageBuckets[activeImageIndex] !== undefined && imageKeys[activeImageIndex]!== undefined)
+            response = await axios.get('/_inference/sample', { params : { endpoint_name: selectedYolov5Endpoint.value, bucket: imageBuckets[activeImageIndex], key: imageKeys[activeImageIndex] } })
         else if(imageId !== undefined)
-            response = await axios.get(`/_inference/image/${imageId}`, { params : { endpoint_name: selectedYolov5Endpoint.value, bucket: imageBucket, key: imageKey } })
+            response = await axios.get(`/_inference/image/${imageId}`, { params : { endpoint_name: selectedYolov5Endpoint.value } })
 
         if(response === undefined)
             return response
@@ -191,14 +193,17 @@ const RectLabelsList: React.FC<IProps> = (
         });
 
         store.dispatch(updateLabelNames(labelNames));
-    }, [ computedAnnotations, imageColors, imageLabels]);
+        onProcessed();
+    }, [ computedAnnotations, imageColors, imageLabels, onProcessed]);
 
-    const onAnnotationsLoadFailure = (error?:Error) => {    
+    const onAnnotationsLoadFailure = useCallback((error?:Error) => {   
+        onProcessed(); 
         console.log(error)
-    };
+    }, [onProcessed]);
 
     const importAnnotations = useCallback(() => {
         var labelsFile = new File(imageLabels, 'labels.txt');
+        var imageName = imageNames[activeImageIndex];
         var annotationFile = new File(computedAnnotations, `${imageName}.txt`);
         
         const formatType = AnnotationFormatType.YOLO
@@ -206,7 +211,7 @@ const RectLabelsList: React.FC<IProps> = (
                 
         const importer = new (ImporterSpecData[formatType])([labelType])
         importer.import([labelsFile, annotationFile], onAnnotationLoadSuccess, onAnnotationsLoadFailure);         
-    }, [ computedAnnotations, imageLabels, imageName, onAnnotationLoadSuccess ]);
+    }, [ computedAnnotations, imageLabels, imageNames, activeImageIndex, onAnnotationLoadSuccess, onAnnotationsLoadFailure ]);
 
     const onInference = () => {
         getInference().then(data => {
@@ -235,10 +240,14 @@ const RectLabelsList: React.FC<IProps> = (
             });
                 
             importAnnotations();
-            onProcessed();
         }, (error) => {
             console.log(error);
+            onProcessed();
         });
+    }
+
+    const onChange = (option: SelectOption) => {
+        setSelectedYolov5Endpoint(option)
     }
 
     return (
@@ -248,23 +257,24 @@ const RectLabelsList: React.FC<IProps> = (
             onClickCapture={onClickHandler}
         >
             <Scrollbars>
-                <Stack>
-                    <div className='Command'>
-                        <div>
-                            <Typography gutterBottom component="div">
-                                Select endpoint for object detection
-                            </Typography>    
-                        </div>
-                        <div>                   
-                            <Select
+                {
+                    projectSubType === ProjectSubType.OBJECT_DETECTION && 
+                    <Stack>
+                        <div className='Command'>
+                            <div>
+                                <Typography gutterBottom component="div">
+                                    Select endpoint for object detection
+                                </Typography>    
+                            </div>
+                            <Select 
                                 options = {yolov5Endpoints}
-                                selectedOption = {selectedYolov5Endpoint}
-                                onChange = {(event) => onChange('YolovtEndpoints', event)}
+                                placeholder = 'Choose an option'
+                                onChange = {onChange}
                             />
+                            <Button variant='primary' size="small" onClick={onInference}>Run</Button>
                         </div>
-                        <Button variant="primary" size="small" onClick={onInference}>Run</Button>
-                    </div>
-                </Stack>
+                    </Stack>
+                }
                 <div
                     className="RectLabelsListContent"
                     style={listStyleContent}
@@ -287,8 +297,10 @@ const mapDispatchToProps = {
 
 const mapStateToProps = (state: AppState) => ({
     activeLabelId: state.labels.activeLabelId,
+    activeImageIndex: state.labels.activeImageIndex,
     highlightedLabelId: state.labels.highlightedLabelId,
-    labelNames : state.labels.labels
+    labelNames : state.labels.labels,
+    projectSubType: state.general.projectData.subType,
 });
 
 export default connect(

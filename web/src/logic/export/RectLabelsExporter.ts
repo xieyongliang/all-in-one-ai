@@ -1,4 +1,4 @@
-import { AnnotationFormatType } from '../../data/enums/AnnotationFormatType';
+import { ExportDataFormatType, AnnotationFormatType } from '../../data/enums/AnnotationFormatType';
 import { LabelImageData, LabelName, LabelRect } from '../../store/labels/types';
 import { ImageRepository } from '../imageRepository/ImageRepository';
 import JSZip from 'jszip';
@@ -13,7 +13,7 @@ import { NumberUtil } from '../../utils/NumberUtil';
 import { RectUtil } from '../../utils/RectUtil';
 
 export class RectLabelsExporter {
-    public static export(exportFormatType: AnnotationFormatType): void {
+    public static export(exportFormatType: AnnotationFormatType, imageBuckets?: string[], imageKeys?: string[]): void {
         switch (exportFormatType) {
             case AnnotationFormatType.YOLO:
                 RectLabelsExporter.exportAsYOLO();
@@ -26,6 +26,15 @@ export class RectLabelsExporter {
                 break;
             default:
                 return;
+        }
+    }
+
+    public static exportData(exportDataFormatType: ExportDataFormatType, imageBuckets: string[], imageKeys: string[]): Object[] {
+        switch (exportDataFormatType) {
+            case ExportDataFormatType.YOLOData:
+                return RectLabelsExporter.exportAsYOLOData(imageBuckets, imageKeys);
+            default:
+                return [{}];
         }
     }
 
@@ -56,6 +65,24 @@ export class RectLabelsExporter {
         }
     }
 
+    private static exportAsYOLOData(imageBuckets: string[], imageKeys: string[]): Object[] {
+        const outputs = []
+        
+        var index = 0;
+        LabelsSelector.getImagesData()
+            .forEach((imageData: LabelImageData) => {
+                const fileContent: string = RectLabelsExporter.wrapRectLabelsIntoYOLO(imageData);
+                var output = {
+                    bucket: imageBuckets[index],
+                    key: imageKeys[index],
+                    data: fileContent
+                }
+                outputs.push(output);
+                index++;
+            });
+        return outputs;
+    }
+
     public static wrapRectLabelIntoYOLO(labelRect: LabelRect, labelNames: LabelName[], imageSize: ISize): string {
         const snapAndFix = (value: number) => NumberUtil.snapValueToRange(value,0, 1).toFixed(6)
         const classIdx: string = findIndex(labelNames, {id: labelRect.labelId}).toString()
@@ -80,7 +107,7 @@ export class RectLabelsExporter {
         return [classIdx, ...processedBBox].join(' ')
     }
 
-    private static wrapRectLabelsIntoYOLO(imageData: LabelImageData): string {
+    public static wrapRectLabelsIntoYOLO(imageData: LabelImageData): string {
         if (imageData.labelRects.length === 0 || !imageData.loadStatus)
             return null;
 

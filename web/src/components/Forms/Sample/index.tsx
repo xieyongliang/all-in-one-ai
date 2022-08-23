@@ -111,23 +111,24 @@ const SampleForm: FunctionComponent<IProps> = (props) => {
 
         var labelsData : string[] = [];
         imageLabels.forEach(label => {
-            labelsData.push(label + '\r');
+            labelsData.push(label + '\n');
         })
 
         var imageName = imageKey.substring(imageKey.lastIndexOf('/') + 1, imageKey.lastIndexOf('.'))
 
         return (
             <ImageAnnotate 
-                imageUri = {curImageItem} 
+                imageUris = {[curImageItem]} 
                 imageLabels = {labelsData} 
                 imageColors = {COLORS} 
-                imageBucket = {imageBucket} 
-                imageKey = {imageKey}
-                imageName = {imageName}
+                imageBuckets = {[imageBucket]} 
+                imageKeys = {[imageKey]}
+                imageNames = {[imageName]}
+                projectName = {industrialModel.name}
                 type = {props.type}
                 subType = {props.subType}
-                visible = {visibleImagePreview} 
-                onClose = {onImageClose}
+                onClosed = {onImageClose}
+                activeIndex = {0}
             />
         )
     }
@@ -135,13 +136,13 @@ const SampleForm: FunctionComponent<IProps> = (props) => {
     const renderImageList = () => {
         if(loading)
             return (
-                <Container title = 'Select image file from sample list'>
+                <Container title = 'Sample data'>
                     <LoadingIndicator label='Loading...'/>
                 </Container>
             )
         else {
             return (
-                <Container title = 'Select image file from sample list'>
+                <Container title = 'Sample data'>
                     <ImageList cols={10} rowHeight={64} gap={10} variant={'quilted'}>
                         {
                             imageItems.length > 0 && 
@@ -159,10 +160,22 @@ const SampleForm: FunctionComponent<IProps> = (props) => {
                             ))
                         }
                     </ImageList>
-                    <Pagination page={imagePage} onChange={(event, value) => onChange('formFieldIdPage', value)} count={Math.ceil(imageCount / 20)} />
+                    <div style={{textAlign: "center"}}>
+                        <div style={{display: "inline-block", margin: "auto"}}>
+                            <Pagination page={imagePage} onChange={(event, value) => onChange('formFieldIdPage', value)} count={Math.ceil(imageCount / 20)} />
+                        </div>
+                    </div>
                 </Container>
             )
         }
+    }
+
+    const onStartBatchAnnotation = () => {
+        var s3uri =  industrialModel.samples;
+        var labels = industrialModel.labels;
+        var projectName = industrialModel.name;
+        var data = JSON.stringify({s3uri: s3uri, labels: labels, projectName: projectName})
+        history.push(`/batchannotation#${data}}`)
     }
 
     const onStartTrain = () => {
@@ -177,6 +190,12 @@ const SampleForm: FunctionComponent<IProps> = (props) => {
         return (
             <Container headingVariant='h4' title = 'Quick start'>
                 <Inline>
+                    {
+                        (algorithm === 'yolov5') &&
+                        <div className='quickstartaction'>
+                            <Button onClick={onStartBatchAnnotation} disabled={!trainable}>Start batch annotation</Button>
+                        </div>
+                    }
                     <div className='quickstartaction'>
                         <Button onClick={onStartTrain} disabled={!trainable}>Start train</Button>
                     </div>

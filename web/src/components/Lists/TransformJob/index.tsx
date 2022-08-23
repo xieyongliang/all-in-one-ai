@@ -217,7 +217,7 @@ const TransformJobList: FunctionComponent<IProps> = (props) => {
             });
             var labelsData : string[] = [];
             imageLabels.forEach(label => {
-                labelsData.push(label + '\r');
+                labelsData.push(label + '\n');
             })
             setImageAnnotations(annotationData)
             setImageLabels(labelsData)
@@ -540,17 +540,20 @@ const TransformJobList: FunctionComponent<IProps> = (props) => {
         httpUri = httpUri.substring(0, httpUri.lastIndexOf('?'))
         var imageName = httpUri.substring(httpUri.lastIndexOf('/') + 1, httpUri.lastIndexOf('.'))
 
+        var industrialModel = industrialModels.find((item) => item.id === params.id)
+
         return (
             <ImageAnnotate 
-                imageUri = {curImageItem} 
+                imageUris = {[curImageItem]} 
                 imageLabels = {imageLabels} 
                 imageColors = {COLORS}
                 imageAnnotations = {imageAnnotations}
-                imageName = {imageName}
+                imageNames = {[imageName]}
+                projectName = {industrialModel.name}
                 type = {ProjectType.TEXT_RECOGNITION}
                 subType = {ProjectSubType.OBJECT_DETECTION}
-                visible = {visibleImagePreview} 
-                onClose = {onImageClose}
+                onClosed = {onImageClose}
+                activeIndex = {0}
             />
         )
     }

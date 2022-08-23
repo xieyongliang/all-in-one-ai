@@ -36,7 +36,6 @@ const TrainingJobProp: FunctionComponent = () => {
         axios.get(`/trainingjob/${id}`)
             .then((response) => {
             if(response.data.length > 0) {
-                console.log(response.data[0])
                 setTrainingJobName(response.data[0].TrainingJobName)
                 setCreationTime(getUtcDate(response.data[0].CreationTime))
                 setLastModifiedTime(getUtcDate(response.data[0].LastModifiedTime))

@@ -9,5 +9,6 @@ export enum ProjectType {
 }
 
 export enum ProjectSubType {
-    OBJECT_DETECTION = 'OBJECT_DETECTION'
+    OBJECT_DETECTION = 'OBJECT_DETECTION',
+    BATCH_LABEL = 'BATCH_LABEL'
 }

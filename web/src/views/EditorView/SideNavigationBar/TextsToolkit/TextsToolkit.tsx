@@ -16,8 +16,8 @@ interface IProps {
     activeImageIndex:number,
     imagesData: TextImageData[];
     projectType: ProjectType;
-    imageBucket?: string;
-    imageKey?: string;
+    imageBuckets?: string[];
+    imageKeys?: string[];
     imageId?: string;
     updateActiveLabelType: (activeLabelType: LabelType) => any;
     updateTextImageDataById: (id: string, newImageData: TextImageData) => any;
@@ -83,8 +83,8 @@ class TextsToolkit extends React.Component<IProps, IState> {
                         height: activeContentHeight - 20
                     }}
                     imageData = {imagesData[activeImageIndex]}
-                    imageBucket = {this.props.imageBucket}
-                    imageKey = {this.props.imageKey}
+                    imageBucket = {this.props.imageBuckets !== undefined ? this.props.imageBuckets[activeImageIndex] : undefined}
+                    imageKey = {this.props.imageKeys !== undefined ? this.props.imageKeys[activeImageIndex] : undefined}
                     imageId = {this.props.imageId}
                     onProcessing = {this.props.onProcessing}
                     onProcessed = {this.props.onProcessed}
@@ -114,7 +114,7 @@ const mapDispatchToProps = {
 const mapStateToProps = (state: AppState) => ({
     activeImageIndex: state.texts.activeImageIndex,
     imagesData: state.texts.imagesData,
-    projectType: state.general.projectData.type,
+    projectType: state.general.projectData.type
 });
 
 export default connect(

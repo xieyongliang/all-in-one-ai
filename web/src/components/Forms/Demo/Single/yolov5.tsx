@@ -4,7 +4,7 @@ import InferenceForm from '../../Inference';
 import SampleForm from '../../Sample';
 import { useParams, useLocation, useHistory } from 'react-router-dom';
 import { PathParams } from '../../../Interfaces/PathParams';
-import { ProjectType } from '../../../../data/enums/ProjectType';
+import { ProjectSubType, ProjectType } from '../../../../data/enums/ProjectType';
 import { v4 as uuidv4 } from 'uuid';
 
 interface IProps {
@@ -51,8 +51,8 @@ const Yolov5DemoForm: FunctionComponent<IProps> = (
                     <Toggle label='Advanced mode' checked={advancedMode} onChange={onAdvancedModeChange}/>
                 </FormField>
             </Container>
-            {demoOption === 'sample' && <SampleForm type={ProjectType.OBJECT_DETECTION_RECT}/>}
-            {demoOption === 'uploaded' && <InferenceForm type={ProjectType.OBJECT_DETECTION_RECT}/>}
+            {demoOption === 'sample' && <SampleForm type={ProjectType.OBJECT_DETECTION_RECT} subType={ProjectSubType.OBJECT_DETECTION}/>}
+            {demoOption === 'uploaded' && <InferenceForm type={ProjectType.OBJECT_DETECTION_RECT} subType={ProjectSubType.OBJECT_DETECTION}/>}
         </Stack>
     )
 }

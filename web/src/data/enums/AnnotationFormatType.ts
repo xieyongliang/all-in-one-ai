@@ -7,3 +7,8 @@ export enum AnnotationFormatType {
     VGG = 'VGG',
     PPOCR = 'PPOCR'
 }
+
+export enum ExportDataFormatType {
+    YOLOData = 'YOLOData',
+    PPOCRData = 'PPOCRData'
+}

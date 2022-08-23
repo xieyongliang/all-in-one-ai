@@ -17,13 +17,14 @@ import axios from 'axios';
 import { TextsSelector } from '../../../../store/selectors/TextsSelector';
 import { TextUtil } from '../../../../utils/TextUtil';
 import { store } from '../../../..';
-import { Button, Select, Stack, Toggle } from 'aws-northstar';
+import { Button, Stack, Toggle } from 'aws-northstar';
 import { SelectOption } from 'aws-northstar/components/Select';
 import { IIndustrialModel } from '../../../../store/industrialmodels/reducer';
 import { IPoint } from '../../../../interfaces/IPoint';
 import { updateReverseLineColor } from '../../../../store/general/actionCreators';
 import { useParams } from 'react-router-dom';
 import { PathParams } from '../../../../components/Interfaces/PathParams';
+import Select from '../../../../components/Utils/Select';
 
 interface IProps {
     size: ISize;
@@ -125,7 +126,7 @@ const PolygonTextsList: React.FC<IProps> = (
                                 index++;
                                 if(index === count) {
                                     paddleocrEndpointItems.forEach((paddleocrEndpointItem) => {
-                                        paddleocrEndpointOptions.push({key: paddleocrEndpointItem, value: paddleocrEndpointItem})
+                                        paddleocrEndpointOptions.push({label: paddleocrEndpointItem, value: paddleocrEndpointItem})
                                     })
                                     setPaddleOCREndpointOptions(paddleocrEndpointOptions);
                                     setLoadingPaddleOCR(false);
@@ -139,7 +140,7 @@ const PolygonTextsList: React.FC<IProps> = (
                                     paddleocrEndpointItems = [...new Set([...paddleocrEndpointItems, ...endpointItems])];
                                     if(index === count) {
                                         paddleocrEndpointItems.forEach((paddleocrEndpointItem) => {
-                                            paddleocrEndpointOptions.push({key: paddleocrEndpointItem, value: paddleocrEndpointItem})
+                                            paddleocrEndpointOptions.push({label: paddleocrEndpointItem, value: paddleocrEndpointItem})
                                         })    
                                         setPaddleOCREndpointOptions(paddleocrEndpointOptions);
                                         setLoadingPaddleOCR(false);
@@ -203,7 +204,7 @@ const PolygonTextsList: React.FC<IProps> = (
                                     yolov5EndpointItems = [...new Set([...yolov5EndpointItems, ...endpointItems])]
                                     if(index === count) {
                                         yolov5EndpointItems.forEach((yolov5EndpointItem) => {
-                                            yolov5EndpointOptions.push({key: yolov5EndpointItem, value: yolov5EndpointItem})
+                                            yolov5EndpointOptions.push({label: yolov5EndpointItem, value: yolov5EndpointItem})
                                         })
                                         setYolov5EndpointOptions([...yolov5EndpointOptions]);
                                         setYolov5EndpointsMapping(yolov5EndpointsMapping);
@@ -272,13 +273,13 @@ const PolygonTextsList: React.FC<IProps> = (
         });
     };
 
-    const onChange = (id, event) => {
+    const onChange = (id, option) => {
         if(id === 'PaddleOCR')
-            setSelectedPaddleOCREndpoint({label: event.target.value, value: event.target.value})
+            setSelectedPaddleOCREndpoint(option)
         if(id === 'Yolov5')
-            setSelectedYolov5Endpoint({label: event.target.value, value: event.target.value})
+            setSelectedYolov5Endpoint(option)
         if(id === 'TextField')
-            setSelectedTextField({label: event.target.value, value: event.target.value})
+            setSelectedTextField(option)
     }
 
     const getYolov5Inference = async () => {

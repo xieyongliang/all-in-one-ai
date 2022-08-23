@@ -13,15 +13,26 @@ def lambda_handler(event, context):
         s3uri = None
         if('s3uri' in event['queryStringParameters']):
             s3uri = event['queryStringParameters']['s3uri']
+
         page_size = 20
         if('page_size' in event['queryStringParameters']):
             page_size = int(event['queryStringParameters']['page_size'])
+
         page_num = 1
         if('page_num' in event['queryStringParameters']):
             page_num = int(event['queryStringParameters']['page_num'])
-    
+
+        include_filters = []
+        if('include_filters' in event['queryStringParameters']):
+            include_filters = (event['queryStringParameters']['include_filters']).split(',')
+
+        exclude_filters = []
+        if('exclude_filters' in event['queryStringParameters']):
+            exclude_filters = (event['queryStringParameters']['exclude_filters']).split(',')
+
         index = 0
         num_directories = 0
+        num_igonored = 0
         if(s3uri != None):
             bucket, key = get_bucket_and_key(s3uri)
             s3_bucket = s3_resource.Bucket(bucket)
@@ -30,10 +41,34 @@ def lambda_handler(event, context):
             payload = []
             for obj in objs:
                 filename = obj.key[obj.key.rfind('/') + 1 : ]
+                print(filename)
+                
+                if(filename.startswith('.')):
+                    num_igonored += 1
+                    continue
+                
+                ignored = False
+                for include_filter in include_filters:                    
+                    if(filename.endswith(include_filter)):
+                        break
+                if(ignored):
+                    num_igonored += 1
+                    continue
+                
+                ignored = False
+                for exclude_filter in exclude_filters:                    
+                    if(filename.endswith(exclude_filter)):
+                        ignored = True
+                        break
+                if(ignored):
+                    num_igonored += 1
+                    continue
+                
                 if(filename.find('.') == -1):
                     if(obj.get()['ContentType'].startswith('application/x-directory')):
                         num_directories += 1
                         continue
+                
                 if(index >= (page_num - 1) * page_size and index < page_num * page_size):
                     payload.append({
                         'httpuri': get_presigned_url(bucket, obj.key),
@@ -41,14 +76,13 @@ def lambda_handler(event, context):
                         'key': obj.key
                     })
                 index += 1
-            print(payload)
-            print(objs)
+
             return {
                 'statusCode': 200,
                 'body': json.dumps(
                     {
                         'payload': payload,
-                        'count': len(objs) - num_directories
+                        'count': len(objs) - num_directories - num_igonored
                     }
                 )
             }

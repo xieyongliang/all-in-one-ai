@@ -178,81 +178,116 @@ Resources:
   Parameter17:
     Type: AWS::SSM::Parameter
     Properties:
+      Name: /all_in_one_ai/config/meta/algorithms/yolov5/artifact
+      Type: String
+      Value: !Sub s3://${S3Bucket}/${S3Key}algorithms/yolov5/artifact/model.tar.gz
+
+  Parameter18:
+    Type: AWS::SSM::Parameter
+    Properties:
       Name: /all_in_one_ai/config/meta/algorithms/gluoncv/industrialmodels
       Type: String
       Value: !Sub s3://${S3Bucket}/${S3Key}algorithms/gluoncv/industrialmodels/
 
-  Parameter18:
+  Parameter19:
     Type: AWS::SSM::Parameter
     Properties:
       Name: /all_in_one_ai/config/meta/algorithms/gluoncv/source
       Type: String
       Value: !Sub s3://${S3Bucket}/${S3Key}algorithms/gluoncv/source/sourcedir.tar.gz
 
-  Parameter19:
+  Parameter20:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /all_in_one_ai/config/meta/algorithms/gluoncv/artifact
+      Type: String
+      Value: !Sub s3://${S3Bucket}/${S3Key}algorithms/gluoncv/artifact/model.tar.gz
+
+  Parameter21:
     Type: AWS::SSM::Parameter
     Properties:
       Name: /all_in_one_ai/config/meta/algorithms/paddleocr/industrialmodels
       Type: String
       Value: !Sub s3://${S3Bucket}/${S3Key}algorithms/paddleocr/industrialmodels/
 
-  Parameter20:
-    Type: AWS::SSM::Parameter
-    Properties:
-      Name: /all_in_one_ai/config/meta/algorithms/paddleocr/artifact
-      Type: String
-      Value: !Sub s3://${S3Bucket}/${S3Key}algorithms/paddleocr/artifact/model.tar.gz
-
-  Parameter21:
+  Parameter22:
     Type: AWS::SSM::Parameter
     Properties:
       Name: /all_in_one_ai/config/meta/algorithms/paddleocr/source
       Type: String
       Value: !Sub s3://${S3Bucket}/${S3Key}algorithms/paddleocr/source/sourcedir.tar.gz
 
-  Parameter22:
+  Parameter23:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /all_in_one_ai/config/meta/algorithms/paddleocr/artifact
+      Type: String
+      Value: !Sub s3://${S3Bucket}/${S3Key}algorithms/paddleocr/artifact/model.tar.gz
+
+  Parameter24:
     Type: AWS::SSM::Parameter
     Properties:
       Name: /all_in_one_ai/config/meta/algorithms/cpt/industrialmodels
       Type: String
       Value: !Sub s3://${S3Bucket}/${S3Key}algorithms/cpt/industrialmodels/
 
-  Parameter23:
+  Parameter25:
     Type: AWS::SSM::Parameter
     Properties:
       Name: /all_in_one_ai/config/meta/algorithms/cpt/source
       Type: String
       Value: !Sub s3://${S3Bucket}/${S3Key}algorithms/cpt/source/sourcedir.tar.gz
 
-  Parameter24:
+  Parameter26:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /all_in_one_ai/config/meta/algorithms/cpt/artifact
+      Type: String
+      Value: !Sub s3://${S3Bucket}/${S3Key}algorithms/cpt/artifact/model.tar.gz
+
+  Parameter27:
     Type: AWS::SSM::Parameter
     Properties:
       Name: /all_in_one_ai/config/meta/algorithms/gabsa/industrialmodels
       Type: String
       Value: !Sub s3://${S3Bucket}/${S3Key}algorithms/gabsa/industrialmodels/
 
-  Parameter25:
+  Parameter28:
     Type: AWS::SSM::Parameter
     Properties:
       Name: /all_in_one_ai/config/meta/algorithms/gabsa/source
       Type: String
       Value: !Sub s3://${S3Bucket}/${S3Key}algorithms/gabsa/source/sourcedir.tar.gz
 
-  Parameter26:
+  Parameter29:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /all_in_one_ai/config/meta/algorithms/gabsa/artifact
+      Type: String
+      Value: !Sub s3://${S3Bucket}/${S3Key}algorithms/gabsa/artifact/model.tar.gz
+
+  Parameter30:
     Type: AWS::SSM::Parameter
     Properties:
       Name: /all_in_one_ai/config/meta/algorithms/paddlenlp/industrialmodels
       Type: String
       Value: !Sub s3://${S3Bucket}/${S3Key}algorithms/paddlenlp/industrialmodels/
 
-  Parameter27:
+  Parameter31:
     Type: AWS::SSM::Parameter
     Properties:
       Name: /all_in_one_ai/config/meta/algorithms/paddlenlp/source
       Type: String
       Value: !Sub s3://${S3Bucket}/${S3Key}algorithms/paddlenlp/source/sourcedir.tar.gz
 
-  Parameter28:
+  Parameter32:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /all_in_one_ai/config/meta/algorithms/paddlenlp/artifact
+      Type: String
+      Value: !Sub s3://${S3Bucket}/${S3Key}algorithms/paddlenlp/artifact/model.tar.gz
+
+  Parameter33:
     Type: AWS::SSM::Parameter
     Properties:
       Name: /all_in_one_ai/config/meta/algorithms/mdeberta/industrialmodels

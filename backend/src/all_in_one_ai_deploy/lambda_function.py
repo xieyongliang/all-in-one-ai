@@ -24,7 +24,10 @@ def lambda_handler(event, context):
         endpoint_name = request['endpoint_name']
         instance_type = request['instance_type']
         instance_count = request['initial_instance_count']
-                
+
+        if(model_data_url == None):
+            model_data_url =  ssmh.get_parameter('/all_in_one_ai/config/meta/algorithms/{0}/artifact'.format(algorithm))
+
         if(algorithm == 'yolov5'):            
             source_dir = ssmh.get_parameter('/all_in_one_ai/config/meta/algorithms/{0}/source'.format(algorithm))
 
@@ -35,7 +38,7 @@ def lambda_handler(event, context):
                     'entry_point': 'inference.py',
                     'source_dir': source_dir,
                     'py_version': 'py38',
-                    'framework_version': '1.9.0',
+                    'framework_version': '1.10.2',
                     'model_name': model_name,
                     'model_data': model_data_url,
                     'model_environment': model_environment,
@@ -152,8 +155,6 @@ def lambda_handler(event, context):
             )
         elif(algorithm == 'paddleocr'):
             source_dir = ssmh.get_parameter('/all_in_one_ai/config/meta/algorithms/{0}/source'.format(algorithm))
-            if(model_data_url == None):
-                model_data_url =  ssmh.get_parameter('/all_in_one_ai/config/meta/algorithms/paddleocr/artifact')
 
             payload = {
                 'body': {

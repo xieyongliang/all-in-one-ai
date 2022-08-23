@@ -16,14 +16,11 @@ do
     size=${#array[@]}
     index=$((size - 1))
     algorithm=${array[$index]}
-    if [ ${algorithm} = 'paddleocr' ]; 
-    then
-        touch dummy
-        tar czvf model.tar.gz dummy
-        aws s3 cp model.tar.gz ${s3uri}/algorithms/${algorithm}/artifact/
-        rm dummy
-        rm model.tar.gz
-    fi
+    touch dummy
+    tar czvf model.tar.gz dummy
+    aws s3 cp model.tar.gz ${s3uri}/algorithms/${algorithm}/artifact/
+    rm dummy
+    rm model.tar.gz
     tar czvf sourcedir.tar.gz *
     aws s3 cp sourcedir.tar.gz ${s3uri}/algorithms/${algorithm}/source/
     rm sourcedir.tar.gz

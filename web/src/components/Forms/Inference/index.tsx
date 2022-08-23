@@ -100,20 +100,23 @@ const InferenceForm: FunctionComponent<IProps> = (props) => {
 
         var labelsData : string[] = [];
         imageLabels.forEach(label => {
-            labelsData.push(label + '\r');
+            labelsData.push(label + '\n');
         })
+
+        var industrialModel = industrialModels.find((item) => item.id === params.id)
 
         return (
             <ImageAnnotate 
-                imageUri = {imageUri} 
+                imageUris = {[imageUri]} 
                 imageLabels = {labelsData} 
                 imageColors = {COLORS} 
-                imageId = {curImageItem} 
-                imageName = {imageName}
+                imageId = { curImageItem } 
+                imageNames = {[imageName]}
+                projectName = {industrialModel.name}
                 type = {props.type}
                 subType = {props.subType}
-                visible = {visibleImagePreview} 
-                onClose = {onImageClose}
+                onClosed = {onImageClose}
+                activeIndex = {0}
             />
         )
     }

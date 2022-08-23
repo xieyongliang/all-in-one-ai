@@ -29,14 +29,15 @@ interface IProps {
     textImagesData: TextImageData[];
     activeContext: ContextType;
     projectType: ProjectType;
-    imageBucket?: string;
-    imageKey?: string;
+    imageBuckets?: string[];
+    imageKeys?: string[];
     imageId?: string;
     imageLabels: string[];
     imageColors: string[];
     imageAnnotations?: string[];
-    imageName: string;
+    imageNames: string[];
     onLoaded: () => any;
+    onClosed: () => any;
 }
 
 const EditorContainer: React.FC<IProps> = (
@@ -48,14 +49,15 @@ const EditorContainer: React.FC<IProps> = (
         textImagesData,
         activeContext,
         projectType,
-        imageBucket,
-        imageKey,
+        imageBuckets,
+        imageKeys,
         imageId,
         imageLabels,
         imageColors,
         imageAnnotations,
-        imageName,
-        onLoaded
+        imageNames,
+        onLoaded,
+        onClosed
     }) => {
     const [ leftTabStatus, setLeftTabStatus ] = useState(true);
     const [ rightTabStatus, setRightTabStatus ] = useState(true);
@@ -97,7 +99,14 @@ const EditorContainer: React.FC<IProps> = (
     };
 
     const leftSideBarRender = () => {
-        return <ImagesList/>
+        return (
+            <ImagesList
+                imageNames = {imageNames}
+                imageLabels = {imageLabels}
+                imageBuckets = {imageBuckets}
+                imageKeys = {imageKeys}
+            />
+        )
     };
 
     const rightSideBarButtonOnClick = () => {
@@ -125,8 +134,8 @@ const EditorContainer: React.FC<IProps> = (
         if(projectType === ProjectType.TEXT_RECOGNITION) 
             return (
                 <TextsToolkit 
-                    imageBucket = {imageBucket}
-                    imageKey = {imageKey}
+                    imageBuckets = {imageBuckets}
+                    imageKeys = {imageKeys}
                     imageId = {imageId}
                     onProcessing = {onProcessing} 
                     onProcessed = {onProcessed}
@@ -136,12 +145,12 @@ const EditorContainer: React.FC<IProps> = (
         else
             return (
                 <LabelsToolkit
-                    imageBucket = {imageBucket}
-                    imageKey = {imageKey}
+                    imageBuckets = {imageBuckets}
+                    imageKeys = {imageKeys}
                     imageId = {imageId}
                     imageColors = {imageColors}
                     imageLabels = {imageLabels}
-                    imageName = {imageName}
+                    imageNames = {imageNames}
                     imageAnnotations = {imageAnnotations}
                     onProcessing = {onProcessing} 
                     onProcessed = {onProcessed}
@@ -186,19 +195,22 @@ const EditorContainer: React.FC<IProps> = (
                     )   && 
                     <EditorTopNavigationBar 
                         key="editor-top-navigation-bar"
+                        imageBuckets = {imageBuckets}
+                        imageKeys = {imageKeys}
                         imageColors = {imageColors}
                         imageLabels = {imageLabels}
-                        imageName = {imageName}
-    
+                        onProcessing = {onProcessing}
+                        onProcessed = {onProcessed}
+                        onClosed = {onClosed}
                     />
                 }
                 {
-                    processing && <Dialog open={true}>
+                    processing && 
+                    <Dialog open={true} style={{zIndex: 4000}}>
                         <Box p={3}>
                             <LoadingIndicator label='Processing...'/>
                         </Box>
                     </Dialog>
-
                 }
                 <Editor
                     size={calculateEditorSize()}

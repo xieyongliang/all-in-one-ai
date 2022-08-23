@@ -22,6 +22,10 @@ interface IProps {
     textImageData: TextImageData[];
     activeLabelType: LabelType;
     projectType: ProjectType;
+    imageNames: string[];
+    imageLabels: string[];
+    imageBuckets: string[];
+    imageKeys: string[];
 }
 
 interface IState {
@@ -35,7 +39,7 @@ class ImagesList extends React.Component<IProps, IState> {
         super(props);
 
         this.state = {
-            size: null,
+            size: null
         }
     }
 
@@ -86,24 +90,24 @@ class ImagesList extends React.Component<IProps, IState> {
             }
         }
     };
-
+    
     private onClickHandler = (index: number) => {
         ImageActions.getImageByIndex(index)
     };
 
     private renderImagePreview = (index: number, isScrolling: boolean, isVisible: boolean, style: React.CSSProperties) => {
         if(this.props.projectType === ProjectType.TEXT_RECOGNITION)
-                return (
-                    <ImagePreview
-                        key={index}
-                        style={style}
-                        size={{width: 150, height: 150}}
-                        isScrolling={isScrolling}
-                        isChecked={this.isImageChecked(index)}
-                        imageData={this.props.textImageData[index]}
-                        onClick={() => this.onClickHandler(index)}
-                        isSelected={this.props.activeTextImageIndex === index}
-                    />
+            return (
+                <ImagePreview
+                    key={index}
+                    style={style}
+                    size={{width: 150, height: 150}}
+                    isScrolling={isScrolling}
+                    isChecked={this.isImageChecked(index)}
+                    imageData={this.props.textImageData[index]}
+                    onClick={() => this.onClickHandler(index)}
+                    isSelected={this.props.activeTextImageIndex === index}
+                />
             )
         else
             return (

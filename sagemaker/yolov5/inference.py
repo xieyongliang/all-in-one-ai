@@ -14,10 +14,10 @@ def model_fn(model_dir):
 
     model_name = os.environ['model_name'] if('model_name' in os.environ) else 'custom'
     if(model_name == 'custom'):
-        model = torch.hub.load('ultralytics/yolov5', 'custom', os.path.join(model_dir, 'tutorial', 'weights', 'best.pt'), force_reload=True)
+        model = torch.hub.load('ultralytics/yolov5', 'custom', os.path.join(model_dir, 'tutorial', 'weights', 'best.pt'), force_reload=False)
     else:
-        model = torch.hub.load('ultralytics/yolov5', model_name, force_reload=True)
-    print(model)
+        model = torch.hub.load('ultralytics/yolov5', model_name, force_reload=False)
+
     return model
 
 def input_fn(request_body, request_content_type):
@@ -45,7 +45,7 @@ def predict_fn(input_data, model):
     Apply model to the incoming request
     """
 
-    size = os.environ['size'] if('size' in os.environ) else 415
+    size = os.environ['size'] if('size' in os.environ) else 640
     pred = model(input_data, size=size)
     result = json.loads(pred.pandas().xyxy[0].to_json(orient="records"))
     output = []

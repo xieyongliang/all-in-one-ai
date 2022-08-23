@@ -3,7 +3,6 @@ import EditorView from '../../../views/EditorView/EditorView';
 import { ProjectSubType, ProjectType } from '../../../data/enums/ProjectType';
 import { AppState } from '../../../store';
 import { connect} from 'react-redux';
-import PopupView from '../../../views/PopupView/PopupView';
 import { ISize } from '../../../interfaces/ISize';
 import { ProjectData } from '../../../store/general/types';
 import { addLabelImageData, updateActiveLabelImageIndex, updateActiveLabelType, updateLabelImageData, updateLabelNames, updateActiveLabelNameId, updateFirstLabelCreatedFlag } from '../../../store/labels/actionCreators';
@@ -15,10 +14,27 @@ import { TextImageData, Text } from '../../../store/texts/types';
 import { TextImageDataUtil } from '../../../utils/TextImageDataUtil';
 import axios from 'axios';
 import { LabelType } from '../../../data/enums/LabelType';
-import { LoadingIndicator, Modal } from 'aws-northstar';
+import { LoadingIndicator } from 'aws-northstar';
 import { addTextImageData, updateActiveTextId, updateActiveTextImageIndex, updateTextImageData, updateTexts } from '../../../store/texts/actionCreators';
 import { Box, Dialog } from '@material-ui/core';
 import { LabelUtil } from '../../../utils/LabelUtil';
+import { store } from '../../..';
+import { AnnotationFormatType } from '../../../data/enums/AnnotationFormatType';
+import { ImporterSpecData } from '../../../data/ImporterSpecData';
+
+const OVERLAY_STYLE = {
+    position: "fixed" as 'fixed',
+    display: "block",
+    justifyContent: "center",
+    top: "0",
+    left: "0",
+    width: "100%",
+    height: "100%",
+    paddingLeft: "6px",
+    backgroundColor: "white",
+    zIndex: "4000",
+    overflow: "auto"
+};
 
 interface IProps {
     updateActiveLabelNameIdAction: (activeLabelNameId: string) => any;
@@ -40,34 +56,36 @@ interface IProps {
     PoseDetectionLoaded: boolean;
     projectData: ProjectData;
     activeLabelType: LabelType;
-    imageUri: string;
-    imageBucket?: string;
-    imageKey?: string;
+    imageUris: string[];
+    imageNames: string[];
+    activeIndex: number;
+    imageBuckets?: string[];
+    imageKeys?: string[];
     imageId?: string;
     imageAnnotations?: string[];
     imageColors: string[];
     imageLabels: string[];
-    imageName: string;
+    projectName: string;
     type: ProjectType;
     subType: ProjectSubType;
-    visible?: boolean;
-    onClose?: () => any;
+    onClosed?: () => any;
 }
 
 const ImageAnnotate: React.FC<IProps> = (
     {
-        imageUri,
+        imageUris,
+        imageNames,
+        activeIndex,
         projectData,
+        projectName,
         type,
         subType,
-        visible,
         imageColors,
         imageLabels,
         imageAnnotations,
-        imageBucket,
+        imageBuckets,
         imageId,
-        imageKey,
-        imageName,
+        imageKeys,
         updateActiveLabelNameIdAction,
         updateActiveTextIdAction,
         updateLabelNamesAction,
@@ -81,14 +99,46 @@ const ImageAnnotate: React.FC<IProps> = (
         updatePerClassColorationStatusAction,
         addLabelImageDataAction,
         addTextImageDataAction,
-        onClose,
+        onClosed,
     }) => {
     const [ loading, setLoading ] = useState(true)
     const [ ready, setReady ] = useState(false)
 
-    if(imageUri.startsWith('/'))
-        imageUri = `${window.location.protocol}//${window.location.host}${imageUri}`    
+    for(var index = 0; index < imageUris.length; index ++) {
+        var imageUri = imageUris[index]
+        if(imageUri.startsWith('/')) {
+            imageUri = `${window.location.protocol}//${window.location.host}${imageUri}`;
+            imageUris[index] = imageUri;
+        }
+    }
 
+    const onAnnotationLoadSuccess = (imagesData: LabelImageData[], labelNames: LabelName[]) => {
+        store.dispatch(updateLabelImageData(imagesData));
+        store.dispatch(updateLabelNames(labelNames));
+        store.dispatch(updateActiveLabelType(LabelType.RECT));
+
+        store.dispatch(updateLabelNames(labelNames));
+        onLoaded();
+    }
+
+    const onAnnotationsLoadFailure = (error?:Error) => {    
+        console.log(error);
+        onLoaded();
+    };
+
+    const importAnnotations = (labelsFile: File, annotationFiles: File[] ) => {
+        const formatType = AnnotationFormatType.YOLO
+        const labelType = LabelType.RECT
+                
+        const importer = new (ImporterSpecData[formatType])([labelType])
+        var files : File[] = [];
+        files.push(labelsFile)
+        annotationFiles.forEach((annotationFile) => {
+            files.push(annotationFile)
+        })
+        importer.import(files, onAnnotationLoadSuccess, onAnnotationsLoadFailure);         
+    }      
+    
     useEffect(() => {
         var imageFile : File;
         updateActiveLabelNameIdAction(null);
@@ -103,15 +153,32 @@ const ImageAnnotate: React.FC<IProps> = (
         updateFirstLabelCreatedFlagAction(false);
         updatePerClassColorationStatusAction(true)
 
-        axios.get('/_file/download', {params : {'uri' : encodeURIComponent(imageUri)} , responseType: 'blob'})
-            .then((response) => {
+        var imageExts = imageUris.map((imageUri) => {
+            var pos = imageUri.indexOf('?');
+            var httpuri = imageUri.substring(0, pos)
+            return httpuri.substring(httpuri.lastIndexOf('.') + 1)
+        })
+
+        var promises = imageUris.map((imageUri) => {
+            return axios.get('/_file/download', {params : {'uri' : encodeURIComponent(imageUri)} , responseType: 'blob'})
+        })
+
+        var promises2 = []
+
+        var index = 0;
+        Promise.all(promises).then((reponses) => {
+            reponses.forEach((response) => {
+                var imageName = imageNames[index]
+                var imageExt = imageExts[index]
+
                 var data = response.data;
-                imageFile = new File([data], `${imageName}.png`);
+
+                imageFile = new File([data], `${imageName}.${imageExt}`);
                 updateProjectDataAction({
                     ...projectData,
                     type: type,
                     subType: subType,
-                    name: imageName
+                    name: projectName
                 });
 
                 if(type === ProjectType.TEXT_RECOGNITION) {
@@ -119,18 +186,51 @@ const ImageAnnotate: React.FC<IProps> = (
                     addTextImageDataAction([TextImageDataUtil.createTextImageDataFromFileData(imageFile)]);
                 }
                 else {
-                    updateActiveLabelImageIndexAction(0);
                     var labelNames = []
                     imageLabels.forEach((imageLabel)=>{
                         labelNames.push(LabelUtil.createLabelName(imageLabel))
                     })
                     updateLabelNamesAction(labelNames);
+                    console.log('add...')
                     addLabelImageDataAction([LabelImageDataUtil.createLabelImageDataFromFileData(imageFile)]);
                 }
-                setReady(true);
+
+                if(type === ProjectType.OBJECT_DETECTION_RECT && subType === ProjectSubType.BATCH_LABEL && imageBuckets !== undefined && imageKeys !== undefined) {
+                    var bucket = imageBuckets[index]
+                    var key = imageKeys[index]
+                    promises2.push(axios.get('/annotation', {params: { bucket: bucket, key: key}}))
+                    index++
+                }
             })
-    }, [imageUri]); // eslint-disable-line react-hooks/exhaustive-deps
-    
+
+            if(type === ProjectType.OBJECT_DETECTION_RECT && subType === ProjectSubType.BATCH_LABEL && imageBuckets !== undefined && imageKeys !== undefined) {
+                Promise.all(promises2).then((reponses2) => {
+                    var index = 0;
+                    var annotationFiles = [];
+                    reponses2.forEach((response) => {
+                        if(response.data.data !== undefined) {
+                            var annotations = response.data.data.split('\n');
+                            var computedAnnotations = [];
+                            annotations.forEach(annotation => {
+                                computedAnnotations.push(annotation + '\n')
+                            });
+                            var imageName = imageNames[index];
+                            var annotationFile = new File(computedAnnotations, `${imageName}.txt`);
+                            annotationFiles.push(annotationFile);
+                        }
+                        index++;
+                    })
+                    var labelsFile = new File(imageLabels, 'labels.txt');
+                    importAnnotations(labelsFile, annotationFiles)
+                })
+            }
+
+            updateActiveLabelImageIndexAction(activeIndex);
+            setReady(true);
+        })
+
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
     const onLoaded = () => {
         setLoading(false)
     }
@@ -139,39 +239,36 @@ const ImageAnnotate: React.FC<IProps> = (
         return (
             <Dialog open={true}>
                 <Box p={3}>
-                    <LoadingIndicator label='Loading...'/>
+                    <LoadingIndicator label='Preparing...'/>
                 </Box>
             </Dialog>
         )
     else
         return (
-            <Modal title="Image preview" visible={visible} onClose={()=>onClose()} width={"100"}>
-                {
-                    loading &&  
-                    <Dialog open={true}>
-                        <Box p={3}>
-                            <LoadingIndicator label='Preparing...'/>
-                        </Box>
-                    </Dialog>   
-                }
+            <div style={OVERLAY_STYLE}>
                 {
                     ready && 
                     <EditorView 
                         imageColors = {imageColors} 
                         imageLabels = {imageLabels} 
                         imageAnnotations = {imageAnnotations}
-                        imageBucket = {imageBucket} 
-                        imageKey = {imageKey} 
+                        imageBuckets = {imageBuckets} 
+                        imageKeys = {imageKeys} 
                         imageId = {imageId}
-                        imageName = {imageName}
+                        imageNames = {imageNames}
                         onLoaded = {onLoaded}
+                        onClosed = {onClosed}
                     /> 
                 }
                 {
-                    ready &&
-                    <PopupView/>
+                    loading && 
+                    <Dialog open={true} style={{zIndex: 4000}}>
+                        <Box p={3}>
+                            <LoadingIndicator label='Loading...'/>
+                        </Box>
+                    </Dialog>
                 }
-            </Modal>
+            </div>
         );
 };
 

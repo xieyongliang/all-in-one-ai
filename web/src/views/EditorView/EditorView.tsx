@@ -8,27 +8,29 @@ import classNames from 'classnames';
 
 interface IProps {
     activePopupType: PopupWindowType;
-    imageBucket?: string;
-    imageKey?: string;
+    imageBuckets?: string[];
+    imageKeys?: string[];
     imageId?: string;
     imageColors: string[];
     imageLabels: string[];
     imageAnnotations?: string[];
-    imageName: string;
+    imageNames: string[];
     onLoaded: () => any;
+    onClosed: () => any;
 }
 
 const EditorView: React.FC<IProps> = (
     {
         activePopupType,
-        imageBucket,
-        imageKey,
+        imageBuckets,
+        imageKeys,
         imageId,
         imageColors,
         imageLabels,
         imageAnnotations,
-        imageName,
-        onLoaded
+        imageNames,
+        onLoaded,
+        onClosed
     }) => {
     const getClassName = () => {
         return classNames(
@@ -45,14 +47,15 @@ const EditorView: React.FC<IProps> = (
             draggable={false}
         >
             <EditorContainer
-                imageBucket = {imageBucket} 
-                imageKey = {imageKey} 
+                imageBuckets = {imageBuckets} 
+                imageKeys = {imageKeys} 
                 imageId = {imageId} 
                 imageColors = {imageColors} 
                 imageLabels= {imageLabels} 
                 imageAnnotations= {imageAnnotations}
-                imageName = {imageName}
+                imageNames = {imageNames}
                 onLoaded = {onLoaded}
+                onClosed = {onClosed}
             />
         </div>
     );

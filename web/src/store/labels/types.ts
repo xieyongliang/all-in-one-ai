@@ -132,7 +132,7 @@ interface AddLabelImageData {
 interface UpdateLabelImageData {
     type: typeof Action.UPDATE_LABEL_IMAGES_DATA;
     payload: {
-        imageData: LabelImageData[];
+        imagesData: LabelImageData[];
     }
 }
 

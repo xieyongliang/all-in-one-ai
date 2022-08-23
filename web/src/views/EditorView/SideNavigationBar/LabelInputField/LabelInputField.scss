@@ -52,10 +52,14 @@
         font-size: 14px;
         cursor: pointer;
         user-select: none;
-        min-width: 160px;
+        min-width: 240px;
         height: 30px;
-        padding: 0 5px;
-        color: white;
+        padding-left: 5px;
+        padding-right: 5px;
+        padding-top: 5px;
+        padding-bottom: 5px;
+        color: black;
+        background-color: white;
 
         display: flex;
         flex-direction: row;
@@ -65,7 +69,7 @@
         align-content: space-between;
 
         &:hover {
-          background-color: rgba(0, 0, 0, 0.05);
+          background-color: rgba(255, 255, 255, 0.95);
 
           &::after {
             background-color: $secondaryColor; // fallback if new css variables are not supported by browser
@@ -111,11 +115,12 @@
           font-size: 14px;
           cursor: pointer;
           user-select: none;
-          padding: 0 5px;
-          color: white;
+          padding: 0 15px;
+          color: black;
+          background-color: white;
 
           &:hover {
-            background-color: $darkThemeThirdColor;
+            background-color: #EBECF0;
           }
         }
       }

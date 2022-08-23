@@ -17,17 +17,20 @@ import {AIActions} from '../../../logic/actions/AIActions';
 import withStyles from '@material-ui/core/styles/withStyles';
 import {Tooltip} from '@material-ui/core';
 import Fade from '@material-ui/core/Fade';
-import { AnnotationFormatType } from '../../../data/enums/AnnotationFormatType';
+import { AnnotationFormatType, ExportDataFormatType } from '../../../data/enums/AnnotationFormatType';
 import { RectLabelsExporter } from '../../../logic/export/RectLabelsExporter';
-import { ProjectType } from '../../../data/enums/ProjectType';
+import { ProjectSubType, ProjectType } from '../../../data/enums/ProjectType';
 import { PolygonTextsExporter } from '../../../logic/export/polygon/PolygonTextsExporter';
 import { ImporterSpecData } from '../../../data/ImporterSpecData';
 import { store } from '../../..';
 import { LabelImageData, LabelName } from '../../../store/labels/types';
 import { updateActiveLabelType, updateLabelImageData, updateLabelNames } from '../../../store/labels/actionCreators';
+import JSZip from 'jszip';
+import axios from 'axios';
 
 const BUTTON_SIZE: ISize = {width: 30, height: 30};
 const BUTTON_PADDING: number = 10;
+const zip = new JSZip();
 
 const StyledTooltip = withStyles(theme => ({
     tooltip: {
@@ -36,7 +39,8 @@ const StyledTooltip = withStyles(theme => ({
         boxShadow: theme.shadows[1],
         fontSize: 12,
         maxWidth: 200,
-        textAlign: 'center'
+        textAlign: 'center',
+        zIndex: 5000
     },
 }))(Tooltip);
 
@@ -114,38 +118,44 @@ const ButtonWithTooltip : React.FunctionComponent<TooltipIProps> = ({
 interface IProps {
     updateImageDragModeStatusAction: (imageDragMode: boolean) => any;
     updateCrossHairVisibleStatusAction: (crossHairVisible: boolean) => any;
-    key : string;
     activeContext: ContextType;
     imageDragMode: boolean;
     crossHairVisible: boolean;
     activeLabelType: LabelType;
     projectType: ProjectType;
-    projectName: string;
+    projectSubType: ProjectSubType;
+    imageBuckets: string[];
+    imageKeys: string[];
     imageLabels: string[];
     imageColors: string[];
-    imageName: string;
     updateLabelImageData: (imagesData) => any;
     updateLabelNames: (labelNames) => any;
     updateActiveLabelType : (LabelType) => any;
+    onProcessing: () => any;
+    onProcessed: () => any;
+    onClosed: () => any;
 }
 
 const EditorTopNavigationBar: React.FC<IProps> = (
     {
         updateImageDragModeStatusAction,
         updateCrossHairVisibleStatusAction,
-        key,
         activeContext,
         imageDragMode,
         crossHairVisible,
         activeLabelType,
         projectType,
-        projectName,
+        projectSubType,
+        imageBuckets,
+        imageKeys,
         imageLabels,
         imageColors,
-        imageName,
         updateLabelImageData,
         updateLabelNames,
-        updateActiveLabelType
+        updateActiveLabelType,
+        onProcessing,
+        onProcessed,
+        onClosed
     }) => {
     const [ imageAnnotations, setImageAnnotations ] = useState([])
 
@@ -191,30 +201,77 @@ const EditorTopNavigationBar: React.FC<IProps> = (
         });
     
         store.dispatch(updateLabelNames(labelNames));
-    }, [ imageAnnotations, imageColors, imageLabels, updateActiveLabelType, updateLabelImageData, updateLabelNames]);
+        onProcessed();
+    }, [ imageAnnotations, imageColors, imageLabels, updateActiveLabelType, updateLabelImageData, updateLabelNames, onProcessed]);
     
-    const onAnnotationsLoadFailure = (error?:Error) => {    
+    const onAnnotationsLoadFailure = useCallback((error?:Error) => {    
         console.log(error)
-    };
+        onProcessed();
+    }, [onProcessed]);
     
-    const importAnnotations = useCallback((annotationFile) => {
+    const importAnnotations = useCallback((file) => {
         var labelsFile = new File(imageLabels, 'labels.txt');
-        
         const formatType = AnnotationFormatType.YOLO
         const labelType = LabelType.RECT
                 
         const importer = new (ImporterSpecData[formatType])([labelType])
-        importer.import([labelsFile, annotationFile], onAnnotationLoadSuccess, onAnnotationsLoadFailure);         
-    }, [ imageLabels, onAnnotationLoadSuccess ]);
+        if(file.name.endsWith('.txt'))
+            importer.import([labelsFile, file], onAnnotationLoadSuccess, onAnnotationsLoadFailure);
+        else if(file.name.endsWith('.zip')) {
+            zip.loadAsync(file).then(function(zip) {
+                var files = [labelsFile];
+                var num_total = Object.keys(zip.files).length
+                var num_completed = 0;
+                onProcessing();
+                zip.forEach(function (filename, zipEntry) {
+                    zipEntry.async('blob').then((fileData) => {
+                        fileData.text().then((data) => {
+                            files.push(new File([fileData], filename))
+                            num_completed++;
+                            if(num_completed === num_total)
+                                importer.import(files, onAnnotationLoadSuccess, onAnnotationsLoadFailure);
+                        })
+                    })
+                });
+            }, function (e) {
+                console.log(e)
+            });
+        }
+    }, [ imageLabels, onAnnotationLoadSuccess, onAnnotationsLoadFailure, onProcessing ]);
     
     const onFileSelect = (file) => {
         var reader = new FileReader();
         reader.readAsText(file, "UTF-8");
         reader.onload = function (event) {
-            var content = event.target.result as string
-            setImageAnnotations(content.split(/\r\n|\n/))
+            var content = event.target.result as string;
+            setImageAnnotations(content.split(/\r\n|\n/));
+            importAnnotations(file);
         }
-        importAnnotations(file)
+    }
+
+    const onUpload = () => {
+        var outputs = RectLabelsExporter.exportData(ExportDataFormatType.YOLOData, imageBuckets, imageKeys)
+        var promises = []
+
+        outputs.forEach((output) => {
+            var bucket = output['bucket']
+            var key = output['key']
+            var data = output['data']
+            if(data)
+                promises.push(axios.post('/annotation', output));
+            else
+                promises.push(axios.delete('/annotation', {params: { bucket: bucket, key: key}}))            
+        })
+        var num_completed = 0;
+        var num_total = promises.length;
+        onProcessing()
+        Promise.all(promises).then((reponses) => {
+            reponses.forEach((response) => {
+                num_completed++;
+                if(num_completed === num_total)
+                    onProcessed();
+            })
+        })
     }
 
     return (
@@ -329,8 +386,32 @@ const EditorTopNavigationBar: React.FC<IProps> = (
                         />
                     </div>
             }
-            <div className='ProjectName'>
-                {projectName}
+            {
+                projectType === ProjectType.OBJECT_DETECTION_RECT && projectSubType === ProjectSubType.BATCH_LABEL && imageBuckets !== undefined && imageKeys !== undefined &&
+                <div className='ButtonWrapper'>
+                    <ButtonWithTooltip
+                        key = 'upload'
+                        tooltipMessage = 'upload'
+                        imageSrc = '/ico/upload.png'
+                        imageAlt = 'upload'
+                        isActive = {false}
+                        fileMode = {false}
+                        href = {undefined}
+                        onClick = {onUpload}
+                    />
+                </div>
+            }
+            <div className='ButtonWrapper'>
+                <ButtonWithTooltip
+                    key = 'exit'
+                    tooltipMessage = 'exit'
+                    imageSrc = '/ico/exit.png'
+                    imageAlt = 'exit'
+                    isActive = {false}
+                    fileMode = {false}
+                    href = {undefined}
+                    onClick = {onClosed}
+                />
             </div>
         </div>
     )
@@ -350,7 +431,8 @@ const mapStateToProps = (state: AppState) => ({
     crossHairVisible: state.general.crossHairVisible,
     activeLabelType: state.labels.activeLabelType,
     projectType: state.general.projectData.type,
-    projectName: state.general.projectData.name
+    projectSubType: state.general.projectData.subType,
+    activeImageIndex: state.labels.activeImageIndex
 });
 
 export default connect(

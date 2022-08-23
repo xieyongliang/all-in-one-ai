@@ -72,6 +72,8 @@ echo "--------------------------------------------------------------------------
 
 
 lambda_foldes="
+all_in_one_ai_annotation
+all_in_one_ai_api
 all_in_one_ai_create_api
 all_in_one_ai_create_deploy_huggingface
 all_in_one_ai_create_deploy_pytorch
@@ -89,29 +91,42 @@ all_in_one_ai_create_training_job
 all_in_one_ai_create_transform_job
 all_in_one_ai_delete_endpoint
 all_in_one_ai_delete_model
+all_in_one_ai_deploy
 all_in_one_ai_describe_endpoint
 all_in_one_ai_describe_model
 all_in_one_ai_describe_pipeline_execution
 all_in_one_ai_describe_training_job
 all_in_one_ai_describe_transform_job
+all_in_one_ai_endpoint
+all_in_one_ai_finalize_pipeline
 all_in_one_ai_function
+all_in_one_ai_greengrass_component_version
 all_in_one_ai_greengrass_core_devices
 all_in_one_ai_greengrass_create_component_version
 all_in_one_ai_greengrass_create_deployment
+all_in_one_ai_greengrass_deployment
 all_in_one_ai_greengrass_thing_groups
+all_in_one_ai_import_opensearch
 all_in_one_ai_import_opensearch_helper
 all_in_one_ai_import_opensearch_handler
+all_in_one_ai_industrial_model
 all_in_one_ai_inference
 all_in_one_ai_invoke_endpoint
 all_in_one_ai_list_endpoints
 all_in_one_ai_list_models
 all_in_one_ai_list_training_jobs
 all_in_one_ai_list_transform_jobs
+all_in_one_ai_model
+all_in_one_ai_model_package
 all_in_one_ai_model_package_group
+all_in_one_ai_pipeline
 all_in_one_ai_s3
+all_in_one_ai_search_by_image
 all_in_one_ai_stop_training_job
 all_in_one_ai_stop_transform_job
 all_in_one_ai_train
+all_in_one_ai_training_job
+all_in_one_ai_transform_job
 all_in_one_ai_transform_job_review"
 
 for lambda_folder in $lambda_foldes; do
@@ -129,34 +144,3 @@ for lambda_folder in $lambda_foldes; do
     rm ${build_dir}/${lambda_folder}.zip
 done
 
-lambda_foldes="
-all_in_one_ai_api
-all_in_one_ai_deploy
-all_in_one_ai_endpoint
-all_in_one_ai_finalize_pipeline
-all_in_one_ai_greengrass_component_version
-all_in_one_ai_greengrass_deployment
-all_in_one_ai_import_opensearch
-all_in_one_ai_industrial_model
-all_in_one_ai_model
-all_in_one_ai_model_package
-all_in_one_ai_pipeline
-all_in_one_ai_search_by_image
-all_in_one_ai_train
-all_in_one_ai_training_job
-all_in_one_ai_transform_job"
-
-for lambda_folder in $lambda_foldes; do
-    # build and copy console distribution files
-    echo ${source_dir}
-    cd ${source_dir}/${lambda_folder}
-    echo ${build_dir}
-    rm -r ${build_dir}
-
-    mkdir -p ${build_dir}/
-    cp -R * ${build_dir}/
-    cd ${build_dir}
-    zip -r9 ${lambda_folder}.zip .
-    cp ${build_dir}/${lambda_folder}.zip $build_dist_dir/${lambda_folder}.zip
-    rm ${build_dir}/${lambda_folder}.zip
-done

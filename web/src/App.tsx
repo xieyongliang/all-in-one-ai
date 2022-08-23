@@ -19,6 +19,7 @@ import AppLayout from './components/AppLayout';
 import Dashboard from './components/Dashboard/index'
 import IndustrialModelOverview from './components/Lists/IndustrialModel';
 import IndustrialModels from './components/IndustrialModels';
+import BatchAnnotationForm from './components/Forms/BatchAnnotation';
 import { FunctionComponent, useEffect } from 'react';
 import { IIndustrialModel } from './store/industrialmodels/reducer';
 import axios from 'axios'; 
@@ -109,6 +110,7 @@ const App : FunctionComponent = () => {
                     <Route sensitive={true} exact path="/algorithms/mdeberta">{withLayout(MDeBERTa)}</Route>
                     <Route sensitive={true} exact path="/imodels/:id">{withLayout(IndustrialModels)}</Route>
                     <Route sensitive={true} exact path="/imodels">{withLayout(IndustrialModelOverview)}</Route>
+                    <Route sensitive={true} exact path="/batchannotation">{withLayout(BatchAnnotationForm)}</Route>
                     <Route sensitive={true} exact path="/">{withLayout(Dashboard)}</Route>                 
                     <Route sensitive={true} exact path="/callback">{withLayout(Callback)}</Route>
                     <Route sensitive={true} exact path="/signout">{withLayout(SignOut)}</Route>                                  
