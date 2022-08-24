@@ -168,7 +168,7 @@ Resources:
       SecurityGroups:
         - !Ref AlbSecurityGroup
 
-  ALBListener:
+  ALBHTTPSListener:
     Type: 'AWS::ElasticLoadBalancingV2::Listener'
     Condition: USE_HTTPS
     Properties:
@@ -181,7 +181,7 @@ Resources:
       Certificates: 
         - CertificateArn: !Ref Certificate
 
-  ALBListener:
+  ALBHTTPListener:
     Type: 'AWS::ElasticLoadBalancingV2::Listener'
     Condition: USE_HTTP
     Properties:
@@ -210,7 +210,6 @@ Resources:
 
   Service:
     Type: 'AWS::ECS::Service'
-    DependsOn: ALBListener
     Properties:
       Cluster: !Ref ECSCluster
       LaunchType: FARGATE
