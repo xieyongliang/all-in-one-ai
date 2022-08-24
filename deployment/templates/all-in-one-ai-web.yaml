@@ -70,7 +70,7 @@ Resources:
       IpProtocol: tcp
       FromPort: 3000
       ToPort: 3000
-      SourceSecurityGroupId: !Ref AlbSecurityGroup
+      SourceSecurityGroupId: !Ref AlbSecurityGroup      
  
   AlbSecurityGroup:
     Type: AWS::EC2::SecurityGroup
@@ -80,13 +80,24 @@ Resources:
 
   AlbSecurityGroupHTTPinbound:
     Type: 'AWS::EC2::SecurityGroupIngress'
+    Condition: USE_HTTP
+    Properties:
+      GroupId: !Ref AlbSecurityGroup
+      IpProtocol: tcp
+      FromPort: 80
+      ToPort: 80
+      CidrIp: 0.0.0.0/0
+
+  AlbSecurityGroupHTTPSinbound:
+    Type: 'AWS::EC2::SecurityGroupIngress'
+    Condition: USE_HTTPS
     Properties:
       GroupId: !Ref AlbSecurityGroup
       IpProtocol: tcp
       FromPort: 443
       ToPort: 443
-      CidrIp: 0.0.0.0/0
- 
+      CidrIp: 0.0.0.0/0 
+
   CloudwatchLogsGroup:
     Type: AWS::Logs::LogGroup
     Properties:
