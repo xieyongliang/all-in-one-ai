@@ -50,7 +50,9 @@ Parameters:
 
 Conditions:
   Globally: !Equals [ false, !Ref ChinaRegion ]
-
+  USE_HTTP: !Equals [ '', !Ref Certificate ]
+  USE_HTTPS: !Not [ !Equals [ '', !Ref Certificate ]]
+  
 Resources:
   ECSCluster:
     Type: AWS::ECS::Cluster
@@ -178,6 +180,7 @@ Resources:
 
   ALBListener:
     Type: 'AWS::ElasticLoadBalancingV2::Listener'
+    Condition: USE_HTTPS
     Properties:
       DefaultActions:
         - Type: forward
@@ -187,6 +190,17 @@ Resources:
       Protocol: HTTPS
       Certificates: 
         - CertificateArn: !Ref Certificate
+
+  ALBListener:
+    Type: 'AWS::ElasticLoadBalancingV2::Listener'
+    Condition: USE_HTTP
+    Properties:
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: !Ref ECSTG
+      LoadBalancerArn: !Ref ECSALB
+      Port: '80'
+      Protocol: HTTP
 
   ECSTG:
     Type: 'AWS::ElasticLoadBalancingV2::TargetGroup'

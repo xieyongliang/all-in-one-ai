@@ -157,17 +157,17 @@ Resources:
             - Eip1 : !Ref Eip1
               Eip2 : !Ref Eip2
 
-  AnnotationGatewayResourceAnnotation:
+  ApiGatewayResourceAnnotation:
     Type: AWS::ApiGateway::Resource
     Properties:
       ParentId: !GetAtt ApiGatewayRestApi.RootResourceId
       PathPart: 'annotation'
-      RestAnnotationId: !Ref ApiGatewayRestApi
+      RestApiId: !Ref ApiGatewayRestApi
 
-  AnnotationGatewayMethodAnnotationGet:
+  ApiGatewayMethodAnnotationGet:
     Type: AWS::ApiGateway::Method
     Properties:
-      AnnotationKeyRequired: false
+      ApiKeyRequired: false
       AuthorizationType: NONE
       HttpMethod: GET
       Integration:
@@ -178,13 +178,13 @@ Resources:
           - Globally
           - !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIAnnotationFunction.Arn}/invocations'
           - !Sub 'arn:aws-cn:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIAnnotationFunction.Arn}/invocations'
-      ResourceId: !Ref AnnotationGatewayResourceAnnotation
-      RestAnnotationId: !Ref ApiGatewayRestApi   
+      ResourceId: !Ref ApiGatewayResourceAnnotation
+      RestApiId: !Ref ApiGatewayRestApi   
 
   AnnotationGatewayMethodAnnotationPost:
     Type: AWS::ApiGateway::Method
     Properties:
-      AnnotationKeyRequired: false
+      ApiKeyRequired: false
       AuthorizationType: NONE
       HttpMethod: POST
       Integration:
@@ -195,10 +195,10 @@ Resources:
           - Globally
           - !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIAnnotationFunction.Arn}/invocations'
           - !Sub 'arn:aws-cn:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIAnnotationFunction.Arn}/invocations'
-      ResourceId: !Ref AnnotationGatewayResourceAnnotation
-      RestAnnotationId: !Ref ApiGatewayRestApi   
+      ResourceId: !Ref ApiGatewayResourceAnnotation
+      RestApiId: !Ref ApiGatewayRestApi   
 
-  AnnotationGatewayMethodAnnotationDelete:
+  ApiGatewayMethodAnnotationDelete:
     Type: AWS::ApiGateway::Method
     Properties:
       ApiKeyRequired: false
@@ -212,7 +212,7 @@ Resources:
           - Globally
           - !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIAnnotationFunction.Arn}/invocations'
           - !Sub 'arn:aws-cn:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIAnnotationFunction.Arn}/invocations'
-      ResourceId: !Ref AnnotationGatewayResourceAnnotation
+      ResourceId: !Ref ApiGatewayResourceAnnotation
       RestApiId: !Ref ApiGatewayRestApi 
 
   AllInOneAIAnnotationFunctionRole:
