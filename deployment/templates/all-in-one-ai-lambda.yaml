@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: 2010-09-09
-Description: Template for Lambda and API gateway resources
+Description: Template for Lambda and API gateway
 
 Parameters:
   S3Bucket:
