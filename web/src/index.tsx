@@ -29,7 +29,7 @@
       <React.StrictMode>
           <Provider store={store}>
               <App/>
-          </Provider>)
+          </Provider>
       </React.StrictMode>,
       document.getElementById('root')
   );
