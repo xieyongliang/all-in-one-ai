@@ -181,7 +181,7 @@ Resources:
       ResourceId: !Ref ApiGatewayResourceAnnotation
       RestApiId: !Ref ApiGatewayRestApi   
 
-  AnnotationGatewayMethodAnnotationPost:
+  ApiGatewayMethodAnnotationPost:
     Type: AWS::ApiGateway::Method
     Properties:
       ApiKeyRequired: false
@@ -5923,6 +5923,9 @@ Resources:
   ApiGatewayRestApiDeployment:
     Type: 'AWS::ApiGateway::Deployment'
     DependsOn: 
+      - ApiGatewayMethodAnnotationGet
+      - ApiGatewayMethodAnnotationPost
+      - ApiGatewayMethodAnnotationDelete
       - ApiGatewayMethodApiGet
       - ApiGatewayMethodApiPost
       - ApiGatewayMethodApiByNameGet
