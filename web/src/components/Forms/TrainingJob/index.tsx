@@ -9,7 +9,7 @@ import { AppState } from '../../../store';
 import { UpdateTrainingjobInputData, UpdateTrainingjobInstanceCount, UpdateTrainingjobInstanceType, UpdateTrainingjobVolumeSizeInGB, UpdateTrainingjobOutputS3Uri, UpdateTrainingjobHyperparameters } from '../../../store/pipelines/actionCreators';
 import { IIndustrialModel } from '../../../store/industrialmodels/reducer';
 import { PathParams } from '../../Interfaces/PathParams';
-import { TRAININGOPTIONS } from '../../Data/data';
+import { TRAININGINPUTDATA, TRAININGOPTIONS } from '../../Data/data';
 import { v4 as uuidv4 } from 'uuid';
 import './index.scss';
 
@@ -31,77 +31,6 @@ const timeUnitOptions : SelectOption[] = [
         value: 'days'
     }
 ]
-
-const inputDataOptions = {
-    'yolov5': [
-        {
-            key: 'images',
-            value: ''
-        },
-        {
-            key: 'labels',
-            value: ''
-        },
-        {
-            key: 'cfg',
-            value: ''
-        },
-        {
-            key: 'weights',
-            value: ''
-        }
-    ],
-    'gluoncv': [
-        {
-            key: 'train',
-            value: ''
-        },
-        {
-            key: 'val',
-            value: ''
-        },
-        {
-            key: 'test',
-            value: ''
-        }
-    ],
-    'cpt': [
-        {
-            key: 'train',
-            value: ''
-        },
-        {
-            key: 'validation',
-            value: ''
-        },
-        {
-            key: 'test',
-            value: ''
-        }
-    ],
-    'gabsa': [
-        {
-            key: 'dataset',
-            value: ''
-        }
-    ],
-    'paddlenlp': [
-        {
-            key: 'dataset',
-            value: ''
-        }
-    ],
-    'paddleocr': [
-        {
-            key: 'dataset',
-            value: ''
-        },
-        {
-            key: 'pretrained_models',
-            value: ''
-        }
-    ]    
-}
 
 interface IProps {
     updateTrainingjobInstanceTypeAction: (trainingjobInstanceType: string) => any;
@@ -146,7 +75,7 @@ const TrainingJobForm: FunctionComponent<IProps> = (props) => {
     var params : PathParams = useParams();
     var industrialModel = props.wizard ? props.industrialModels.find((item) => item.id === props.industrialModel) : props.industrialModels.find((item) => item.id === params.id);
     var algorithm = industrialModel.algorithm;
-    const [ inputData ] = useState(inputDataOptions[algorithm]);
+    const [ inputData ] = useState(TRAININGINPUTDATA[algorithm]);
 
     const onChange = (id: string, event: any) => {
         if(id === 'formFieldIdTrainingJobName') {

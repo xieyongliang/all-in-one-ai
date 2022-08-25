@@ -116,7 +116,7 @@ def lambda_handler(event, context):
             git_config = {'repo': 'https://github.com/ultralytics/yolov5.git', 'branch': 'master'}
             entry_point = 'train.py'
             source_dir = '.'
-            framework_version = '1.9.0'
+            framework_version = '1.10.2'
             py_version = 'py38'
 
             estimator = PyTorch(

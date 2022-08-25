@@ -46,6 +46,78 @@ export const ALGORITHMS = [
     {label: 'mDeBERTa', value: 'mdeberta', type: 'single', trainable: false}
 ]
 
+export const TRAININGINPUTDATA = {
+    'yolov5': [
+        {
+            key: 'images',
+            value: ''
+        },
+        {
+            key: 'labels',
+            value: ''
+        },
+        {
+            key: 'cfg',
+            value: ''
+        },
+        {
+            key: 'weights',
+            value: ''
+        }
+    ],
+    'gluoncv': [
+        {
+            key: 'train',
+            value: ''
+        },
+        {
+            key: 'val',
+            value: ''
+        },
+        {
+            key: 'test',
+            value: ''
+        }
+    ],
+    'cpt': [
+        {
+            key: 'train',
+            value: ''
+        },
+        {
+            key: 'validation',
+            value: ''
+        },
+        {
+            key: 'test',
+            value: ''
+        }
+    ],
+    'gabsa': [
+        {
+            key: 'dataset',
+            value: ''
+        }
+    ],
+    'paddlenlp': [
+        {
+            key: 'dataset',
+            value: ''
+        }
+    ],
+    'paddleocr': [
+        {
+            key: 'dataset',
+            value: ''
+        },
+        {
+            key: 'pretrained_models',
+            value: ''
+        }
+    ]    
+}
+
+
 export const SCENARIOS = [
     {label: 'PPE detector', value: 'ppe'}, 
     {label: 'Track maintenance', value:'track'}, 
