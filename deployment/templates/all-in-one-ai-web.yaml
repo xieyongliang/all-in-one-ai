@@ -219,8 +219,30 @@ Resources:
       UnhealthyThresholdCount: 2
       VpcId: !Ref VPC
 
-  Service:
+  HTTPService:
     Type: 'AWS::ECS::Service'
+    Condition: USE_HTTP
+    DependsOn: ALBHTTPListener
+    Properties:
+      Cluster: !Ref ECSCluster
+      LaunchType: FARGATE
+      DesiredCount: 1
+      HealthCheckGracePeriodSeconds: 120
+      LoadBalancers:
+        - ContainerName: web-app
+          ContainerPort: 3000
+          TargetGroupArn: !Ref ECSTG
+      TaskDefinition: !Ref Taskdefinition
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          SecurityGroups:
+            - !Ref EcsSecurityGroup
+          Subnets: !Ref PrivateSubnets
+
+  HTTPSService:
+    Type: 'AWS::ECS::Service'
+    Condition: USE_HTTPS
+    DependsOn: ALBHTTPSListener
     Properties:
       Cluster: !Ref ECSCluster
       LaunchType: FARGATE
