@@ -23,6 +23,18 @@ def lambda_handler(event, context):
             print(request)
 
             industrial_model = request['industrial_model']
+            algorithm = request['model_algorithm']
+
+            try: 
+                inference_image = ssmh.get_parameter('/all_in_one_ai/config/meta/algorithms/{0}/inference_image'.format(algorithm))
+            except Exception as e:
+                print(e)
+
+            try: 
+                model_data_url = ssmh.get_parameter('/all_in_one_ai/config/meta/algorithms/{0}/artifact'.format(algorithm))
+            except Exception as e:
+                print(e)
+
             payload = {}
             payload['model_name'] = request['model_name']
             payload['role_arn'] = role_arn
@@ -34,12 +46,8 @@ def lambda_handler(event, context):
                     payload['model_data_url'] = request['model_data_url']
                 payload['mode'] = request['mode']
 
-                if(request['model_algorithm'] == 'paddleocr'):
-                    if(request['inference_image'] == ''):
-                        payload['inference_image'] = ssmh.get_parameter('/all_in_one_ai/config/meta/algorithms/paddleocr/inference/image')
-                    if(request['model_data_url'] == ''):
-                        payload['model_data_url'] = ssmh.get_parameter('/all_in_one_ai/config/meta/algorithms/paddleocr/model/artifact')
-                    
+                payload['inference_image']  = request['inference_image'] if(request['inference_image'] != '') else inference_image
+                payload['model_data_url'] = request['model_data_url'] if(request['model_data_url'] != '') else model_data_url                    
 
             if('model_environment' in request):
                 payload['model_environment'] = json.loads(request['model_environment'])

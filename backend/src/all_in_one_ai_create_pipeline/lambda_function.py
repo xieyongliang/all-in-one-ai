@@ -55,6 +55,11 @@ def lambda_handler(event, context):
         endpoint_initial_instance_count = event['body']['endpoint_initial_instance_count']
     else:
         inference_image = event['body']['inference_image']
+        if(inference_image == ''):
+            try: 
+                inference_image = ssmh.get_parameter('/all_in_one_ai/config/meta/algorithms/{0}/inference_image'.format(algorithm))
+            except Exception as e:
+                print(e)     
         model_name = event['body']['model_name']
         model_package_group_inference_instances = event['body']['model_package_group_inference_instances']
         model_environment = json.dumps(event['body']['model_environment'])
@@ -66,6 +71,11 @@ def lambda_handler(event, context):
         
         if(pipeline_type == '0'):
             training_image = event['body']['training_image']
+            if(training_image == ''):
+                try: 
+                    training_image = ssmh.get_parameter('/all_in_one_ai/config/meta/algorithms/{0}/training_image'.format(algorithm))
+                except Exception as e:
+                    print(e)
             training_job_instance_type = event['body']['training_job_instance_type']
             training_job_instance_count = event['body']['training_job_instance_count']
             training_job_volume_size_in_gb = event['body']['training_job_volume_size_in_gb']
@@ -79,6 +89,11 @@ def lambda_handler(event, context):
             greengrass_deployment_target_arn = event['body']['greengrass_deployment_target_arn']
         elif(pipeline_type == '1'):
             training_image = event['body']['training_image']
+            if(training_image == ''):
+                try: 
+                    training_image = ssmh.get_parameter('/all_in_one_ai/config/meta/algorithms/{0}/training_image'.format(algorithm))
+                except Exception as e:
+                    print(e)            
             training_job_instance_type = event['body']['training_job_instance_type']
             training_job_instance_count = event['body']['training_job_instance_count']
             training_job_volume_size_in_gb = event['body']['training_job_volume_size_in_gb']
@@ -90,6 +105,11 @@ def lambda_handler(event, context):
             greengrass_component_name = event['body']['greengrass_component_name']
             greengrass_component_version = event['body']['greengrass_component_version']
             model_data_url = event['body']['model_data_url']
+            if(model_data_url == ''):
+                try: 
+                    model_data_url = ssmh.get_parameter('/all_in_one_ai/config/meta/algorithms/{0}/artifact'.format(algorithm))
+                except Exception as e:
+                    print(e)
             greengrass_deployment_name = event['body']['greengrass_deployment_name']
             greengrass_deployment_components = event['body']['greengrass_deployment_components']
             greengrass_deployment_target_arn = event['body']['greengrass_deployment_target_arn']

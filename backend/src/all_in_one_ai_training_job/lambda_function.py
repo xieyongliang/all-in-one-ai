@@ -21,12 +21,18 @@ def lambda_handler(event, context):
             request = json.loads(event['body'])
 
             industrial_model = request['industrial_model']
+            algorithm = request['model_algorithm']
+            
+            try: 
+                training_image = ssmh.get_parameter('/all_in_one_ai/config/meta/algorithms/{0}/training_image'.format(algorithm))
+            except Exception as e:
+                print(e)
 
             payload = {}
             payload['training_job_name'] = request['training_job_name']
             payload['role_arn'] = role_arn
             payload['algorithm_specification'] = {
-                'TrainingImage': request['training_image'],
+                'TrainingImage': request['training_image'] if(request['training_image'] != '') else training_image,
                 'TrainingInputMode': 'File',
                 'EnableSageMakerMetricsTimeSeries': True
             }
