@@ -132,7 +132,7 @@ Parameters:
 
 Conditions:
   Globally: !Equals [ False, !Ref ChinaRegion ]
-
+  USE_HTTP: !Equals [ '', !Ref Certificate ]
 
 Resources:
   VPC:
@@ -297,4 +297,4 @@ Outputs:
     Value: !GetAtt WEB.Outputs.DNSName
   WebPortalUrl:
     Description: Web Portal DNS Url
-    Value: !Sub https://${DomainName}
+    Value: !If [ USE_HTTP, !Sub "http://${WEB.Outputs.DNSName}", !Sub "https://${DomainName}" ]
