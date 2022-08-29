@@ -78,7 +78,7 @@ const SampleImageForm: FunctionComponent<IProps> = (props) => {
             setImageLabels(industrialModels[index].labels)
             if(s3uri !== '') {
                 setLoading(true)
-                axios.get('/s3', {params : { s3uri : s3uri, page_num: imagePage, page_size: 20 }})
+                axios.get('/s3', {params : { s3uri : s3uri, page_num: imagePage, page_size: 20, include_filter: 'jpg,jpeg,png' }})
                     .then((response) => {
                         setImageItems(response.data.payload);
                         setImageCount(response.data.count);

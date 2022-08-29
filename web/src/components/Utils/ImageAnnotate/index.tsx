@@ -191,7 +191,6 @@ const ImageAnnotate: React.FC<IProps> = (
                         labelNames.push(LabelUtil.createLabelName(imageLabel))
                     })
                     updateLabelNamesAction(labelNames);
-                    console.log('add...')
                     addLabelImageDataAction([LabelImageDataUtil.createLabelImageDataFromFileData(imageFile)]);
                 }
 

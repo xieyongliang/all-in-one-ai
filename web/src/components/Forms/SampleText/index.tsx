@@ -55,7 +55,7 @@ const SampleTextForm: FunctionComponent<IProps>  = (
             var s3uri = industrialModels[index].samples
             if(s3uri !== '') {
                 setLoading(true)
-                axios.get('/s3', {params : { s3uri : s3uri, page_num: textPage, page_size: PAGE_SIZE, include_filter : 'txt' }})
+                axios.get('/s3', {params : { s3uri : s3uri, page_num: textPage, page_size: PAGE_SIZE, include_filter : input_format === 'txt' ? 'txt' :  'json' }})
                     .then((response) => {
                         setTextItems(response.data.payload);
                         setTextCount(response.data.count);
@@ -63,7 +63,7 @@ const SampleTextForm: FunctionComponent<IProps>  = (
                     })
             }
         }
-    },[params.id, textPage, industrialModels]);
+    },[params.id, textPage, industrialModels, input_format]);
 
     const onImageClick = (httpuri) => {
         setCurTextItem(httpuri)
