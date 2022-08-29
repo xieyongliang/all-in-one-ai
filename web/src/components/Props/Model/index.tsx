@@ -150,7 +150,7 @@ const ModelProp: FunctionComponent = () => {
         return (
             <FormSection header='Tags'>
                 {
-                    tags.length>0 && 
+                    tags !== undefined && 
                     <Grid container spacing={{ xs: 2, md: 2 }} columns={{ xs: 4, sm: 8, md: 8 }}>
                         <Grid item xs={2} sm={4} md={4}>
                             <Text> Key </Text>
@@ -161,7 +161,7 @@ const ModelProp: FunctionComponent = () => {
                     </Grid>
                 }
                 {
-                    tags.map((tag, index) => (
+                    tags !== undefined && tags.map((tag, index) => (
                         <Grid container spacing={{ xs: 2, md: 2 }} columns={{ xs: 4, sm: 8, md: 8 }}>
                             <Grid item xs={2} sm={4} md={4}>
                                 <Text>{tag.key}</Text>

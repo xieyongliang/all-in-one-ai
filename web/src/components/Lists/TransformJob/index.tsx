@@ -483,6 +483,7 @@ const TransformJobList: FunctionComponent<IProps> = (props) => {
                                     <ImageListItem key={item} rows={2}>
                                         <Image
                                             src={item}
+                                            httpuri={item}
                                             width={128}
                                             height={128}
                                             current={curImageItem}

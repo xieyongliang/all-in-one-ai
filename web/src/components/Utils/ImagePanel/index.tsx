@@ -133,6 +133,7 @@ const ImagePanel: FunctionComponent<IProps> = ({
                                 <ImageListItem key={item.httpuri} rows={2}>
                                     <Image
                                         src={item.httpuri}
+                                        httpuri={item.httpuri}
                                         tooltip={`bucket=${item.bucket}\r\nkey=${item.key}`}
                                         width={128}
                                         height={128}

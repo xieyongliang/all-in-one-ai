@@ -1,45 +1,48 @@
 import { FunctionComponent, useEffect, useState } from 'react';
 import { useHistory, useParams } from 'react-router-dom';
-import { Container, Stack, Toggle, Link, Inline, Button } from 'aws-northstar';
-import FileUpload from 'aws-northstar/components/FileUpload';
+import { Container, Link, Toggle, Stack, LoadingIndicator, Inline, Button } from 'aws-northstar';
+import ImageList from '@mui/material/ImageList';
+import ImageListItem from '@mui/material/ImageListItem';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { github } from 'react-syntax-highlighter/dist/esm/styles/hljs';
-import JSZip from 'jszip';
-import axios from 'axios';
+import JSZip from 'jszip';import axios from 'axios';
 import ImageAnnotate from '../../Utils/ImageAnnotate';
+import Image from '../../Utils/Image';
 import { COLORS } from '../../Data/data';
 import { PathParams } from '../../Interfaces/PathParams';
+import Pagination from '@mui/material/Pagination';  
+import '../../Utils/Image/index.scss'
 import { AppState } from '../../../store';
 import { connect } from 'react-redux';
 import { IIndustrialModel } from '../../../store/industrialmodels/reducer';
 import { ProjectSubType, ProjectType } from '../../../data/enums/ProjectType';
-import { v4 as uuidv4 } from 'uuid';
+import { ALGORITHMS } from '../../Data/data';
 import './index.scss'
 
-interface FileMetadata {
-    name: string;
-    type?: string;
-    size?: number;
-    lastModified?: number;
-}
-
 interface IProps {
-    industrialModels: IIndustrialModel[];
     type: ProjectType;
     subType?: ProjectSubType;
+    industrialModels: IIndustrialModel[];
 }
 
-const InferenceForm: FunctionComponent<IProps> = (props) => {
+const SampleImageForm: FunctionComponent<IProps> = (props) => {
+    const [ imageItems, setImageItems ] = useState([])
     const [ curImageItem, setCurImageItem ] = useState('')
-    const [ imageLabels, setImageLabels ] = useState([]);
-    const [ imageName, setImageName ] = useState('')
+    const [ imageLabels, setImageLabels ] = useState([])
     const [ sampleCode, setSampleCode ] = useState('')
     const [ sampleConsole, setSampleConsole ] = useState('')
     const [ visibleSampleCode, setVisibleSampleCode ] = useState(false)
+    const [ imagePage, setImagePage ] = useState(1)
+    const [ imageCount, setImageCount ] = useState(0)
+    const [ loading, setLoading ] = useState(false);
     const [ visibleImagePreview, setVisibleImagePreview ] = useState(false)
     const history = useHistory();
     
     var params : PathParams = useParams();
+    var industrialModels = props.industrialModels
+    var industrialModel = industrialModels.find((item) => item.id === params.id);
+    var algorithm = industrialModel.algorithm;
+    var trainable = ALGORITHMS.find((item) => item.value === algorithm)
 
     const getSourceCode = async (uri) => {
         const response = await axios.get('/_file/download', {params: {uri: encodeURIComponent(uri)}, responseType: 'blob'})
@@ -68,49 +71,58 @@ const InferenceForm: FunctionComponent<IProps> = (props) => {
         }
     }, []);
 
-    var industrialModels = props.industrialModels
-
     useEffect(() => {
         if(industrialModels.length > 0) {
             var index = industrialModels.findIndex((item) => item.id === params.id)
+            var s3uri = industrialModels[index].samples
             setImageLabels(industrialModels[index].labels)
-            setCurImageItem('');
-            setVisibleImagePreview(false)
+            if(s3uri !== '') {
+                setLoading(true)
+                axios.get('/s3', {params : { s3uri : s3uri, page_num: imagePage, page_size: 20 }})
+                    .then((response) => {
+                        setImageItems(response.data.payload);
+                        setImageCount(response.data.count);
+                        setLoading(false);
+                    })
+            }
         }
-    }, [params.id, industrialModels]);
+    },[params.id, imagePage, industrialModels]);
 
-    const onFileChange = (files: (File | FileMetadata)[]) => {
-        setImageName(files[0].name.substring(0, files[0].name.lastIndexOf('.')))
-        axios.post('/_image', files[0])
-        .then((response) => {
-            var filename : string = response.data;
-            setCurImageItem(filename);
-            setVisibleImagePreview(true)
-        }, (error) => {
-            console.log(error);
-        });
+    const onImageClick = (httpuri) => {
+        setCurImageItem(httpuri)
+        setVisibleImagePreview(true)
     }
 
     const onImageClose = () => {
         setVisibleImagePreview(false);
     }
 
+    const onChange = (id, event) => {
+        if(id === 'formFieldIdPage')
+            setImagePage(event)
+    }
+
     const renderImagePreview = () => {
-        var imageUri = `/_image/${curImageItem}`
+        
+        var imageItem = imageItems.find((item) => item.httpuri === curImageItem)
+
+        var imageBucket = imageItem.bucket
+        var imageKey = imageItem.key
 
         var labelsData : string[] = [];
         imageLabels.forEach(label => {
             labelsData.push(label + '\n');
         })
 
-        var industrialModel = industrialModels.find((item) => item.id === params.id)
+        var imageName = imageKey.substring(imageKey.lastIndexOf('/') + 1, imageKey.lastIndexOf('.'))
 
         return (
             <ImageAnnotate 
-                imageUris = {[imageUri]} 
+                imageUris = {[curImageItem]} 
                 imageLabels = {labelsData} 
                 imageColors = {COLORS} 
-                imageId = { curImageItem } 
+                imageBuckets = {[imageBucket]} 
+                imageKeys = {[imageKey]}
                 imageNames = {[imageName]}
                 projectName = {industrialModel.name}
                 type = {props.type}
@@ -120,16 +132,51 @@ const InferenceForm: FunctionComponent<IProps> = (props) => {
             />
         )
     }
+    
+    const renderImageList = () => {
+        if(loading)
+            return (
+                <Container title = 'Sample data'>
+                    <LoadingIndicator label='Loading...'/>
+                </Container>
+            )
+        else {
+            return (
+                <Container title = 'Sample data'>
+                    <ImageList cols={10} rowHeight={64} gap={10} variant={'quilted'}>
+                        {
+                            imageItems.length > 0 && 
+                            imageItems.map((item) => (
+                                <ImageListItem key={item.httpuri} rows={2}>
+                                    <Image
+                                        src={item.httpuri}
+                                        httpuri={item.httprui}
+                                        tooltip={`bucket=${item.bucket}\r\nkey=${item.key}`}
+                                        width={128}
+                                        height={128}
+                                        current={curImageItem}
+                                        onClick={onImageClick}
+                                    />
+                                </ImageListItem>
+                            ))
+                        }
+                    </ImageList>
+                    <div style={{textAlign: "center"}}>
+                        <div style={{display: "inline-block", margin: "auto"}}>
+                            <Pagination page={imagePage} onChange={(event, value) => onChange('formFieldIdPage', value)} count={Math.ceil(imageCount / 20)} />
+                        </div>
+                    </div>
+                </Container>
+            )
+        }
+    }
 
-    const renderImageUpload = () => {
-        return (
-            <Container title='Select image file from local disk'>
-                <FileUpload
-                    controlId={uuidv4()}
-                    onChange={onFileChange}
-                ></FileUpload>
-            </Container>
-        )
+    const onStartBatchAnnotation = () => {
+        var s3uri =  industrialModel.samples;
+        var labels = industrialModel.labels;
+        var projectName = industrialModel.name;
+        var data = JSON.stringify({s3uri: s3uri, labels: labels, projectName: projectName})
+        history.push(`/batchannotation#${data}}`)
     }
 
     const onStartTrain = () => {
@@ -144,8 +191,14 @@ const InferenceForm: FunctionComponent<IProps> = (props) => {
         return (
             <Container headingVariant='h4' title = 'Quick start'>
                 <Inline>
+                    {
+                        (algorithm === 'yolov5') &&
+                        <div className='quickstartaction'>
+                            <Button onClick={onStartBatchAnnotation} disabled={!trainable}>Start batch annotation</Button>
+                        </div>
+                    }
                     <div className='quickstartaction'>
-                        <Button onClick={onStartTrain}>Start train</Button>
+                        <Button onClick={onStartTrain} disabled={!trainable}>Start train</Button>
                     </div>
                     <div className='quickstartaction'>
                         <Button onClick={onStartDeploy}>Start deploy</Button>
@@ -153,7 +206,8 @@ const InferenceForm: FunctionComponent<IProps> = (props) => {
                 </Inline>
             </Container>
         )
-    }    
+    }
+
     const renderSampleCode = () => {
         return (
             <Container title = 'Sample code'>
@@ -178,9 +232,9 @@ const InferenceForm: FunctionComponent<IProps> = (props) => {
     else
         return (
             <Stack>
-                {renderImageUpload()}
+                { renderImageList() }
                 { renderQuickStart() }
-                {renderSampleCode()}
+                { renderSampleCode() }
             </Stack>
         )
 }
@@ -191,4 +245,4 @@ const mapStateToProps = (state: AppState) => ({
 
 export default connect(
     mapStateToProps
-)(InferenceForm);
+)(SampleImageForm);

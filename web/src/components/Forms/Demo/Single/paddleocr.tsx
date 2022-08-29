@@ -1,7 +1,7 @@
 import { FunctionComponent } from 'react';
 import { Stack, Container, RadioButton, RadioGroup, FormField, Toggle } from 'aws-northstar';
-import InferenceForm from '../../Inference';
-import SampleForm from '../../Sample';
+import LocalImageForm from '../../LocalImage';
+import SampleImageForm from '../../SampleImage';
 import { useParams, useLocation, useHistory } from 'react-router-dom';
 import { PathParams } from '../../../Interfaces/PathParams';
 import { ProjectType } from '../../../../data/enums/ProjectType';
@@ -24,7 +24,7 @@ const PaddleOCRDemoForm: FunctionComponent<IProps> = (
     var localtion = useLocation();
     var hash = localtion.hash.substring(1);
 
-    var demoOption = hash === 'sample' || hash === 'uploaded' ? hash : 'sample'
+    var demoOption = hash === 'sample' || hash === 'local' ? hash : 'sample'
 
     const onChangeOptions = (event, value) => {
         history.push(`/imodels/${params.id}?tab=demo#${value}`);
@@ -35,7 +35,7 @@ const PaddleOCRDemoForm: FunctionComponent<IProps> = (
             <RadioGroup onChange={onChangeOptions}
                 items={[
                     <RadioButton value='sample' checked={demoOption === 'sample'} >Realtime inference with sample image</RadioButton>,
-                    <RadioButton value='uploaded' checked={demoOption === 'uploaded'} >Realtime inference with uploaded image</RadioButton>,
+                    <RadioButton value='local' checked={demoOption === 'local'} >Realtime inference with local image</RadioButton>,
                 ]}
             />
         )
@@ -43,7 +43,7 @@ const PaddleOCRDemoForm: FunctionComponent<IProps> = (
 
     return (
         <Stack>
-            <Container title = 'Demo option'>
+            <Container title = 'Demo options'>
                 <FormField controlId={uuidv4()}>            
                     {renderDemoOptions()}
                 </FormField>
@@ -51,8 +51,8 @@ const PaddleOCRDemoForm: FunctionComponent<IProps> = (
                     <Toggle label='Advanced mode' checked={advancedMode} onChange={onAdvancedModeChange}/>
                 </FormField>
             </Container>
-            {demoOption === 'sample' && <SampleForm type={ProjectType.TEXT_RECOGNITION}/>}
-            {demoOption === 'uploaded' && <InferenceForm type={ProjectType.TEXT_RECOGNITION}/>}
+            {demoOption === 'sample' && <SampleImageForm type={ProjectType.TEXT_RECOGNITION}/>}
+            {demoOption === 'local' && <LocalImageForm type={ProjectType.TEXT_RECOGNITION}/>}
         </Stack>
     )
 }

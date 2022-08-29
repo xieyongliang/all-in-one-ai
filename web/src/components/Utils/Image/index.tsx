@@ -4,13 +4,14 @@ import './index.scss'
 
 export interface ImageProps {
     src: string;
+    httpuri: string;
     alt?: string;
     width: number | string;
     height: number | string;
     current?: string;
     public?: boolean;
     tooltip?: string;
-    onClick?: (src) => void;
+    onClick?: (httpuri) => void;
 }
 
 const Image: FunctionComponent<ImageProps> = (props) => {
@@ -21,10 +22,10 @@ const Image: FunctionComponent<ImageProps> = (props) => {
             event.target.parentNode.className = 'watermarked'
     }
     if(props.public === true) {
-        if(props.current !==  undefined && props.current.endsWith(props.src)) {
+        if(props.current !==  undefined && props.current.endsWith(props.httpuri)) {
             if(props.tooltip !== undefined)
                 return (
-                    <div onClick={(event)=>{if(props.onClick !== undefined) props.onClick(props.src)}}>
+                    <div onClick={(event)=>{if(props.onClick !== undefined) props.onClick(props.httpuri)}}>
                         <Popover
                             triggerType="text"
                             variant="hover"
@@ -45,7 +46,7 @@ const Image: FunctionComponent<ImageProps> = (props) => {
                 )
             else 
                 return (
-                    <div onClick={(event)=>{if(props.onClick !== undefined) props.onClick(props.src)}}>
+                    <div onClick={(event)=>{if(props.onClick !== undefined) props.onClick(props.httpuri)}}>
                         <img
                             src={props.src}
                             width={props.width}
@@ -60,7 +61,7 @@ const Image: FunctionComponent<ImageProps> = (props) => {
         else {
             if(props.tooltip !== undefined) 
                 return (
-                    <div onClick={(event)=>{if(props.onClick !== undefined) props.onClick(props.src)}}>
+                    <div onClick={(event)=>{if(props.onClick !== undefined) props.onClick(props.httpuri)}}>
                         <Popover
                             triggerType="text"
                             variant="hover"
@@ -80,7 +81,7 @@ const Image: FunctionComponent<ImageProps> = (props) => {
                 )
             else                 
                 return (
-                    <div onClick={(event)=>{if(props.onClick !== undefined) props.onClick(props.src)}}>
+                    <div onClick={(event)=>{if(props.onClick !== undefined) props.onClick(props.httpuri)}}>
                         <img
                             src={props.src}
                             width={props.width}
@@ -93,10 +94,10 @@ const Image: FunctionComponent<ImageProps> = (props) => {
         }
     } 
     else {
-        if(props.current !== undefined && props.current.endsWith(props.src))
+        if(props.current !== undefined && props.current.endsWith(props.httpuri))
             if(props.tooltip !== undefined)
                 return (
-                    <div onClick={(event)=>{if(props.onClick !== undefined) props.onClick(props.src)}}>
+                    <div onClick={(event)=>{if(props.onClick !== undefined) props.onClick(props.httpuri)}}>
                         <Popover
                             triggerType="text"
                             variant="hover"
@@ -118,7 +119,7 @@ const Image: FunctionComponent<ImageProps> = (props) => {
                 )
             else
                 return (
-                    <div onClick={(event)=>{if(props.onClick !== undefined) props.onClick(props.src)}}>
+                    <div onClick={(event)=>{if(props.onClick !== undefined) props.onClick(props.httpuri)}}>
                         <img
                             src={props.src}
                             width={props.width}
@@ -133,7 +134,7 @@ const Image: FunctionComponent<ImageProps> = (props) => {
         else
             if(props.tooltip !== undefined)
                 return (
-                    <div onClick={(event)=>{if(props.onClick !== undefined) props.onClick(props.src)}}>
+                    <div onClick={(event)=>{if(props.onClick !== undefined) props.onClick(props.httpuri)}}>
                         <Popover
                             triggerType="text"
                             variant="hover"
@@ -154,7 +155,7 @@ const Image: FunctionComponent<ImageProps> = (props) => {
                 )
             else
                 return (
-                    <div onClick={(event)=>{if(props.onClick !== undefined) props.onClick(props.src)}}>
+                    <div onClick={(event)=>{if(props.onClick !== undefined) props.onClick(props.httpuri)}}>
                         <img
                             src={props.src}
                             width={props.width}

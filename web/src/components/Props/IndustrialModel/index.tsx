@@ -99,7 +99,14 @@ const InustrialModelProp: FunctionComponent<IProps> = (props) => {
                             onChange={onFileChange}
                         />
                         <FormField controlId={uuidv4()}>
-                            <Image src={iconHttpUri} width={128} height={128} current={""} public={true}/>
+                            <Image 
+                                src={iconHttpUri}
+                                httpuri={iconHttpUri}
+                                width={128} 
+                                height={128} 
+                                current={""} 
+                                public={true}
+                            />
                         </FormField>          
                     </Container>
                 </Stack> 

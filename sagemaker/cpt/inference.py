@@ -26,6 +26,7 @@ def predict_fn(input_data, model):
     output_max_length = int(os.environ['output_max_length']) if ('output_max_length' in os.environ) else 512
     top_p = float(os.environ['top_p']) if ('top_p' in os.environ) else 0.95
     outputs = engine.generate(inputs['input_ids'], max_length=output_max_length, top_p=top_p)
+
     result =  {
         'result': tokenizer.decode(outputs[0])
     }

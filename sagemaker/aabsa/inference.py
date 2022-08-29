@@ -66,7 +66,7 @@ def predict_fn(input_data, model):
     outs = model.model.generate(input_ids=inputs["input_ids"].to(device), 
                                     attention_mask=inputs["attention_mask"].to(device), 
                                     max_length=1024)
-    dec=tokenizer.decode(outs[0], skip_special_tokens=True)
+    dec = tokenizer.decode(outs[0], skip_special_tokens=True)
 
     result =  {
         'result': dec

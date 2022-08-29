@@ -78,7 +78,14 @@ const IndustrialModelForm: FunctionComponent<IProps> = (props) => {
                             onChange={onFileChange}
                         />
                         <FormField controlId={uuidv4()}>
-                            <Image src={`/_image/${fileName}`} width={128} height={128} current={""} public={true}/>
+                            <Image 
+                                src={`/_image/${fileName}`}
+                                httpuri={`/_image/${fileName}`}
+                                width={128} 
+                                height={128} 
+                                current={""} 
+                                public={true}
+                            />
                         </FormField>          
                     </Container>
                 </Stack> 

@@ -64,6 +64,7 @@ def predict_fn(input_data, model):
     result =  {
         'result': outputs
     }
+    
     return result
 
 def output_fn(prediction, response_content_type):

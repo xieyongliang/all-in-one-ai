@@ -1,7 +1,7 @@
 import { FunctionComponent } from 'react';
 import { Stack, Container, RadioButton, RadioGroup } from 'aws-northstar';
-import InferenceForm from '../../Inference';
-import SampleForm from '../../Sample';
+import LocalImageForm from '../../LocalImage';
+import SampleImageForm from '../../SampleImage';
 import { useParams, useLocation, useHistory } from 'react-router-dom';
 import { PathParams } from '../../../Interfaces/PathParams';
 import { ProjectSubType, ProjectType } from '../../../../data/enums/ProjectType';
@@ -14,7 +14,7 @@ const YolovPaddleOCRDemoForm: FunctionComponent = () => {
     var localtion = useLocation();
     var hash = localtion.hash.substring(1);
 
-    var demoType = hash === 'sample' || hash === 'uploaded' || hash === 'transformjob' ? hash : 'sample'
+    var demoType = hash === 'sample' || hash === 'local' || hash === 'transformjob' ? hash : 'sample'
 
     const onChangeOptions = (event, value) => {
         history.push(`/imodels/${params.id}?tab=demo#${value}`);
@@ -25,7 +25,7 @@ const YolovPaddleOCRDemoForm: FunctionComponent = () => {
             <RadioGroup onChange={onChangeOptions}
                 items={[
                     <RadioButton value='sample' checked={demoType === 'sample'} >Realtime inference with sample image</RadioButton>,
-                    <RadioButton value='uploaded' checked={demoType === 'uploaded'} >Realtime inference with uploaded image</RadioButton>,
+                    <RadioButton value='local' checked={demoType === 'local'} >Realtime inference with local image</RadioButton>,
                 ]}
             />
         )
@@ -36,8 +36,8 @@ const YolovPaddleOCRDemoForm: FunctionComponent = () => {
             <Container title = 'Demo options'>
                 {renderDemoOptions()}
             </Container>
-            {demoType === 'sample' && <SampleForm type={ProjectType.TEXT_RECOGNITION} subType={ProjectSubType.OBJECT_DETECTION}/>}
-            {demoType === 'uploaded' && <InferenceForm type={ProjectType.TEXT_RECOGNITION} subType={ProjectSubType.OBJECT_DETECTION}/>}
+            {demoType === 'sample' && <SampleImageForm type={ProjectType.TEXT_RECOGNITION} subType={ProjectSubType.OBJECT_DETECTION}/>}
+            {demoType === 'local' && <LocalImageForm type={ProjectType.TEXT_RECOGNITION} subType={ProjectSubType.OBJECT_DETECTION}/>}
         </Stack>
     )
 }

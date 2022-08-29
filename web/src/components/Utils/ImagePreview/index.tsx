@@ -14,7 +14,13 @@ export interface ImagePreviewProps {
 const ImagePreview: FunctionComponent<ImagePreviewProps> = (props) => {
     return (
         <Modal title="Image preview" visible={props.visible} onClose={props.onClose} width={"100"}>
-            <Image src={props.src} width={props.width} height={props.height} current={''}/>
+            <Image 
+                src={props.src} 
+                httpuri={props.src}
+                width={props.width} 
+                height={props.height} 
+                current={''}
+            />
         </Modal>
     )
 }
