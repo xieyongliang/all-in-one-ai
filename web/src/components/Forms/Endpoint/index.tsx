@@ -11,6 +11,7 @@ import { IIndustrialModel } from '../../../store/industrialmodels/reducer';
 import { PathParams } from '../../Interfaces/PathParams';
 import { ENDPOINTOPTIONS, ACCELERALATOROPTIONS } from '../../Data/data'
 import { v4 as uuidv4 } from 'uuid';
+import { useTranslation } from "react-i18next";
 
 interface IProps {
     updateEndpointInstanceTypeAction: (endpointInstanceType: string) => any;
@@ -35,6 +36,8 @@ const EndpointForm: FunctionComponent<IProps> = (props) => {
     const [ initialVariantWeight, setInitialVariantWeight ] = useState<number>(props.wizard ? props.endpointInitialVariantWeight : 1);
     const [ tags, setTags ] = useState([{key:'', value:''}])
     const [ processing, setProcessing ] = useState(false)
+
+    const { t } = useTranslation();
 
     const history = useHistory();
 
@@ -99,7 +102,7 @@ const EndpointForm: FunctionComponent<IProps> = (props) => {
             .then((response) => {
                 history.goBack()
             }, (error) => {
-                alert('Error occured, please check and try it again');
+                alert(t('industrial_models.common.error_occured'));
                 console.log(error);
                 setProcessing(false)
             });
@@ -134,31 +137,27 @@ const EndpointForm: FunctionComponent<IProps> = (props) => {
         wizard = props.wizard
 
     const renderEndpointSetting = () => {
-        if(!wizard) {
-            return (
-                <FormSection header='Endpoint setting'>
-                    <FormField label='Endpooint name' description='Your application uses this name to access this endpoint.' controlId={uuidv4()} hintText='Maximum of 63 alphanumeric characters. Can include hyphens (-), but not spaces. Must be unique within your account in an AWS Region.'>
-                        <Input type='text' value={endpointName} onChange={(event) => {onChange('formFieldIdEndpointName', event)}} />
-                    </FormField>
-                </FormSection>
-            )
-        }
-        else 
-            return ''
+        return (
+            <FormSection header={t('industrial_models.endpoint.endpoint_settings')}>
+                <FormField label={t('industrial_models.endpoint.endpoint_name')} description={t('industrial_models.endpoint.endpoint_name_description')} controlId={uuidv4()} hintText={t('industrial_models.endpoint.endpoint_name_hint')}>
+                    <Input type='text' value={endpointName} onChange={(event) => {onChange('formFieldIdEndpointName', event)}} />
+                </FormField>
+            </FormSection>
+        )
     }
 
     const renderEndpointTag = () => {
         if(!wizard) {
             return (
-                <FormSection header='Tags - optional'>
+                <FormSection header={t('industrial_models.common.tags')}>
                     {
                         tags.length>0 && 
                             <Grid container spacing={{ xs: 1, md: 1 }} columns={{ xs: 4, sm: 8, md: 12 }}>
                                 <Grid item xs={2} sm={4} md={4}>
-                                    <Text> Key </Text>
+                                    <Text> {t('industrial_models.common.key')} </Text>
                                 </Grid>
                                 <Grid item xs={2} sm={4} md={4}>
-                                    <Text> Value </Text> 
+                                    <Text> {t('industrial_models.common.value')} </Text> 
                                 </Grid>
                                 <Grid item xs={2} sm={4} md={4}>
                                     <Text>  </Text>
@@ -175,12 +174,12 @@ const EndpointForm: FunctionComponent<IProps> = (props) => {
                                     <Input type='text' value={tag.value} onChange={(event) => onChangeTags('value', event, index)}/>
                                 </Grid>
                                 <Grid item xs={2} sm={4} md={4}>
-                                    <Button onClick={() => onRemoveTag(index)}>Remove</Button>
+                                    <Button onClick={() => onRemoveTag(index)}>{t('industrial_models.common.remove')}</Button>
                                 </Grid>
                             </Grid>
                         ))
                     }
-                    <Button variant='link' size='large' onClick={onAddTag}>Add tag</Button>
+                    <Button variant='link' size='large' onClick={onAddTag}>{t('industrial_models.common.add_tag')}</Button>
                 </FormSection>
             )
         }
@@ -190,37 +189,34 @@ const EndpointForm: FunctionComponent<IProps> = (props) => {
 
     const renderEndpointFormContent = () => {
         return (
-            <FormSection header='Production variants'>
+            <FormSection header={t('industrial_models.endpoint.production_variant')} >
                 {   !wizard && 
-                    <FormField label='Model name' controlId={uuidv4()}>
+                    <FormField label={t('industrial_models.endpoint.model_name')} controlId={uuidv4()}>
                         <Select
-                                placeholder='Choose an option'
                                 options={modelOptions}
                                 selectedOption={selectedModelName}
                                 onChange={(event) => onChange('formFieldIdModelName', event)}
                             />
                     </FormField>
                 }
-                <FormField label='Instance type' controlId={uuidv4()}>
+                <FormField label={t('industrial_models.endpoint.instance_type')} controlId={uuidv4()}>
                     <Select
-                            placeholder='Choose an option'
                             options={ ENDPOINTOPTIONS }
                             selectedOption={selectedInstanceType}
                             onChange={(event) => onChange('formFieldIdInstanceType', event)}
                         />
                 </FormField>
-                <FormField label='Elastic Inference' controlId={uuidv4()}>
+                <FormField label={t('industrial_models.endpoint.elastic_inference')} controlId={uuidv4()}>
                     <Select
-                            placeholder='Choose an option'
                             options={ ACCELERALATOROPTIONS }
                             selectedOption={selectedAcceleratorTypeType}
                             onChange={(event) => onChange('formFieldIdAcceleratorType', event)}
                         />
                 </FormField>
-                <FormField label='Initial instance count' controlId={uuidv4()}>
+                <FormField label={t('industrial_models.endpoint.initial_instance_count')} controlId={uuidv4()}>
                     <Input type='text' value={initialInstanceCount} onChange={(event) => {onChange('formFieldIdInitialInstanceCount', event)}} />
                 </FormField>
-                <FormField label='Initial weight' controlId={uuidv4()}>
+                <FormField label={t('industrial_models.endpoint.initial_weight')} controlId={uuidv4()}>
                     <Input type='text' value={initialVariantWeight} onChange={(event) => {onChange('formFieldIdInitialVariantWeight', event)}} />
                 </FormField>
             </FormSection>
@@ -230,7 +226,6 @@ const EndpointForm: FunctionComponent<IProps> = (props) => {
     if(wizard) {
         return (
             <Stack>
-                {renderEndpointSetting()}
                 {renderEndpointFormContent()}
                 {renderEndpointTag()}
             </Stack>
@@ -239,12 +234,12 @@ const EndpointForm: FunctionComponent<IProps> = (props) => {
     else {
         return (
             <Form
-                header='Create endpoint'
-                description='To deploy models to Amazon SageMaker, first create an endpoint. Specify which models to deploy, and the relative traffic weighting and hardware requirements for each. '
+                header={t('industrial_models.endpoint.create_endpoint')}
+                description={t('industrial_models.endpoint.create_endpoint_description')}
                 actions={
                     <div>
-                        <Button variant='link' onClick={onCancel}>Cancel</Button>
-                        <Button variant='primary' onClick={onSubmit} loading={processing}>Submit</Button>
+                        <Button variant='link' onClick={onCancel}>{t('industrial_models.common.cancel')}</Button>
+                        <Button variant='primary' onClick={onSubmit} loading={processing}>{t('industrial_models.common.submit')}</Button>
                     </div>
                 }>
                 {renderEndpointSetting()}

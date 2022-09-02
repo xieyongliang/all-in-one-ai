@@ -13,7 +13,7 @@
   See the License for the specific language governing permissions and
   limitations under the License.                                                                              *
  ******************************************************************************************************************** */
-  import React from 'react';
+  import React, { Suspense } from 'react';
   import ReactDOM from 'react-dom';
   import App from './App';
   import reportWebVitals from './reportWebVitals';
@@ -21,6 +21,7 @@
   import configureStore from './configureStore';
   import {AppInitializer} from './logic/initializer/AppInitializer';
   import { Provider } from 'react-redux';
+  import './i18n'
   
   export const store = configureStore();
   AppInitializer.inti();
@@ -28,7 +29,9 @@
   ReactDOM.render(
       <React.StrictMode>
           <Provider store={store}>
-              <App/>
+            <Suspense fallback={<div></div>}>
+                <App />
+            </Suspense> 
           </Provider>
       </React.StrictMode>,
       document.getElementById('root')

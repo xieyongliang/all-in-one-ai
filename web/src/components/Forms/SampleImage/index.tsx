@@ -1,6 +1,6 @@
 import { FunctionComponent, useEffect, useState } from 'react';
 import { useHistory, useParams } from 'react-router-dom';
-import { Container, Link, Toggle, Stack, LoadingIndicator, Inline, Button } from 'aws-northstar';
+import { Container, Link, Toggle, Stack, LoadingIndicator, Inline, Button, FormField, Select } from 'aws-northstar';
 import ImageList from '@mui/material/ImageList';
 import ImageListItem from '@mui/material/ImageListItem';
 import SyntaxHighlighter from 'react-syntax-highlighter';
@@ -17,7 +17,10 @@ import { connect } from 'react-redux';
 import { IIndustrialModel } from '../../../store/industrialmodels/reducer';
 import { ProjectSubType, ProjectType } from '../../../data/enums/ProjectType';
 import { ALGORITHMS } from '../../Data/data';
+import { v4 as uuidv4 } from 'uuid';
+import { useTranslation } from "react-i18next";
 import './index.scss'
+import { SelectOption } from 'aws-northstar/components/Select';
 
 interface IProps {
     type: ProjectType;
@@ -36,6 +39,40 @@ const SampleImageForm: FunctionComponent<IProps> = (props) => {
     const [ imageCount, setImageCount ] = useState(0)
     const [ loading, setLoading ] = useState(false);
     const [ visibleImagePreview, setVisibleImagePreview ] = useState(false)
+    const [ selectedSampleFunction, setSelectedSampleFunction ] = useState<SelectOption>({})
+
+    const train_framework = 'pytorch';
+    const deploy_framework = 'pytorch';
+
+    const sampleFunctionOptions = [
+        {
+            label: 'all_in_one_ai_train',
+            value: 'all_in_one_ai_train'
+        },
+        {
+            label: `all_in_one_ai_create_train_${train_framework}`,
+            value: `all_in_one_ai_create_train_${train_framework}`
+        },
+        {
+            label: 'all_in_one_ai_deploy',
+            value: 'all_in_one_ai_deploy'
+        },
+        {
+            label: `all_in_one_ai_create_deploy_${deploy_framework}`,
+            value: `all_in_one_ai_create_deploy_${deploy_framework}`
+        },
+        {
+            label: 'all_in_one_ai_inference',
+            value: 'all_in_one_ai_inference'
+        },
+        {
+            label: 'all_in_one_ai_invoke_endpoint',
+            value: 'all_in_one_ai_invoke_endpoint'
+        }
+    ]
+
+    const { t } = useTranslation();
+
     const history = useHistory();
     
     var params : PathParams = useParams();
@@ -51,25 +88,27 @@ const SampleImageForm: FunctionComponent<IProps> = (props) => {
 
     useEffect(() => {
         var cancel = false
-        const requests = [ axios.get('/function/all_in_one_ai_invoke_endpoint?action=code'), axios.get('/function/all_in_one_ai_invoke_endpoint?action=console')];
-        axios.all(requests)
-        .then(axios.spread(function(response0, response1) {
-            getSourceCode(response0.data).then((data) => {
-                if(cancel) return;
-                var zip = new JSZip();
-                zip.loadAsync(data).then(async function(zipped) {
-                    zipped.file('lambda_function.py').async('string').then(function(data) {
-                        if(cancel) return;
-                        setSampleCode(data)
+        if(selectedSampleFunction.value !== undefined) {
+            const requests = [ axios.get(`/function/${selectedSampleFunction.value}?action=code`), axios.get(`/function/${selectedSampleFunction.value}?action=console`)];
+            axios.all(requests)
+            .then(axios.spread(function(response0, response1) {
+                getSourceCode(response0.data).then((data) => {
+                    if(cancel) return;
+                    var zip = new JSZip();
+                    zip.loadAsync(data).then(async function(zipped) {
+                        zipped.file('lambda_function.py').async('string').then(function(data) {
+                            if(cancel) return;
+                            setSampleCode(data)
+                        })
                     })
-                })
-            });
-            setSampleConsole(response1.data)           
-        }));
+                });
+                setSampleConsole(response1.data)           
+            }));
+        }
         return () => { 
             cancel = true;
         }
-    }, []);
+    }, [selectedSampleFunction]);  
 
     useEffect(() => {
         if(industrialModels.length > 0) {
@@ -100,6 +139,9 @@ const SampleImageForm: FunctionComponent<IProps> = (props) => {
     const onChange = (id, event) => {
         if(id === 'formFieldIdPage')
             setImagePage(event)
+        if(id === 'formFieldIdSampleFunction') {
+            setSelectedSampleFunction({label: event.target.value, value: event.target.value})
+        }
     }
 
     const renderImagePreview = () => {
@@ -136,13 +178,13 @@ const SampleImageForm: FunctionComponent<IProps> = (props) => {
     const renderImageList = () => {
         if(loading)
             return (
-                <Container title = 'Sample data'>
-                    <LoadingIndicator label='Loading...'/>
+                <Container title = {t('industrial_models.demo.sample_data')}>
+                    <LoadingIndicator label={t('industrial_models.demo.loading')}/>
                 </Container>
             )
         else {
             return (
-                <Container title = 'Sample data'>
+                <Container title = {t('industrial_models.demo.sample_data')}>
                     <ImageList cols={10} rowHeight={64} gap={10} variant={'quilted'}>
                         {
                             imageItems.length > 0 && 
@@ -155,7 +197,7 @@ const SampleImageForm: FunctionComponent<IProps> = (props) => {
                                         width={128}
                                         height={128}
                                         current={curImageItem}
-                                        onClick={onImageClick}
+                                        onClick={() => onImageClick(item.httpuri)}
                                     />
                                 </ImageListItem>
                             ))
@@ -189,19 +231,19 @@ const SampleImageForm: FunctionComponent<IProps> = (props) => {
 
     const renderQuickStart = () => {
         return (
-            <Container headingVariant='h4' title = 'Quick start'>
+            <Container headingVariant='h4' title = {t('industrial_models.demo.quick_start')}>
                 <Inline>
                     {
                         (algorithm === 'yolov5') &&
                         <div className='quickstartaction'>
-                            <Button onClick={onStartBatchAnnotation} disabled={!trainable}>Start batch annotation</Button>
+                            <Button onClick={onStartBatchAnnotation} disabled={!trainable}>{t('industrial_models.demo.batch_annotation')}</Button>
                         </div>
                     }
                     <div className='quickstartaction'>
-                        <Button onClick={onStartTrain} disabled={!trainable}>Start train</Button>
+                        <Button onClick={onStartTrain} disabled={!trainable}>{t('industrial_models.demo.train')}</Button>
                     </div>
                     <div className='quickstartaction'>
-                        <Button onClick={onStartDeploy}>Start deploy</Button>
+                        <Button onClick={onStartDeploy}>{t('industrial_models.demo.deploy')}</Button>
                     </div>
                 </Inline>
             </Container>
@@ -210,9 +252,16 @@ const SampleImageForm: FunctionComponent<IProps> = (props) => {
 
     const renderSampleCode = () => {
         return (
-            <Container title = 'Sample code'>
-                <Toggle label={visibleSampleCode ? 'Show sample code' : 'Hide sample code'} checked={visibleSampleCode} onChange={(checked) => {setVisibleSampleCode(checked)}} />
-                <Link href={sampleConsole}>Open in AWS Lambda console</Link>
+            <Container title = {t('industrial_models.demo.sample_code')}>
+                <Toggle label={visibleSampleCode ? t('industrial_models.demo.show_sample_code') : t('industrial_models.demo.hide_sample_code')} checked={visibleSampleCode} onChange={(checked) => {setVisibleSampleCode(checked)}} />
+                <FormField controlId={uuidv4()}>
+                    <Select
+                            options={sampleFunctionOptions}
+                            selectedOption={selectedSampleFunction}
+                            onChange={(event) => onChange('formFieldIdSampleFunction', event)}
+                        />
+                </FormField>
+                <Link href={sampleConsole}>{t('industrial_models.demo.open_function_in_aws_console')}</Link>
                 {
                     visibleSampleCode && <SyntaxHighlighter language='python' style={github} showLineNumbers={true}>
                         {sampleCode}

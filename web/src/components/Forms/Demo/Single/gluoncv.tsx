@@ -1,6 +1,6 @@
 import { FunctionComponent, useEffect, useState } from 'react';
 import { useHistory, useParams } from 'react-router-dom';
-import { Container, Link, Toggle, Select, Stack, FormField, Button, Grid, ProgressBar, LoadingIndicator, Inline } from 'aws-northstar';
+import { Container, Link, Toggle, Select, Stack, FormField, Button, ProgressBar, LoadingIndicator, Inline } from 'aws-northstar';
 import ImageList from '@mui/material/ImageList';
 import ImageListItem from '@mui/material/ImageListItem';
 import SyntaxHighlighter from 'react-syntax-highlighter';
@@ -18,6 +18,7 @@ import FileUpload from '../../../Utils/FileUpload';
 import ImagePreview from '../../../Utils/ImagePreview';
 import { v4 as uuidv4 } from 'uuid';
 import '../index.scss'
+import { useTranslation } from "react-i18next";
 
 interface IProps {
     industrialModels: IIndustrialModel[];
@@ -51,6 +52,9 @@ const GluonCVDemoForm: FunctionComponent<IProps> = (
     const [ processing, setProcessing ] = useState(false);
     const [ importing, setImporting ] = useState(false);
     const [ importedCount, setImportedCount ] = useState(0);
+    
+    const { t } = useTranslation();
+
     const history = useHistory();
 
     var params : PathParams = useParams();
@@ -167,13 +171,26 @@ const GluonCVDemoForm: FunctionComponent<IProps> = (
     const renderOriginImageList = () => {
         if(loading)
             return (
-                <Container headingVariant='h4' title = 'Sample data'>
-                    <LoadingIndicator label='Loading...'/>
+                <Container headingVariant='h4' title = {t('industrial_models.demo.sample_data')}>
+                    <LoadingIndicator label={t('industrial_models.demo.loading')}/>
                 </Container>
             )
         else
             return (
-                <Container headingVariant='h4' title = 'Sample data'>
+                <Container 
+                    headingVariant='h4'
+                    title = {t('industrial_models.demo.sample_data')}
+                    headerContent ={
+                        <div>
+                            <div style={{display: "inline-block", float: "right", marginRight: "5px", marginTop: "-32px"}}>
+                            <Button 
+                                onClick={onImportSamples} 
+                                loading={importing}>{t('industrial_models.demo.import_images')}
+                            </Button>
+                            </div>
+                        </div>
+                    }
+                >
                     <ImageList cols={10} rowHeight={64} gap={10} variant={'quilted'}>
                         {
                             originImageItems.map((item) => (
@@ -191,19 +208,12 @@ const GluonCVDemoForm: FunctionComponent<IProps> = (
                             ))
                         }
                     </ImageList>
-                    <Pagination page={imagePage} onChange={(event, value) => onChange('formFieldIdPage', value)} count={Math.floor(imageCount / 20) + 1} />
-                        <Grid container spacing={3}>
-                            <Grid item xs={4}>
-                                <FormField controlId={uuidv4()}>
-                                    <Button onClick={onImportSamples} loading={importing}> Start to import</Button>
-                                </FormField>
-                            </Grid>
-                            <Grid item xs={8}>
-                                <FormField controlId={uuidv4()}>
-                                    <ProgressBar value={importedCount} label="Import progress"/>
-                            </FormField>
-                            </Grid>
-                    </Grid>
+                    <div style={{textAlign: "center"}}>
+                        <div style={{display: "inline-block", margin: "auto"}}>
+                            <Pagination page={imagePage} onChange={(event, value) => onChange('formFieldIdPage', value)} count={Math.floor(imageCount / 20) + 1} />
+                        </div>
+                    </div>
+                    <ProgressBar value={importedCount} label={t('industrial_models.demo.import_progress')}/>
                 </Container>
             )
     }
@@ -249,19 +259,19 @@ const GluonCVDemoForm: FunctionComponent<IProps> = (
 
     const renderUploadImage = () => {
             return (
-                <Container headingVariant='h4' title='Select image file from local disk and Preview'>
+                <Container headingVariant='h4' title={t('industrial_models.demo.image_search')}>
                     <Inline>
                         <div className='quickstartaction'>
                             <FileUpload
-                                text='Choose file'
+                                text={t('industrial_models.demo.image_select')}
                                 onChange={onFileChange}
                             />
                         </div>
                         <div className='quickstartaction'>
-                            <Button disabled={searchImage === ''} onClick={onSearchImageClick}>Preview</Button>
+                            <Button disabled={searchImage === ''} onClick={onSearchImageClick}>{t('industrial_models.demo.image_preview')}</Button>
                         </div>
                         <div className='quickstartaction'>
-                            <Button variant='primary' disabled={searchImage === ''} onClick={onSearch} loading={processing}>Search by image</Button>
+                            <Button variant='primary' disabled={searchImage === ''} onClick={onSearch} loading={processing}>{t('industrial_models.demo.search')}</Button>
                         </div>
                     </Inline>
                 </Container>
@@ -303,13 +313,13 @@ const GluonCVDemoForm: FunctionComponent<IProps> = (
 
     const renderQuickStart = () => {
         return (
-            <Container headingVariant='h4' title = 'Quick start'>
+            <Container headingVariant='h4' title = {t('industrial_models.demo.quick_start')}>
                 <Inline>
                     <div className='quickstartaction'>
-                        <Button onClick={onStartTrain}>Start train</Button>
+                        <Button onClick={onStartTrain}>{t('industrial_models.demo.train')}</Button>
                     </div>
                     <div className='quickstartaction'>
-                        <Button onClick={onStartDeploy}>Start deploy</Button>
+                        <Button onClick={onStartDeploy}>{t('industrial_models.demo.deploy')}</Button>
                     </div>
                 </Inline>
             </Container>
@@ -318,9 +328,9 @@ const GluonCVDemoForm: FunctionComponent<IProps> = (
 
     const renderSampleCode = () => {
         return (
-            <Container headingVariant='h4' title = 'Sample code'>
-                <Toggle label={visibleSampleCode ? 'Show sample code' : 'Hide sample code'} checked={visibleSampleCode} onChange={(checked) => {setVisibleSampleCode(checked)}} />
-                <Link href={sampleConsole}>Open in AWS Lambda console</Link>
+            <Container headingVariant='h4' title = {t('industrial_models.demo.sample_code')}>
+                <Toggle label={visibleSampleCode ? t('industrial_models.demo.show_sample_code') : t('industrial_models.demo.hide_sample_code')} checked={visibleSampleCode} onChange={(checked) => {setVisibleSampleCode(checked)}} />
+                <Link href={sampleConsole}>{t('industrial_models.demo.open_function_in_aws_console')}</Link>
                 {
                     visibleSampleCode && <SyntaxHighlighter language='python' style={github} showLineNumbers={true}>
                         {sampleCode}
@@ -332,17 +342,16 @@ const GluonCVDemoForm: FunctionComponent<IProps> = (
 
     return (
         <Stack>
-            <Container title = 'Demo options'>
-                <FormField controlId={uuidv4()} description='Select endpoint to inference'>
+            <Container title = {t('industrial_models.demo.demo_options')}>
+                <FormField controlId={uuidv4()} description={t('industrial_models.demo.select_endpoint')}>
                     <Select
-                        placeholder='Choose endpoint'
                         options={endpointOptions}
                         selectedOption={selectedEndpoint}
                         onChange={(event) => onChange('formFieldIdEndpoint', event)}
                     />
                 </FormField>
                 <FormField controlId={uuidv4()}>
-                    <Toggle label='Advanced mode' checked={advancedMode} onChange={onAdvancedModeChange}/>
+                    <Toggle label={t('industrial_models.demo.advanced_mode')} checked={advancedMode} onChange={onAdvancedModeChange}/>
                 </FormField>
             </Container>
             { renderOriginImagePreview() }

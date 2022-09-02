@@ -10,6 +10,7 @@ import { AppState } from '../../../store';
 import { UpdateGreengrassDeploymentComponents, UpdateGreengrassDeploymentName, UpdateGreengrassDeploymentTargetArn, UpdateGreengrassDeploymentTargetType } from '../../../store/pipelines/actionCreators';
 import { PathParams } from '../../Interfaces/PathParams';
 import { v4 as uuidv4 } from 'uuid';
+import { useTranslation } from "react-i18next";
 
 interface IProps {
     updateGreengrassDeploymentNameAction: (greengrassDeploymentName: string) => any;
@@ -43,10 +44,12 @@ const GreengrassDeploymentForm: FunctionComponent<IProps> = (props) => {
     const [ selectedComponentVersions ] = useState([]);
     const [ selectedCoreDevice, setSelectedCoreDevice ] = useState<SelectOption>({})
     const [ selectedThingGroup, setSelectedThingGroup ] = useState<SelectOption>({})
-    const [ tags ] = useState([])
+    const [ tags, setTags ] = useState([])
     const [ forcedRefresh, setForcedRefresh ] = useState(false)
     const [ processing, setProcessing ] = useState(false)
     const [ forceRefreshed, setForceRefreshed ] = useState(false)
+
+    const { t } = useTranslation();
 
     const history = useHistory();
 
@@ -73,39 +76,42 @@ const GreengrassDeploymentForm: FunctionComponent<IProps> = (props) => {
         const request2 = axios.get(`/greengrass/coredevices`)
         const request3 = axios.get(`/greengrass/thinggroups`)
         axios.all([request1, request2, request3])
-        .then(axios.spread(function(response1, response2, response3) {
-            for(let item of response1.data) {
-                var names = Object.keys(item)
-                var name = names[0]
-                var config = ''
-                var selected = false;
-                var versions = item[names[0]]['component_versions']
-                if(name === greengrassComponentName)
-                    versions.splice(0, 0, greengrassComponentVersion)
-                itemsComponents.push({name: name, versions: versions, config: config, selected: selected})
-                selectedComponentVersions[name] = {label: versions[0], value: versions[0]}
-            }
-            for(let item of response2.data) {
-                name = item['coreDeviceThingName']
-                var status = item['status']
-                var last_updated = item['lastStatusUpdateTimestamp']
-                optionsCoreDevices.push({label: name, value: name})
-                itemsCoreDevices.push({name: name, status: status, last_updated: last_updated})
-                if(wizard)
-                    if(greengrassDeploymentTargetType === '0' && name === greengrassDeploymentTargetArn)
-                        setSelectedCoreDevice({label: name, value: name})
-            }
-            for(let item of response3.data) {
-                name = item['groupName']
-                var arn = item['groupArn']
-                optionsThingGroups.push({label: name, value: name})
-                itemsThingGroups.push({name: name, arn: arn})
-                if(wizard)
-                    if(greengrassDeploymentTargetType === '1' && arn === greengrassDeploymentTargetArn)
-                        setSelectedThingGroup({label: name, value: name})
-            }
-            setLoading(false);
-        }));
+            .then(axios.spread(function(response1, response2, response3) {
+                for(let item of response1.data) {
+                    var names = Object.keys(item)
+                    var name = names[0]
+                    var config = ''
+                    var selected = false;
+                    var versions = item[names[0]]['component_versions']
+                    if(name === greengrassComponentName)
+                        versions.splice(0, 0, greengrassComponentVersion)
+                    itemsComponents.push({name: name, versions: versions, config: config, selected: selected})
+                    selectedComponentVersions[name] = {label: versions[0], value: versions[0]}
+                }
+                for(let item of response2.data) {
+                    name = item['coreDeviceThingName']
+                    var status = item['status']
+                    var last_updated = item['lastStatusUpdateTimestamp']
+                    optionsCoreDevices.push({label: name, value: name})
+                    itemsCoreDevices.push({name: name, status: status, last_updated: last_updated})
+                    if(wizard)
+                        if(greengrassDeploymentTargetType === '0' && name === greengrassDeploymentTargetArn)
+                            setSelectedCoreDevice({label: name, value: name})
+                }
+                for(let item of response3.data) {
+                    name = item['groupName']
+                    var arn = item['groupArn']
+                    optionsThingGroups.push({label: name, value: name})
+                    itemsThingGroups.push({name: name, arn: arn})
+                    if(wizard)
+                        if(greengrassDeploymentTargetType === '1' && arn === greengrassDeploymentTargetArn)
+                            setSelectedThingGroup({label: name, value: name})
+                }
+                setLoading(false);
+            })).catch((e) => {
+                console.log(e);
+                setLoading(false);
+            })
     }, [wizard, greengrassDeploymentTargetType, greengrassDeploymentTargetArn, greengrassComponentName, greengrassComponentVersion, itemsComponents, itemsCoreDevices, itemsThingGroups, optionsCoreDevices, optionsThingGroups, selectedComponentVersions]);
 
     const onChange = (id: string, event: any, option?: string) => {
@@ -213,7 +219,7 @@ const GreengrassDeploymentForm: FunctionComponent<IProps> = (props) => {
         {
             id: 'name',
             width: 400,
-            Header: 'Component name',
+            Header: t('industrial_models.greengrass_deployment.component_name'),
             accessor: 'name',
             Cell: ({ row  }) => {
                 if (row && row.original) {
@@ -227,7 +233,7 @@ const GreengrassDeploymentForm: FunctionComponent<IProps> = (props) => {
         {
             id: 'version',
             width: 400,
-            Header: 'Component version',
+            Header: t('industrial_models.greengrass_deployment.component_version'),
             accessor: 'versions',
             Cell: ({ row  }) => {
                 if (row && row.original) {
@@ -237,7 +243,6 @@ const GreengrassDeploymentForm: FunctionComponent<IProps> = (props) => {
                     });
                     return (
                         <Select
-                            placeholder='Choose an option'
                             options={options}
                             selectedOption={selectedComponentVersions[row.original.name]}
                             onChange={(event) => onChange(row.original.name, event, 'versions')}
@@ -250,7 +255,7 @@ const GreengrassDeploymentForm: FunctionComponent<IProps> = (props) => {
         {
             id: 'config',
             width: 400,
-            Header: 'Component deployment configuration',
+            Header: t('industrial_models.greengrass_deployment.component_deployment_configuration'),
             accessor: 'config',
             Cell: ({ row  }) => {
                 if (row && row.original) {
@@ -263,25 +268,21 @@ const GreengrassDeploymentForm: FunctionComponent<IProps> = (props) => {
     ];
         
     const renderGreengrassDeploymentSetting = () => {
-        if(!wizard) {
-            return (
-                <FormSection header='Greengrass deployment setting'>
-                    <FormField label='Deployment name' description='A friendly name lets you identify this deployment. If you leave it blank, the deployment displays its ID instead of a name.' controlId={uuidv4()}>
-                        <Input type='text' value={deploymentName} onChange={(event)=>{onChange('formFieldIdDeploymentName', event)}}/>
-                    </FormField>
-                </FormSection>
-            )
-        }
-        else
-            return ''
+        return (
+            <FormSection header={t('industrial_models.greengrass_deployment.greengrass_deployment_information')}>
+                <FormField label={t('industrial_models.greengrass_deployment.deployment_name')} description={t('industrial_models.greengrass_deployment.deployment_name_description')} hintText={t('industrial_models.greengrass_deployment.deployment_name_hint')} controlId={uuidv4()}>
+                    <Input type='text' value={deploymentName} onChange={(event)=>{onChange('formFieldIdDeploymentName', event)}}/>
+                </FormField>
+            </FormSection>
+        )
     }
 
     const renderTargetOptions = () => {
         return (
             <RadioGroup onChange={onChangeOptions}
                 items={[
-                    <RadioButton value='0' checked={targetType === '0'}>Core device</RadioButton>, 
-                    <RadioButton value='1' checked={targetType === '1'}>Thing group</RadioButton>                
+                    <RadioButton value='0' checked={targetType === '0'}>{t('industrial_models.greengrass_deployment.core_device')}</RadioButton>, 
+                    <RadioButton value='1' checked={targetType === '1'}>{t('industrial_models.greengrass_deployment.thing_group')}</RadioButton>                
                 ]}
             />
         )
@@ -289,13 +290,12 @@ const GreengrassDeploymentForm: FunctionComponent<IProps> = (props) => {
     const renderGreengrassDeploymentTarget = () => {
         if(targetType === '1') {
             return (
-                <FormSection header='Deployment target' description='You can deploy to a single Greengrass core device or a group of core devices.'>
-                    <FormField label='Target type' controlId={uuidv4()}>
+                <FormSection header={t('industrial_models.greengrass_deployment.deployment_target')} description={t('industrial_models.greengrass_deployment.deployment_target_description')}>
+                    <FormField label={t('industrial_models.greengrass_deployment.target_type')} controlId={uuidv4()}>
                         {renderTargetOptions()}
                     </FormField>
-                    <FormField label='Target name' controlId={uuidv4()}>
+                    <FormField label={t('industrial_models.greengrass_deployment.target_name')} controlId={uuidv4()}>
                         <Select
-                            placeholder='Choose an option'
                             options={optionsThingGroups}
                             selectedOption={selectedThingGroup}
                             onChange={(event) => onChange('formFieldIdThingGroups', event)}
@@ -306,13 +306,12 @@ const GreengrassDeploymentForm: FunctionComponent<IProps> = (props) => {
         }
         else {
             return (
-                <FormSection header='Deployment target' description='You can deploy to a single Greengrass core device or a group of core devices.'>
-                    <FormField label='Target type' controlId={uuidv4()}>
+                <FormSection header={t('industrial_models.greengrass_deployment.deployment_target')} description={t('industrial_models.greengrass_deployment.deployment_target_description')}>
+                    <FormField label={t('industrial_models.greengrass_deployment.target_type')} controlId={uuidv4()}>
                         {renderTargetOptions()}
                     </FormField>
-                    <FormField label='Target name' controlId={uuidv4()}>
+                    <FormField label={t('industrial_models.greengrass_deployment.target_name')} controlId={uuidv4()}>
                         <Select
-                            placeholder='Choose an option'
                             options={optionsCoreDevices}
                             selectedOption={selectedCoreDevice}
                             onChange={(event) => onChange('formFieldIdCoreDevices', event)}
@@ -323,52 +322,53 @@ const GreengrassDeploymentForm: FunctionComponent<IProps> = (props) => {
         }
     }
 
+    const onChangeTags = (id: string, event: any, index : number) => {
+        var copyTags = JSON.parse(JSON.stringify(tags));
+        copyTags[index][id] = event
+        setTags(copyTags)
+    }    
+
     const renderGreengrassDeploymentTag = () => {
-        if(!wizard) {
-            return (
-                <FormSection header='Tags - optional'>
-                    {
-                        tags.length>0 && 
-                            <Grid container spacing={{ xs: 1, md: 1 }} columns={{ xs: 4, sm: 8, md: 12 }}>
-                                <Grid item xs={2} sm={4} md={4}>
-                                    <Text> Key </Text>
-                                </Grid>
-                                <Grid item xs={2} sm={4} md={4}>
-                                    <Text> Value </Text> 
-                                </Grid>
-                                <Grid item xs={2} sm={4} md={4}>
-                                    <Text>  </Text>
-                                </Grid>
+        return (
+            <FormSection header={t('industrial_models.common.tags')}>
+                {
+                    tags.length>0 && 
+                        <Grid container spacing={{ xs: 1, md: 1 }} columns={{ xs: 4, sm: 8, md: 12 }}>
+                            <Grid item xs={2} sm={4} md={4}>
+                                <Text> {t('industrial_models.common.key')} </Text>
                             </Grid>
-                    }
-                    {
-                        tags.map((tag, index) => (
-                            <Grid container spacing={{ xs: 1, md: 1 }} columns={{ xs: 4, sm: 8, md: 12 }}>
-                                <Grid item xs={2} sm={4} md={4}>
-                                    <Input type='text' value={tag.key}/>
-                                </Grid>
-                                <Grid item xs={2} sm={4} md={4}>
-                                    <Input type='text' value={tag.value}/>
-                                </Grid>
-                                <Grid item xs={2} sm={4} md={4}>
-                                    <Button onClick={() => onRemoveTag(index)}>Remove</Button>
-                                </Grid>
+                            <Grid item xs={2} sm={4} md={4}>
+                                <Text> {t('industrial_models.common.value')} </Text> 
                             </Grid>
-                        ))
-                    }
-                    <Button variant='link' size='large' onClick={onAddTag}>Add tag</Button>
-                </FormSection>
-            )
-        }
-        else
-            return ''
+                            <Grid item xs={2} sm={4} md={4}>
+                            </Grid>
+                        </Grid>
+                }
+                {
+                    tags.map((tag, index) => (
+                        <Grid container spacing={{ xs: 1, md: 1 }} columns={{ xs: 4, sm: 8, md: 12 }}>
+                            <Grid item xs={2} sm={4} md={4}>
+                                <Input type='text' value={tag.key} onChange={(event) => onChangeTags('key', event, index)}/>
+                            </Grid>
+                            <Grid item xs={2} sm={4} md={4}>
+                                <Input type='text' value={tag.value} onChange={(event) => onChangeTags('value', event, index)}/>
+                            </Grid>
+                            <Grid item xs={2} sm={4} md={4}>
+                                <Button onClick={() => onRemoveTag(index)}>{t('industrial_models.common.remove')}</Button>
+                            </Grid>
+                        </Grid>
+                    ))
+                }
+                <Button variant='link' size='large' onClick={onAddTag}>{t('industrial_models.common.add_tag')}</Button>
+            </FormSection>
+        )
     }
 
     const renderGreengrassDeploymentContent = () => {
         if(props.wizard)
             return (
                 <Table
-                    tableTitle='Greengrass components'
+                    tableTitle={t('industrial_models.greengrass_components')}
                     columnDefinitions={columnDefinitions}
                     items={itemsComponents}
                     loading={loading}
@@ -380,7 +380,7 @@ const GreengrassDeploymentForm: FunctionComponent<IProps> = (props) => {
         else
             return (
                 <Table
-                    tableTitle='Greengrass components'
+                    tableTitle={t('industrial_models.greengrass_components')}
                     columnDefinitions={columnDefinitions}
                     items={itemsComponents}
                     loading={loading}
@@ -394,21 +394,20 @@ const GreengrassDeploymentForm: FunctionComponent<IProps> = (props) => {
     if(wizard) {
         return (
             <Stack>
-                {renderGreengrassDeploymentSetting()}
                 {renderGreengrassDeploymentTarget()}
                 {renderGreengrassDeploymentContent()}
-                {renderGreengrassDeploymentTag()}
             </Stack>
         )
     }
     else {
         return (
             <Form
-                header='Create Greengrass deployment'
+                header={t('industrial_models.greengrass_deployment.create_greengrass_deployment')}
+                description={t('industrial_models.greengrass_deployment.create_greengrass_deployment_description')}
                 actions={
                     <div>
-                        <Button variant='link' onClick={onCancel}>Cancel</Button>
-                        <Button variant='primary' onClick={onSubmit} loading={processing}>Submit</Button>
+                        <Button variant='link' onClick={onCancel}>{t('industrial_models.common.cancel')}</Button>
+                        <Button variant='primary' onClick={onSubmit} loading={processing}>{t('industrial_models.common.submit')}</Button>
                     </div>
                 }>        
                 {renderGreengrassDeploymentSetting()}

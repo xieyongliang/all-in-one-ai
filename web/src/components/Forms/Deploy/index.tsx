@@ -1,6 +1,6 @@
 import { FunctionComponent, useState } from 'react';
 import { useHistory, useParams } from 'react-router-dom'; 
-import { FormSection, FormField, Input, Button, Text, Stack, Form } from 'aws-northstar';
+import { FormField, Input, Button, Text, Form, Container, Stack } from 'aws-northstar';
 import Grid from '@mui/material/Grid';
 import axios from 'axios';
 import { AppState } from '../../../store';
@@ -11,6 +11,7 @@ import Select, { SelectOption } from 'aws-northstar/components/Select';
 import { UpdateEndpointInitialInstanceCount, UpdateEndpointInstanceType, UpdateEndpointName, UpdateModelEnvironment, UpdateModelName } from '../../../store/pipelines/actionCreators';
 import { ENDPOINTOPTIONS } from '../../Data/data'
 import { v4 as uuidv4 } from 'uuid';
+import { useTranslation } from "react-i18next";
 
 interface IProps {
     updateModelNameAction: (modelName: string) => any;
@@ -35,6 +36,8 @@ const DeployForm: FunctionComponent<IProps> = (props) => {
     const [ instanceCount, setInstanceCount ] = useState(props.wizard ? props.endpointInstanceCount : 1)
     const [ processing, setProcessing ] = useState(false)
     const [ environments, setEnvironments ] = useState([])
+
+    const { t } = useTranslation();
 
     const history = useHistory();
 
@@ -107,32 +110,30 @@ const DeployForm: FunctionComponent<IProps> = (props) => {
 
     const renderDeploySetting = () => {
         return (
-            <FormSection header='Deploy settings'>
-                <FormField label='Model name' controlId={uuidv4()}>
+            <Container title={t('industrial_models.deploy.deploy_settings')}>
+                <FormField label={t('industrial_models.deploy.model_name')} controlId={uuidv4()}>
                     <Input type='text' required={true} value={modelName} onChange={(event)=>onChange('formFieldIdModelName', event)}/>
                 </FormField>
                 {
                     !props.wizard && 
-                    <FormField label='Model data' controlId={uuidv4()}>
+                    <FormField label={t('industrial_models.deploy.model_data')} controlId={uuidv4()}>
                         <Input type='text' required={true} value={modelData} onChange={(event)=>onChange('formFieldIdModelData', event)}/>
                     </FormField>
                 }
-                <FormField label='Endpoint name' controlId={uuidv4()}>
+                <FormField label={t('industrial_models.deploy.endpoint_name')} controlId={uuidv4()}>
                     <Input type='text' required={true} value={endpointName} onChange={(event)=>onChange('formFieldIdEndpointName', event)}/>
                 </FormField>
-                <FormField label='Instance type' controlId={uuidv4()}>
+                <FormField label={t('industrial_models.deploy.instance_type')} controlId={uuidv4()}>
                     <Select
-                        placeholder='Choose an option'
                         options={ ENDPOINTOPTIONS }
                         selectedOption={selectedInstanceType}
                         onChange={(event) => onChange('formFieldIdInstanceType', event)}
                     />
                 </FormField>
-                <FormField label='Instance count' controlId={uuidv4()}>
+                <FormField label={t('industrial_models.deploy.instance_count')} controlId={uuidv4()}>
                     <Input type='number' value={instanceCount} required={true} onChange={(event) => onChange('formFieldIdInstanceCount', event)} />
                 </FormField>
-                { renderEnvironment() }
-            </FormSection>
+            </Container>
         )
     }
 
@@ -158,56 +159,60 @@ const DeployForm: FunctionComponent<IProps> = (props) => {
 
     const renderEnvironment = () => {
         return (
-                <Stack>
-                    {
-                        environments.length > 0 && 
+            <Container title={t('industrial_models.deploy.environments')}>
+                {
+                    environments.length > 0 && 
+                    <Grid container spacing={{ xs: 1, md: 1 }} columns={{ xs: 4, sm: 8, md: 12 }}>
+                        <Grid item xs={2} sm={4} md={4}>
+                            <Text> Key </Text>
+                        </Grid>
+                        <Grid item xs={2} sm={4} md={4}>
+                            <Text> Value </Text> 
+                        </Grid>
+                    </Grid>
+                }
+                {
+                    environments.length > 0 && 
+                    environments.map((item, index) => (
                         <Grid container spacing={{ xs: 1, md: 1 }} columns={{ xs: 4, sm: 8, md: 12 }}>
                             <Grid item xs={2} sm={4} md={4}>
-                                <Text> Key </Text>
+                                <Input type='text' value={item.key} onChange={(event) => onChangeEnvironment('key', event, index)}/>
                             </Grid>
                             <Grid item xs={2} sm={4} md={4}>
-                                <Text> Value </Text> 
+                                <Input type='text' value={item.value} onChange={(event) => onChangeEnvironment('value', event, index)}/>
+                            </Grid>
+                            <Grid item xs={2} sm={4} md={4}>
+                                <Button onClick={() => onRemoveEnvironmentVariable(index)}>Remove</Button>
                             </Grid>
                         </Grid>
-                    }
-                    {
-                        environments.length > 0 && 
-                        environments.map((item, index) => (
-                            <Grid container spacing={{ xs: 1, md: 1 }} columns={{ xs: 4, sm: 8, md: 12 }}>
-                                <Grid item xs={2} sm={4} md={4}>
-                                    <Input type='text' value={item.key} onChange={(event) => onChangeEnvironment('key', event, index)}/>
-                                </Grid>
-                                <Grid item xs={2} sm={4} md={4}>
-                                    <Input type='text' value={item.value} onChange={(event) => onChangeEnvironment('value', event, index)}/>
-                                </Grid>
-                                <Grid item xs={2} sm={4} md={4}>
-                                    <Button onClick={() => onRemoveEnvironmentVariable(index)}>Remove</Button>
-                                </Grid>
-                            </Grid>
-                        ))
-                    }
-                    <Button variant='link' size='large' onClick={onAddEnvironmentVairable}>Add environment variable</Button>
-                </Stack>            
+                    ))
+                }
+                <Button variant='link' size='large' onClick={onAddEnvironmentVairable}>{t('industrial_models.deploy.add_environment_variable')}</Button>
+            </Container>            
         )
     }
 
     if(props.wizard) {
         return (
-            renderDeploySetting()
+            <Stack>
+                { renderDeploySetting() }
+                { renderEnvironment() }
+            </Stack>
         )
     }
     else
         return (
             <Form
-                header='Create deploy'
-                description='To deploy a model to Amazon SageMaker, first create the model by providing the location of the model artifacts and inference code.'
+                header={t('industrial_models.deploy.create_deploy')}
+                description={t('industrial_models.deploy.create_deploy_description')}
                 actions={
                     <div>
-                        <Button variant='link' onClick={onCancel}>Cancel</Button>
-                        <Button variant='primary' onClick={onSubmit} loading={processing}>Submit</Button>
+                        <Button variant='link' onClick={onCancel}>{t('industrial_models.common.cancel')}</Button>
+                        <Button variant='primary' onClick={onSubmit} loading={processing}>{t('industrial_models.common.submit')}</Button>
                     </div>
                 }>            
                 { renderDeploySetting() }
+                { renderEnvironment() }
             </Form>
         )
 }

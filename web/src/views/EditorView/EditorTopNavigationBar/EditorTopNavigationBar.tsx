@@ -27,6 +27,7 @@ import { LabelImageData, LabelName } from '../../../store/labels/types';
 import { updateActiveLabelType, updateLabelImageData, updateLabelNames } from '../../../store/labels/actionCreators';
 import JSZip from 'jszip';
 import axios from 'axios';
+import { useTranslation } from "react-i18next";
 
 const BUTTON_SIZE: ISize = {width: 30, height: 30};
 const BUTTON_PADDING: number = 10;
@@ -157,6 +158,8 @@ const EditorTopNavigationBar: React.FC<IProps> = (
         onProcessed,
         onClosed
     }) => {
+    const { t } = useTranslation();
+
     const [ imageAnnotations, setImageAnnotations ] = useState([])
 
     const getClassName = () => {
@@ -281,7 +284,7 @@ const EditorTopNavigationBar: React.FC<IProps> = (
                         key = 'zoom-in'
                         tooltipMessage = 'zoom in'
                         imageSrc = '/ico/zoom-in.png'
-                        imageAlt = 'zoom-in'
+                        imageAlt = {t('industrial_models.demo.zoom_in')}
                         isActive = {false}
                         fileMode = {false}
                         href = {undefined}
@@ -291,7 +294,7 @@ const EditorTopNavigationBar: React.FC<IProps> = (
                         key = 'zoom-out'
                         tooltipMessage = 'zoom out'
                         imageSrc = '/ico/zoom-out.png'
-                        imageAlt = 'zoom-out'
+                        imageAlt = {t('industrial_models.demo.zoom_out')}
                         isActive = {false}
                         fileMode = {false}
                         href = {undefined}
@@ -301,7 +304,7 @@ const EditorTopNavigationBar: React.FC<IProps> = (
                         key = 'zoom-fit'
                         tooltipMessage = 'fit image to available space'
                         imageSrc = '/ico/zoom-fit.png'
-                        imageAlt = 'zoom-fit'
+                        imageAlt = {t('industrial_models.demo.zoom_fit')}
                         isActive = {false}
                         fileMode = {false}
                         href = {undefined}
@@ -311,7 +314,7 @@ const EditorTopNavigationBar: React.FC<IProps> = (
                         key = 'zoom-max'
                         tooltipMessage = 'maximum allowed image zoom'
                         imageSrc = '/ico/zoom-max.png'
-                        imageAlt = 'zoom-max'
+                        imageAlt = {t('industrial_models.demo.zoom_max')}
                         isActive = {false}
                         fileMode = {false}
                         href = {undefined}
@@ -321,9 +324,9 @@ const EditorTopNavigationBar: React.FC<IProps> = (
             <div className='ButtonWrapper'>
                 <ButtonWithTooltip
                     key = 'image-drag-mode'
-                    tooltipMessage = {imageDragMode ? 'turn-off image drag mode' : 'turn-on image drag mode - works only when image is zoomed'}
+                    tooltipMessage = {imageDragMode ? t('industrial_models.demo.turn_off_image_drag_mode') : t('industrial_models.demo.turn_on_image_drag_mode')}
                     imageSrc = '/ico/hand.png'
-                    imageAlt = 'image-drag-mode'
+                    imageAlt = {t('industrial_models.demo.image_drag_mode')}
                     isActive = {false}
                     fileMode = {false}
                     href = {undefined}
@@ -331,9 +334,9 @@ const EditorTopNavigationBar: React.FC<IProps> = (
                 />
                 <ButtonWithTooltip
                     key = 'cursor-cross-hair'
-                    tooltipMessage = {crossHairVisible ? 'turn-off cursor cross-hair' : 'turn-on cursor cross-hair'}
+                    tooltipMessage = {crossHairVisible ? t('industrial_models.demo.turn_off_cursor_cross_hair') : t('industrial_models.demo.turn_on_cursor_cross_hair')}
                     imageSrc = '/ico/cross-hair.png'
-                    imageAlt = 'cross-hair'
+                    imageAlt = {t('industrial_models.demo.cursor_cross_hair')}
                     isActive = {crossHairVisible}
                     fileMode = {false}
                     href = {undefined}
@@ -341,9 +344,9 @@ const EditorTopNavigationBar: React.FC<IProps> = (
                 />
                 <ButtonWithTooltip
                     key = 'export-annotations'
-                    tooltipMessage = 'export annotations'
+                    tooltipMessage = {t('industrial_models.demo.export_annotation')}
                     imageSrc = '/ico/export-labels.png'
-                    imageAlt = 'export-annotations'
+                    imageAlt = {t('industrial_models.demo.export_annotation')}
                     isActive = {false}
                     fileMode = {false}
                     href = {undefined}
@@ -351,9 +354,9 @@ const EditorTopNavigationBar: React.FC<IProps> = (
                 />
                 <ButtonWithTooltip
                     key = 'import-annotations'
-                    tooltipMessage = 'import annotations'
+                    tooltipMessage = {t('industrial_models.demo.import_annotation')}
                     imageSrc = '/ico/import-labels.png'
-                    imageAlt = 'import-annotations'
+                    imageAlt = {t('industrial_models.demo.import_annotation')}
                     isActive = {false}
                     fileMode = {true}
                     href = {undefined}
@@ -391,9 +394,9 @@ const EditorTopNavigationBar: React.FC<IProps> = (
                 <div className='ButtonWrapper'>
                     <ButtonWithTooltip
                         key = 'upload'
-                        tooltipMessage = 'upload'
+                        tooltipMessage = {t('industrial_models.demo.upload')}
                         imageSrc = '/ico/upload.png'
-                        imageAlt = 'upload'
+                        imageAlt = {t('industrial_models.demo.upload')}
                         isActive = {false}
                         fileMode = {false}
                         href = {undefined}
@@ -404,9 +407,9 @@ const EditorTopNavigationBar: React.FC<IProps> = (
             <div className='ButtonWrapper'>
                 <ButtonWithTooltip
                     key = 'exit'
-                    tooltipMessage = 'exit'
+                    tooltipMessage = {t('industrial_models.demo.exit')}
                     imageSrc = '/ico/exit.png'
-                    imageAlt = 'exit'
+                    imageAlt = {t('industrial_models.demo.exit')}
                     isActive = {false}
                     fileMode = {false}
                     href = {undefined}

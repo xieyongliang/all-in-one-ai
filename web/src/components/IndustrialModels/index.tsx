@@ -41,6 +41,7 @@ import GABSADemoFrom from '../Forms/Demo/Single/gabsa';
 import PaddleNLPDemoForm from '../Forms/Demo/Single/paddlenlp'
 import DeBERTaDemoForm from '../Forms/Demo/Single/mdeberta'
 import cognitoUtils from '../../lib/cognitoUtils';
+import { useTranslation } from "react-i18next";
 
 interface IProps {
     industrialModels : IIndustrialModel[];
@@ -56,6 +57,8 @@ const IndustrialModels: FunctionComponent<IProps> = (
     }) => {
     const [ cookies, setCookie ] = useCookies();
     const [ advancedMode, setAdvancedMode ] = useState(cookies.advancedMode !== undefined? (cookies.advancedMode === 'true') : false)
+
+    const { t } = useTranslation();
 
     var params : PathParams = useParams();
 
@@ -77,7 +80,7 @@ const IndustrialModels: FunctionComponent<IProps> = (
 
     if(index === -1)
         return (
-            <LoadingIndicator label='Loading...'/>
+            <LoadingIndicator label={t('industrial_models.demo.loading')}/>
         )
 
     const onAdvancedModeChange = (checked) => {
@@ -136,42 +139,42 @@ const IndustrialModels: FunctionComponent<IProps> = (
 
     advancedTabs = [
         {
-            label: 'ML pipelines',
+            label: t('industrial_models.pipelines'),
             id: 'pipeline',
             content: <PipelineList />
         },
         {
-            label: 'Training jobs',
+            label: t('industrial_models.training_jobs'),
             id: 'trainingjob',
             content: <TrainingJobList />
         },
         {
-            label: 'Models',
+            label: t('industrial_models.models'),
             id: 'model',
             content: <ModelList/>
         },
         {
-            label: 'Endpoints',
+            label: t('industrial_models.endpoints'),
             id: 'endpoint',
             content: <EndpointList/>
         },
         {
-            label: 'Transform jobs',
+            label: t('industrial_models.transform_jobs'),
             id: 'transformjob',
             content: <TransformJobList/>
         },
         {
-            label: 'Rest apis',
+            label: t('industrial_models.rest_apis'),
             id: 'restapi',
             content: <RestApiList/>
         },
         (algorithm === 'yolov5') && {
-            label: 'Greengrass components',
+            label: t('industrial_models.greengrass_components'),
             id: 'greengrasscomponentversion',
             content: <GreengrassComponentList/>
         },
         (algorithm === 'yolov5') && {
-            label: 'Greengrass deployments',
+            label: t('industrial_models.greengrass_deployments'),
             id: 'greengrassdeployment',
             content: <GreengrassDeploymentList/>
         }
@@ -181,7 +184,7 @@ const IndustrialModels: FunctionComponent<IProps> = (
     if(algorithm === 'yolov5') {
         tabs = [
             {
-                label: 'Demo',
+                label: t('industrial_models.demos'),
                 id: 'demo',
                 content: <Yolov5DemoForm advancedMode={advancedMode} onAdvancedModeChange={onAdvancedModeChange} />
             }
@@ -190,7 +193,7 @@ const IndustrialModels: FunctionComponent<IProps> = (
     else if(algorithm === 'paddleocr') {
         tabs = [
             {
-                label: 'Demo',
+                label: t('industrial_models.demos'),
                 id: 'demo',
                 content: <PaddleOCRDemoForm advancedMode={advancedMode} onAdvancedModeChange={onAdvancedModeChange}/>
             }
@@ -199,7 +202,7 @@ const IndustrialModels: FunctionComponent<IProps> = (
     else if(algorithm === 'gluoncv'){
         tabs = [
             {
-                label: 'Demo',
+                label: t('industrial_models.demos'),
                 id: 'demo',
                 content: <GluonCVDemoForm advancedMode={advancedMode} onAdvancedModeChange={onAdvancedModeChange}/>
             }
@@ -208,7 +211,7 @@ const IndustrialModels: FunctionComponent<IProps> = (
     else if(algorithm === 'cpt'){
         tabs = [
             {
-                label: 'Demo',
+                label: t('industrial_models.demos'),
                 id: 'demo',
                 content: <CPTDemoForm advancedMode={advancedMode} onAdvancedModeChange={onAdvancedModeChange}/>
             }
@@ -217,7 +220,7 @@ const IndustrialModels: FunctionComponent<IProps> = (
     else if(algorithm === 'gabsa'){
         tabs = [
             {
-                label: 'Demo',
+                label: t('industrial_models.demos'),
                 id: 'demo',
                 content: <GABSADemoFrom advancedMode={advancedMode} onAdvancedModeChange={onAdvancedModeChange}/>
             }
@@ -226,7 +229,7 @@ const IndustrialModels: FunctionComponent<IProps> = (
     else if(algorithm === 'paddlenlp'){
         tabs = [
             {
-                label: 'Demo',
+                label: t('industrial_models.demos'),
                 id: 'demo',
                 content: <PaddleNLPDemoForm advancedMode={advancedMode} onAdvancedModeChange={onAdvancedModeChange}/>
             }
@@ -235,7 +238,7 @@ const IndustrialModels: FunctionComponent<IProps> = (
     else if(algorithm === 'mdeberta'){
         tabs = [
             {
-                label: 'Demo',
+                label: t('industrial_models.demos'),
                 id: 'demo',
                 content: <DeBERTaDemoForm advancedMode={advancedMode} onAdvancedModeChange={onAdvancedModeChange}/>
             }
@@ -244,9 +247,9 @@ const IndustrialModels: FunctionComponent<IProps> = (
     else {
         tabs = [
             {
-                label: 'Demo',
+                label: t('industrial_models.demos'),
                 id: 'demo',
-                content: <Yolov5PaddleOCRDemoForm/>
+                content: <Yolov5PaddleOCRDemoForm advancedMode={advancedMode} onAdvancedModeChange={onAdvancedModeChange}/>
             }
         ];
     }

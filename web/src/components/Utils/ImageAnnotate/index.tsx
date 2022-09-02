@@ -21,6 +21,7 @@ import { LabelUtil } from '../../../utils/LabelUtil';
 import { store } from '../../..';
 import { AnnotationFormatType } from '../../../data/enums/AnnotationFormatType';
 import { ImporterSpecData } from '../../../data/ImporterSpecData';
+import { useTranslation } from "react-i18next";
 
 const OVERLAY_STYLE = {
     position: "fixed" as 'fixed',
@@ -103,6 +104,8 @@ const ImageAnnotate: React.FC<IProps> = (
     }) => {
     const [ loading, setLoading ] = useState(true)
     const [ ready, setReady ] = useState(false)
+
+    const { t } = useTranslation();
 
     for(var index = 0; index < imageUris.length; index ++) {
         var imageUri = imageUris[index]
@@ -238,7 +241,7 @@ const ImageAnnotate: React.FC<IProps> = (
         return (
             <Dialog open={true}>
                 <Box p={3}>
-                    <LoadingIndicator label='Preparing...'/>
+                    <LoadingIndicator label={t('industrial_models.demo.preparing')}/>
                 </Box>
             </Dialog>
         )
@@ -263,7 +266,7 @@ const ImageAnnotate: React.FC<IProps> = (
                     loading && 
                     <Dialog open={true} style={{zIndex: 4000}}>
                         <Box p={3}>
-                            <LoadingIndicator label='Loading...'/>
+                            <LoadingIndicator label={t('industrial_models.demo.loading')}/>
                         </Box>
                     </Dialog>
                 }

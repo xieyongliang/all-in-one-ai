@@ -4,6 +4,7 @@ import { KeyValuePair, Button, Form, FormSection, LoadingIndicator } from 'aws-n
 import axios from 'axios';
 import Grid from '@mui/material/Grid';
 import { PathParams } from '../../Interfaces/PathParams';
+import { useTranslation } from "react-i18next";
 
 const GreengrassComponentProp: FunctionComponent = () => {
     const [ componentName, setComponentName ] = useState('')
@@ -16,6 +17,8 @@ const GreengrassComponentProp: FunctionComponent = () => {
     const [ messages, setMessages ] = useState('')
     const [ errors ] = useState('')
     const [ loading, setLoading ] = useState(true);
+
+    const { t } = useTranslation();
 
     const history = useHistory();
 
@@ -48,25 +51,25 @@ const GreengrassComponentProp: FunctionComponent = () => {
 
     const renderGreengrassComponentSummary = () => {
         return (
-            <FormSection header='Greengrass component version summary'>
+            <FormSection header={t('industrial_models.greengrass_component.greengrass_component_summary')}>
                 <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }}>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label='Component name' value={componentName}></KeyValuePair>
+                        <KeyValuePair label={t('industrial_models.greengrass_component.component_name')} value={componentName}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label='Component version' value={componentVersion}></KeyValuePair>
+                        <KeyValuePair label={t('industrial_models.greengrass_component.component_version')} value={componentVersion}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label='Creation time' value={creationTimestamp}></KeyValuePair>
+                        <KeyValuePair label={t('industrial_models.common.creation_time')} value={creationTimestamp}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label='Publisher' value={publisher}></KeyValuePair>
+                        <KeyValuePair label={t('industrial_models.greengrass_component.publisher')} value={publisher}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label='Description' value={description}></KeyValuePair>
+                        <KeyValuePair label={t('industrial_models.greengrass_component.description')} value={description}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label='Platforms' value={platforms}></KeyValuePair>
+                        <KeyValuePair label={t('industrial_models.greengrass_component.platforms')} value={platforms}></KeyValuePair>
                     </Grid>
                 </Grid>
             </FormSection>
@@ -75,16 +78,16 @@ const GreengrassComponentProp: FunctionComponent = () => {
 
     const renderGreengrassComponentStatus = () => {
         return (
-            <FormSection header='Greengrass component status'>
+            <FormSection header={t('industrial_models.greengrass_component.greengrass_component_status')}>
                 <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }}>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label='Component state' value={componentState}></KeyValuePair>
+                        <KeyValuePair label={t('industrial_models.greengrass_component.component_state')} value={componentState}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label='Message' value={messages}></KeyValuePair>
+                        <KeyValuePair label={t('industrial_models.greengrass_component.message')} value={messages}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label='Errors' value={errors}></KeyValuePair>
+                        <KeyValuePair label={t('industrial_models.greengrass_component.errors')} value={errors}></KeyValuePair>
                     </Grid>
                 </Grid>
             </FormSection>
@@ -93,14 +96,14 @@ const GreengrassComponentProp: FunctionComponent = () => {
 
     return (
         <Form
-            header='Review Greengrass component'
-            description='When you finish your component, you can add it to AWS IoT Greengrass to deploy to core devices. Provide the component recipe and artifacts to create the component. This component is private and visible only to your AWS account.'
+            header={t('industrial_models.greengrass_component.create_greengrass_component')}
+            description={t('industrial_models.greengrass_component.create_greengrass_component_description')}
             actions={
                 <div>
-                    <Button variant='primary' onClick={onClose}>Close</Button>
+                    <Button variant='primary' onClick={onClose}>{t('industrial_models.demo.close')}</Button>
                 </div>
             }>   
-            { loading && <LoadingIndicator label='Loading...'/> }
+            { loading && <LoadingIndicator label={t('industrial_models.demo.loading')}/> }
             { !loading && renderGreengrassComponentSummary() }
             { !loading && renderGreengrassComponentStatus() }
         </Form>

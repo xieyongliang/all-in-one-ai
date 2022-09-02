@@ -10,6 +10,7 @@ import { connect } from "react-redux";
 import { Updateindustrialmodels } from "../../../store/industrialmodels/actionCreators";
 import { ALGORITHMS } from '../../Data/data';
 import { v4 as uuidv4 } from 'uuid';
+import { useTranslation } from "react-i18next";
 
 interface IProps {
     updateindustrialmodelsAction : (industrialModels : IIndustrialModel[]) => any
@@ -34,6 +35,8 @@ const InustrialModelProp: FunctionComponent<IProps> = (props) => {
     const [ iconHttpUri, setIconHttpUri ] = useState('')
     const [ fileName, setFileName ] = useState('')
     const [ processing, setProcessing ] = useState(false)
+
+    const { t } = useTranslation();
 
     const algorithmOptions = useMemo(
         ()=>[],[]
@@ -83,17 +86,18 @@ const InustrialModelProp: FunctionComponent<IProps> = (props) => {
     const renderImagePreview = () => {
         if(iconHttpUri === '') 
             return (
-                <Container title='Select an icon for your industrial model'>
+                <Container title={t('industrial_models.overview.select_icon')}>
                     <FileUpload
                         controlId={uuidv4()}
                         onChange={onFileChange}
+                        buttonText={t('industrial_models.common.choose_file')}
                     />
                 </Container>
             )
         else 
             return (
                 <Stack>
-                    <Container title='Select an icon for your industrial model'>
+                    <Container title={t('industrial_models.overview.select_icon')}>
                         <FileUpload
                             controlId={uuidv4()}
                             onChange={onFileChange}
@@ -115,11 +119,11 @@ const InustrialModelProp: FunctionComponent<IProps> = (props) => {
 
     const renderClassDefinition = () => {
         return (
-            <FormSection header="Industrial model class and samples settings" >
-                <FormField label="Paste your model class definition here" controlId={uuidv4()}>
+            <FormSection header={t('industrial_models.overview.class_and_sample_settings')} >
+                <FormField label={t('industrial_models.overview.class_definition')} controlId={uuidv4()}>
                     <Textarea value={modelLables} onChange={(event) => onChange('formFieldIdModelLabels', event)} />        
                 </FormField>
-                <FormField label="Paste your model class sample images s3 uri here" controlId={uuidv4()}>
+                <FormField label={t('industrial_models.overview.sample_images_s3_uri')}controlId={uuidv4()}>
                     <Input type="text" value={modelSamples} onChange={(event) => onChange('formFieldIdModelSamples', event)} />        
                 </FormField>
             </FormSection>
@@ -128,16 +132,15 @@ const InustrialModelProp: FunctionComponent<IProps> = (props) => {
 
     const renderModelSetting = () => {
         return (
-            <FormSection header="Industrial model settings" >
-                <FormField label="Industrial model name" controlId={uuidv4()}>
+            <FormSection header={t('industrial_models.overview.class_and_sample_settings')} >
+                <FormField label={t('industrial_models.overview.industrial_model_name')} controlId={uuidv4()}>
                     <Input type="text" value={modelName} onChange={(event) => onChange('formFieldIdModelName', event)}/>
                 </FormField>
-                <FormField label="Industrial model description" controlId={uuidv4()}>
+                <FormField label={t('industrial_models.overview.industrial_model_description')} controlId={uuidv4()}>
                     <Input type="text" value={modelDescription} onChange={(event) => onChange('formFieldIdModelDescription', event)}/>
                 </FormField>
-                <FormField label="Industrial model algorithm" controlId={uuidv4()}>
+                <FormField label={t('industrial_models.overview.industrial_model_algorithm')} controlId={uuidv4()}>
                     <Select
-                        placeholder='Choose an option'
                         options={algorithmOptions}
                         selectedOption={selectedAlgorithm}
                         disabled={true}
@@ -154,12 +157,12 @@ const InustrialModelProp: FunctionComponent<IProps> = (props) => {
     const renderEditIndustrialModel = () => {
         return (
             <Form
-                header='Edit industrial model'
-                description='To use an industrial model for training, deployment, and inference, please create industrial model based on supported algorithm first'
+                header={t('industrial_models.overview.edit_industrial_model')}
+                description={t('industrial_models.overview.create_industrial_model_description')}
                 actions={
                 <div>
-                    <Button variant='link' onClick={onCancel}>Cancel</Button>
-                    <Button variant='primary' onClick={onSubmit} loading={processing}>Submit</Button>
+                    <Button variant='link' onClick={onCancel}>{t('industrial_models.common.cancel')}</Button>
+                    <Button variant='primary' onClick={onSubmit} loading={processing}>{t('industrial_models.common.submit')}</Button>
                 </div>
             }>
                 { renderModelSetting() }

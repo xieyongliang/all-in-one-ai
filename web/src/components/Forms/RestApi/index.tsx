@@ -7,6 +7,7 @@ import axios from 'axios';
 import { PathParams } from '../../Interfaces/PathParams';
 import { APIS } from '../../Data/data';
 import { v4 as uuidv4 } from 'uuid';
+import { useTranslation } from "react-i18next";
 
 const RestApiForm: FunctionComponent = () => {
     const [ apiName, setApiName ] = useState('')
@@ -23,6 +24,8 @@ const RestApiForm: FunctionComponent = () => {
     const [ optionsApis, setOptionsApis ] = useState([]);
     const [ forcedRefresh, setForcedRefresh ] = useState(false)
     const [ processing, setProcessing ] = useState(false)
+
+    const { t } = useTranslation();
 
     const history = useHistory();
 
@@ -118,8 +121,8 @@ const RestApiForm: FunctionComponent = () => {
         return (
             <RadioGroup onChange={onChangeOptions}
                 items={[
-                    <RadioButton value='0' checked={apiType === '0'}>Create new Rest API.</RadioButton>, 
-                    <RadioButton value='1' checked={apiType === '1'}>Select existing Rest API.</RadioButton>,
+                    <RadioButton value='0' checked={apiType === '0'}>{t('industrial_models.api.api_gateway_option_create_new')}</RadioButton>, 
+                    <RadioButton value='1' checked={apiType === '1'}>{t('industrial_models.api.api_gateway_option_select_existed')}</RadioButton>,
                 ]}
             />
         )
@@ -128,16 +131,15 @@ const RestApiForm: FunctionComponent = () => {
     const renderRestApiSetting = () => {
         if(apiType === '1') {
             return (
-                <FormSection header='API setting'>
-                    <FormField label='API name' controlId={uuidv4()}>
+                <FormSection header={t('industrial_models.api.api_settings')}>
+                    <FormField label={t('industrial_models.api.api_name')} controlId={uuidv4()}>
                         <Input type='text' value={apiName} onChange={(event) => onChange('formFieldIdApiName', event)} />
                     </FormField>
-                    <FormField label='API gateway' controlId={uuidv4()}>
+                    <FormField label={t('industrial_models.api.api_gateway_options')} controlId={uuidv4()}>
                         {renderApiOptions()}
                     </FormField>
                     <FormField controlId={uuidv4()}>
                         <Select
-                            placeholder='Choose an option'
                             options={restApisOptions}
                             selectedOption={selectedRestApis}
                             onChange={(event) => onChange('formFieldIdRestApis', event)}
@@ -148,11 +150,11 @@ const RestApiForm: FunctionComponent = () => {
         }
         else {
             return (
-                <FormSection header='API setting'>
-                    <FormField label='API name' controlId='formFieldIdName'>
+                <FormSection header={t('industrial_models.api.api_settings')}>
+                    <FormField label={t('industrial_models.api.api_name')} controlId='formFieldIdName'>
                         <Input type='text' value={apiName} />
                     </FormField>
-                    <FormField label='API gateway' controlId='formFieldIdRestApi'>
+                    <FormField label={t('industrial_models.api.api_gateway_options')}controlId='formFieldIdRestApi'>
                         {renderApiOptions()}
                     </FormField>
                     <FormField controlId={uuidv4()}>
@@ -165,15 +167,15 @@ const RestApiForm: FunctionComponent = () => {
 
     const renderRestApiTag = () => {
         return (
-            <FormSection header='Tags - optional'>
+            <FormSection header={t('industrial_models.common.tags')}>
                 {
                     tags.length>0 && 
                     <Grid container spacing={{ xs: 1, md: 1 }} columns={{ xs: 4, sm: 8, md: 12 }}>
                         <Grid item xs={2} sm={4} md={4}>
-                            <Text> Key </Text>
+                            <Text> {t('industrial_models.common.key')} </Text>
                         </Grid>
                         <Grid item xs={2} sm={4} md={4}>
-                            <Text> Value </Text> 
+                            <Text> {t('industrial_models.common.value')} </Text> 
                         </Grid>
                         <Grid item xs={2} sm={4} md={4}>
                             <Text>  </Text>
@@ -190,28 +192,27 @@ const RestApiForm: FunctionComponent = () => {
                                 <Input type='text' value={tag.value}/>
                             </Grid>
                             <Grid item xs={2} sm={4} md={4}>
-                                <Button onClick={() => onRemoveTag(index)}>Remove</Button>
+                                <Button onClick={() => onRemoveTag(index)}>{t('industrial_models.common.remove')}</Button>
                             </Grid>
                         </Grid>
                     ))
                 }
-                <Button variant='link' size='large' onClick={onAddTag}>Add tag</Button>
+                <Button variant='link' size='large' onClick={onAddTag}>{t('industrial_models.common.add_tag')}</Button>
             </FormSection>
         )
     }
 
     const renderRestApiFormContent = () => {
         return (
-            <FormSection header='Production variants'>
-                <FormField label='API path' controlId={uuidv4()}>
+            <FormSection header={t('industrial_models.api.production_variant')}>
+                <FormField label={t('industrial_models.api.api_path')} controlId={uuidv4()}>
                     <Input type='text' value={apiPath} onChange={(event) => onChange('formFieldIdApiPath', event)} />
                 </FormField>
-                <FormField label='API stage' controlId={uuidv4()}>
+                <FormField label={t('industrial_models.api.api_stage')} controlId={uuidv4()}>
                     <Input type='text' value={apiStage} onChange={(event) => onChange('formFieldIdApiStage', event)}/>
                 </FormField>
-                <FormField controlId={uuidv4()} label='APIs to deployed' >
+                <FormField controlId={uuidv4()} label={t('industrial_models.api.api_to_deploy')} >
                     <Select
-                        placeholder='Choose an option'
                         options={optionsApis}
                         selectedOption={selectedApis}
                         onChange={(event) => onChange('formFieldIdApis', event)}
@@ -226,8 +227,8 @@ const RestApiForm: FunctionComponent = () => {
             header='Create restapi'
             actions={
                 <div>
-                    <Button variant='link' onClick={onCancel}>Cancel</Button>
-                    <Button variant='primary' onClick={onSubmit} loading={processing}>Submit</Button>
+                    <Button variant='link' onClick={onCancel}>{t('industrial_models.common.cancel')}</Button>
+                    <Button variant='primary' onClick={onSubmit} loading={processing}>{t('industrial_models.common.submit')}</Button>
                 </div>
             }> 
             {renderRestApiSetting()}

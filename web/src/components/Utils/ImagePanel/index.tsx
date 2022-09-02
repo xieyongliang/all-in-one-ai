@@ -9,6 +9,7 @@ import { COLORS } from '../../Data/data';
 import Pagination from '@mui/material/Pagination';  
 import '../../Utils/Image/index.scss'
 import { ProjectSubType, ProjectType } from '../../../data/enums/ProjectType';
+import { useTranslation } from "react-i18next";
 
 const OVERLAY_STYLE = {
     position: "fixed" as 'fixed',
@@ -47,6 +48,8 @@ const ImagePanel: FunctionComponent<IProps> = ({
     const [ imageCount, setImageCount ] = useState(0)
     const [ loading, setLoading ] = useState(false);
     const [ visibleImagePreview, setVisibleImagePreview ] = useState(false)
+
+    const { t } = useTranslation();
 
     if(pageSize === undefined)
         pageSize = PAGE_SIZE;
@@ -121,7 +124,7 @@ const ImagePanel: FunctionComponent<IProps> = ({
     const renderImageList = () => {
         if(loading)
             return (
-                <LoadingIndicator label='Loading...'/>
+                <LoadingIndicator label={t('industrial_models.demo.loading')}/>
             )
         else {
             return (
@@ -149,7 +152,7 @@ const ImagePanel: FunctionComponent<IProps> = ({
                             <Pagination page={imagePage} onChange={(event, value) => onChange('formFieldIdPage', value)} count={Math.ceil(imageCount / pageSize)} />
                         </div>
                         <div style={{display: "inline-block", float: "right", marginRight: "5px"}}>
-                            <Button onClick={onClose}>Exit batch annotation</Button>
+                            <Button onClick={onClose}>{t('industrial_models.demo.exit_batch_annotation')}</Button>
                         </div>
                     </div>
                 </div>

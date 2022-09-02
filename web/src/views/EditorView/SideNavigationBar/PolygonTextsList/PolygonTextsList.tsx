@@ -25,6 +25,7 @@ import { updateReverseLineColor } from '../../../../store/general/actionCreators
 import { useParams } from 'react-router-dom';
 import { PathParams } from '../../../../components/Interfaces/PathParams';
 import Select from '../../../../components/Utils/Select';
+import { useTranslation } from "react-i18next";
 
 interface IProps {
     size: ISize;
@@ -60,15 +61,18 @@ const PolygonTextsList: React.FC<IProps> = (
         onProcessed,
         onLoaded
     }) => {
-    const [ yolov5EndpointOptions, setYolov5EndpointOptions ] = useState([])
-    const [ selectedYolov5Endpoint, setSelectedYolov5Endpoint ] = useState<SelectOption>()    
-    const [ paddleocrEndpointOptions, setPaddleOCREndpointOptions ] = useState([])
-    const [ selectedPaddleOCREndpoint, setSelectedPaddleOCREndpoint ] = useState<SelectOption>()
-    const [ textFieldOptions, setTextFieldOptions ] = useState([])
-    const [ selectedTextField, setSelectedTextField ] = useState<SelectOption>()
-    const [ yolov5EndpointsMapping, setYolov5EndpointsMapping ] = useState({})
-    const [ loadingYolov5, setLoadingYolov5 ] = useState(true)
-    const [ loadingPaddleOCR, setLoadingPaddleOCR ] = useState(true)
+    const [ yolov5EndpointOptions, setYolov5EndpointOptions ] = useState([]);
+    const [ selectedYolov5Endpoint, setSelectedYolov5Endpoint ] = useState<SelectOption>();
+    const [ paddleocrEndpointOptions, setPaddleOCREndpointOptions ] = useState([]);
+    const [ selectedPaddleOCREndpoint, setSelectedPaddleOCREndpoint ] = useState<SelectOption>();
+    const [ textFieldOptions, setTextFieldOptions ] = useState([]);
+    const [ selectedTextField, setSelectedTextField ] = useState<SelectOption>();
+    const [ yolov5EndpointsMapping, setYolov5EndpointsMapping ] = useState({});
+    const [ loadingYolov5, setLoadingYolov5 ] = useState(true);
+    const [ loadingPaddleOCR, setLoadingPaddleOCR ] = useState(true);
+
+    const { t } = useTranslation();
+
     var processingCount = 0;
 
     var params : PathParams = useParams();
@@ -387,7 +391,7 @@ const PolygonTextsList: React.FC<IProps> = (
                             {    
                                 (projectSubType === ProjectSubType.OBJECT_DETECTION) && 
                                 <Typography gutterBottom component="div">
-                                    Select endpoint for object detection
+                                    {t('industrial_models.demo.select_endpoint_object_detection')}
                                 </Typography>
                             }
                         </div>
@@ -395,7 +399,6 @@ const PolygonTextsList: React.FC<IProps> = (
                             {
                                 (projectSubType === ProjectSubType.OBJECT_DETECTION) && 
                                 <Select
-                                    placeholder='Choose an endpoint'
                                     selectedOption={selectedYolov5Endpoint}
                                     onChange={(event) => onChange('Yolov5', event)}
                                     options={yolov5EndpointOptions}
@@ -404,12 +407,11 @@ const PolygonTextsList: React.FC<IProps> = (
                         </div>
                         <div>
                             <Typography gutterBottom component="div">
-                                Select endpoint for text recognition
+                            {t('industrial_models.demo.select_endpoint_text_recognition')}
                             </Typography>
                         </div>
                         <div>
                             <Select
-                                placeholder='Choose an endpoint'
                                 selectedOption={selectedPaddleOCREndpoint}
                                 onChange={(event) => onChange('PaddleOCR', event)}
                                 options={paddleocrEndpointOptions}
@@ -419,7 +421,7 @@ const PolygonTextsList: React.FC<IProps> = (
                             {
                                 (projectSubType === ProjectSubType.OBJECT_DETECTION) && 
                                 <Typography gutterBottom component="div">
-                                    Select text field
+                                    {t('industrial_models.demo.select_text_field')}
                                 </Typography>
                             }
                         </div>
@@ -427,16 +429,15 @@ const PolygonTextsList: React.FC<IProps> = (
                             {
                                 (projectSubType === ProjectSubType.OBJECT_DETECTION) && 
                                 <Select
-                                    placeholder='Choose an endpoint'
                                     selectedOption={selectedTextField}
                                     onChange={(event) => onChange('TextField', event)}
                                     options={textFieldOptions}
                                 />
                             }
                         </div>
-                        <Button variant="primary" size="small" onClick={onInference}>Run</Button>
+                        <Button variant="primary" size="small" onClick={onInference}>{t('industrial_models.demo.run')}</Button>
                         <div>
-                            <Toggle label='Reverse line color' checked={reverseLineColor} onChange={(checked)=>updateReverseLineColor(checked)}/>
+                            <Toggle label={t('industrial_models.demo.reverse_line_color')} checked={reverseLineColor} onChange={(checked)=>updateReverseLineColor(checked)}/>
                         </div>
                     </div>
                 </Stack>

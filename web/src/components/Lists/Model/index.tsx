@@ -1,15 +1,14 @@
 import { FunctionComponent, useCallback, useEffect, useState } from 'react';
 import { useHistory, useParams } from 'react-router-dom';
 import {Column} from 'react-table'
-import { Container, Link, Stack, Toggle, Table, Button, Inline, ButtonDropdown, Text, DeleteConfirmationDialog } from 'aws-northstar';
-import SyntaxHighlighter from 'react-syntax-highlighter';
-import { github } from 'react-syntax-highlighter/dist/esm/styles/hljs';
-import JSZip from 'jszip';
+import { Stack, Toggle, Table, Button, Inline, ButtonDropdown, Text } from 'aws-northstar';
+import DeleteConfirmationDialog from '../../Utils/DeleteConfirmationDialog';
 import axios from 'axios';
 import { PathParams } from '../../Interfaces/PathParams';
 import { getUtcDate } from '../../Utils/Helper';
 import { FetchDataOptions } from 'aws-northstar/components/Table';
 import './index.scss'
+import { useTranslation } from "react-i18next";
 
 interface ModelItem {
     modelName: string;
@@ -18,9 +17,6 @@ interface ModelItem {
 
 const ModelList: FunctionComponent = () => {
     const [ loading, setLoading ] = useState(true);
-    const [ sampleCode, setSampleCode ] = useState('')
-    const [ sampleConsole, setSampleConsole ] = useState('')
-    const [ visibleSampleCode, setVisibleSampleCode ] = useState(false)
     const [ selectedModel, setSelectedModel ] = useState<ModelItem>()
     const [ showAll, setShowAll ] = useState(false)
     const [ visibleDeleteConfirmation, setVisibleDeleteConfirmation ] = useState(false);
@@ -36,36 +32,11 @@ const ModelList: FunctionComponent = () => {
     const [ modelCurItems, setModelCurItems ] = useState([])
     const [ modelAllItems, setModelAllItems ] = useState([])
 
+    const { t } = useTranslation();
+
     const history = useHistory();
 
     var params : PathParams = useParams();
-
-    const getSourceCode = async (uri) => {
-        const response = await axios.get('/_file/download', {params: {uri: encodeURIComponent(uri)}, responseType: 'blob'})
-        return response.data
-    }
-
-    useEffect(() => {
-        var cancel = false
-        const requests = [ axios.get('/function/all_in_one_ai_create_model?action=code'), axios.get('/function/all_in_one_ai_create_model?action=console')];
-        axios.all(requests)
-        .then(axios.spread(function(response0, response1) {
-            getSourceCode(response0.data).then((data) => {
-                if(cancel) return;
-                var zip = new JSZip();
-                zip.loadAsync(data).then(async function(zipped) {
-                    zipped.file('lambda_function.py').async('string').then(function(data) {
-                        if(cancel) return;
-                        setSampleCode(data)
-                    })
-                })
-            });
-            setSampleConsole(response1.data)           
-        }));
-        return () => { 
-            cancel = true;
-        }
-    }, []);
 
     const onRefresh = useCallback(() => {
         setLoading(true)
@@ -155,7 +126,7 @@ const ModelList: FunctionComponent = () => {
         {
             id: 'modelName',
             width: 400,
-            Header: 'Name',
+            Header: t('industrial_models.common.name'),
             accessor: 'modelName',
             Cell: ({ row  }) => {
                 if (row && row.original) {
@@ -167,7 +138,7 @@ const ModelList: FunctionComponent = () => {
         {
             id: 'creationTime',
             width: 400,
-            Header: 'Creation time',
+            Header: t('industrial_models.common.creation_time'),
             accessor: 'creationTime',
             Cell: ({ row  }) => {
                 if (row && row.original) {
@@ -187,19 +158,19 @@ const ModelList: FunctionComponent = () => {
     const tableActions = (
         <Inline>
             <div className='tableaction'>
-                <Toggle label='Show all' checked={showAll} onChange={onChangeShowAll}/>
+                <Toggle label={t('industrial_models.common.show_all')} checked={showAll} onChange={onChangeShowAll}/>
             </div>
             <div className='tableaction'>
-                <Button icon="refresh" onClick={onRefresh} loading={loading}>Refresh</Button>
+                <Button icon="refresh" onClick={onRefresh} loading={loading}>{t('industrial_models.common.refresh')}</Button>
             </div>
             <div className='tableaction'>
                 <ButtonDropdown
-                    content='Actions'
-                    items={[{ text: 'Delete', onClick: onDelete, disabled: disabledDelete }, { text: 'Attach', onClick: onAttach, disabled: disabledAttach }, { text: 'Detach', onClick: onDetach, disabled: disabledDetach }, { text: 'Add/Edit tags', disabled: true }]}
+                    content={t('industrial_models.common.actions')}
+                    items={[{ text: t('industrial_models.common.delete'), onClick: onDelete, disabled: disabledDelete }, { text: t('industrial_models.common.attach'), onClick: onAttach, disabled: disabledAttach }, { text: t('industrial_models.common.detach'), onClick: onDetach, disabled: disabledDetach }, { text: t('industrial_models.common.add_or_edit_tags'), disabled: true }]}
                 />
             </div>
             <div className='tableaction'>
-                <Button variant='primary' onClick={onCreate}>Create</Button>
+                <Button variant='primary' onClick={onCreate}>{t('industrial_models.common.create')}</Button>
             </div>
         </Inline>
     );
@@ -209,12 +180,14 @@ const ModelList: FunctionComponent = () => {
             <DeleteConfirmationDialog
                 variant="confirmation"
                 visible={visibleDeleteConfirmation}
-                title={`Delete ${selectedModel.modelName}`}
+                title={t('industrial_models.common.delete') + ` ${selectedModel.modelName}`}
                 onCancelClicked={() => setVisibleDeleteConfirmation(false)}
                 onDeleteClicked={deleteModel}
                 loading={processingDelete}
+                deleteButtonText={t('industrial_models.common.delete')}
+                cancelButtonText={t('industrial_models.common.cancel')}
             >
-                <Text>This will permanently delete your model and cannot be undone. This may affect other resources.</Text>
+                <Text>{t('industrial_models.model.delete_model')}</Text>
             </DeleteConfirmationDialog>
         )
     }
@@ -227,7 +200,7 @@ const ModelList: FunctionComponent = () => {
             setVisibleDeleteConfirmation(false);
             setProcessingDelete(false);
         }, (error) => {
-                alert('Error occured, please check and try it again');
+                alert(t('industrial_models.common.error_occured'));
                 console.log(error);
                 setProcessingDelete(false);
             }
@@ -239,13 +212,14 @@ const ModelList: FunctionComponent = () => {
             <DeleteConfirmationDialog
                 variant="confirmation"
                 visible={visibleAttachConfirmation}
-                title={`Attach ${selectedModel.modelName}`}
+                title={t('industrial_models.common.attach') + ` ${selectedModel.modelName}`}
                 onCancelClicked={() => setVisibleAttachConfirmation(false)}
                 onDeleteClicked={attachModel}
                 loading={processingAttach}
-                deleteButtonText='Attach'
+                deleteButtonText={t('industrial_models.common.attach')}
+                cancelButtonText={t('industrial_models.common.cancel')}
             >
-                <Text>This will attach this model to current industrial model.</Text>
+                <Text>{t('industrial_models.model.attach_model')}</Text>
             </DeleteConfirmationDialog>
         )
     }
@@ -257,7 +231,7 @@ const ModelList: FunctionComponent = () => {
             setVisibleAttachConfirmation(false);
             setProcessingAttach(false);
         }, (error) => {
-                alert('Error occured, please check and try it again');
+                alert(t('industrial_models.common.error_occured'));
                 console.log(error);
                 setProcessingAttach(false)
             }        
@@ -269,13 +243,14 @@ const ModelList: FunctionComponent = () => {
             <DeleteConfirmationDialog
                 variant="confirmation"
                 visible={visibleDetachConfirmation}
-                title={`Detach ${selectedModel.modelName}`}
+                title={t('industrial_models.common.detach') + ` ${selectedModel.modelName}`}
                 onCancelClicked={() => setVisibleDetachConfirmation(false)}
                 onDeleteClicked={detachModel}
                 loading={processingDetach}
-                deleteButtonText='Detach'
+                deleteButtonText={t('industrial_models.common.detach')}
+                cancelButtonText={t('industrial_models.common.cancel')}
             >
-                <Text>This will dettach this model from current industrial model.</Text>
+                <Text>{t('industrial_models.model.detach_model')}</Text>
             </DeleteConfirmationDialog>
         )
     }
@@ -287,7 +262,7 @@ const ModelList: FunctionComponent = () => {
             setVisibleDetachConfirmation(false);
             setProcessingDetach(false);
         }, (error) => {
-                alert('Error occured, please check and try it again');
+                alert(t('industrial_models.common.error_occured'));
                 console.log(error);
                 setProcessingDetach(false);
             }        
@@ -318,7 +293,7 @@ const ModelList: FunctionComponent = () => {
         return (
             <Table
                 actionGroup={tableActions}
-                tableTitle='Models'
+                tableTitle={t('industrial_models.models')}
                 multiSelect={false}
                 columnDefinitions={columnDefinitions}
                 items={showAll ? modelAllItems : modelCurItems}
@@ -332,27 +307,12 @@ const ModelList: FunctionComponent = () => {
         )
     }
 
-    const renderSampleCode = () => {
-        return (
-            <Container title = 'Sample code'>
-                <Toggle label={visibleSampleCode ? 'Show sample code' : 'Hide sample code'} checked={visibleSampleCode} onChange={(checked) => {setVisibleSampleCode(checked)}} />
-                <Link href={sampleConsole}>Open in AWS Lambda console</Link>
-                {
-                    visibleSampleCode && <SyntaxHighlighter language='python' style={github} showLineNumbers={true}>
-                        {sampleCode}
-                    </SyntaxHighlighter>
-                }
-            </Container>
-        )
-    }
-
     return (
         <Stack>
             { selectedModel  !== undefined && renderDeleteConfirmationDialog() }
             { selectedModel  !== undefined && renderAttachConfirmationDialog() }
             { selectedModel  !== undefined && renderDetachConfirmationDialog() }
             { renderModelList() }
-            { renderSampleCode() }
         </Stack>
     )
 }

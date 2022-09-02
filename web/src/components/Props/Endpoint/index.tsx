@@ -4,6 +4,7 @@ import { KeyValuePair, StatusIndicator, Button, Form, FormSection, Stack, Loadin
 import axios from 'axios';
 import Grid from '@mui/material/Grid';
 import { getUtcDate } from '../../Utils/Helper';
+import { useTranslation } from "react-i18next";
 
 const EndpointProp: FunctionComponent = () => {
     const [ endpointName, setEndpointName ] = useState('')
@@ -14,6 +15,8 @@ const EndpointProp: FunctionComponent = () => {
     const [ productionVariants, setProductionVariants] = useState([])
     const [ tags, setTags ] = useState([])
     const [ loading, setLoading ] = useState(true);
+
+    const { t } = useTranslation();
 
     const history = useHistory();
 
@@ -63,19 +66,19 @@ const EndpointProp: FunctionComponent = () => {
 
     const renderEndpointSummary = () => {
         return (
-            <FormSection header='Endpoint summary'>
+            <FormSection header={t('industrial_models.endpoint.endpoint_summary')}>
                 <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }}>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label='Endpoint name' value={endpointName}></KeyValuePair>
+                        <KeyValuePair label={t('industrial_models.endpoint.endpoint_name')} value={endpointName}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label='Status' value={getStatus(endpointStatus)}></KeyValuePair>
+                        <KeyValuePair label={t('industrial_models.common.status')} value={getStatus(endpointStatus)}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label='Creation time' value={creationTime}></KeyValuePair>
+                        <KeyValuePair label={t('industrial_models.common.creation_time')} value={creationTime}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label='Last modified time' value={lastModifiedTime}></KeyValuePair>
+                        <KeyValuePair label={t('industrial_models.common.last_modified_time')} value={lastModifiedTime}></KeyValuePair>
                     </Grid>
                 </Grid>
             </FormSection>
@@ -84,24 +87,24 @@ const EndpointProp: FunctionComponent = () => {
 
     const renderEndpointRuntimeSettings = () => {
         return (
-                <FormSection header='Endpoint runtime settings'> 
+                <FormSection header={t('industrial_models.endpoint.endpoint_runtime_settings')}> 
                     {
                         productionVariants !== undefined && productionVariants.length > 0 && 
                         <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }}>
                             <Grid item xs={2} sm={4} md={4}>
-                                <KeyValuePair label='Variant name' value={productionVariants[0]['VariantName']}></KeyValuePair>
+                                <KeyValuePair label={t('industrial_models.endpoint.variant_name')} value={productionVariants[0]['VariantName']}></KeyValuePair>
                             </Grid>
                             <Grid item xs={2} sm={4} md={4}>
-                                <KeyValuePair label='Current weight' value={productionVariants[0]['CurrentWeight']}></KeyValuePair>
+                                <KeyValuePair label={t('industrial_models.endpoint.current_weight')} value={productionVariants[0]['CurrentWeight']}></KeyValuePair>
                             </Grid>
                             <Grid item xs={2} sm={4} md={4}>
-                                <KeyValuePair label='Desired weight' value={productionVariants[0]['DesiredWeight']}></KeyValuePair>
+                                <KeyValuePair label={t('industrial_models.endpoint.desired_weight')} value={productionVariants[0]['DesiredWeight']}></KeyValuePair>
                             </Grid>
                             <Grid item xs={2} sm={4} md={4}>
-                                <KeyValuePair label='Current instance count' value={productionVariants[0]['CurrentInstanceCount']}></KeyValuePair>
+                                <KeyValuePair label={t('industrial_models.endpoint.current_instance_count')} value={productionVariants[0]['CurrentInstanceCount']}></KeyValuePair>
                             </Grid>
                             <Grid item xs={2} sm={4} md={4}>
-                                <KeyValuePair label='Desired instance count' value={productionVariants[0]['DesiredInstanceCount']}></KeyValuePair>
+                                <KeyValuePair label={t('industrial_models.endpoint.desired_instance_count')} value={productionVariants[0]['DesiredInstanceCount']}></KeyValuePair>
                             </Grid>
                         </Grid>
                     }
@@ -111,15 +114,15 @@ const EndpointProp: FunctionComponent = () => {
 
     const renderEndpointTags = () => {
         return (
-            <FormSection header='Tags'>
+            <FormSection header={t('industrial_models.common.tags')}>
                 {
                     tags !== undefined && 
                     <Grid container spacing={{ xs: 2, md: 2 }} columns={{ xs: 4, sm: 8, md: 8 }}>
                         <Grid item xs={2} sm={4} md={4}>
-                            <Text> Key </Text>
+                            <Text> {t('industrial_models.common.key')} </Text>
                         </Grid>
                         <Grid item xs={2} sm={4} md={4}>
-                            <Text> Value </Text> 
+                            <Text> {t('industrial_models.common.value')} </Text> 
                         </Grid>
                     </Grid>
                 }
@@ -141,28 +144,28 @@ const EndpointProp: FunctionComponent = () => {
 
     const renderEndpointConfigurationSettings = () => {
         return (
-            <FormSection header='Endpoint configuration settings'>
+            <FormSection header={t('industrial_models.endpoint.endpoint_configuration_settings')}>
                 <Stack>
                     <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }}>
                         <Grid item xs={2} sm={4} md={4}>
-                            <KeyValuePair label='Endpoint config name' value={endpointConfig['EndpointConfigName']}></KeyValuePair>
+                            <KeyValuePair label={t('industrial_models.endpoint.endpoint_configuration_name')} value={endpointConfig['EndpointConfigName']}></KeyValuePair>
                         </Grid>
                         <Grid item xs={2} sm={4} md={4}>
-                            <KeyValuePair label='Creation time' value={getUtcDate(endpointConfig['CreationTime'])}></KeyValuePair>
+                            <KeyValuePair label={t('industrial_models.common.creation_time')} value={getUtcDate(endpointConfig['CreationTime'])}></KeyValuePair>
                         </Grid>
                     </Grid>
                     <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }}>
                         <Grid item xs={2} sm={4} md={4}>
-                            <KeyValuePair label='Model name' value={endpointConfig['ProductionVariants'][0]['ModelName']}></KeyValuePair>
+                            <KeyValuePair label={t('industrial_models.endpoint.model_name')} value={endpointConfig['ProductionVariants'][0]['ModelName']}></KeyValuePair>
                         </Grid>
                         <Grid item xs={2} sm={4} md={4}>
-                            <KeyValuePair label='Instance type' value={endpointConfig['ProductionVariants'][0]['InstanceType']}></KeyValuePair>
+                            <KeyValuePair label={t('industrial_models.endpoint.instance_type')} value={endpointConfig['ProductionVariants'][0]['InstanceType']}></KeyValuePair>
                         </Grid>
                         <Grid item xs={2} sm={4} md={4}>
-                            <KeyValuePair label='Initial instance count' value={endpointConfig['ProductionVariants'][0]['InitialInstanceCount']}></KeyValuePair>
+                            <KeyValuePair label={t('industrial_models.endpoint.initial_instance_count')} value={endpointConfig['ProductionVariants'][0]['InitialInstanceCount']}></KeyValuePair>
                         </Grid>
                         <Grid item xs={2} sm={4} md={4}>
-                            <KeyValuePair label='Initial variant weight' value={endpointConfig['ProductionVariants'][0]['InitialVariantWeight']}></KeyValuePair>
+                            <KeyValuePair label={t('industrial_models.endpoint.initial_weight')} value={endpointConfig['ProductionVariants'][0]['InitialVariantWeight']}></KeyValuePair>
                         </Grid>
                     </Grid>
                 </Stack>
@@ -171,14 +174,14 @@ const EndpointProp: FunctionComponent = () => {
     }
     return (
         <Form
-            header='Review endpoint'
-            description='To deploy models to Amazon SageMaker, first create an endpoint. Specify which models to deploy, and the relative traffic weighting and hardware requirements for each. '
+            header={t('industrial_models.endpoint.review_endpoint')}
+            description={t('industrial_models.endpoint.create_endpoint_description')}
             actions={
                 <div>
-                    <Button variant='primary' onClick={onClose}>Close</Button>
+                    <Button variant='primary' onClick={onClose}>{t('industrial_models.demo.close')}</Button>
                 </div>
             }>   
-            { loading && <LoadingIndicator label='Loading...'/> }
+            { loading && <LoadingIndicator label={t('industrial_models.demo.loading')}/> }
             { !loading && renderEndpointSummary() }
             { !loading && renderEndpointRuntimeSettings() }
             { !loading && renderEndpointConfigurationSettings() }

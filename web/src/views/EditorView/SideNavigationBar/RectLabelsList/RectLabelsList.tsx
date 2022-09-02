@@ -30,6 +30,7 @@ import { SelectOption } from 'aws-northstar/components/Select';
 import { LabelsSelector } from '../../../../store/selectors/LabelsSelector';
 import { ProjectSubType } from '../../../../data/enums/ProjectType';
 import Select from '../../../../components/Utils/Select';
+import { useTranslation } from "react-i18next";
 
 interface IProps {
     size: ISize;
@@ -84,6 +85,8 @@ const RectLabelsList: React.FC<IProps> = (
     const [ selectedYolov5Endpoint, setSelectedYolov5Endpoint ] = useState<SelectOption>();
     const [ computedAnnotations ] = useState<string[]>(imageAnnotations !== undefined ? imageAnnotations :[]);
     
+    const { t } = useTranslation();
+
     const labelInputFieldHeight = 40;
     const listStyle: React.CSSProperties = {
         width: size.width,
@@ -263,15 +266,14 @@ const RectLabelsList: React.FC<IProps> = (
                         <div className='Command'>
                             <div>
                                 <Typography gutterBottom component="div">
-                                    Select endpoint for object detection
+                                    {t('industrial_models.demo.select_endpoint_object_detection')}
                                 </Typography>    
                             </div>
                             <Select 
                                 options = {yolov5Endpoints}
-                                placeholder = 'Choose an option'
                                 onChange = {onChange}
                             />
-                            <Button variant='primary' size="small" onClick={onInference}>Run</Button>
+                            <Button variant='primary' size="small" onClick={onInference}>{t('industrial_models.demo.run')}</Button>
                         </div>
                     </Stack>
                 }

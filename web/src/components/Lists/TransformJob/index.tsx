@@ -1,12 +1,10 @@
 import { FunctionComponent, useCallback, useEffect, useState } from 'react';
 import { useHistory, useParams } from 'react-router-dom'; 
-import { Container, Stack, Table, Button, Inline, ButtonDropdown, StatusIndicator, Toggle, Link, Text, DeleteConfirmationDialog, LoadingIndicator } from 'aws-northstar'
+import { Container, Stack, Table, Button, Inline, ButtonDropdown, StatusIndicator, Toggle, Text, LoadingIndicator } from 'aws-northstar'
+import DeleteConfirmationDialog from '../../Utils/DeleteConfirmationDialog';
 import { Column } from 'react-table'
 import ImageList from '@mui/material/ImageList';
 import ImageListItem from '@mui/material/ImageListItem';
-import SyntaxHighlighter from 'react-syntax-highlighter';
-import { github } from 'react-syntax-highlighter/dist/esm/styles/hljs';
-import JSZip from 'jszip';
 import axios from 'axios';
 import { COLORS } from '../../Data/data';
 import ImageAnnotate from '../../Utils/ImageAnnotate';
@@ -21,6 +19,7 @@ import { IIndustrialModel } from '../../../store/industrialmodels/reducer';
 import { ProjectSubType, ProjectType } from '../../../data/enums/ProjectType';
 import { FetchDataOptions } from 'aws-northstar/components/Table';
 import './index.scss'
+import { useTranslation } from "react-i18next";
 
 interface TransformJobItem {
     transformJobName: string;
@@ -42,9 +41,6 @@ const TransformJobList: FunctionComponent<IProps> = (props) => {
     const [ transformJobResult, setTransformJobResult ] = useState<any>({})
     const [ imageLabels,  setImageLabels ] = useState([])
     const [ imageAnnotations, setImageAnnotations ] = useState([])
-    const [ sampleCode, setSampleCode ] = useState('')
-    const [ sampleConsole, setSampleConsole ] = useState('')
-    const [ visibleSampleCode, setVisibleSampleCode ] = useState(false)
     const [ visibleImagePreview, setVisibleImagePreview ] = useState(false)
     const [ imagePage, setImagePage ] = useState(1)
     const [ selectedTransformJob, setSelectedTransformJob ] = useState<TransformJobItem>()
@@ -62,36 +58,11 @@ const TransformJobList: FunctionComponent<IProps> = (props) => {
     const [ transformJobCurItems, setTransformJobCurItems ] = useState([])
     const [ transformJobAllItems, setTransformJobAllItems ] = useState([])
 
+    const { t } = useTranslation();
+
     const history = useHistory();
 
     var params : PathParams = useParams();
-
-    const getSourceCode = async (uri) => {
-        const response = await axios.get('/_file/download', {params: {uri: encodeURIComponent(uri)}, responseType: 'blob'})
-        return response.data
-    }
-
-    useEffect(() => {
-        var cancel = false
-        const requests = [ axios.get('/function/all_in_one_ai_invoke_endpoint?action=code'), axios.get('/function/all_in_one_ai_invoke_endpoint?action=console')];
-        axios.all(requests)
-        .then(axios.spread(function(response0, response1) {
-            getSourceCode(response0.data).then((data) => {
-                if(cancel) return;
-                var zip = new JSZip();
-                zip.loadAsync(data).then(async function(zipped) {
-                    zipped.file('lambda_function.py').async('string').then(function(data) {
-                        if(cancel) return;
-                        setSampleCode(data)
-                    })
-                })
-            });
-            setSampleConsole(response1.data)           
-        }));
-        return () => { 
-            cancel = true;
-        }
-    }, []);
 
     var industrialModels = props.industrialModels
 
@@ -270,7 +241,7 @@ const TransformJobList: FunctionComponent<IProps> = (props) => {
             setTransformJobResult(response.data)
             setProcessingReview(false)
         }, (error) => {
-            alert('Error occured, please check and try it again');
+            alert(t('industrial_models.common.error_occured'));
             console.log(error);
         });
     }
@@ -292,13 +263,14 @@ const TransformJobList: FunctionComponent<IProps> = (props) => {
             <DeleteConfirmationDialog
                 variant="confirmation"
                 visible={visibleStopConfirmation}
-                title={`Delete ${selectedTransformJob.transformJobName}`}
+                title={t('industrial_models.common.stop') + ` ${selectedTransformJob.transformJobName}`}
                 onCancelClicked={() => setVisibleStopConfirmation(false)}
                 onDeleteClicked={stopTransformJob}
                 loading={processingStop}
-                deleteButtonText='Stop'
+                deleteButtonText={t('industrial_models.common.stop')}
+                cancelButtonText={t('industrial_models.common.cancel')}
             >
-                <Text>This will permanently stop your transform job and cannot be undone. This may affect other resources.</Text>
+                <Text>{t('industrial_models.transform_job.stop_transform_job')}</Text>
             </DeleteConfirmationDialog>
         )
     }
@@ -311,7 +283,7 @@ const TransformJobList: FunctionComponent<IProps> = (props) => {
                 setVisibleStopConfirmation(false);
                 setProcessingStop(false);
             }, (error) => {
-                alert('Error occured, please check and try it again');
+                alert(t('industrial_models.common.error_occured'));
                 console.log(error);
                 setProcessingStop(false)
             }
@@ -323,13 +295,14 @@ const TransformJobList: FunctionComponent<IProps> = (props) => {
             <DeleteConfirmationDialog
                 variant="confirmation"
                 visible={visibleAttachConfirmation}
-                title={`Attach ${selectedTransformJob.transformJobName}`}
+                title={t('industrial_models.common.attach') + ` ${selectedTransformJob.transformJobName}`}
                 onCancelClicked={() => setVisibleAttachConfirmation(false)}
                 onDeleteClicked={attachTransformJob}
                 loading={processingAttach}
-                deleteButtonText='Attach'
+                deleteButtonText={t('industrial_models.common.attach')}
+                cancelButtonText={t('industrial_models.common.cancel')}
             >
-                <Text>This will attach this transform job to current industrial model.</Text>
+                <Text>{t('industrial_models.transform_job.attach_transform_job')}</Text>
             </DeleteConfirmationDialog>
         )
     }
@@ -354,13 +327,14 @@ const TransformJobList: FunctionComponent<IProps> = (props) => {
             <DeleteConfirmationDialog
                 variant="confirmation"
                 visible={visibleDetachConfirmation}
-                title={`Detach ${selectedTransformJob.transformJobName}`}
+                title={t('industrial_models.common.detach') + ` ${selectedTransformJob.transformJobName}`}
                 onCancelClicked={() => setVisibleDetachConfirmation(false)}
                 onDeleteClicked={detachTransformJob}
                 loading={processingDetach}
-                deleteButtonText='Detach'
+                deleteButtonText={t('industrial_models.common.detach')}
+                cancelButtonText={t('industrial_models.common.cancel')}
             >
-                <Text>This will dettach this transform job from current industrial model.</Text>
+                <Text>{t('industrial_models.transform_job.detach_transform_job')}</Text>
             </DeleteConfirmationDialog>
         )
     }
@@ -373,7 +347,7 @@ const TransformJobList: FunctionComponent<IProps> = (props) => {
                 setVisibleDetachConfirmation(false);
                 setProcessingDetach(false);
             }, (error) => {
-                alert('Error occured, please check and try it again');
+                alert(t('industrial_models.common.error_occured'));
                 console.log(error);
                 setProcessingDetach(false)
             }
@@ -386,7 +360,7 @@ const TransformJobList: FunctionComponent<IProps> = (props) => {
         {
             id: 'transformJobName',
             width: 200,
-            Header: 'Name',
+            Header: t('industrial_models.common.name'),
             accessor: 'transformJobName',
             Cell: ({ row  }) => {
                 if (row && row.original) {
@@ -398,7 +372,7 @@ const TransformJobList: FunctionComponent<IProps> = (props) => {
         {
             id: 'creationTime',
             width: 400,
-            Header: 'Creation time',
+            Header: t('industrial_models.common.creation_time'),
             accessor: 'creationTime',
             Cell: ({ row  }) => {
                 if (row && row.original) {
@@ -410,13 +384,13 @@ const TransformJobList: FunctionComponent<IProps> = (props) => {
         {
             id: 'duration',
             width: 200,
-            Header: 'Duration',
+            Header: t('industrial_models.common.duration'),
             accessor: 'duration'
         },
         {
             id: 'transformJobStatus',
             width: 200,
-            Header: 'Status',
+            Header: t('industrial_models.common.status'),
             accessor: 'transformJobStatus',
             Cell: ({ row  }) => {
                 if (row && row.original) {
@@ -448,19 +422,19 @@ const TransformJobList: FunctionComponent<IProps> = (props) => {
     const tableActions = (
         <Inline>
             <div className='tableaction'>        
-                <Toggle label='Show all' checked={showAll} onChange={onChangeShowAll}/>
+                <Toggle label={t('industrial_models.common.show_all')} checked={showAll} onChange={onChangeShowAll}/>
             </div>
             <div className='tableaction'>        
-                <Button icon="refresh" onClick={onRefresh} loading={loadingTable}>Refresh</Button>
+                <Button icon="refresh" onClick={onRefresh} loading={loadingTable}>{t('industrial_models.common.refresh')}</Button>
             </div>
             <div className='tableaction'>        
                 <ButtonDropdown
-                    content='Actions'
-                        items={[{text: 'Review', onClick: onReview, disabled: disabledReview},{ text: 'Stop', onClick: onStop, disabled: disabledStop }, { text: 'Attach', onClick: onAttach, disabled: disabledAttach }, { text: 'Detach', onClick: onDetach, disabled: disabledDetach }, { text: 'Add/Edit tags', disabled: true }]}
+                    content={t('industrial_models.common.actions')}
+                        items={[{text: t('industrial_models.common.review'), onClick: onReview, disabled: disabledReview},{ text: t('industrial_models.common.stop'), onClick: onStop, disabled: disabledStop }, { text: t('industrial_models.common.attach'), onClick: onAttach, disabled: disabledAttach }, { text: t('industrial_models.common.detach'), onClick: onDetach, disabled: disabledDetach }, { text: t('industrial_models.common.add_or_edit_tags'), disabled: true }]}
                 />
             </div>
             <div className='tableaction'>        
-                <Button variant='primary' onClick={onCreate}>Create</Button>
+                <Button variant='primary' onClick={onCreate}>{t('industrial_models.common.create')}</Button>
             </div>
         </Inline>
     );
@@ -469,7 +443,7 @@ const TransformJobList: FunctionComponent<IProps> = (props) => {
         if(processingReview)
             return (
                 <Container title = 'Select image file from batch transform result'>
-                    <LoadingIndicator label='Loading...'/>
+                    <LoadingIndicator label={t('industrial_models.demo.loading')}/>
                 </Container>
             )
         else
@@ -507,7 +481,7 @@ const TransformJobList: FunctionComponent<IProps> = (props) => {
         return (
             <Table
                 actionGroup={tableActions}
-                tableTitle='Batch transform jobs'
+                tableTitle={t('industrial_models.transform_jobs')}
                 multiSelect={false}
                 columnDefinitions={columnDefinitions}
                 items={showAll ? transformJobAllItems : transformJobCurItems}
@@ -519,21 +493,6 @@ const TransformJobList: FunctionComponent<IProps> = (props) => {
                 defaultPageIndex={pageIndex}
             />
         )    
-    }
-
-    const renderSampleCode = () => {
-        return (
-            <Container title = 'Sample code'>
-                <Toggle label={visibleSampleCode ? 'Show sample code' : 'Hide sample code'} checked={visibleSampleCode} onChange={(checked) => {setVisibleSampleCode(checked)}} />
-                <Link href={sampleConsole}>Open in AWS Lambda console</Link>
-                {
-                    visibleSampleCode && 
-                    <SyntaxHighlighter language='python' style={github} showLineNumbers={true}>
-                        {sampleCode}
-                    </SyntaxHighlighter>
-                }
-            </Container>
-        )
     }
 
     const renderImagePreview = () => {
@@ -571,7 +530,6 @@ const TransformJobList: FunctionComponent<IProps> = (props) => {
                 { selectedTransformJob !== undefined && renderAttachConfirmationDialog() }
                 { selectedTransformJob !== undefined && renderDetachConfirmationDialog() }
                 {renderTransformJobList()}
-                {renderSampleCode()}
             </Stack>
         )
 }

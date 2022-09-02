@@ -4,6 +4,7 @@ import { KeyValuePair, StatusIndicator, Button, Form, FormSection, LoadingIndica
 import axios from 'axios';
 import Grid from '@mui/material/Grid';
 import { getUtcDate } from '../../Utils/Helper';
+import { useTranslation } from "react-i18next";
 
 const TrainingJobProp: FunctionComponent = () => {
     const [ trainingJobName, setTrainingJobName ] = useState('')
@@ -24,6 +25,8 @@ const TrainingJobProp: FunctionComponent = () => {
     const [ enableManagedSpotTraining, setEnableManagedSpotTraining ] = useState('')
     const [ tags, setTags ] = useState([])
     const [ loading, setLoading ] = useState(true);
+
+    const { t } = useTranslation();
 
     const history = useHistory();
 
@@ -82,31 +85,31 @@ const TrainingJobProp: FunctionComponent = () => {
 
     const renderJobSummary = () => {
         return (
-            <FormSection header='Job summary'>
+            <FormSection header={t('industrial_models.training_job.job_summary')}>
                 <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }}>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label='Job name' value={trainingJobName}></KeyValuePair>
+                        <KeyValuePair label={t('industrial_models.training_job.job_name')} value={trainingJobName}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label='Status' value={getStatus(trainingJobStatus)}></KeyValuePair>
+                        <KeyValuePair label={t('industrial_models.common.status')} value={getStatus(trainingJobStatus)}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label='Creation time' value={creationTime}></KeyValuePair>
+                        <KeyValuePair label={t('industrial_models.common.creation_time')} value={creationTime}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label='Training start time' value={trainingStartTime}></KeyValuePair>
+                        <KeyValuePair label={t('industrial_models.training_job.training_start_time')} value={trainingStartTime}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label='Training end time' value={trainingEndTime}></KeyValuePair>
+                        <KeyValuePair label={t('industrial_models.training_job.training_end_time')} value={trainingEndTime}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label='Last modified time' value={lastModifiedTime}></KeyValuePair>
+                        <KeyValuePair label={t('industrial_models.common.last_modified_time')} value={lastModifiedTime}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label='Training time (seconds)' value={trainingTimeInSeconds}></KeyValuePair>
+                        <KeyValuePair label={t('industrial_models.training_job.training_time_in_seconds')} value={trainingTimeInSeconds}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label='Billable time (seconds)' value={billableTimeInSeconds}></KeyValuePair>
+                        <KeyValuePair label={t('industrial_models.common.billable_time_in_seconds')} value={billableTimeInSeconds}></KeyValuePair>
                     </Grid>
                 </Grid>
             </FormSection>
@@ -115,31 +118,31 @@ const TrainingJobProp: FunctionComponent = () => {
 
     const renderAlgorithmSpecifications = () => {
         return (
-            <FormSection header='Algorithm'>
+            <FormSection header={t('app_layout.algorithms')}>
                 <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }}>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label='Instance type' value={resourceConfig['InstanceType']}></KeyValuePair>
+                        <KeyValuePair label={t('industrial_models.training_job.instance_type')} value={resourceConfig['InstanceType']}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label='Instance count' value={resourceConfig['InstanceCount']}></KeyValuePair>
+                        <KeyValuePair label={t('industrial_models.training_job.instance_count')} value={resourceConfig['InstanceCount']}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label='Additional storage' value={resourceConfig['VolumeSizeInGB']}></KeyValuePair>
+                        <KeyValuePair label={t('industrial_models.training_job.additional_storage_volume_in_gb')} value={resourceConfig['VolumeSizeInGB']}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label='Training image' value={algorithmSpecification['TrainingImage']}></KeyValuePair>
+                        <KeyValuePair label={t('industrial_models.training_job.training_image')} value={algorithmSpecification['TrainingImage']}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label='Input mode' value={algorithmSpecification['TrainingInputMode']}></KeyValuePair>
+                        <KeyValuePair label={t('industrial_models.training_job.training_input_mode')}  value={algorithmSpecification['TrainingInputMode']}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label='Maximum runtime (s)' value={stoppingCondition['MaxRuntimeInSeconds']}></KeyValuePair>
+                        <KeyValuePair label={t('industrial_models.training_job.maximum_runtime_in_seconds')}  value={stoppingCondition['MaxRuntimeInSeconds']}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label='Maximum wait time for managed spot training(s)' value={'MaxWaitTimeInSeconds' in stoppingCondition ? stoppingCondition['MaxWaitTimeInSeconds'] : '-'}></KeyValuePair>
+                        <KeyValuePair label={t('industrial_models.training_job.maximum_wait_time_in_seconds')} value={'MaxWaitTimeInSeconds' in stoppingCondition ? stoppingCondition['MaxWaitTimeInSeconds'] : '-'}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label='Managed spot training' value={enableManagedSpotTraining ? 'Enabled' : 'Disabled'}></KeyValuePair>
+                        <KeyValuePair label={t('industrial_models.training_job.managed_spot_training')} value={enableManagedSpotTraining ? 'Enabled' : 'Disabled'}></KeyValuePair>
                     </Grid>
                 </Grid>
             </FormSection>
@@ -148,7 +151,7 @@ const TrainingJobProp: FunctionComponent = () => {
 
     const renderHyperParameters = () => {
         return (    
-            <FormSection header='HyperParameters'>
+            <FormSection header={t('industrial_models.training_job.hyperparameters')}>
                 <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }}>
                     {
                         Object.keys(hyperParameters).map((key) => {
@@ -166,22 +169,22 @@ const TrainingJobProp: FunctionComponent = () => {
 
     const renderInputDataConfiguration = () => {
         return (
-            <FormSection header='Input data configuration'>
+            <FormSection header={t('industrial_models.training_job.input_data_configuration')}>
                 {
                     inputDataConfig.map((channelConfig) => {
                         return (
                             <Grid key={channelConfig['ChannelName']} container spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }}>
                                 <Grid item xs={2} sm={4} md={4}>
-                                    <KeyValuePair label='Channel name' value={channelConfig['ChannelName']}></KeyValuePair>
+                                    <KeyValuePair label={t('industrial_models.training_job.channel_name')} value={channelConfig['ChannelName']}></KeyValuePair>
                                 </Grid>
                                 <Grid item xs={2} sm={4} md={4}>
-                                    <KeyValuePair label='S3 data type' value={channelConfig['DataSource']['S3DataSource']['S3DataType']}></KeyValuePair>
+                                    <KeyValuePair label={t('industrial_models.training_job.s3_data_type')} value={channelConfig['DataSource']['S3DataSource']['S3DataType']}></KeyValuePair>
                                 </Grid>                    
                                 <Grid item xs={2} sm={4} md={4}>
-                                    <KeyValuePair label='S3 data distribution type' value={channelConfig['DataSource']['S3DataSource']['S3DataDistributionType']}></KeyValuePair>
+                                    <KeyValuePair label={t('industrial_models.training_job.s3_data_distribution_type')} value={channelConfig['DataSource']['S3DataSource']['S3DataDistributionType']}></KeyValuePair>
                                 </Grid>                    
                                 <Grid item xs={6} sm={6} md={6}>
-                                    <KeyValuePair label='URI' value={channelConfig['DataSource']['S3DataSource']['S3Uri']}></KeyValuePair>
+                                    <KeyValuePair label={t('industrial_models.common.uri')} value={channelConfig['DataSource']['S3DataSource']['S3Uri']}></KeyValuePair>
                                 </Grid>                    
                             </Grid>
                         )
@@ -193,10 +196,10 @@ const TrainingJobProp: FunctionComponent = () => {
 
     const renderOutputConfiguration = () => {
         return (
-            <FormSection header='Output data configuration'>
+            <FormSection header={t('industrial_models.training_job.output_data_configuration')}>
                 <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }}>
                     <Grid item xs={6} sm={6} md={6}>
-                        <KeyValuePair label='S3 output path' value={outputDataConfig['S3OutputPath']}></KeyValuePair>
+                        <KeyValuePair label={t('industrial_models.training_job.s3_output_path')} value={outputDataConfig['S3OutputPath']}></KeyValuePair>
                     </Grid>
                 </Grid>
             </FormSection>
@@ -205,12 +208,12 @@ const TrainingJobProp: FunctionComponent = () => {
 
     const renderOutput = () => {
         return (
-            <FormSection header='Output'>
+            <FormSection header={t('industrial_models.demo.output')}>
                 <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }}>
                     <Grid item xs={6} sm={6} md={6}>
                         { 
                             modelArtifacts !== undefined &&
-                            <KeyValuePair label='S3 model artifact' value={modelArtifacts['S3ModelArtifacts']}></KeyValuePair> 
+                            <KeyValuePair label={t('industrial_models.training_job.s3_model_artifact')} value={modelArtifacts['S3ModelArtifacts']}></KeyValuePair> 
                         }
                     </Grid>
                 </Grid>
@@ -220,15 +223,15 @@ const TrainingJobProp: FunctionComponent = () => {
 
     const renderTrainingJobTags = () => {
         return (
-            <FormSection header='Tags'>
+            <FormSection header={t('industrial_models.common.tags')}>
                 {
                     tags !== undefined && 
                     <Grid container spacing={{ xs: 2, md: 2 }} columns={{ xs: 4, sm: 8, md: 8 }}>
                         <Grid item xs={2} sm={4} md={4}>
-                            <Text> Key </Text>
+                            <Text> {t('industrial_models.common.key')} </Text>
                         </Grid>
                         <Grid item xs={2} sm={4} md={4}>
-                            <Text> Value </Text> 
+                            <Text> {t('industrial_models.common.value')} </Text> 
                         </Grid>
                     </Grid>
                 }
@@ -250,14 +253,14 @@ const TrainingJobProp: FunctionComponent = () => {
 
     return (
         <Form
-            header='Review training job'
-            description='When you create a training job, Amazon SageMaker sets up the distributed compute cluster, performs the training, and deletes the cluster when training has completed. The resulting model artifacts are stored in the location you specified when you created the training job.'
+            header={t('industrial_models.training_job.review_training_job')}
+            description={t('industrial_models.training_job.create_training_job_description')}
             actions={
                 <div>
-                    <Button variant='primary' onClick={onClose}>Close</Button>
+                    <Button variant='primary' onClick={onClose}>{t('industrial_models.demo.close')}</Button>
                 </div>
             }>   
-            { loading && <LoadingIndicator label='Loading...'/> }
+            { loading && <LoadingIndicator label={t('industrial_models.demo.loading')}/> }
             { !loading && renderJobSummary() }
             { !loading && renderAlgorithmSpecifications() }
             { !loading && renderHyperParameters() }

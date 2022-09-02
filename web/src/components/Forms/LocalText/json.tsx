@@ -13,6 +13,7 @@ import Grid from '@mui/material/Grid';
 import { IIndustrialModel } from '../../../store/industrialmodels/reducer';
 import { v4 as uuidv4 } from 'uuid';
 import ReactJson from 'react-json-view';
+import { useTranslation } from "react-i18next";
 
 interface IProps {
     industrialModels: IIndustrialModel[];
@@ -42,7 +43,6 @@ const LocalTextOutputJsonForm: FunctionComponent<IProps> = (
     const [ visibleSampleCode, setVisibleSampleCode ] = useState(false)
     const [ selectedSampleFunction, setSelectedSampleFunction ] = useState<SelectOption>({})
     const [ processing, setProcessing ] = useState(false);
-    const history = useHistory();
 
     const sampleFunctionOptions = [
         {
@@ -71,6 +71,10 @@ const LocalTextOutputJsonForm: FunctionComponent<IProps> = (
         }
     ]
     
+    const { t } = useTranslation();
+
+    const history = useHistory();
+
     var params : PathParams = useParams();
 
     var industrialModel = industrialModels.find((item) => item.id === params.id)
@@ -182,7 +186,7 @@ const LocalTextOutputJsonForm: FunctionComponent<IProps> = (
 
     const renderLabels = () => {
         return (
-            <FormField controlId={uuidv4()} description='Candidate labels'>
+            <FormField controlId={uuidv4()} description={t('industrial_models.demo.candidate_labels')}>
                 {
                     labels.map((label, index) => (
                         <Grid container spacing={{ xs: 1, md: 1 }} columns={{ xs: 4, sm: 8, md: 12 }}>
@@ -195,7 +199,7 @@ const LocalTextOutputJsonForm: FunctionComponent<IProps> = (
                         </Grid>
                     ))
                 }
-                <Button variant='link' size='large' onClick={onAddLabel}>Add label</Button>
+                <Button variant='link' size='large' onClick={onAddLabel}>{t('industrial_models.demo.add_label')}</Button>
                 </FormField>
             )
     }
@@ -203,15 +207,14 @@ const LocalTextOutputJsonForm: FunctionComponent<IProps> = (
     const renderInference = () => {
         return (
             <FormSection header={header}>
-                <FormField controlId={uuidv4()} description='Select endpoint to inference'>
+                <FormField controlId={uuidv4()} description={t('industrial_models.demo.select_endpoint')}>
                     <Select
-                        placeholder='Choose endpoint'
                         options={endpointOptions}
                         selectedOption={selectedEndpoint}
                         onChange={(event) => onChange('formFieldIdEndpoint', event)}
                     />
                 </FormField>
-                <FormField controlId={uuidv4()} description='Input'>
+                <FormField controlId={uuidv4()} description={t('industrial_models.demo.input')}>
                     <Textarea onChange={(event) => onChange('formFieldIdInput', event)} value={input}/>
                 </FormField>
                 {
@@ -219,12 +222,12 @@ const LocalTextOutputJsonForm: FunctionComponent<IProps> = (
                 }
                 {
                     output !== '{}' && 
-                    <FormField controlId={uuidv4()} description='Output'>
+                    <FormField controlId={uuidv4()} description={t('industrial_models.demo.output')}>
                         <ReactJson src={JSON.parse(output)} collapsed={false} theme='google' />
                     </FormField>
                 }
                 <div className='run'>
-                    <Button onClick={onRun} loading={processing}>Run</Button>
+                    <Button onClick={onRun} loading={processing}>{t('industrial_models.demo.run')}</Button>
                     </div>
             </FormSection>
         )
@@ -240,13 +243,13 @@ const LocalTextOutputJsonForm: FunctionComponent<IProps> = (
 
     const renderQuickStart = () => {
         return (
-            <Container headingVariant='h4' title = 'Quick start'>
+            <Container headingVariant='h4' title = {t('industrial_models.demo.quick_start')}>
                 <Inline>
                     <div className='quickstartaction'>
-                        <Button onClick={onStartTrain}>Start train</Button>
+                        <Button onClick={onStartTrain}>{t('industrial_models.demo.train')}</Button>
                     </div>
                     <div className='quickstartaction'>
-                        <Button onClick={onStartDeploy}>Start deploy</Button>
+                        <Button onClick={onStartDeploy}>{t('industrial_models.demo.deploy')}</Button>
                     </div>
                 </Inline>
             </Container>
@@ -255,18 +258,17 @@ const LocalTextOutputJsonForm: FunctionComponent<IProps> = (
 
     const renderSampleCode = () => {
         return (
-            <Container headingVariant='h4' title = 'Sample code'>
+            <Container headingVariant='h4' title = {t('industrial_models.demo.sample_code')}>
                 <FormField controlId={uuidv4()}>
                     <Select
-                            placeholder='Choose function'
                             options={sampleFunctionOptions}
                             selectedOption={selectedSampleFunction}
                             onChange={(event) => onChange('formFieldIdSampleFunction', event)}
                         />
                 </FormField>
                 <FormField controlId={uuidv4()}>
-                    <Toggle label={visibleSampleCode ? 'Show sample code' : 'Hide sample code'} checked={visibleSampleCode} onChange={(checked) => {setVisibleSampleCode(checked)}} />
-                    <Link href={sampleConsole}>Open in AWS Lambda console</Link>
+                    <Toggle label={visibleSampleCode ? t('industrial_models.demo.show_sample_code') : t('industrial_models.demo.hide_sample_code')} checked={visibleSampleCode} onChange={(checked) => {setVisibleSampleCode(checked)}} />
+                    <Link href={sampleConsole}>{t('industrial_models.demo.open_function_in_aws_console')}</Link>
                     {
                         visibleSampleCode && <SyntaxHighlighter language='python' style={github} showLineNumbers={true}>
                             {sampleCode}

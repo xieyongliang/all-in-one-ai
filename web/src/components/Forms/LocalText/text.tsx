@@ -11,6 +11,7 @@ import { AppState } from '../../../store';
 import { connect } from 'react-redux';
 import { IIndustrialModel } from '../../../store/industrialmodels/reducer';
 import { v4 as uuidv4 } from 'uuid';
+import { useTranslation } from "react-i18next";
 
 interface IProps {
     industrialModels: IIndustrialModel[];
@@ -37,7 +38,6 @@ const LocalTextOutputTextForm: FunctionComponent<IProps> = (
     const [ visibleSampleCode, setVisibleSampleCode ] = useState(false)
     const [ selectedSampleFunction, setSelectedSampleFunction ] = useState<SelectOption>({})
     const [ processing, setProcessing ] = useState(false);
-    const history = useHistory();
 
     const sampleFunctionOptions = [
         {
@@ -65,7 +65,10 @@ const LocalTextOutputTextForm: FunctionComponent<IProps> = (
             value: 'all_in_one_ai_invoke_endpoint'
         }
     ]
-    
+
+    const { t } = useTranslation();
+
+    const history = useHistory();    
 
     var params : PathParams = useParams();
 
@@ -98,8 +101,8 @@ const LocalTextOutputTextForm: FunctionComponent<IProps> = (
         if(selectedSampleFunction.value !== undefined) {
             const requests = [ axios.get(`/function/${selectedSampleFunction.value}?action=code`), axios.get(`/function/${selectedSampleFunction.value}?action=console`)];
             axios.all(requests)
-            .then(axios.spread(function(response0, response1) {
-                getSourceCode(response0.data).then((data) => {
+            .then(axios.spread(function(response, response1) {
+                getSourceCode(response.data).then((data) => {
                     if(cancel) return;
                     var zip = new JSZip();
                     zip.loadAsync(data).then(async function(zipped) {
@@ -155,22 +158,21 @@ const LocalTextOutputTextForm: FunctionComponent<IProps> = (
     const renderInference = () => {
         return (
             <FormSection header={header}>
-                <FormField controlId={uuidv4()} description='Select endpoint to inference'>
+                <FormField controlId={uuidv4()} description={t('industrial_models.demo.select_endpoint')}>
                     <Select
-                        placeholder='Choose endpoint'
                         options={endpointOptions}
                         selectedOption={selectedEndpoint}
                         onChange={(event) => onChange('formFieldIdEndpoint', event)}
                     />
                 </FormField>
-                <FormField controlId={uuidv4()} description='Input data'>
+                <FormField controlId={uuidv4()} description={t('industrial_models.demo.input')}>
                     <Textarea onChange={(event) => onChange('formFieldIdInput', event)} value={input}/>
                 </FormField>
-                <FormField controlId={uuidv4()} description='Output data'>
+                <FormField controlId={uuidv4()} description={t('industrial_models.demo.output')}>
                     <Textarea onChange={(event) => onChange('formFieldIdOutput', event)} value={output} readonly={true}/>
                 </FormField>
-                <div className='run'>
-                    <Button onClick={onRun} loading={processing}>Run</Button>
+                <div>
+                    <Button onClick={onRun} loading={processing}>{t('industrial_models.demo.run')}</Button>
                     </div>
             </FormSection>
         )
@@ -186,13 +188,13 @@ const LocalTextOutputTextForm: FunctionComponent<IProps> = (
 
     const renderQuickStart = () => {
         return (
-            <Container headingVariant='h4' title = 'Quick start'>
+            <Container headingVariant='h4' title = {t('industrial_models.demo.quick_start')}>
                 <Inline>
                     <div className='quickstartaction'>
-                        <Button onClick={onStartTrain}>Start train</Button>
+                        <Button onClick={onStartTrain}>{t('industrial_models.demo.train')}</Button>
                     </div>
                     <div className='quickstartaction'>
-                        <Button onClick={onStartDeploy}>Start deploy</Button>
+                        <Button onClick={onStartDeploy}>{t('industrial_models.demo.deploy')}</Button>
                     </div>
                 </Inline>
             </Container>
@@ -201,18 +203,17 @@ const LocalTextOutputTextForm: FunctionComponent<IProps> = (
 
     const renderSampleCode = () => {
         return (
-            <Container headingVariant='h4' title = 'Sample code'>
+            <Container headingVariant='h4' title = {t('industrial_models.demo.sample_code')}>
                 <FormField controlId={uuidv4()}>
                     <Select
-                            placeholder='Choose function'
                             options={sampleFunctionOptions}
                             selectedOption={selectedSampleFunction}
                             onChange={(event) => onChange('formFieldIdSampleFunction', event)}
                         />
                 </FormField>
                 <FormField controlId={uuidv4()}>
-                    <Toggle label={visibleSampleCode ? 'Show sample code' : 'Hide sample code'} checked={visibleSampleCode} onChange={(checked) => {setVisibleSampleCode(checked)}} />
-                    <Link href={sampleConsole}>Open in AWS Lambda console</Link>
+                    <Toggle label={visibleSampleCode ? t('industrial_models.demo.show_sample_code') : t('industrial_models.demo.hide_sample_code')} checked={visibleSampleCode} onChange={(checked) => {setVisibleSampleCode(checked)}} />
+                    <Link href={sampleConsole}>{t('industrial_models.demo.open_function_in_aws_console')}</Link>
                     {
                         visibleSampleCode && <SyntaxHighlighter language='python' style={github} showLineNumbers={true}>
                             {sampleCode}

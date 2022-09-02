@@ -1,7 +1,7 @@
 import { FunctionComponent, useState, useCallback, useEffect } from 'react';
 import { useHistory, useParams } from 'react-router-dom'; 
 import {Column} from 'react-table'
-import { Form, FormSection, FormField, Input, Button, Text, Stack, RadioButton, RadioGroup, Table, ExpandableSection, Select } from 'aws-northstar';
+import { Form, FormSection, FormField, Input, Button, Text, Stack, RadioButton, RadioGroup, Table, ExpandableSection, Select, Inline } from 'aws-northstar';
 import Grid from '@mui/material/Grid';
 import axios from 'axios';
 import { AppState } from '../../../store';
@@ -11,6 +11,7 @@ import { IIndustrialModel } from '../../../store/industrialmodels/reducer';
 import { PathParams } from '../../Interfaces/PathParams';
 import { getUtcDate } from '../../Utils/Helper';
 import { v4 as uuidv4 } from 'uuid';
+import { useTranslation } from "react-i18next";
 
 interface ModelPackageItem {
     name: string;
@@ -50,6 +51,8 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
     const [ processing, setProcessing ] = useState(false)
     const [ processingModelPackage, setProcessingModelPackage ] = useState(false);
     const [ processingModelPackageGroup, setProcessingModelPackageGroup ] = useState(false);
+
+    const { t } = useTranslation();
 
     const history = useHistory();
 
@@ -191,7 +194,7 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
                 .then((response) => {
                     history.goBack()
                 }, (error) => {
-                    alert('Error occured, please check and try it again');
+                    alert(t('industrial_models.common.error_occured'));
                     console.log(error);
                     setProcessing(false)
                 });
@@ -214,7 +217,7 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
                 .then((response) => {
                     history.goBack()
                 }, (error) => {
-                    alert('Error occured, please check and try it again');
+                    alert(t('industrial_models.common.error_occured'));
                     console.log(error);
                     setProcessing(false)
                 });
@@ -238,17 +241,13 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
     }
 
     const renderModelSetting = () => {
-        if(!wizard) {
-            return (
-                <FormSection header='Model settings'>
-                    <FormField label='Model name' controlId={uuidv4()}>
-                        <Input type='text' required={true} value={modelName} onChange={(event)=>onChange('formFieldIdModelName', event)}/>
-                    </FormField>
-                </FormSection>
-            )
-        }
-        else
-            return ''
+        return (
+            <FormSection header={t('industrial_models.model.model_settings')}>
+                <FormField label={t('industrial_models.model.model_name')} controlId={uuidv4()} hintText={t('industrial_models.model.model_name_hint')}>
+                    <Input type='text' required={true} value={modelName} onChange={(event)=>onChange('formFieldIdModelName', event)}/>
+                </FormField>
+            </FormSection>
+        )
     }
 
     const onChangeTags = (id: string, event: any, index : number) => {
@@ -258,52 +257,47 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
     }    
 
     const renderModelTags = () => {
-        if(!wizard) {
-            return (
-                <FormSection header='Tags - optional'>
-                    {
-                        tags.length>0 && 
-                            <Grid container spacing={{ xs: 1, md: 1 }} columns={{ xs: 4, sm: 8, md: 12 }}>
-                                <Grid item xs={2} sm={4} md={4}>
-                                    <Text> Key </Text>
-                                </Grid>
-                                <Grid item xs={2} sm={4} md={4}>
-                                    <Text> Value </Text> 
-                                </Grid>
-                                <Grid item xs={2} sm={4} md={4}>
-                                    <Text>  </Text>
-                                </Grid>
+        return (
+            <FormSection header={t('industrial_models.common.tags')}>
+                {
+                    tags.length>0 && 
+                        <Grid container spacing={{ xs: 1, md: 1 }} columns={{ xs: 4, sm: 8, md: 12 }}>
+                            <Grid item xs={2} sm={4} md={4}>
+                                <Text> {t('industrial_models.common.key')} </Text>
                             </Grid>
-                    }
-                    {
-                        tags.map((tag, index) => (
-                            <Grid container spacing={{ xs: 1, md: 1 }} columns={{ xs: 4, sm: 8, md: 12 }}>
-                                <Grid item xs={2} sm={4} md={4}>
-                                    <Input type='text' value={tag.key} onChange={(event) => onChangeTags('key', event, index)}/>
-                                </Grid>
-                                <Grid item xs={2} sm={4} md={4}>
-                                    <Input type='text' value={tag.value} onChange={(event) => onChangeTags('value', event, index)}/>
-                                </Grid>
-                                <Grid item xs={2} sm={4} md={4}>
-                                    <Button onClick={() => onRemoveTag(index)}>Remove</Button>
-                                </Grid>
+                            <Grid item xs={2} sm={4} md={4}>
+                                <Text> {t('industrial_models.common.value')} </Text> 
                             </Grid>
-                        ))
-                    }
-                    <Button variant='link' size='large' onClick={onAddTag}>Add tag</Button>
-                </FormSection>
-            )
-        }
-        else
-            return ''
+                            <Grid item xs={2} sm={4} md={4}>
+                            </Grid>
+                        </Grid>
+                }
+                {
+                    tags.map((tag, index) => (
+                        <Grid container spacing={{ xs: 1, md: 1 }} columns={{ xs: 4, sm: 8, md: 12 }}>
+                            <Grid item xs={2} sm={4} md={4}>
+                                <Input type='text' value={tag.key} onChange={(event) => onChangeTags('key', event, index)}/>
+                            </Grid>
+                            <Grid item xs={2} sm={4} md={4}>
+                                <Input type='text' value={tag.value} onChange={(event) => onChangeTags('value', event, index)}/>
+                            </Grid>
+                            <Grid item xs={2} sm={4} md={4}>
+                                <Button onClick={() => onRemoveTag(index)}>{t('industrial_models.common.remove')}</Button>
+                            </Grid>
+                        </Grid>
+                    ))
+                }
+                <Button variant='link' size='large' onClick={onAddTag}>{t('industrial_models.common.add_tag')}</Button>
+            </FormSection>
+        )
     }
 
     const renderContainerInputOptions = () => {
         return (
             <RadioGroup onChange={onChangeOptions}
                 items={[
-                    <RadioButton value='0' checked={containerInputType === '0'}>Provide model artifacts and inference image location.</RadioButton>, 
-                    <RadioButton value='1' checked={containerInputType === '1'}>Select a model package resource.</RadioButton>,
+                    <RadioButton value='0' checked={containerInputType === '0'}>{t('industrial_models.model.container_input_option_provide_model_artifacts_and_inference_image')}</RadioButton>, 
+                    <RadioButton value='1' checked={containerInputType === '1'}>{t('industrial_models.model.container_input_option_select_model_package_group_resource')}</RadioButton>,
                 ]}
             />
         )
@@ -313,8 +307,8 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
         return (
             <RadioGroup onChange={onChangeOptions}
                 items={[
-                    <RadioButton value='SingleModel' checked={containerModelType === 'SingleModel'}>Use a single model.</RadioButton>, 
-                    <RadioButton value='MultiModel' checked={containerModelType === 'MultiModel'}>Use multiple models.</RadioButton>,
+                    <RadioButton value='SingleModel' checked={containerModelType === 'SingleModel'}>{t('industrial_models.model.container_model_option_use_single_model')}</RadioButton>, 
+                    <RadioButton value='MultiModel' checked={containerModelType === 'MultiModel'}>{t('industrial_models.model.container_model_option_use_multiple_model')}</RadioButton>,
                 ]}
             />
         )
@@ -326,7 +320,7 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
         {
             id: 'name',
             width: 400,
-            Header: 'Name',
+            Header: t('industrial_models.common.name'),
             accessor: 'name',
             Cell: ({ row  }) => {
                 if (row && row.original) {
@@ -338,7 +332,7 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
         {
             id: 'version',
             width: 400,
-            Header: 'Version',
+            Header: t('industrial_models.common.version'),
             accessor: 'versions',
             Cell: ({ row  }) => {
                 if (row && row.original) {
@@ -348,7 +342,6 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
                     });
                     return (
                         <Select
-                            placeholder='Choose an option'
                             options={options}
                             selectedOption={selectedModelPackageGroupVersions[row.original.name]}
                             onChange={(event) => onChange(row.original.name, event, 'versions')}
@@ -363,7 +356,7 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
         {
             id: 'creation_time',
             width: 400,
-            Header: 'Creation time',
+            Header: t('industrial_models.common.creation_time'),
             accessor: 'creation_time'
         }
     ];
@@ -372,7 +365,7 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
         if(wizard)
             return (
                 <Table
-                    tableTitle='Model packages'
+                    tableTitle={t('industrial_models.model.model_packages')}
                     multiSelect={false}
                     columnDefinitions={columnDefinitions}
                     items={modelPackageGroupItems}
@@ -385,7 +378,7 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
         else
             return (
                 <Table
-                    tableTitle='Model packages'
+                    tableTitle={t('industrial_models.model.model_packages')}
                     multiSelect={false}
                     columnDefinitions={columnDefinitions}
                     items={modelPackageGroupItems}
@@ -412,7 +405,7 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
                 setModelPackageGroupItems(copyModelPackageGroupItems)
                 setProcessingModelPackageGroup(false);
             }, (error) => {
-                alert('Error occured, please check and try it again');
+                alert(t('industrial_models.common.error_occured'));
                 console.log(error);
                 setProcessingModelPackageGroup(false);
             }
@@ -422,12 +415,14 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
     const renderModelPackageGroupForm = () => {
         return (
             <Stack>
-                <FormField label='Name of model package group' controlId={uuidv4()}>
+                <Inline>
+                <div style = {{width: '770px'}}>
                     <Input type='text' required={true} value={modelPackageGroupName} onChange={(event)=>{onChange('formFieldIdModelPackageGroup', event)}} />
-                </FormField>
-                <FormField controlId={uuidv4()}>
-                    <Button onClick={onCreateModelPackageGroup} loading={processingModelPackageGroup}>Create model package group</Button>
-                </FormField>
+                </div>
+                <div style = {{width: '250px'}}>
+                    <Button onClick={onCreateModelPackageGroup} loading={processingModelPackageGroup}>{t('industrial_models.model.create_model_package_group')}</Button>
+                </div>
+                </Inline>
             </Stack>
         )
     }
@@ -472,7 +467,7 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
                     setProcessingModelPackage(false);
                 })                
             }, (error) => {
-                alert('Error occured, please check and try it again');
+                alert(t('industrial_models.common.error_occured'));
                 console.log(error);
                 setProcessingModelPackage(false)
             });
@@ -481,14 +476,14 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
     const renderModelPackageForm = () => {
         return (
             <Stack>
-                <FormField label='Location of inference code image' description='Type the registry path where the inference code image is stored in Amazon ECR.' controlId={uuidv4()}>
+                <FormField label={t('industrial_models.model.inference_code_image_location')} description={t('industrial_models.model.inference_code_image_location_description')} controlId={uuidv4()}>
                     <Input type='text' required={true} value={containerIamge} onChange={(event)=>{onChange('formFieldIdContainerImage', event)}} />
                 </FormField>
-                <FormField label='Location of model artifacts' description='Type the URL where model artifacts are stored in S3.' controlId={uuidv4()}>
+                <FormField label={t('industrial_models.model.model_artifacts_location')} description={t('industrial_models.model.model_artifacts_location_description')} controlId={uuidv4()}>
                     <Input type='text' required={true} value={modelDataUrl} onChange={(event)=>{onChange('formFieldIdModelDataUrl', event)}} />
                 </FormField>
                 <FormField controlId={uuidv4()}>
-                    <Button onClick={onCreateModelPackage} loading={processingModelPackage}>Create model package</Button>
+                    <Button onClick={onCreateModelPackage} loading={processingModelPackage}>{t('industrial_models.model.create_model_package')}</Button>
                 </FormField>
             </Stack>
         )
@@ -508,16 +503,16 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
 
     const renderEnvironment = () => {
         return (
-            <ExpandableSection header="Environment variables - optional">
+            <ExpandableSection header={t('industrial_models.model.environments')}>
                 <Stack>
                     {
                         environments.length>0 && 
                         <Grid container spacing={{ xs: 1, md: 1 }} columns={{ xs: 4, sm: 8, md: 12 }}>
                             <Grid item xs={2} sm={4} md={4}>
-                                <Text> Key </Text>
+                                <Text> {t('industrial_models.common.key')} </Text>
                             </Grid>
                             <Grid item xs={2} sm={4} md={4}>
-                                <Text> Value </Text> 
+                                <Text> {t('industrial_models.common.value')} </Text> 
                             </Grid>
                         </Grid>
                     }
@@ -531,12 +526,12 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
                                     <Input type='text' value={item.value} onChange={(event) => onChangeEnvironment('value', event, index)}/>
                                 </Grid>
                                 <Grid item xs={2} sm={4} md={4}>
-                                    <Button onClick={() => onRemoveEnvironmentVariable(index)}>Remove</Button>
+                                    <Button onClick={() => onRemoveEnvironmentVariable(index)}>{t('industrial_models.common.remove')}</Button>
                                 </Grid>
                             </Grid>
                         ))
                     }
-                    <Button variant='link' size='large' onClick={onAddEnvironmentVairable}>Add environment variable</Button>
+                    <Button variant='link' size='large' onClick={onAddEnvironmentVairable}>{t('industrial_models.model.add_environment_variable')}</Button>
                 </Stack>
             </ExpandableSection>  
         )
@@ -545,18 +540,22 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
     const renderModelFormContent = () => {
         if(containerInputType === '0')
             return (
-                <FormSection header='Container definition'>
-                    <ExpandableSection header="Container input options" expanded={true}>{renderContainerInputOptions()}</ExpandableSection>  
-                    <ExpandableSection header="Provide model artifacts and inference image options" expanded={true}>
+                <FormSection header={t('industrial_models.model.container_definition')}>
+                    <ExpandableSection header={t('industrial_models.model.container_input_options')} expanded={true}>{renderContainerInputOptions()}</ExpandableSection>  
+                    <ExpandableSection header={t('industrial_models.model.container_model_options')} expanded={true}>
                         <Stack>
                             <FormField controlId={uuidv4()}>
                                 {renderContainerModelOptions()}
                             </FormField>
-                            <FormField label='Location of inference code image' description='Type the registry path where the inference code image is stored in Amazon ECR.' controlId={uuidv4()}>
-                                <Input type='text' required={true} value={containerIamge} onChange={(event)=>{onChange('formFieldIdContainerImage', event)}} />
+                            <FormField label={t('industrial_models.model.inference_code_image_location')} description={t('industrial_models.model.inference_code_image_location_description')} controlId={uuidv4()}>
+                                <div style = {{width: '770px'}}>
+                                    <Input type='text' required={true} value={containerIamge} onChange={(event)=>{onChange('formFieldIdContainerImage', event)}} />
+                                </div>
                             </FormField>
-                            <FormField label='Location of model artifacts' description='Type the URL where model artifacts are stored in S3.' controlId={uuidv4()}>
-                                <Input type='text' required={true} value={modelDataUrl} onChange={(event)=>{onChange('formFieldIdModelDataUrl', event)}} />
+                            <FormField label={t('industrial_models.model.model_artifacts_location')} description={t('industrial_models.model.model_artifacts_location_description')} controlId={uuidv4()}>
+                                <div style = {{width: '770px'}}>
+                                    <Input type='text' required={true} value={modelDataUrl} onChange={(event)=>{onChange('formFieldIdModelDataUrl', event)}} />
+                                </div>
                             </FormField>
                         </Stack>
                     </ExpandableSection>
@@ -567,16 +566,16 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
             )
         else
             return (
-                <FormSection header='Container definition'>
+                <FormSection header={t('industrial_models.model.container_definition')}>
                     {
                         !wizard && 
-                        <ExpandableSection header="Container input options" expanded={true}>{renderContainerInputOptions()}</ExpandableSection> 
+                        <ExpandableSection header={t('industrial_models.model.container_input_options')} expanded={true}>{renderContainerInputOptions()}</ExpandableSection> 
                     }
                     {renderModelPackageTable()}
-                    <ExpandableSection header="Create a new model package group">{renderModelPackageGroupForm()}</ExpandableSection>
+                    <ExpandableSection header={t('industrial_models.model.create_model_package_group')}>{renderModelPackageGroupForm()}</ExpandableSection>
                     {
                         (props.pipelineType === '2' || props.pipelineType === '3') &&
-                        <ExpandableSection header="Create a new model package">{renderModelPackageForm()}</ExpandableSection>
+                        <ExpandableSection header={t('industrial_models.model.create_model_package')}>{renderModelPackageForm()}</ExpandableSection>
                     }
                     {
                         renderEnvironment()
@@ -588,7 +587,6 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
     if(wizard) {
         return (
             <Stack>
-                {renderModelSetting()}
                 {renderModelFormContent()}
                 {renderModelTags()}
             </Stack>
@@ -597,12 +595,12 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
     else {
         return (
             <Form
-                header='Create model'
-                description='To deploy a model to Amazon SageMaker, first create the model by providing the location of the model artifacts and inference code.'
+                header={t('industrial_models.model.create_model')}
+                description={t('industrial_models.model.create_model_description')}
                 actions={
                     <div>
-                        <Button variant='link' onClick={onCancel}>Cancel</Button>
-                        <Button variant='primary' onClick={onSubmit} loading={processing}>Submit</Button>
+                        <Button variant='link' onClick={onCancel}>{t('industrial_models.common.cancel')}</Button>
+                        <Button variant='primary' onClick={onSubmit} loading={processing}>{t('industrial_models.common.submit')}</Button>
                     </div>
                 }>            
                 {renderModelSetting()}

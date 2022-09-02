@@ -20,6 +20,7 @@ import TextsToolkit from '../SideNavigationBar/TextsToolkit/TextsToolkit';
 import { TextImageData } from '../../../store/texts/types';
 import { Box, Dialog } from '@material-ui/core';
 import { LoadingIndicator } from 'aws-northstar';
+import { useTranslation } from "react-i18next";
 
 interface IProps {
     windowSize: ISize;
@@ -62,6 +63,8 @@ const EditorContainer: React.FC<IProps> = (
     const [ leftTabStatus, setLeftTabStatus ] = useState(true);
     const [ rightTabStatus, setRightTabStatus ] = useState(true);
     const [ processing, setProcessing ] = useState(false);
+
+    const { t } = useTranslation();
 
     const calculateEditorSize = (): ISize => {
         if (windowSize) {
@@ -208,7 +211,7 @@ const EditorContainer: React.FC<IProps> = (
                     processing && 
                     <Dialog open={true} style={{zIndex: 4000}}>
                         <Box p={3}>
-                            <LoadingIndicator label='Processing...'/>
+                            <LoadingIndicator label={t('industrial_models.demo.processing')}/>
                         </Box>
                     </Dialog>
                 }

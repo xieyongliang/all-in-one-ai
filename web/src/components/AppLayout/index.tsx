@@ -15,13 +15,16 @@
  ******************************************************************************************************************** */
 import { FunctionComponent, ReactNode, useEffect, useMemo, useState } from 'react';
 import AppLayoutBase from 'aws-northstar/layouts/AppLayout';
-import HeaderBase from 'aws-northstar/components/Header';
 import SideNavigationBase, { SideNavigationItem, SideNavigationItemType } from 'aws-northstar/components/SideNavigation';
 import { IIndustrialModel } from '../../store/industrialmodels/reducer';
 import { ALGORITHMS } from '../Data/data';
 import { SCENARIOS } from '../Data/data';
 import { connect } from 'react-redux';
 import { AppState } from '../../store';
+import { useTranslation } from "react-i18next";
+import { Box, Select } from 'aws-northstar';
+import Header from "aws-northstar/components/Header";
+import { useCookies } from 'react-cookie';
 
 interface IProps {
     industrialModels : IIndustrialModel[];
@@ -30,23 +33,51 @@ interface IProps {
     children: ReactNode;
 }
 
+const languages = [
+    { label: "中文", value: "ch" },
+    { label: "English", value: "en" },
+];
+
 const AppLayout: FunctionComponent<IProps> = ( {
     industrialModels,
     isLogin,
     env,
     children
 } ) => {
+    const  { i18n } = useTranslation();
+    const [ cookies, setCookie ] = useCookies();
+    const [ language, setLanguage ] = useState(cookies.language !== undefined? cookies.language : 'ch')
     const [ industrialModelItems, setIndustrialModelItems ] = useState<SideNavigationItem[]>([])
     const [ algorithmsItems, setAlgorithmsItems ] = useState<SideNavigationItem[]>([])
     const [ scenariosItems, setScenariosItems ] = useState<SideNavigationItem[]>([])
-    const Header = useMemo(
-        () => <HeaderBase title='All-In-One AI' logoPath='/ml.jpg' />,
-        []
-    );        
+
+    const onLanguageChange = (event) => {
+        console.log(event.target.value)
+        setLanguage(event.target.value);
+    };
+
+    const { t } = useTranslation();
+
+    const AppHeader = useMemo(() => {
+        return (
+            <Header
+                title={t('header')} 
+                rightContent={
+                    <Box display="flex" alignItems="center">
+                        <Select
+                            options = {languages}
+                            selectedOption = {languages.find((item) => item.value === language)}
+                            onChange={(event) => onLanguageChange(event)}
+                        />
+                    </Box>
+                }
+            />
+        )
+    }, [language, t]);
 
     useEffect(() => {
         var items = []
-        items.push({ text: 'Overview', type: SideNavigationItemType.LINK, href: '/imodels' })
+        items.push({ text: t('app_layout.overview'), type: SideNavigationItemType.LINK, href: '/imodels' })
         industrialModels.sort((itemModel1 : IIndustrialModel, itemModel2: IIndustrialModel) => {
             if(itemModel1.name > itemModel2.name)
                 return 1;
@@ -59,53 +90,60 @@ const AppLayout: FunctionComponent<IProps> = ( {
             items.push({text: item.name, type: SideNavigationItemType.LINK, href: `/imodels/${item.id}?tab=demo#sample`})
         })
         setIndustrialModelItems(items)
-     }, [industrialModels])
+     }, [industrialModels, t])
 
-     useEffect(() => {
+    useEffect(() => {
         var items = []
             ALGORITHMS.forEach((item) => {
                 if(item.type === 'single')
                     items.push({text: item.label, type: SideNavigationItemType.LINK, href: `/algorithms/${item.value}`})
             })
             setAlgorithmsItems(items)
-     }, [])
+    }, [])
 
-     useEffect(() => {
+    useEffect(() => {
         var items = []
             SCENARIOS.forEach((item) => {
                 items.push({text: item.label, type: SideNavigationItemType.LINK, href: `/scenarios/${item.value}`})
             })
             setScenariosItems(items)
-     }, [])     
+    }, [])     
+     
+    useEffect(() => {
+        console.log('8888888')
+        console.log(language)
+        i18n.changeLanguage(language);
+        setCookie('language', language, { path: '/' });
+     }, [ language, i18n, setCookie ])  
      
     const SideNavigation = useMemo(() => {
         return (
             <SideNavigationBase
-                header={{ text: 'Home', href: '/' }}
+                header={{ text: t('app_layout.home'), href: '/' }}
                 items={[
                     {
                         'type': SideNavigationItemType.SECTION,
-                        'text': 'Scenarios',
+                        'text': t('app_layout.scenarios'),
                         'items': scenariosItems
                     },
                     {
                         'type': SideNavigationItemType.SECTION,
-                        'text': 'Industrial models',
+                        'text': t('app_layout.industrial_models'),
                         'items': industrialModelItems
                     },
                     {
                         'type': SideNavigationItemType.SECTION,
-                        'text': 'Algorithms',
+                        'text': t('app_layout.algorithms'),
                         'items': algorithmsItems
                     }
                 ]}
             />
         );
-    }, [industrialModelItems, algorithmsItems, scenariosItems]);
+    }, [industrialModelItems, algorithmsItems, scenariosItems, t]);
 
     return (
         <
-            AppLayoutBase header={Header}
+            AppLayoutBase header={AppHeader}
             navigation={env['cognitoRegion'] === '' || env['cognitoRegion'] === undefined || isLogin ? SideNavigation : null}
         >
             {children}

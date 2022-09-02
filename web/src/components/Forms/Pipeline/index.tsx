@@ -18,6 +18,7 @@ import { IIndustrialModel } from '../../../store/industrialmodels/reducer';
 import { Box, Dialog } from '@material-ui/core';
 import { v4 as uuidv4 } from 'uuid';
 import DeployForm from '../Deploy';
+import { useTranslation } from "react-i18next";
 
 interface IProps {
     updatePipelineTypeAction: (pipelineType : string) => any;
@@ -56,6 +57,8 @@ const PipelineForm: FunctionComponent<IProps> = (props) => {
     const [ pipelineName, setPipelineName ] = useState('')
     const [ scriptMode, setScriptMode ] = useState(true)
     const [ processing, setProcessing ] = useState(false)
+
+    const { t } = useTranslation();
 
     const history = useHistory();
 
@@ -184,8 +187,8 @@ const PipelineForm: FunctionComponent<IProps> = (props) => {
         return (
             <RadioGroup onChange={onChangeContainerOptions}
                 items={[
-                    <RadioButton value='BYOS' checked={scriptMode}>Bring your own script.</RadioButton>, 
-                    <RadioButton value='BYOC' checked={!scriptMode}>Bring your own container.</RadioButton>,
+                    <RadioButton value='BYOS' checked={scriptMode}>{t('industrial_models.pipeline.pipeline_option_byos')}</RadioButton>, 
+                    <RadioButton value='BYOC' checked={!scriptMode}>{t('industrial_models.pipeline.pipeline_option_byoc')}</RadioButton>,
                 ]}
             />
         )
@@ -195,7 +198,7 @@ const PipelineForm: FunctionComponent<IProps> = (props) => {
     const renderPipeline = () => {
         return (
             <Stack>
-                <FormField label='Pipeline name' controlId={uuidv4()}>
+                <FormField label={t('industrial_models.pipeline.pipeline_name')} controlId={uuidv4()}>
                     <Input type='text' value={pipelineName} onChange={(event) => onChange('formFieldIdPipelineName', event)}/>
                 </FormField>
                 {
@@ -204,7 +207,7 @@ const PipelineForm: FunctionComponent<IProps> = (props) => {
                         {renderPipelineOptions()}
                     </FormField>
                 }
-                <FormField label='Pipeline option' controlId={uuidv4()}>
+                <FormField label={t('industrial_models.pipeline.pipeline_options')} controlId={uuidv4()}>
                     {renderContainerOptions()}
                 </FormField>
             </Stack>
@@ -213,17 +216,17 @@ const PipelineForm: FunctionComponent<IProps> = (props) => {
 
     const steps = [
         {
-            title: 'Pipeline',
+            title: t('industrial_models.pipelines'),
             content: 
                 renderPipeline()
         },
         {
-            title: 'Train',
+            title: t('industrial_models.training_jobs'),
             content: 
                 <TrainingJobForm wizard={true}/>
         },
         {
-            title: 'Deploy',
+            title: t('industrial_models.deploys'),
             content: 
                 <DeployForm wizard={true}/>
         }
@@ -231,32 +234,32 @@ const PipelineForm: FunctionComponent<IProps> = (props) => {
 
     const steps0 = [
         {
-            title: 'Pipeline',
+            title: t('industrial_models.pipelines'),
             content: 
                 renderPipeline()
         },
         {
-            title: 'Training job',
+            title: t('industrial_models.training_jobs'),
             content: 
                 <TrainingJobForm wizard={true}/>
         },
         {
-            title: 'Model',
+            title: t('industrial_models.models'),
             content: 
                 <ModelForm wizard={true}/>
         },
         {
-            title: 'Endpoint',
+            title: t('industrial_models.endpoints'),
             content: 
                 <EndpointForm wizard={true}/>
         },
         {
-            title: 'Greengrass component',
+            title: t('industrial_models.greengrass_components'),
             content: 
                 <GreengrassComponentForm wizard={true}/>
         },
         {
-            title: 'Greengrass deployment',
+            title: t('industrial_models.greengrass_deployments'),
             content: 
                 <GreengrassDeploymentForm wizard={true}/>
         }
@@ -264,22 +267,22 @@ const PipelineForm: FunctionComponent<IProps> = (props) => {
 
     const steps1 = [
         {
-            title: 'Pipeline',
+            title: t('industrial_models.pipelines'),
             content: 
                 renderPipeline()
         },
-        algorithm === 'yolov5' && {
-            title: 'Training job',
+        {
+            title: t('industrial_models.training_jobs'),
             content: 
                 <TrainingJobForm wizard={true}/>
         },
         {
-            title: 'Model',
+            title: t('industrial_models.models'),
             content: 
                 <ModelForm wizard={true}/>
         },
         {
-            title: 'Endpoint',
+            title: t('industrial_models.endpoints'),
             content: 
                 <EndpointForm wizard={true}/>
         }  
@@ -287,27 +290,27 @@ const PipelineForm: FunctionComponent<IProps> = (props) => {
 
     const steps2 = [
         {
-            title: 'Pipeline',
+            title: t('industrial_models.pipelines'),
             content: 
                 renderPipeline()
         },
         {
-            title: 'Model',
+            title: t('industrial_models.models'),
             content: 
                 <ModelForm wizard={true}/>
         },
         {
-            title: 'Endpoint',
+            title: t('industrial_models.endpoints'),
             content: 
                 <EndpointForm wizard={true}/>
         },
         {
-            title: 'Greengrass component',
+            title: t('industrial_models.greengrass_components'),
             content: 
                 <GreengrassComponentForm wizard={true}/>
         },
         {
-            title: 'Greengrass deployment',
+            title: t('industrial_models.greengrass_deployments'),
             content: 
                 <GreengrassDeploymentForm wizard={true}/>
         }    
@@ -315,17 +318,17 @@ const PipelineForm: FunctionComponent<IProps> = (props) => {
     
     const steps3 = [
         {
-            title: 'Pipeline',
+            title: t('industrial_models.pipelines'),
             content: 
                 renderPipeline()
         },
         {
-            title: 'Model',
+            title: t('industrial_models.models'),
             content: 
                 <ModelForm wizard={true}/>
         },
         {
-            title: 'Endpoint',
+            title: t('industrial_models.endpoints'),
             content: 
                 <EndpointForm wizard={true}/>
         } 
@@ -338,7 +341,7 @@ const PipelineForm: FunctionComponent<IProps> = (props) => {
                     {
                         processing && <Dialog open={true}>
                             <Box p={3}>
-                                <LoadingIndicator label='Processing...'/>
+                                <LoadingIndicator label={t('industrial_models.demo.processing')}/>
                             </Box>
                         </Dialog>
                     }
@@ -354,7 +357,7 @@ const PipelineForm: FunctionComponent<IProps> = (props) => {
                     {
                         processing && <Dialog open={true}>
                             <Box p={3}>
-                                <LoadingIndicator label='Processing...'/>
+                                <LoadingIndicator label={t('industrial_models.demo.processing')}/>
                             </Box>
                         </Dialog>
                     }
@@ -370,7 +373,7 @@ const PipelineForm: FunctionComponent<IProps> = (props) => {
                     {
                         processing && <Dialog open={true}>
                             <Box p={3}>
-                                <LoadingIndicator label='Processing...'/>
+                                <LoadingIndicator label={t('industrial_models.demo.processing')}/>
                             </Box>
                         </Dialog>
                     }
@@ -386,7 +389,7 @@ const PipelineForm: FunctionComponent<IProps> = (props) => {
                     {
                         processing && <Dialog open={true}>
                             <Box p={3}>
-                                <LoadingIndicator label='Processing...'/>
+                                <LoadingIndicator label={t('industrial_models.demo.processing')}/>
                             </Box>
                          </Dialog>
                     }
@@ -402,7 +405,7 @@ const PipelineForm: FunctionComponent<IProps> = (props) => {
                     {
                         processing && <Dialog open={true}>
                             <Box p={3}>
-                                <LoadingIndicator label='Processing...'/>
+                                <LoadingIndicator label={t('industrial_models.demo.processing')}/>
                             </Box>
                         </Dialog>
                     }

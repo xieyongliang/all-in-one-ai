@@ -24,7 +24,7 @@ export const COLORS : string[] = [
 ]
 
 export const APIS = {
-    'create_training_job': {'function': 'all_in_one_ai_create_training_job_yolov5', 'method': 'POST'},
+    'create_training_job': {'function': 'all_in_one_ai_create_training_job', 'method': 'POST'},
     'describe_training_job': {'function': 'all_in_one_ai_describe_training_job', 'method': 'GET'},
     'create_transform_job': {'function': 'all_in_one_ai_create_transform_job', 'method': 'POST'},
     'describe_transform_job': {'function': 'all_in_one_ai_describe_transform_job', 'method': 'GET'},

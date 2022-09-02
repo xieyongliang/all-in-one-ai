@@ -5,17 +5,25 @@ import { PathParams } from '../../../Interfaces/PathParams';
 import SampleTextForm from '../../SampleText'
 import LocalTextOutputTextForm from '../../LocalText/text';
 import { v4 as uuidv4 } from 'uuid';
+import { connect } from 'react-redux';
+import { AppState } from '../../../../store';
+import { IIndustrialModel } from '../../../../store/industrialmodels/reducer';
+import { useTranslation } from "react-i18next";
 
 interface IProps {
+    industrialModels: IIndustrialModel[];
     advancedMode: boolean;
     onAdvancedModeChange : (checked) => any;
 }
 
-const CPTDemoForm: FunctionComponent<IProps> = (
+const GBASADemoForm: FunctionComponent<IProps> = (
     {
+        industrialModels,
         advancedMode,
         onAdvancedModeChange
     }) => {    
+    const { t } = useTranslation();
+
     const history = useHistory();
 
     var params : PathParams = useParams();
@@ -33,8 +41,8 @@ const CPTDemoForm: FunctionComponent<IProps> = (
         return (
             <RadioGroup onChange={onChangeOptions}
                 items={[
-                    <RadioButton value='sample' checked={demoOption === 'sample'} >Realtime inference with sample data</RadioButton>,
-                    <RadioButton value='local' checked={demoOption === 'local'} >Realtime inference with local data</RadioButton>,
+                    <RadioButton value='sample' checked={demoOption === 'sample'} >{t('industrial_models.demo.demo_option_sample')}</RadioButton>,
+                    <RadioButton value='local' checked={demoOption === 'local'} >{t('industrial_models.demo.demo_option_local')}</RadioButton>,
                 ]}
             />
         )
@@ -42,18 +50,24 @@ const CPTDemoForm: FunctionComponent<IProps> = (
 
     return (
         <Stack>
-            <Container title = 'Demo options'>
+            <Container title = {t('industrial_models.demo.demo_options')}>
                 <FormField controlId={uuidv4()}>            
                     {renderDemoOptions()}
                 </FormField>
                 <FormField controlId={uuidv4()}>
-                    <Toggle label='Advanced mode' checked={advancedMode} onChange={onAdvancedModeChange}/>
+                    <Toggle label = {t('industrial_models.demo.advanced_mode')} checked={advancedMode} onChange={onAdvancedModeChange}/>
                 </FormField>
             </Container>
-            {demoOption === 'sample' && <SampleTextForm input_format='text' output_format='text' header='Text summarization' train_framework='huggingface' deploy_framework='pytorch'/>}
-            {demoOption === 'local' && <LocalTextOutputTextForm header='Text summarization' train_framework='huggingface' deploy_framework='pytorch'/>}
+            {demoOption === 'sample' && <SampleTextForm input_format='text' output_format='text' header={industrialModels.find((item) => item.id === params.id).name} train_framework='huggingface' deploy_framework='pytorch'/>}
+            {demoOption === 'local' && <LocalTextOutputTextForm header={industrialModels.find((item) => item.id === params.id).name} train_framework='huggingface' deploy_framework='pytorch'/>}
         </Stack>
     )
 }
 
-export default CPTDemoForm;
+const mapStateToProps = (state: AppState) => ({
+    industrialModels : state.industrialmodel.industrialModels
+});
+
+export default connect(
+    mapStateToProps
+)(GBASADemoForm);

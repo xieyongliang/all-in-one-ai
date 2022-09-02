@@ -15,8 +15,9 @@ import {LabelName} from "../../../../store/labels/types";
 import {LabelsSelector} from "../../../../store/selectors/LabelsSelector";
 import {PopupWindowType} from "../../../../data/enums/PopupWindowType";
 import {updateActivePopupType} from "../../../../store/general/actionCreators";
+import { withTranslation, WithTranslation } from "react-i18next";
 
-interface IProps {
+interface IProps extends WithTranslation {
     size: ISize;
     isActive: boolean;
     isHighlighted: boolean;
@@ -169,7 +170,7 @@ class LabelInputField extends React.Component<IProps, IState> {
                                  ref={ref => this.dropdownLabel = ref}
                                  onClick={this.openDropdown}
                             >
-                                {value ? value.name : "Select label"}
+                                {value ? value.name : ''}
                             </div>
                             {this.state.isOpen && <div
                                 className="Dropdown"
@@ -213,4 +214,4 @@ const mapStateToProps = (state: AppState) => ({});
 export default connect(
     mapStateToProps,
     mapDispatchToProps
-)(LabelInputField);
+)(withTranslation()(LabelInputField));

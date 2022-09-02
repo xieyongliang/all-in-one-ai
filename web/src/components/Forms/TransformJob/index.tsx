@@ -9,6 +9,7 @@ import { connect } from 'react-redux';
 import { IIndustrialModel } from '../../../store/industrialmodels/reducer';
 import Grid from '@mui/material/Grid';
 import { v4 as uuidv4 } from 'uuid';
+import { useTranslation } from "react-i18next";
 
 interface IProps {
     industrialModels : IIndustrialModel[];
@@ -124,6 +125,8 @@ const TransformJobForm: FunctionComponent<IProps> = (props) => {
     const [ tags, setTags ] = useState([{key:'', value:''}])
     const [ environments, setEnvironments ] = useState([])
     const [ processing, setProcessing ] = useState(false)
+
+    const { t } = useTranslation();
 
     const history = useHistory();
 
@@ -244,7 +247,7 @@ const TransformJobForm: FunctionComponent<IProps> = (props) => {
             .then((response) => {
                 history.goBack()
             }, (error) => {
-                alert('Error occured, please check and try it again');
+                alert(t('industrial_models.common.error_occured'));
                 console.log(error);
                 setProcessing(false);
             });
@@ -256,13 +259,12 @@ const TransformJobForm: FunctionComponent<IProps> = (props) => {
     
     const renderTransformJobConfiguration = () => {
         return (
-            <FormSection header='Job configuration'>
-                <FormField label='Job name' controlId={uuidv4()}>
+            <FormSection header={t('industrial_models.transform_job.job_settings')}>
+                <FormField label={t('industrial_models.transform_job.job_name')} hintText={t('industrial_models.transform_job.job_name_hint')} controlId={uuidv4()}>
                     <Input value = {transformJobName} required={true} onChange={(event) => onChange('formFieldIdTransformJobName', event)}> </Input>
                 </FormField>
-                <FormField label='Model name' controlId={uuidv4()}>
+                <FormField label={t('industrial_models.transform_job.model_name')} controlId={uuidv4()}>
                     <Select
-                        placeholder='Choose an option'
                         options={modelOptions}
                         selectedOption={selectedModelName}
                         onChange={(event) => onChange('formFieldIdModelName', event)}
@@ -270,15 +272,14 @@ const TransformJobForm: FunctionComponent<IProps> = (props) => {
                 </FormField>
                 <Grid container spacing={{ xs: 2, md: 2 }} columns={{ xs: 4, sm: 8, md: 8 }}>
                     <Grid item xs={2} sm={4} md={4}>
-                        <Text>Instance type</Text>
+                        <Text>{t('industrial_models.transform_job.instance_type')}</Text>
                     </Grid>
                     <Grid item xs={2} sm={2} md={2}>
-                        <Text>Instance count</Text>
+                        <Text>{t('industrial_models.transform_job.instance_count')}</Text>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
                         <div style={{marginTop: '-20px', marginBottom: '20px', width: '515px'}}>
                             <Select
-                                placeholder='Choose an option'
                                 options={instanceTypeOptions}
                                 selectedOption={selectedInstanceType}
                                 onChange={(event) => onChange('formFieldIdInstanceType', event)}
@@ -292,7 +293,7 @@ const TransformJobForm: FunctionComponent<IProps> = (props) => {
                     </Grid>
                     <Grid item xs={2} sm={3} md={3}>
                         <div style={{marginTop: '-20px'}}>
-                            <FormField label='Max concurrent transforms - optional' controlId={uuidv4()} description='Maximum number of parallel requests that can be launched on a single instance.'>
+                            <FormField label={t('industrial_models.transform_job.max_concurrent_transform')} description={t('industrial_models.transform_job.max_concurrent_transform_description')} controlId={uuidv4()}>
                                 <div style={{width: '382px'}}>
                                     <Input value = {maxConcurrentTransforms} type={'number'} required={true} onChange={(event) => onChange('max_concurrent_transforms', event)}/>
                                 </div>
@@ -301,7 +302,7 @@ const TransformJobForm: FunctionComponent<IProps> = (props) => {
                     </Grid>
                     <Grid item xs={2} sm={3} md={3}>
                         <div style={{marginTop: '-20px'}}>
-                            <FormField label='Max payload size (MB) - optional' controlId={uuidv4()} description='Maximum size allowed for a mini-batch. Must be greater than a single record.'>
+                            <FormField label={t('industrial_models.transform_job.max_payload_size_in_mb')} description={t('industrial_models.transform_job.max_payload_size_in_mb_description')} controlId={uuidv4()}>
                                 <div style={{width: '382px'}}>
                                     <Input value = {maxPayloadInMB} type={'number'} required={true} onChange={(event) => onChange('formFieldIdMaxPayloadInMB', event)}/>
                                 </div>
@@ -309,10 +310,9 @@ const TransformJobForm: FunctionComponent<IProps> = (props) => {
                         </div>
                     </Grid>
                     <Grid item xs={2} sm={8} md={8}>
-                        <FormField label='Batch strategy - optional' controlId={uuidv4()} description='Maximum number of records per mini-batch.'>
+                        <FormField label={t('industrial_models.transform_job.batch_strategy')} description={t('industrial_models.transform_job.batch_strategy_description')} controlId={uuidv4()}>
                             <div style={{width: '382px'}}>
                                 <Select
-                                    placeholder='Choose an option'
                                     options={batchStrategyOptions}
                                     selectedOption={selectedBatchStrategy}
                                     onChange={(event) => onChange('formFieldIdBatchStrategy', event)}
@@ -321,14 +321,14 @@ const TransformJobForm: FunctionComponent<IProps> = (props) => {
                         </FormField>
                     </Grid>
                     <Grid item xs={2} sm={3} md={3}>
-                        <FormField label='Max invocation retries - optional' controlId={uuidv4()} description='The maximum number of retries when invocation requests are failing. Minimum value of 0. Maximum value of 3.'>
+                        <FormField label={t('industrial_models.transform_job.max_invocation_retries')} description={t('industrial_models.transform_job.max_invocation_retries_description')} controlId={uuidv4()}>
                             <div style={{width: '382px'}}>
                                 <Input value = {invocationsTimeoutInSeconds} type={'number'} required={true} onChange={(event) => onChange('formFieldIdInvocationsMaxRetries', event)}/>
                             </div>
                         </FormField>
                     </Grid>
                     <Grid item xs={2} sm={3} md={3}>
-                        <FormField label='Invocation timeout in seconds - optional' controlId={uuidv4()} description='The timeout value in seconds for an invocation request. Minimum value of 1. Maximum value of 3600.'>
+                        <FormField label={t('industrial_models.transform_job.invocation_timeout_in_seconds')} description={t('industrial_models.transform_job.invocation_timeout_in_seconds_description')} controlId={uuidv4()}>
                             <div style={{width: '382px'}}>
                                 <Input value = {invocationsMaxRetries} type={'number'} required={true} onChange={(event) => onChange('formFieldIdInvocationsTimeoutInSeconds', event)}/>
                             </div>
@@ -341,18 +341,17 @@ const TransformJobForm: FunctionComponent<IProps> = (props) => {
 
     const renderTransformJobInputDataConfiguration = () => {
         return (
-            <FormSection header='Input data configuration'>
+            <FormSection header={t('industrial_models.transform_job.input_data_configuration')}>
                 <Grid container spacing={{ xs: 2, md: 2 }} columns={{ xs: 4, sm: 8, md: 8 }}>
                     <Grid item xs={2} sm={4} md={4}>
-                        <Text>S3 data type</Text>
+                        <Text>{t('industrial_models.transform_job.s3_data_type')}</Text>
                     </Grid>
                     <Grid item xs={2} sm={2} md={2}>
-                        <Text>Split type</Text>
+                        <Text>{t('industrial_models.transform_job.split_type')}</Text>
                     </Grid>
                     <Grid item xs={2} sm={3} md={3}>
                         <div style={{marginTop: '-20px', marginBottom: '20px', width: '382px'}}>
                             <Select
-                                placeholder='Choose an option'
                                 options={s3DateTypeOptions}
                                 selectedOption={selectedS3DataType}
                                 onChange={(event) => onChange('formFieldIdS3DataType', event)}
@@ -362,7 +361,6 @@ const TransformJobForm: FunctionComponent<IProps> = (props) => {
                     <Grid item xs={2} sm={3} md={3}>
                         <div style={{marginTop: '-20px', marginBottom: '20px', width: '382px'}}>
                             <Select
-                                placeholder='Choose an option'
                                 options={splitTypeOptions}
                                 selectedOption={selectedSplitType}
                                 onChange={(event) => onChange('formFieldIdSplitType', event)}
@@ -371,10 +369,9 @@ const TransformJobForm: FunctionComponent<IProps> = (props) => {
                     </Grid>
                     <Grid item xs={2} sm={8} md={8}>
                         <div style={{marginTop: '-20px'}}>
-                            <FormField label='Compression' controlId={uuidv4()}>
+                            <FormField label={t('industrial_models.transform_job.compression')} controlId={uuidv4()}>
                                 <div style={{width: '780px'}}>
                                     <Select
-                                        placeholder='Choose an option'
                                         options={compressionOptions}
                                         selectedOption={selectedCompressionType}
                                         onChange={(event) => onChange('formFieldIdCompressionType', event)}
@@ -384,20 +381,19 @@ const TransformJobForm: FunctionComponent<IProps> = (props) => {
                         </div>
                     </Grid>
                     <Grid item xs={2} sm={8} md={8}>
-                        <FormField label='S3 location' controlId={uuidv4()}>
-                            <Input type='text' value={inputS3Uri} placeholder='S3Uri' required={true} onChange={(event) => onChange('formFieldIdInputS3Uri', event)}/>
-                        </FormField>
-                    </Grid>
-                    <Grid item xs={2} sm={8} md={8}>
-                        <FormField label='Content type - optional' controlId={uuidv4()}>
+                        <FormField label={t('industrial_models.transform_job.content_type')} controlId={uuidv4()}>
                             <div style={{width: '780px'}}>
                                 <Select
-                                    placeholder='Choose an option'
                                     options={contentTypeOptions}
                                     selectedOption={selectedContentType}
                                     onChange={(event) => onChange('formFieldIdContentType', event)}
                                 />
                             </div>
+                        </FormField>
+                    </Grid>
+                    <Grid item xs={2} sm={8} md={8}>
+                        <FormField label={t('industrial_models.transform_job.s3_location')} controlId={uuidv4()}>
+                            <Input type='text' value={inputS3Uri} placeholder='S3Uri' required={true} onChange={(event) => onChange('formFieldIdInputS3Uri', event)}/>
                         </FormField>
                     </Grid>
                 </Grid>
@@ -407,18 +403,17 @@ const TransformJobForm: FunctionComponent<IProps> = (props) => {
 
     const renderTransformJobOutputDataConfiguration = () => {
         return (
-            <FormSection header='Output data configuration'>
+            <FormSection header={t('industrial_models.transform_job.output_data_configuration')}>
                 <Grid container spacing={{ xs: 2, md: 2 }} columns={{ xs: 4, sm: 8, md: 8 }}>
                     <Grid item xs={2} sm={8} md={8}>
-                        <FormField label='S3 output path' controlId={uuidv4()}>
+                        <FormField label={t('industrial_models.transform_job.s3_output_path')} controlId={uuidv4()}>
                             <Input type='text' value={outputS3Uri} placeholder='S3Uri' required={true} onChange={(event) => onChange('formFieldIdOutputS3Uri', event)}/>
                         </FormField>
                     </Grid>
                     <Grid item xs={2} sm={8} md={8}>
-                        <FormField label='Assemble with' controlId={uuidv4()}>
+                        <FormField label={t('industrial_models.transform_job.assemble_with')} controlId={uuidv4()}>
                             <div style={{width: '780px'}}>
                                 <Select
-                                    placeholder='Choose an option'
                                     options={assembleWithOptions}
                                     selectedOption={selectedAssembleWith}
                                     onChange={(event) => onChange('formFieldIdAssembleWith', event)}
@@ -427,7 +422,7 @@ const TransformJobForm: FunctionComponent<IProps> = (props) => {
                         </FormField>
                     </Grid>
                     <Grid item xs={2} sm={8} md={8}>
-                        <FormField label='Accept - optional' controlId={uuidv4()}>
+                        <FormField label={t('industrial_models.transform_job.accept')} controlId={uuidv4()}>
                             <Input type='text' value={accept} required={true} onChange={(event) => onChange('formFieldIdAccept', event)}/>
                         </FormField>
                     </Grid>
@@ -438,17 +433,16 @@ const TransformJobForm: FunctionComponent<IProps> = (props) => {
 
     const renderTransformJobFilterAndDataJoins = () => {
         return (
-            <FormSection header='Input/output filtering and data joins - optional'>
+            <FormSection header={t('industrial_models.transform_job.filtering_and_data_joins')}>
                 <Grid container spacing={{ xs: 2, md: 2 }} columns={{ xs: 4, sm: 8, md: 8 }}>
                     <Grid item xs={2} sm={8} md={8}>
-                        <FormField label='Input filter' controlId={uuidv4()} description='Filter input data prior to transform. Leave blank if you want to use all of the input source data.'>
+                        <FormField label={t('industrial_models.transform_job.input_filter')} description={t('industrial_models.transform_job.input_filter_description')} hintText={t('industrial_models.transform_job.input_filter_hint')} controlId={uuidv4()}>
                             <Input type='text' value={inputFilter} required={true} onChange={(event) => onChange('formFieldIdInputFilter', event)}/>
                         </FormField>
                     </Grid>
                     <Grid item xs={2} sm={8} md={8}>
-                        <FormField label='Join source' controlId={uuidv4()} description='Choose the source of data to join with your output. Use Output filter to specify the final output.'>
+                        <FormField label={t('industrial_models.transform_job.join_source')} description={t('industrial_models.transform_job.join_source_description')} controlId={uuidv4()}>
                             <Select
-                                placeholder='Choose an option'
                                 options={joinSourceOptions}
                                 selectedOption={selectedJoinSource}
                                 onChange={(event) => onChange('formFieldIdJoinSource', event)}
@@ -456,7 +450,7 @@ const TransformJobForm: FunctionComponent<IProps> = (props) => {
                         </FormField>
                     </Grid>
                     <Grid item xs={2} sm={8} md={8}>
-                        <FormField label='Output filter' controlId={uuidv4()} description='Filter output data after input/output join, if used. Leave blank if you want to use all of the output.'>
+                        <FormField label={t('industrial_models.transform_job.output_filter')} description={t('industrial_models.transform_job.output_filter_description')} hintText={t('industrial_models.transform_job.output_filter_hint')} controlId={uuidv4()}>
                             <Input type='text' value={outputFilter} required={true} onChange={(event) => onChange('formFieldIdOutputFilter', event)}/>
                         </FormField>
                     </Grid>
@@ -479,15 +473,15 @@ const TransformJobForm: FunctionComponent<IProps> = (props) => {
 
     const renderTransformJobEnvironment = () => {
         return (
-            <FormSection header='Environments - optional'>
+            <FormSection header={t('industrial_models.model.environments')}>
                 {
                     environments.length>0 && 
                     <Grid container spacing={{ xs: 2, md: 2 }} columns={{ xs: 4, sm: 8, md: 8 }}>
                         <Grid item xs={2} sm={2} md={2}>
-                            <Text> Key </Text>
+                            <Text> {t('industrial_models.common.key')} </Text>
                         </Grid>
                         <Grid item xs={2} sm={2} md={2}>
-                            <Text> Value </Text> 
+                            <Text> {t('industrial_models.common.value')} </Text> 
                         </Grid>
                         <Grid item xs={2} sm={2} md={2}>
                             <Text>  </Text>
@@ -504,12 +498,12 @@ const TransformJobForm: FunctionComponent<IProps> = (props) => {
                                 <Input type='text' value={environment.value}/>
                             </Grid>
                             <Grid item xs={2} sm={2} md={2}>
-                                <Button onClick={() => onRemoveEnvironment(index)}>Remove</Button>
+                                <Button onClick={() => onRemoveEnvironment(index)}>{t('industrial_models.common.remove')}</Button>
                             </Grid>
                         </Grid>
                     ))
                 }
-                <Button variant='link' size='large' onClick={onAddEnvironment}>Add environment</Button>
+                <Button variant='link' size='large' onClick={onAddEnvironment}>{t('industrial_models.model.add_environment_variable')}</Button>
             </FormSection>
         )
     }
@@ -528,15 +522,15 @@ const TransformJobForm: FunctionComponent<IProps> = (props) => {
 
     const renderTransformJobTag = () => {
         return (
-            <FormSection header='Tags - optional'>
+            <FormSection header={t('industrial_models.common.tags')}>
                 {
                     tags.length>0 && 
                     <Grid container spacing={{ xs: 2, md: 2 }} columns={{ xs: 4, sm: 8, md: 8 }}>
                         <Grid item xs={2} sm={2} md={2}>
-                            <Text> Key </Text>
+                            <Text> {t('industrial_models.common.key')} </Text>
                         </Grid>
                         <Grid item xs={2} sm={2} md={2}>
-                            <Text> Value </Text> 
+                            <Text> {t('industrial_models.common.value')} </Text> 
                         </Grid>
                         <Grid item xs={2} sm={2} md={2}>
                             <Text>  </Text>
@@ -553,28 +547,27 @@ const TransformJobForm: FunctionComponent<IProps> = (props) => {
                                 <Input type='text' value={tag.value}/>
                             </Grid>
                             <Grid item xs={2} sm={2} md={2}>
-                                <Button onClick={() => onRemoveTag(index)}>Remove</Button>
+                                <Button onClick={() => onRemoveTag(index)}>{t('industrial_models.common.remove')}</Button>
                             </Grid>
                         </Grid>
                     ))
                 }
-                <Button variant='link' size='large' onClick={onAddTag}>Add tag</Button>
+                <Button variant='link' size='large' onClick={onAddTag}>{t('industrial_models.common.add_tag')}</Button>
             </FormSection>
         )
     }
 
     return (
         <Form
-            header='Create batch transform job'
-            description='A transform job uses a model to transform data and stores the results at a specified location.'
+            header={t('industrial_models.transform_job.create_transform_job')}
+            description={t('industrial_models.transform_job.create_transform_job_description')}
             actions={
                 <div>
-                    <Button variant='link' onClick={onCancel}>Cancel</Button>
-                    <Button variant='primary' onClick={onSubmit} loading={processing}>Submit</Button>
+                    <Button variant='link' onClick={onCancel}>{t('industrial_models.common.cancel')}</Button>
+                    <Button variant='primary' onClick={onSubmit} loading={processing}>{t('industrial_models.common.submit')}</Button>
                 </div>
             }>
             { renderTransformJobConfiguration() }
-            { renderTransformJobEnvironment() }
             { renderTransformJobInputDataConfiguration() }
             { renderTransformJobOutputDataConfiguration() }
             { renderTransformJobFilterAndDataJoins() }

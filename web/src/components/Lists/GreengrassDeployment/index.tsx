@@ -1,16 +1,14 @@
 
 import { FunctionComponent, useCallback, useEffect, useState } from 'react';
 import { useHistory, useParams } from 'react-router-dom';
-import {Column} from 'react-table'
-import { Container, Link, Stack, Toggle, Button, StatusIndicator, Table} from 'aws-northstar';
+import { Column } from 'react-table'
+import { Stack, Button, StatusIndicator, Table} from 'aws-northstar';
 import Inline from 'aws-northstar/layouts/Inline';
-import SyntaxHighlighter from 'react-syntax-highlighter';
-import { github } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 import axios from 'axios';
-import JSZip from 'jszip';
 import { PathParams } from '../../Interfaces/PathParams';
 import { getUtcDate } from '../../Utils/Helper';
 import './index.scss'
+import { useTranslation } from "react-i18next";
 
 interface DataType {
     targetArn: string;
@@ -23,67 +21,39 @@ interface DataType {
 const GreengrassDeploymentList: FunctionComponent = () => {
     const [ greengrassDeploymentItems, setGreengrassDeploymentItems ] = useState([])
     const [ loading, setLoading ] = useState(true);
-    const [ sampleCode, setSampleCode ] = useState('')
-    const [ sampleConsole, setSampleConsole ] = useState('')
-    const [ visibleSampleCode, setVisibleSampleCode ] = useState(false)
-    
+
+    const { t } = useTranslation();
+
     const history = useHistory();
 
     var params : PathParams = useParams();
 
-    const getSourceCode = async (uri) => {
-        const response = await axios.get('/_file/download', {params: {uri: encodeURIComponent(uri)}, responseType: 'blob'})
-        return response.data
-    }
-
     const onRefresh = useCallback(() => {
         setLoading(true)
-        var cancel = false
-        const requests = [ axios.get('/function/all_in_one_ai_greengrass_create_deployment?action=code'), axios.get('/function/all_in_one_ai_create_deployment?action=console')];
-        axios.all(requests)
-        .then(axios.spread(function(response0, response1) {
-            getSourceCode(response0.data).then((data) => {
-                if(cancel) return;
-                var zip = new JSZip();
-                zip.loadAsync(data).then(async function(zipped) {
-                    zipped.file('lambda_function.py').async('string').then(function(data) {
-                        if(cancel) return;
-                        setSampleCode(data)
-                    })
-                })
+        axios.get(`/greengrass/deployment`, {params : {'industrial_model': params.id}})
+            .then((response) => {
+                var items = []
+                if(response.data.length === 0) {
+                    setGreengrassDeploymentItems(items);
+                    setLoading(false);
+                }
+                else
+                    for(let item of response.data) {
+                        items.push({targetArn: item.targetArn, revisionId: item.revisionId, deploymentId : item.deploymentId, creationTime: item.creationTimestamp, status: item.deploymentStatus})
+                        if(items.length === response.data.length) {
+                            setGreengrassDeploymentItems(items);
+                            setLoading(false);
+                        }
+                    }
+            }, (error) => {
+                console.log(error);
+                setLoading(false);
             });
-            setSampleConsole(response1.data)           
-        }));
-        return () => { 
-            cancel = true;
-        }
-    }, [])
+    }, [params.id])
 
     useEffect(() => {
         onRefresh()
-    }, [onRefresh]);
-
-    useEffect(() => {
-        setLoading(true)
-        axios.get(`/greengrass/deployment`, {params : {'industrial_model': params.id}})
-        .then((response) => {
-            var items = []
-            if(response.data.length === 0) {
-                setGreengrassDeploymentItems(items);
-                setLoading(false);
-            }
-            else
-                for(let item of response.data) {
-                    items.push({targetArn: item.targetArn, revisionId: item.revisionId, deploymentId : item.deploymentId, creationTime: item.creationTimestamp, status: item.deploymentStatus})
-                    if(items.length === response.data.length) {
-                        setGreengrassDeploymentItems(items);
-                        setLoading(false);
-                    }
-                }
-        }, (error) => {
-            console.log(error);
-        });
-    }, [params.id]);
+    }, [onRefresh]);    
 
     const onCreate = () => {
         history.push(`/imodels/${params.id}?tab=greengrassdeployment#create`)
@@ -95,7 +65,7 @@ const GreengrassDeploymentList: FunctionComponent = () => {
         {
             id: 'deployment_id',
             width: 400,
-            Header: 'Deployment id',
+            Header: t('industrial_models.greengrass_deployment.deployment_id'),
             accessor: 'deploymentId',
             Cell: ({ row  }) => {
                 if (row && row.original) {
@@ -107,19 +77,19 @@ const GreengrassDeploymentList: FunctionComponent = () => {
         {
             id: 'target_arn',
             width: 550,
-            Header: 'Target arn',
+            Header: t('industrial_models.greengrass_deployment.target_arn'),
             accessor: 'targetArn'
         },
         {
             id: 'revision_id',
             width: 200,
-            Header: 'Revision id',
+            Header: t('industrial_models.greengrass_deployment.revision_id'),
             accessor: 'revisionId'
         },
         {
             id: 'status',
             width: 100,
-            Header: 'status',
+            Header: t('industrial_models.common.status'),
             accessor: 'status',
             Cell: ({ row  }) => {
                 if (row && row.original) {
@@ -144,7 +114,7 @@ const GreengrassDeploymentList: FunctionComponent = () => {
         {
             id: 'deployment_created',
             width: 250,
-            Header: 'Deployment created',
+            Header: t('industrial_models.common.creation_time'),
             accessor: 'creationTime',
             Cell: ({ row  }) => {
                 if (row && row.original) {
@@ -158,10 +128,10 @@ const GreengrassDeploymentList: FunctionComponent = () => {
     const tableActions = (
         <Inline>
             <div className='tableaction'>
-                <Button icon="refresh" onClick={onRefresh} loading={loading}>Refresh</Button>
+                <Button icon="refresh" onClick={onRefresh} loading={loading}>{t('industrial_models.common.refresh')}</Button>
             </div>
             <div className='tableaction'>
-                <Button variant='primary' onClick={onCreate}>Create</Button>
+                <Button variant='primary' onClick={onCreate}>{t('industrial_models.common.create')}</Button>
             </div>
         </Inline>
     );
@@ -170,7 +140,7 @@ const GreengrassDeploymentList: FunctionComponent = () => {
         return (
             <Table
                 actionGroup={tableActions}
-                tableTitle='Greengrass deployments'
+                tableTitle={t('industrial_models.greengrass_deployments')}
                 multiSelect={false}
                 columnDefinitions={columnDefinitions}
                 items={greengrassDeploymentItems}
@@ -181,24 +151,9 @@ const GreengrassDeploymentList: FunctionComponent = () => {
         )
     }
 
-    const renderSampleCode = () => {
-        return (
-            <Container title = 'Sample code'>
-                <Toggle label={visibleSampleCode ? 'Show sample code' : 'Hide sample code'} checked={visibleSampleCode} onChange={(checked) => {setVisibleSampleCode(checked)}} />
-                <Link href={sampleConsole}>Open in AWS Lambda console</Link>
-                {
-                    visibleSampleCode && <SyntaxHighlighter language='python' style={github} showLineNumbers={true}>
-                        {sampleCode}
-                    </SyntaxHighlighter>
-                }
-            </Container>
-        )
-    }
-
     return (
         <Stack>
             {renderGreengrassDeploymentlList()}
-            {renderSampleCode()}
         </Stack>
     )
 }

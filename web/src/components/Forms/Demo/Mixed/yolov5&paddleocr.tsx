@@ -1,12 +1,25 @@
 import { FunctionComponent } from 'react';
-import { Stack, Container, RadioButton, RadioGroup } from 'aws-northstar';
+import { Stack, Container, RadioButton, RadioGroup, FormField, Toggle } from 'aws-northstar';
 import LocalImageForm from '../../LocalImage';
 import SampleImageForm from '../../SampleImage';
 import { useParams, useLocation, useHistory } from 'react-router-dom';
 import { PathParams } from '../../../Interfaces/PathParams';
 import { ProjectSubType, ProjectType } from '../../../../data/enums/ProjectType';
+import { v4 as uuidv4 } from 'uuid';
+import { useTranslation } from "react-i18next";
 
-const YolovPaddleOCRDemoForm: FunctionComponent = () => {
+interface IProps {
+    advancedMode: boolean;
+    onAdvancedModeChange : (checked) => any;
+}
+
+const YolovPaddleOCRDemoForm: FunctionComponent<IProps> =  (
+    {
+        advancedMode,
+        onAdvancedModeChange
+    }) => {  
+    const { t } = useTranslation();
+
     const history = useHistory();
 
     var params : PathParams = useParams();
@@ -14,7 +27,7 @@ const YolovPaddleOCRDemoForm: FunctionComponent = () => {
     var localtion = useLocation();
     var hash = localtion.hash.substring(1);
 
-    var demoType = hash === 'sample' || hash === 'local' || hash === 'transformjob' ? hash : 'sample'
+    var demoOption = hash === 'sample' || hash === 'local' || hash === 'transformjob' ? hash : 'sample'
 
     const onChangeOptions = (event, value) => {
         history.push(`/imodels/${params.id}?tab=demo#${value}`);
@@ -24,8 +37,8 @@ const YolovPaddleOCRDemoForm: FunctionComponent = () => {
         return (
             <RadioGroup onChange={onChangeOptions}
                 items={[
-                    <RadioButton value='sample' checked={demoType === 'sample'} >Realtime inference with sample image</RadioButton>,
-                    <RadioButton value='local' checked={demoType === 'local'} >Realtime inference with local image</RadioButton>,
+                    <RadioButton value='sample' checked={demoOption === 'sample'} >{t('industrial_models.demo.demo_option_sample')}</RadioButton>,
+                    <RadioButton value='local' checked={demoOption === 'local'} >{t('industrial_models.demo.demo_option_local')}</RadioButton>,
                 ]}
             />
         )
@@ -33,11 +46,16 @@ const YolovPaddleOCRDemoForm: FunctionComponent = () => {
 
     return (
         <Stack>
-            <Container title = 'Demo options'>
-                {renderDemoOptions()}
+            <Container title = {t('industrial_models.demo.demo_options')}>
+                <FormField controlId={uuidv4()}>            
+                    {renderDemoOptions()}
+                </FormField>
+                <FormField controlId={uuidv4()}>
+                    <Toggle label = {t('industrial_models.demo.advanced_mode')} checked={advancedMode} onChange={onAdvancedModeChange}/>
+                </FormField>
             </Container>
-            {demoType === 'sample' && <SampleImageForm type={ProjectType.TEXT_RECOGNITION} subType={ProjectSubType.OBJECT_DETECTION}/>}
-            {demoType === 'local' && <LocalImageForm type={ProjectType.TEXT_RECOGNITION} subType={ProjectSubType.OBJECT_DETECTION}/>}
+            {demoOption === 'sample' && <SampleImageForm type={ProjectType.TEXT_RECOGNITION} subType={ProjectSubType.OBJECT_DETECTION}/>}
+            {demoOption === 'local' && <LocalImageForm type={ProjectType.TEXT_RECOGNITION} subType={ProjectSubType.OBJECT_DETECTION}/>}
         </Stack>
     )
 }

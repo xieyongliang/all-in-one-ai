@@ -4,6 +4,7 @@ import { KeyValuePair, Button, Form, FormSection, LoadingIndicator } from 'aws-n
 import axios from 'axios';
 import Grid from '@mui/material/Grid';
 import { PathParams } from '../../Interfaces/PathParams';
+import { useTranslation } from "react-i18next";
 
 const RestApiProp: FunctionComponent = () => {
     const [ apilName, setApilName ] = useState('')
@@ -15,6 +16,8 @@ const RestApiProp: FunctionComponent = () => {
     const [ createdDate, setCreatedDate ] = useState('')
     const [ apiUrl, setApiUrl ] = useState('')
     const [ loading, setLoading ] = useState(true);
+
+    const { t } = useTranslation();
 
     const history = useHistory();
 
@@ -46,19 +49,19 @@ const RestApiProp: FunctionComponent = () => {
 
     const renderApiSummary = () => {
         return (
-            <FormSection header='Rest api summary'>
+            <FormSection header={t('industrial_models.api.api_summary')}>
                 <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }}>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label='Api name' value={apilName}></KeyValuePair>
+                        <KeyValuePair label={t('industrial_models.api.api_name')} value={apilName}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label='Created date' value={createdDate}></KeyValuePair>
+                        <KeyValuePair label={t('industrial_models.common.creation_time')} value={createdDate}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label='Function' value={apiFunction}></KeyValuePair>
+                        <KeyValuePair label={t('industrial_models.common.function')} value={apiFunction}></KeyValuePair>
                     </Grid>
-                    <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label='Url' value={apiUrl}></KeyValuePair>
+                    <Grid item xs={2} sm={12} md={12}>
+                        <KeyValuePair label={t('industrial_models.common.uri')} value={apiUrl}></KeyValuePair>
                     </Grid>
                 </Grid>
             </FormSection>
@@ -67,19 +70,19 @@ const RestApiProp: FunctionComponent = () => {
 
     const renderProductionVariants = () => {
         return (
-            <FormSection header='Production variants'>
+            <FormSection header={t('industrial_models.api.production_variant')}>
                 <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }}>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label='Rest api name' value={restApiName}></KeyValuePair>
+                        <KeyValuePair label={t('industrial_models.api.rest_api_name')} value={restApiName}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label='Path' value={apiPath}></KeyValuePair>
+                        <KeyValuePair label={t('industrial_models.api.api_path')} value={apiPath}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label='Stage' value={apiStage}></KeyValuePair>
+                        <KeyValuePair label={t('industrial_models.api.api_stage')} value={apiStage}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label='Method' value={apiMethod}></KeyValuePair>
+                        <KeyValuePair label={t('industrial_models.api.api_method')} value={apiMethod}></KeyValuePair>
                     </Grid>
                 </Grid>
             </FormSection>
@@ -88,14 +91,13 @@ const RestApiProp: FunctionComponent = () => {
 
     return (
         <Form
-            header='Review rest api'
-            description='To deploy a model to Amazon SageMaker, first create the model by providing the location of the model artifacts and inference code.'
+            header={t('industrial_models.api.review_api')}
             actions={
                 <div>
-                    <Button variant='primary' onClick={onClose}>Close</Button>
+                    <Button variant='primary' onClick={onClose}>{t('industrial_models.demo.close')}</Button>
                 </div>
             }>   
-            { loading && <LoadingIndicator label='Loading...'/> }
+            { loading && <LoadingIndicator label={t('industrial_models.demo.loading')}/> }
             { !loading && renderApiSummary() }
             { !loading && renderProductionVariants() }
         </Form>

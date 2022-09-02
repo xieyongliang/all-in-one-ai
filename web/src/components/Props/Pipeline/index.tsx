@@ -3,6 +3,7 @@ import { useHistory, useLocation, useParams } from 'react-router-dom';
 import { Button, Form, FormSection, KeyValuePair } from 'aws-northstar';
 import axios from 'axios';
 import { PathParams } from '../../Interfaces/PathParams';
+import { useTranslation } from "react-i18next";
 
 const PipelineProp: FunctionComponent = () => {
     const [ pipelineType, setPipelineType ] = useState('')
@@ -12,6 +13,8 @@ const PipelineProp: FunctionComponent = () => {
     const [ ComponentVersionArn, setComponentVersionArn ] = useState('')
     const [ DeploymentId, setDeploymentId ] = useState('')
     const [ scriptMode, setScriptMode ] = useState(false)
+
+    const { t } = useTranslation();
 
     const history = useHistory();
 
@@ -74,37 +77,37 @@ const PipelineProp: FunctionComponent = () => {
 
     return (
         <Form
-            header='Review pipeline'
+            header={t('industrial_models.pipeline.review_pipeline')}
             actions={
                 <div>
-                    <Button variant='primary' onClick={onClose}>Close</Button>
+                    <Button variant='primary' onClick={onClose}>{t('industrial_models.demo.close')}</Button>
                 </div>
             }>
-            <FormSection header='Pipeline'>
-                <KeyValuePair label='Pipeline name' value={id}></KeyValuePair>            
+            <FormSection header={t('industrial_models.pipelines')}>
+                <KeyValuePair label={t('industrial_models.pipeline.pipeline_name')} value={id}></KeyValuePair>            
             </FormSection>
             {
                 ( pipelineType === '0' || pipelineType === '1') && 
-                <FormSection header='Training job'>
-                    <KeyValuePair label='Training job' value={getTrainingJobProps(trainingJobName)}></KeyValuePair>            
+                <FormSection header={t('industrial_models.training_jobs')}>
+                    <KeyValuePair label={t('industrial_models.training_job.job_name')} value={getTrainingJobProps(trainingJobName)}></KeyValuePair>            
                 </FormSection>
             }
-            <FormSection header='Model'>
-                <KeyValuePair label='Model' value={getModelProps(modelName)}></KeyValuePair>            
+            <FormSection header={t('industrial_models.models')}>
+                <KeyValuePair label={t('industrial_models.model.model_name')} value={getModelProps(modelName)}></KeyValuePair>            
             </FormSection>
-            <FormSection header='Endpoint'>
-                <KeyValuePair label='Endpoint' value={getEndpointProps(endpointName)}></KeyValuePair>            
+            <FormSection header={t('industrial_models.endpoints')}>
+                <KeyValuePair label={t('industrial_models.endpoint.endpoint_name')} value={getEndpointProps(endpointName)}></KeyValuePair>            
             </FormSection>
             {
                 ( pipelineType === '0' || pipelineType === '2') && !scriptMode &&
-                <FormSection header='Greengrass component version'>
-                    <KeyValuePair label='Greengrass component version' value={getGreengrassComponentVersionProps(ComponentVersionArn)}></KeyValuePair>            
+                <FormSection header={t('industrial_models.greengrass_components')}>
+                    <KeyValuePair label={t('industrial_models.greengrass_component.component_version')} value={getGreengrassComponentVersionProps(ComponentVersionArn)}></KeyValuePair>            
                 </FormSection>
             }
             {
                 ( pipelineType === '0' || pipelineType === '2') && !scriptMode &&
-                <FormSection header='Greengrass deployment'>
-                    <KeyValuePair label='Greengrass deployment' value={getGreengrassDeploymentProps(DeploymentId)}></KeyValuePair>            
+                <FormSection header={t('industrial_models.greengrass_deployments')}>
+                    <KeyValuePair label={t('industrial_models.greengrass_deployment.deployment_name')} value={getGreengrassDeploymentProps(DeploymentId)}></KeyValuePair>            
                 </FormSection>
             }
         </Form>

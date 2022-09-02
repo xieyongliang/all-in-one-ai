@@ -1,17 +1,15 @@
 import { FunctionComponent, useCallback, useEffect, useState } from 'react';
 import { useHistory, useParams } from 'react-router-dom'; 
 import { Column } from 'react-table'
-import { Button, ButtonDropdown, StatusIndicator, Table, Toggle, Link, Text } from 'aws-northstar/components';
-import { Container, Inline, Stack }  from 'aws-northstar/layouts';
-import SyntaxHighlighter from 'react-syntax-highlighter';
-import { github } from 'react-syntax-highlighter/dist/esm/styles/hljs';
-import JSZip from 'jszip';
+import { Button, ButtonDropdown, StatusIndicator, Table, Toggle, Text } from 'aws-northstar/components';
+import { Inline, Stack }  from 'aws-northstar/layouts';
+import DeleteConfirmationDialog from '../../Utils/DeleteConfirmationDialog';
 import axios from 'axios';
 import { PathParams } from '../../Interfaces/PathParams';
 import { getDurationBySeconds, getUtcDate } from '../../Utils/Helper/index';
-import { DeleteConfirmationDialog } from 'aws-northstar';
 import { FetchDataOptions } from 'aws-northstar/components/Table';
 import './index.scss'
+import { useTranslation } from "react-i18next";
 
 interface TrainingJobItem {
     trainingJobName: string;
@@ -22,9 +20,6 @@ interface TrainingJobItem {
 
 const TrainingJobList: FunctionComponent = () => {
     const [ loading, setLoading ] = useState(true);
-    const [ sampleCode, setSampleCode ] = useState('')
-    const [ sampleConsole, setSampleConsole ] = useState('')
-    const [ visibleSampleCode, setVisibleSampleCode ] = useState(false)
     const [ selectedTrainingJob, setSelectedTrainingJob ] = useState<TrainingJobItem>()
     const [ showAll, setShowAll ] = useState(false)
     const [ visibleStopConfirmation, setVisibleStopConfirmation ] = useState(false);
@@ -39,36 +34,12 @@ const TrainingJobList: FunctionComponent = () => {
     const [ pageIndex, setPageIndex ] = useState(0);
     const [ trainingJobCurItems, setTrainingJobCurItems ] = useState([])
     const [ trainingJobAllItems, setTrainingJobAllItems ] = useState([])
+    
+    const { t } = useTranslation();
+
     const history = useHistory();
 
     var params : PathParams = useParams();
-
-    const getSourceCode = async (uri) => {
-        const response = await axios.get('/_file/download', {params: {uri: encodeURIComponent(uri)}, responseType: 'blob'})
-        return response.data
-    }
-
-    useEffect(() => {
-        var cancel = false
-        const requests = [ axios.get('/function/all_in_one_ai_create_training_job?action=code'), axios.get('/function/all_in_one_ai_create_training_job?action=console')];
-        axios.all(requests)
-        .then(axios.spread(function(response0, response1) {
-            getSourceCode(response0.data).then((data) => {
-                if(cancel) return;
-                var zip = new JSZip();
-                zip.loadAsync(data).then(async function(zipped) {
-                    zipped.file('lambda_function.py').async('string').then(function(data) {
-                        if(cancel) return;
-                        setSampleCode(data)
-                    })
-                })
-            });
-            setSampleConsole(response1.data)           
-        }));
-        return () => { 
-            cancel = true;
-        }
-    }, []);
 
     const onRefresh = useCallback(() => {
         setLoading(true)
@@ -172,13 +143,14 @@ const TrainingJobList: FunctionComponent = () => {
             <DeleteConfirmationDialog
                 variant="confirmation"
                 visible={visibleStopConfirmation}
-                title={`Delete ${selectedTrainingJob.trainingJobName}`}
+                title={t('industrial_models.common.stop') + ` ${selectedTrainingJob.trainingJobName}`}
                 onCancelClicked={() => setVisibleStopConfirmation(false)}
                 onDeleteClicked={stopTrainingJob}
                 loading={processingStop}
-                deleteButtonText='Stop'
+                deleteButtonText={t('industrial_models.common.stop')}
+                cancelButtonText={t('industrial_models.common.cancel')}
             >
-                <Text>This will permanently stop your training job and cannot be undone. This may affect other resources.</Text>
+                <Text>{t('industrial_models.training_job.stop_training_job')}</Text>
             </DeleteConfirmationDialog>
         )
     }
@@ -190,7 +162,7 @@ const TrainingJobList: FunctionComponent = () => {
                 setVisibleStopConfirmation(false);
                 setProcessingStop(false);
             }, (error) => {
-                alert('Error occured, please check and try it again');
+                alert(t('industrial_models.common.error_occured'));
                 console.log(error);
                 setProcessingStop(false);
             }
@@ -202,13 +174,14 @@ const TrainingJobList: FunctionComponent = () => {
             <DeleteConfirmationDialog
                 variant="confirmation"
                 visible={visibleAttachConfirmation}
-                title={`Attach ${selectedTrainingJob.trainingJobName}`}
+                title={t('industrial_models.common.attach') + ` ${selectedTrainingJob.trainingJobName}`}
                 onCancelClicked={() => setVisibleAttachConfirmation(false)}
                 onDeleteClicked={attachTrainingJob}
                 loading={processingAttach}
-                deleteButtonText='Attach'
+                deleteButtonText={t('industrial_models.common.attach')}
+                cancelButtonText={t('industrial_models.common.cancel')}
             >
-                <Text>This will attach this training job to current industrial model.</Text>
+                <Text>{t('industrial_models.training_job.attach_training_job')}</Text>
             </DeleteConfirmationDialog>
         )
     }
@@ -221,7 +194,7 @@ const TrainingJobList: FunctionComponent = () => {
                 setVisibleAttachConfirmation(false);
                 setProcessingAttach(false);
             }, (error) => {
-                alert('Error occured, please check and try it again');
+                alert(t('industrial_models.common.error_occured'));
                 console.log(error);
                 setProcessingAttach(false);
             }        
@@ -233,13 +206,14 @@ const TrainingJobList: FunctionComponent = () => {
             <DeleteConfirmationDialog
                 variant="confirmation"
                 visible={visibleDetachConfirmation}
-                title={`Detach ${selectedTrainingJob.trainingJobName}`}
+                title={t('industrial_models.common.detach') + ` ${selectedTrainingJob.trainingJobName}`}
                 onCancelClicked={() => setVisibleDetachConfirmation(false)}
                 onDeleteClicked={detachTrainingJob}
                 loading={processingDetach}
-                deleteButtonText='Detach'
+                deleteButtonText={t('industrial_models.common.detach')}
+                cancelButtonText={t('industrial_models.common.cancel')}
             >
-                <Text>This will dettach this training job from current industrial model.</Text>
+                <Text>{t('industrial_models.training_job.detach_training_job')}</Text>
             </DeleteConfirmationDialog>
         )
     }
@@ -252,7 +226,7 @@ const TrainingJobList: FunctionComponent = () => {
                 setVisibleDetachConfirmation(false);
                 setProcessingDetach(false);
             }, (error) => {
-                alert('Error occured, please check and try it again');
+                alert(t('industrial_models.common.error_occured'));
                 console.log(error);
                 setProcessingDetach(false);
             }
@@ -265,7 +239,7 @@ const TrainingJobList: FunctionComponent = () => {
         {
             id: 'trainingJobName',
             width: 500,
-            Header: 'Name',
+            Header: t('industrial_models.common.name'),
             accessor: 'trainingJobName',
             Cell: ({ row  }) => {
                 if (row && row.original) {
@@ -277,7 +251,7 @@ const TrainingJobList: FunctionComponent = () => {
         {
             id: 'creationTime',
             width: 200,
-            Header: 'Creation time',
+            Header: t('industrial_models.common.creation_time'),
             accessor: 'creationTime',
             Cell: ({ row  }) => {
                 if (row && row.original) {
@@ -289,13 +263,13 @@ const TrainingJobList: FunctionComponent = () => {
         {
             id: 'duration',
             width: 200,
-            Header: 'Duration',
+            Header: t('industrial_models.common.duration'),
             accessor: 'duration'
         },
         {
             id: 'trainingJobStatus',
             width: 200,
-            Header: 'Status',
+            Header: t('industrial_models.common.status'),
             accessor: 'trainingJobStatus',
             Cell: ({ row  }) => {
                 if (row && row.original) {
@@ -328,19 +302,19 @@ const TrainingJobList: FunctionComponent = () => {
     const tableActions = (
         <Inline>
             <div className='tableaction'>
-                <Toggle label='Show all' checked={showAll} onChange={onChangeShowAll}/>
+                <Toggle label={t('industrial_models.common.show_all')} checked={showAll} onChange={onChangeShowAll}/>
             </div>
             <div className='tableaction'>
-                <Button icon="refresh" onClick={onRefresh} loading={loading}>Refresh</Button>
+                <Button icon='refresh' onClick={onRefresh} loading={loading}>{t('industrial_models.common.refresh')}</Button>
             </div>
             <div className='tableaction'>
                 <ButtonDropdown
-                    content='Actions'
-                        items={[{ text: 'Stop', onClick: onStop, disabled: disabledStop }, { text: 'Attach', onClick: onAttach, disabled: disabledAttach }, { text: 'Detach', onClick: onDetach, disabled: disabledDetach }, { text: 'Add/Edit tags', disabled: true }]}
+                    content={t('industrial_models.common.actions')}
+                        items={[{ text: t('industrial_models.common.stop'), onClick: onStop, disabled: disabledStop }, { text: t('industrial_models.common.attach'), onClick: onAttach, disabled: disabledAttach }, { text: t('industrial_models.common.detach'), onClick: onDetach, disabled: disabledDetach }, { text: t('industrial_models.common.add_or_edit_tags'), disabled: true }]}
                 />
             </div>
             <div className='tableaction'>
-                <Button variant='primary' onClick={onCreate}>Create</Button>
+                <Button variant='primary' onClick={onCreate}>{t('industrial_models.common.create')}</Button>
             </div>
         </Inline>
     );
@@ -369,7 +343,7 @@ const TrainingJobList: FunctionComponent = () => {
         return (
             <Table
                 actionGroup={tableActions}
-                tableTitle='Training jobs'
+                tableTitle={t('industrial_models.training_jobs')}
                 multiSelect={false}
                 columnDefinitions={columnDefinitions}
                 items={showAll ? trainingJobAllItems : trainingJobCurItems}
@@ -383,28 +357,12 @@ const TrainingJobList: FunctionComponent = () => {
         )    
     }
 
-
-    const renderSampleCode = () => {
-        return (
-            <Container title = 'Sample code'>
-                <Toggle label={visibleSampleCode ? 'Show sample code' : 'Hide sample code'} checked={visibleSampleCode} onChange={(checked) => {setVisibleSampleCode(checked)}} />
-                <Link href={sampleConsole}>Open in AWS Lambda console</Link>
-                {
-                    visibleSampleCode && <SyntaxHighlighter language='python' style={github} showLineNumbers={true}>
-                        {sampleCode}
-                    </SyntaxHighlighter>
-                }
-            </Container>
-        )
-    }
-
     return (
         <Stack>
             { selectedTrainingJob !== undefined && renderStopConfirmationDialog() }
             { selectedTrainingJob !== undefined && renderAttachConfirmationDialog() }
             { selectedTrainingJob !== undefined && renderDetachConfirmationDialog() }
-            {renderTrainingJobList()}
-            {renderSampleCode()}
+            { renderTrainingJobList() }
         </Stack>
     )
 }

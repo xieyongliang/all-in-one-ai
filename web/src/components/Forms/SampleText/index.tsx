@@ -14,14 +14,14 @@ import { IIndustrialModel } from '../../../store/industrialmodels/reducer';
 import LocalTextOutputTextForm from '../LocalText/text'
 import LocalTextOutputJsonForm from '../LocalText/json'
 import { Box, Dialog } from '@material-ui/core';
-import { bool } from 'aws-sdk/clients/signer';
+import { useTranslation } from "react-i18next";
 
 interface IProps {
     industrialModels: IIndustrialModel[];
     input_format: string;
     output_format: string;
     header: string;
-    prompt_learning? : bool;
+    prompt_learning? : Boolean;
     train_framework: string;
     deploy_framework: string;
 }
@@ -47,6 +47,8 @@ const SampleTextForm: FunctionComponent<IProps>  = (
     const [ loading, setLoading ] = useState(false);
     const [ processing, setProcessing ] = useState(false);
     
+    const { t } = useTranslation();
+
     var params : PathParams = useParams();
 
     useEffect(() => {
@@ -89,22 +91,22 @@ const SampleTextForm: FunctionComponent<IProps>  = (
     const renderImageList = () => {
         if(loading)
             return (
-                <Container title = 'Sample data'>
-                    <LoadingIndicator label='Loading...'/>
+                <Container title = {t('industrial_models.demo.sample_data')}>
+                    <LoadingIndicator label={t('industrial_models.demo.loading')}/>
                 </Container>
             )
         else if(processing)
             return (
                 <Dialog open={true}>
                     <Box p={3}>
-                        <LoadingIndicator label='Processing...'/>
+                        <LoadingIndicator label={t('industrial_models.demo.processing')}/>
                     </Box>
                 </Dialog>
             )
         else {
             return (
                 <Stack>
-                    <Container title = 'Sample data'>
+                    <Container title = {t('industrial_models.demo.sample_data')}>
                         <ImageList cols={10} rowHeight={64} gap={10} variant={'quilted'}>
                             {
                                 textItems.length > 0 && 

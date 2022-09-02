@@ -2,16 +2,15 @@
 import { FunctionComponent, useCallback, useEffect, useState } from 'react';
 import { useHistory, useParams } from 'react-router-dom';
 import {Column} from 'react-table'
-import { Container, Link, Stack, Toggle, Button, ButtonDropdown, StatusIndicator, Table, Text, DeleteConfirmationDialog } from 'aws-northstar';
+import { Stack, Toggle, Button, ButtonDropdown, StatusIndicator, Table, Text } from 'aws-northstar';
+import DeleteConfirmationDialog from '../../Utils/DeleteConfirmationDialog';
 import Inline from 'aws-northstar/layouts/Inline';
-import SyntaxHighlighter from 'react-syntax-highlighter';
-import { github } from 'react-syntax-highlighter/dist/esm/styles/hljs';
-import JSZip from 'jszip';
 import axios from 'axios';
 import { PathParams } from '../../Interfaces/PathParams';
 import { getUtcDate } from '../../Utils/Helper/index';
 import { FetchDataOptions } from 'aws-northstar/components/Table';
 import './index.scss'
+import { useTranslation } from "react-i18next";
 
 interface EndpointItem {
     endpointName: string;
@@ -22,9 +21,6 @@ interface EndpointItem {
 
 const EndpointList: FunctionComponent = () => {
     const [ loading, setLoading ] = useState(true);
-    const [ sampleCode, setSampleCode ] = useState('');
-    const [ sampleConsole, setSampleConsole ] = useState('');
-    const [ visibleSampleCode, setVisibleSampleCode ] = useState(false);
     const [ selectedEndpoint, setSelectedEndpoint ] = useState<EndpointItem>();
     const [ showAll, setShowAll ] = useState(false);
     const [ visibleDeleteConfirmation, setVisibleDeleteConfirmation ] = useState(false);
@@ -39,36 +35,12 @@ const EndpointList: FunctionComponent = () => {
     const [ pageIndex, setPageIndex ] = useState(0);
     const [ endpointCurItems, setEndpointCurItems ] = useState([])
     const [ endpointAllItems, setEndpointAllItems ] = useState([])
+
+    const { t } = useTranslation();
+
     const history = useHistory();
 
     var params : PathParams = useParams();
-
-    const getSourceCode = async (uri) => {
-        const response = await axios.get('/_file/download', {params: {uri: encodeURIComponent(uri)}, responseType: 'blob'})
-        return response.data
-    }
-
-    useEffect(() => {
-        var cancel = false
-        const requests = [ axios.get('/function/all_in_one_ai_create_endpoint?action=code'), axios.get('/function/all_in_one_ai_create_endpoint?action=console')];
-        axios.all(requests)
-        .then(axios.spread(function(response0, response1) {
-            getSourceCode(response0.data).then((data) => {
-                if(cancel) return;
-                var zip = new JSZip();
-                zip.loadAsync(data).then(async function(zipped) {
-                    zipped.file('lambda_function.py').async('string').then(function(data) {
-                        if(cancel) return;
-                        setSampleCode(data)
-                    })
-                })
-            });
-            setSampleConsole(response1.data)           
-        }));
-        return () => { 
-            cancel = true;
-        }
-    }, []);
 
     const onCreate = () => {
         history.push(`/imodels/${params.id}?tab=endpoint#create`)
@@ -172,7 +144,7 @@ const EndpointList: FunctionComponent = () => {
         {
             id: 'endpointName',
             width: 400,
-            Header: 'Name',
+            Header: t('industrial_models.common.name'),
             accessor: 'endpointName',
             Cell: ({ row  }) => {
                 if (row && row.original) {
@@ -184,7 +156,7 @@ const EndpointList: FunctionComponent = () => {
         {
             id: 'endpointStatus',
             width: 200,
-            Header: 'Status',
+            Header: t('industrial_models.common.status'),
             accessor: 'endpointStatus',
             Cell: ({ row  }) => {
                 if (row && row.original) {
@@ -212,7 +184,7 @@ const EndpointList: FunctionComponent = () => {
         {
             id: 'creationTime',
             width: 250,
-            Header: 'Creation time',
+            Header: t('industrial_models.common.creation_time'),
             accessor: 'creationTime',
             Cell: ({ row  }) => {
                 if (row && row.original) {
@@ -224,7 +196,7 @@ const EndpointList: FunctionComponent = () => {
         {
             id: 'lastModifiedTime',
             width: 250,
-            Header: 'Last updated',
+            Header: t('industrial_models.common.last_modified_time'),
             accessor: 'lastModifiedTime',
             Cell: ({ row  }) => {
                 if (row && row.original) {
@@ -244,19 +216,19 @@ const EndpointList: FunctionComponent = () => {
     const tableActions = (
         <Inline>
             <div className='tableaction'>
-                <Toggle label='Show all' checked={showAll} onChange={onChangeShowAll}/>
+                <Toggle label={t('industrial_models.common.show_all')} checked={showAll} onChange={onChangeShowAll}/>
             </div>
             <div className='tableaction'>
-                <Button icon="refresh" onClick={onRefresh} loading={loading}>Refresh</Button>
+                <Button icon="refresh" onClick={onRefresh} loading={loading}>{t('industrial_models.common.refresh')}</Button>
             </div>
             <div className='tableaction'>
                 <ButtonDropdown
-                    content='Actions'
-                        items={[{ text: 'Delete', onClick: onDelete, disabled: disabledDelete }, { text: 'Attach', onClick: onAttach, disabled: disabledAttach }, { text: 'Detach', onClick: onDetach, disabled: disabledDetach }, { text: 'Add/Edit tags', disabled: true }]}
+                    content={t('industrial_models.common.actions')}
+                        items={[{ text: t('industrial_models.common.delete'), onClick: onDelete, disabled: disabledDelete }, { text: t('industrial_models.common.attach'), onClick: onAttach, disabled: disabledAttach }, { text: t('industrial_models.common.detach'), onClick: onDetach, disabled: disabledDetach }, { text: t('industrial_models.common.add_or_edit_tags'), disabled: true }]}
                 />
             </div>
             <div className='tableaction'>
-                <Button variant='primary' onClick={onCreate}>Create</Button>
+                <Button variant='primary' onClick={onCreate}>{t('industrial_models.common.create')}</Button>
             </div>
         </Inline>
     );
@@ -266,12 +238,14 @@ const EndpointList: FunctionComponent = () => {
             <DeleteConfirmationDialog
                 variant="confirmation"
                 visible={visibleDeleteConfirmation}
-                title={`Delete ${selectedEndpoint.endpointName}`}
+                title={t('industrial_models.common.delete') + ` ${selectedEndpoint.endpointName}`}
                 onCancelClicked={() => setVisibleDeleteConfirmation(false)}
                 onDeleteClicked={deleteEndpoint}
                 loading={processingDelete}
+                deleteButtonText={t('industrial_models.common.delete')}
+                cancelButtonText={t('industrial_models.common.cancel')}
             >
-                <Text>This will permanently delete your model and cannot be undone. This may affect other resources.</Text>
+                <Text>{t('industrial_models.endpoint.delete_endpoint')}</Text>
             </DeleteConfirmationDialog>
         )
     }
@@ -295,13 +269,14 @@ const EndpointList: FunctionComponent = () => {
             <DeleteConfirmationDialog
                 variant="confirmation"
                 visible={visibleAttachConfirmation}
-                title={`Attach ${selectedEndpoint.endpointName}`}
+                title={t('industrial_models.common.attach') + ` ${selectedEndpoint.endpointName}`}
                 onCancelClicked={() => setVisibleAttachConfirmation(false)}
                 onDeleteClicked={attachEndpoint}
                 loading={processingAttach}
-                deleteButtonText='Attach'
+                deleteButtonText={t('industrial_models.common.attach')}
+                cancelButtonText={t('industrial_models.common.cancel')}
             >
-                <Text>This will attach this endpoint to current industrial model.</Text>
+                <Text>{t('industrial_models.endpoint.attach_endpoint')}</Text>
             </DeleteConfirmationDialog>
         )
     }
@@ -325,13 +300,14 @@ const EndpointList: FunctionComponent = () => {
             <DeleteConfirmationDialog
                 variant="confirmation"
                 visible={visibleDetachConfirmation}
-                title={`Detach ${selectedEndpoint.endpointName}`}
+                title={t('industrial_models.common.detach') + ` ${selectedEndpoint.endpointName}`}
                 onCancelClicked={() => setVisibleDetachConfirmation(false)}
                 onDeleteClicked={detachEndpoint}
                 loading={processingDetach}
-                deleteButtonText='Detach'
+                deleteButtonText={t('industrial_models.common.detach')}
+                cancelButtonText={t('industrial_models.common.cancel')}
             >
-                <Text>This will dettach this endpoint from current industrial model.</Text>
+                <Text>{t('industrial_models.endpoint.detach_endpoint')}</Text>
             </DeleteConfirmationDialog>
         )
     }
@@ -374,7 +350,7 @@ const EndpointList: FunctionComponent = () => {
         return (
             <Table
                 actionGroup={tableActions}
-                tableTitle='Endpoints'
+                tableTitle={t('industrial_models.endpoints')}
                 multiSelect={false}
                 columnDefinitions={columnDefinitions}
                 items={showAll ? endpointAllItems : endpointCurItems}
@@ -388,27 +364,12 @@ const EndpointList: FunctionComponent = () => {
         )
     }
 
-    const renderSampleCode = () => {
-        return (
-            <Container title = 'Sample code'>
-                <Toggle label={visibleSampleCode ? 'Show sample code' : 'Hide sample code'} checked={visibleSampleCode} onChange={(checked) => {setVisibleSampleCode(checked)}} />
-                <Link href={sampleConsole}>Open in AWS Lambda console</Link>
-                {
-                    visibleSampleCode && <SyntaxHighlighter language='python' style={github} showLineNumbers={true}>
-                        {sampleCode}
-                    </SyntaxHighlighter>
-                }
-            </Container>
-        )
-    }
-
     return (
         <Stack>
             { selectedEndpoint !== undefined && renderDeleteConfirmationDialog() }
             { selectedEndpoint !== undefined && renderAttachConfirmationDialog() }
             { selectedEndpoint !== undefined && renderDetachConfirmationDialog() }
             { renderEndpointList() }
-            { renderSampleCode() }
         </Stack>
     )
 }

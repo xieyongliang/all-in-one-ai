@@ -8,23 +8,27 @@ import { PathParams } from '../../Interfaces/PathParams';
 import axios from 'axios';
 import { getUtcDate } from '../../Utils/Helper';
 import './index.scss'
+import { useTranslation } from "react-i18next";
 
 interface DataType {
     name: string;
     function: string;
     creationTime: string;
-    url: string;
+    uri: string;
 }
 
 const RestApiList: FunctionComponent = () => {
     const [ apiItems, setApiItems ] = useState([])
     const [ loading, setLoading ] = useState(true);
 
+    const { t } = useTranslation();
+
     const history = useHistory();
 
     var params : PathParams = useParams();
 
     const onRefresh = useCallback(() => {
+        setLoading(true)
         axios.get('/api', {params : {'industrial_model': params.id}})
             .then((response) => {
             var items = []
@@ -34,7 +38,7 @@ const RestApiList: FunctionComponent = () => {
             }
             else
                 for(let item of response.data) {
-                    items.push({name: item.api_name, function: item.api_function, creationTime: item.created_date, url: item.api_url})
+                    items.push({name: item.api_name, function: item.api_function, creationTime: item.created_date, uri: item.api_url})
                     if(items.length === response.data.length) {
                         setApiItems(items);
                         setLoading(false);
@@ -60,7 +64,7 @@ const RestApiList: FunctionComponent = () => {
         {
             id: 'name',
             width: 200,
-            Header: 'Name',
+            Header: t('industrial_models.common.name'),
             accessor: 'name',
             Cell: ({ row  }) => {
                 if (row && row.original) {
@@ -72,13 +76,13 @@ const RestApiList: FunctionComponent = () => {
         {
             id: 'function',
             width: 250,
-            Header: 'Function',
+            Header: t('industrial_models.common.function'),
             accessor: 'function'
         },
         {
             id: 'created_date',
             width: 250,
-            Header: 'Creation time',
+            Header: t('industrial_models.common.creation_time'),
             accessor: 'creationTime',
             Cell: ({ row  }) => {
                 if (row && row.original) {
@@ -88,20 +92,20 @@ const RestApiList: FunctionComponent = () => {
             }
         },
         {
-            id: 'url',
+            id: 'uri',
             width: 500,
-            Header: 'Url',
-            accessor: 'url'
+            Header: t('industrial_models.common.uri'),
+            accessor: 'uri'
         }
     ];
     
     const tableActions = (
         <Inline>
             <div className='tableaction'>
-                <Button icon="refresh" onClick={onRefresh} loading={loading}>Refresh</Button>
+                <Button icon="refresh" onClick={onRefresh} loading={loading}>{t('industrial_models.common.refresh')}</Button>
             </div>
             <div className='tableaction'>
-                <Button variant='primary' onClick={onCreate}>Create</Button>
+                <Button variant='primary' onClick={onCreate}>{t('industrial_models.common.create')}</Button>
             </div>
         </Inline>
     );
@@ -109,7 +113,7 @@ const RestApiList: FunctionComponent = () => {
     return (
         <Table
             actionGroup={tableActions}
-            tableTitle='Rest apis'
+            tableTitle={t('industrial_models.apis')}
             multiSelect={false}
             columnDefinitions={columnDefinitions}
             items={apiItems}

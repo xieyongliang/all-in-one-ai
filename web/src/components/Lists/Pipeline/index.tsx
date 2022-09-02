@@ -4,15 +4,12 @@ import StatusIndicator from 'aws-northstar/components/StatusIndicator';
 import Button from 'aws-northstar/components/Button';
 import Inline from 'aws-northstar/layouts/Inline';
 import {Column} from 'react-table'
-import { Link, useHistory, useParams } from 'react-router-dom';
+import { useHistory, useParams } from 'react-router-dom';
 import { PathParams } from '../../Interfaces/PathParams';
-import SyntaxHighlighter from 'react-syntax-highlighter';
-import { github } from 'react-syntax-highlighter/dist/esm/styles/hljs';
-import JSZip from 'jszip';
 import axios from 'axios';
 import { getUtcDate } from '../../Utils/Helper';
-import { Container, Stack, Toggle } from 'aws-northstar';
 import './index.scss'
+import { useTranslation } from "react-i18next";
 
 interface PipelineItem {
     pipelineExecutionArn: string;
@@ -25,40 +22,12 @@ interface PipelineItem {
 const PipelineList: FunctionComponent = () => {
     const [ pipelineItems, setPipelineItems ] = useState([])
     const [ loading, setLoading ] = useState(true)
-    const [ sampleCode, setSampleCode ] = useState('')
-    const [ sampleConsole, setSampleConsole ] = useState('')
-    const [ visibleSampleCode, setVisibleSampleCode ] = useState(false)
+
+    const { t } = useTranslation();
 
     const history = useHistory();
 
     var params : PathParams = useParams();
-
-    const getSourceCode = async (uri) => {
-        const response = await axios.get('/_file/download', {params: {uri: encodeURIComponent(uri)}, responseType: 'blob'})
-        return response.data
-    }
-
-    useEffect(() => {
-        var cancel = false
-        const requests = [ axios.get('/function/all_in_one_ai_create_pipeline?action=code'), axios.get('/function/all_in_one_ai_create_pipeline?action=console')];
-        axios.all(requests)
-        .then(axios.spread(function(response0, response1) {
-            getSourceCode(response0.data).then((data) => {
-                if(cancel) return;
-                var zip = new JSZip();
-                zip.loadAsync(data).then(async function(zipped) {
-                    zipped.file('lambda_function.py').async('string').then(function(data) {
-                        if(cancel) return;
-                        setSampleCode(data)
-                    })
-                })
-            });
-            setSampleConsole(response1.data)           
-        }));
-        return () => { 
-            cancel = true;
-        }
-    }, []);
 
     const onRefresh = useCallback(() => {
         setLoading(true)
@@ -97,7 +66,7 @@ const PipelineList: FunctionComponent = () => {
         {
             id: 'pipelineExecutionArn',
             width: 700,
-            Header: 'Execution arn',
+            Header: t('industrial_models.pipeline.execution_arn'),
             accessor: 'pipelineExecutionArn',
             Cell: ({ row  }) => {
                 if (row && row.original) {
@@ -109,13 +78,13 @@ const PipelineList: FunctionComponent = () => {
         {
             id: 'pipelineName',
             width: 150,
-            Header: 'Name',
+            Header: t('industrial_models.common.name'),
             accessor: 'pipelineName'
         },
         {
             id: 'pipelineExecutionStatus',
             width: 150,
-            Header: 'Status',
+            Header: t('industrial_models.common.status'),
             accessor: 'pipelineExecutionStatus',
             Cell: ({ row  }) => {
                 if (row && row.original) {
@@ -140,7 +109,7 @@ const PipelineList: FunctionComponent = () => {
         {
             id: 'creationTime',
             width: 250,
-            Header: 'Creation time',
+            Header: t('industrial_models.common.creation_time'),
             accessor: 'creationTime',
             Cell: ({ row  }) => {
                 if (row && row.original) {
@@ -152,7 +121,7 @@ const PipelineList: FunctionComponent = () => {
         {
             id: 'lastModifiedTime',
             width: 250,
-            Header: 'Last updated',
+            Header: t('industrial_models.common.last_modified_time'),
             accessor: 'lastModifiedTime',
             Cell: ({ row  }) => {
                 if (row && row.original) {
@@ -166,33 +135,19 @@ const PipelineList: FunctionComponent = () => {
     const tableActions = (
         <Inline>
             <div className='tableaction'>
-                <Button icon="refresh" onClick={onRefresh} loading={loading}>Refresh</Button>
+                <Button icon="refresh" onClick={onRefresh} loading={loading}>{t('industrial_models.common.refresh')}</Button>
             </div>
             <div className='tableaction'>
-                <Button variant='primary' onClick={onCreate}>Create</Button>
+                <Button variant='primary' onClick={onCreate}>{t('industrial_models.common.create')}</Button>
             </div>
         </Inline>
     );
 
-    const renderSampleCode = () => {
-        return (
-            <Container title = 'Sample code'>
-                <Toggle label={visibleSampleCode ? 'Show sample code' : 'Hide sample code'} checked={visibleSampleCode} onChange={(checked) => {setVisibleSampleCode(checked)}} />
-                <Link href={sampleConsole} to={''}>Open in AWS Lambda console</Link>
-                {
-                    visibleSampleCode && <SyntaxHighlighter language='python' style={github} showLineNumbers={true}>
-                        {sampleCode}
-                    </SyntaxHighlighter>
-                }
-            </Container>
-        )
-    }
-        
     const renderPipelineList = () => {
         return (
             <Table
                 actionGroup={tableActions}
-                tableTitle='Pipeline'
+                tableTitle={t('industrial_models.pipelines')}
                 multiSelect={false}
                 columnDefinitions={columnDefinitions}
                 items={pipelineItems}
@@ -204,10 +159,9 @@ const PipelineList: FunctionComponent = () => {
     }
 
     return (
-        <Stack>
+        <div>
             { renderPipelineList() }
-            { renderSampleCode() }
-        </Stack>
+        </div>
     )
 }
 

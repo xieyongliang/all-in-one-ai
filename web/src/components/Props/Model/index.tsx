@@ -3,6 +3,7 @@ import { useHistory, useLocation } from 'react-router-dom';
 import { KeyValuePair, Button, Form, FormSection, LoadingIndicator, Text } from 'aws-northstar';
 import axios from 'axios';
 import Grid from '@mui/material/Grid';
+import { useTranslation } from "react-i18next";
 
 const ModelProp: FunctionComponent = () => {
     const [ modelName, setModelName ] = useState('')
@@ -11,6 +12,8 @@ const ModelProp: FunctionComponent = () => {
     const [ containers, setContainers ] = useState([])
     const [ tags, setTags ] = useState([])
     const [ loading, setLoading ] = useState(true);
+
+    const { t } = useTranslation();
 
     const history = useHistory();
 
@@ -39,13 +42,13 @@ const ModelProp: FunctionComponent = () => {
 
     const renderModelSummary = () => {
         return (
-            <FormSection header='Model summary'>
+            <FormSection header={t('industrial_models.model.model_summary')}>
                 <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }}>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label='Model name' value={modelName}></KeyValuePair>
+                        <KeyValuePair label={t('industrial_models.model.model_name')} value={modelName}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label='Creation time' value={creationTime}></KeyValuePair>
+                        <KeyValuePair label={t('industrial_models.common.creation_time')} value={creationTime}></KeyValuePair>
                     </Grid>
                 </Grid>
             </FormSection>
@@ -54,18 +57,18 @@ const ModelProp: FunctionComponent = () => {
 
     const renderContainerDefinition = () => {
         return (
-            <FormSection header='Container definition'>
+            <FormSection header={t('industrial_models.model.container_definition')}>
                 {
                     primaryContainer !== undefined &&
                     <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }}>
                         <Grid item xs={2} sm={4} md={4}>
-                            <KeyValuePair label='Mode' value={primaryContainer['Mode']}></KeyValuePair>
+                            <KeyValuePair label={t('industrial_models.model.mode')} value={primaryContainer['Mode']}></KeyValuePair>
                         </Grid>
                         <Grid item xs={2} sm={4} md={4}>
-                            <KeyValuePair label='Container image' value={primaryContainer['Image']}></KeyValuePair>
+                            <KeyValuePair label={t('industrial_models.model.container_image')} value={primaryContainer['Image']}></KeyValuePair>
                         </Grid>
                         <Grid item xs={2} sm={4} md={4}>
-                            <KeyValuePair label='Model data url' value={primaryContainer['ModelDataUrl']}></KeyValuePair>
+                            <KeyValuePair label={t('industrial_models.model.model_data_url')} value={primaryContainer['ModelDataUrl']}></KeyValuePair>
                         </Grid>
                     </Grid>
                 }
@@ -73,7 +76,7 @@ const ModelProp: FunctionComponent = () => {
                     containers !== undefined && containers.length > 0 &&
                     <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }}>
                         <Grid item xs={6} sm={6} md={6}>
-                            <KeyValuePair label='Model package arn' value={containers[0]['ModelPackageName']}></KeyValuePair>
+                            <KeyValuePair label={t('industrial_models.model.model_package_arn')} value={containers[0]['ModelPackageName']}></KeyValuePair>
                         </Grid>
                     </Grid>
                 }
@@ -81,13 +84,13 @@ const ModelProp: FunctionComponent = () => {
                     primaryContainer !== undefined && primaryContainer['Environment'] !== undefined && 
                     <Grid container spacing={{ xs: 1, md: 1 }} columns={{ xs: 4, sm: 8, md: 12 }}>
                         <Grid item xs={12} sm={12} md={12}>
-                            <Text> Environment variables </Text>
+                            <Text> {t('industrial_models.model.environments')} </Text>
                         </Grid>
                         <Grid item xs={6} sm={6} md={6}>
-                            <Text> Key </Text>
+                            <Text> {t('industrial_models.common.key')} </Text>
                         </Grid>
                         <Grid item xs={6} sm={6} md={6}>
-                            <Text> Value </Text> 
+                            <Text> {t('industrial_models.common.value')} </Text> 
                         </Grid>
                     </Grid>
                 }
@@ -108,10 +111,10 @@ const ModelProp: FunctionComponent = () => {
                     containers !== undefined &&
                     <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }}>
                         <Grid item xs={2} sm={4} md={4}>
-                            <KeyValuePair label='Mode' value={containers[0]['Mode']}></KeyValuePair>
+                            <KeyValuePair label={t('industrial_models.model.mode')} value={containers[0]['Mode']}></KeyValuePair>
                         </Grid>
                         <Grid item xs={2} sm={4} md={4}>
-                            <KeyValuePair label='Container image' value={containers[0]['ModelPackageName']}></KeyValuePair>
+                            <KeyValuePair label={t('industrial_models.model.container_image')} value={containers[0]['ModelPackageName']}></KeyValuePair>
                         </Grid>
                     </Grid>
                 }
@@ -119,13 +122,13 @@ const ModelProp: FunctionComponent = () => {
                     containers !== undefined && containers[0]['Environment'] !== undefined && 
                     <Grid container spacing={{ xs: 1, md: 1 }} columns={{ xs: 4, sm: 8, md: 12 }}>
                         <Grid item xs={12} sm={12} md={12}>
-                            <Text> Environment variables </Text>
+                            <Text> {t('industrial_models.model.environments')} </Text>
                         </Grid>
                         <Grid item xs={6} sm={6} md={6}>
-                            <Text> Key </Text>
+                            <Text> {t('industrial_models.common.key')} </Text>
                         </Grid>
                         <Grid item xs={6} sm={6} md={6}>
-                            <Text> Value </Text> 
+                            <Text> {t('industrial_models.common.value')} </Text> 
                         </Grid>
                     </Grid>
                 }
@@ -148,15 +151,15 @@ const ModelProp: FunctionComponent = () => {
 
     const renderModelTags = () => {
         return (
-            <FormSection header='Tags'>
+            <FormSection header={t('industrial_models.common.tags')}>
                 {
                     tags !== undefined && 
                     <Grid container spacing={{ xs: 2, md: 2 }} columns={{ xs: 4, sm: 8, md: 8 }}>
                         <Grid item xs={2} sm={4} md={4}>
-                            <Text> Key </Text>
+                            <Text> {t('industrial_models.common.key')} </Text>
                         </Grid>
                         <Grid item xs={2} sm={4} md={4}>
-                            <Text> Value </Text> 
+                            <Text> {t('industrial_models.common.value')} </Text> 
                         </Grid>
                     </Grid>
                 }
@@ -178,14 +181,14 @@ const ModelProp: FunctionComponent = () => {
 
     return (
         <Form
-            header='Review model'
-            description='To deploy a model to Amazon SageMaker, first create the model by providing the location of the model artifacts and inference code.'
+            header={t('industrial_models.model.review_model')}
+            description={t('industrial_models.model.create_model_description')}
             actions={
                 <div>
-                    <Button variant='primary' onClick={onClose}>Close</Button>
+                    <Button variant='primary' onClick={onClose}>{t('industrial_models.demo.close')}</Button>
                 </div>
             }>   
-            { loading && <LoadingIndicator label='Loading...'/> }
+            { loading && <LoadingIndicator label={t('industrial_models.demo.loading')}/> }
             { !loading && renderModelSummary() }
             { !loading && renderContainerDefinition() }
             { !loading && renderModelTags() }

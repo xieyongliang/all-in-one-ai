@@ -1,4 +1,5 @@
-import { Container, DeleteConfirmationDialog, LoadingIndicator, Text } from 'aws-northstar';
+import { Container, LoadingIndicator, Text } from 'aws-northstar';
+import DeleteConfirmationDialog from '../../Utils/DeleteConfirmationDialog';
 import { FunctionComponent, useCallback, useEffect, useState } from 'react';
 import Grid from '@mui/material/Grid';
 import { connect } from 'react-redux';
@@ -16,6 +17,7 @@ import { ListItemIcon, ListItemText, Menu, MenuList, Button, IconButton, Typogra
 import { useHistory } from 'react-router-dom';
 import Image from '../../Utils/Image';
 import cognitoUtils from '../../../lib/cognitoUtils';
+import { useTranslation } from "react-i18next";
 
 interface IProps {
     updateIndustrialModelsAction: (industrialModels: IIndustrialModel[]) => any;
@@ -33,6 +35,8 @@ const IndustrialModelList: FunctionComponent<IProps> = (props) => {
     const [ visibleConfirmationDialog, setVisibleConfirmationDialog ] = useState(false)
     const [ processing, setProssing ] = useState(false)
     const [anchorEl, setAnchorEl] = useState(null);
+
+    const { t } = useTranslation();
 
     const history = useHistory();
     
@@ -111,13 +115,13 @@ const IndustrialModelList: FunctionComponent<IProps> = (props) => {
     const renderIndustrialModelTable = () => {
         if(loading) 
             return (
-                <Container title='You can simply start from the existing industrial models.'>
-                    <LoadingIndicator label='Loading...'/>
+                <Container title={t('industrial_models.overview.industrial_models_option_start_from_existing')}>
+                    <LoadingIndicator label={t('industrial_models.demo.loading')}/>
                 </Container>
             )
         else 
             return (
-                <Container title='You can simply start from the existing industrial models.'>
+                <Container title={t('industrial_models.overview.industrial_models_option_start_from_existing')}>
                     <Grid container spacing={{ xs: 1, md: 1 }} columns={{ xs: 4, sm: 8, md: 12 }}>
                         {
                             itemsModels
@@ -160,7 +164,7 @@ const IndustrialModelList: FunctionComponent<IProps> = (props) => {
                                                     <ListItemIcon>
                                                         <Edit fontSize="small" />
                                                     </ListItemIcon>
-                                                    <ListItemText>Edit</ListItemText>
+                                                    <ListItemText>{t('industrial_models.common.edit')}</ListItemText>
                                                 </MenuItem>
                                                 <MenuItem
                                                     key={`Delete-${itemModel.id}`}
@@ -168,7 +172,7 @@ const IndustrialModelList: FunctionComponent<IProps> = (props) => {
                                                     <ListItemIcon>
                                                         <Delete fontSize="small" />
                                                     </ListItemIcon>
-                                                    <ListItemText>Delete</ListItemText>
+                                                    <ListItemText>{t('industrial_models.common.delete')}</ListItemText>
                                                 </MenuItem>
                                             </Menu>
                                             </MenuList>
@@ -185,7 +189,7 @@ const IndustrialModelList: FunctionComponent<IProps> = (props) => {
                                                 </Typography>
                                             </CardContent>
                                             <CardActions>
-                                                <Button size="large" variant="contained" onClick={()=>{history.push(`/imodels/${itemModel.id}?tab=demo#sample`)}}>Try it</Button>
+                                                <Button size="large" variant="contained" onClick={()=>{history.push(`/imodels/${itemModel.id}?tab=demo#sample`)}}>{t('industrial_models.overview.try_it')}</Button>
                                             </CardActions>
                                         </Card>
                                     </Grid>
@@ -199,8 +203,8 @@ const IndustrialModelList: FunctionComponent<IProps> = (props) => {
 
     const renderCreateIndustrialModel = () => {
         return (
-            <Container title='You can also create your own industrial model based on the existing algorithms.'>
-                <Button onClick={onCreate}> Create your own industrial model </Button>
+            <Container title={t('industrial_models.overview.industrial_models_option_create_your_own')}>
+                <Button onClick={onCreate}>{t('industrial_models.overview.create_your_own_industrial_model')}</Button>
             </Container>
         )
     }
@@ -228,12 +232,14 @@ const IndustrialModelList: FunctionComponent<IProps> = (props) => {
             <DeleteConfirmationDialog
                 variant="confirmation"
                 visible={visibleConfirmationDialog}
-                title={`Delete ${industrialModel.name}`}
+                title={t('industrial_models.common.delete') + ` ${industrialModel.name}`}
                 onCancelClicked={()=>setVisibleConfirmationDialog(false)}
                 onDeleteClicked={deleteIndustrialModel}
                 loading={processing}
+                deleteButtonText={t('industrial_models.common.delete')}
+                cancelButtonText={t('industrial_models.common.cancel')}
             >
-                <Text>This will permanently delete your industrial model and cannot be undone. This may affect other resources.</Text>
+                <Text>{t('industrial_models.overview.delete_industrial_model')}</Text>
             </DeleteConfirmationDialog>
         )
     }

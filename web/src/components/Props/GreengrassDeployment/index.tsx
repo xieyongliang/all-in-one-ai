@@ -5,6 +5,7 @@ import axios from 'axios';
 import Grid from '@mui/material/Grid';
 import { PathParams } from '../../Interfaces/PathParams';
 import { Column } from 'react-table'
+import { useTranslation } from "react-i18next";
 
 const GreengrassDeploymentProp: FunctionComponent = () => {
     const [ targetArn, setTargetArn ] = useState('')
@@ -14,6 +15,8 @@ const GreengrassDeploymentProp: FunctionComponent = () => {
     const [ creationTimestamp, setCreationTimestamp ] = useState('')
     const [ loading, setLoading ] = useState(true);
     const [ items ] = useState([])
+
+    const { t } = useTranslation();
 
     const history = useHistory();
 
@@ -92,19 +95,19 @@ const GreengrassDeploymentProp: FunctionComponent = () => {
             <FormSection header='Greengrass deployment overview'>
                 <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }}>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label='Target' value={targetArn}></KeyValuePair>
+                        <KeyValuePair label={t('industrial_models.greengrass_deployment.target_arn')} value={targetArn}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label='Deployment status' value={deploymentStatus}></KeyValuePair>
+                        <KeyValuePair label={t('industrial_models.common.status')} value={deploymentStatus}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label='Deployment created' value={creationTimestamp}></KeyValuePair>
+                        <KeyValuePair label={t('industrial_models.common.creation_time')} value={creationTimestamp}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label='IoT job' value={iotJobId}></KeyValuePair>
+                        <KeyValuePair label={t('industrial_models.greengrass_deployment.target_arn')} value={iotJobId}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label='Revision Id' value={revisionId}></KeyValuePair>
+                        <KeyValuePair label={t('industrial_models.greengrass_deployment.iot_job')} value={revisionId}></KeyValuePair>
                     </Grid>
                 </Grid>
             </FormSection>
@@ -114,7 +117,7 @@ const GreengrassDeploymentProp: FunctionComponent = () => {
     const renderGreengrassComponentlList = () => {
         return (
             <Table
-                tableTitle='Greengrass components'
+                tableTitle={t('industrial_models.greengrass_deployments')}
                 multiSelect={false}
                 columnDefinitions={columnDefinitions}
                 items={items}
@@ -127,14 +130,14 @@ const GreengrassDeploymentProp: FunctionComponent = () => {
 
     return (
         <Form
-            header='Review Greengrass deployment'
-            description='This deployment targets an AWS IoT thing group. Add a core device to the thing group to apply this deployment to it.'
+            header={t('industrial_models.greengrass_deployment.review_greengrass_deployment')}
+            description={t('industrial_models.greengrass_deployment.create_greengrass_deployment_description')}
             actions={
                 <div>
-                    <Button variant='primary' onClick={onClose}>Close</Button>
+                    <Button variant='primary' onClick={onClose}>{t('industrial_models.demo.close')}</Button>
                 </div>
             }>   
-            { loading && <LoadingIndicator label='Loading...'/> }
+            { loading && <LoadingIndicator label={t('industrial_models.demo.loading')}/> }
             { !loading && renderGreengrassDeploymentOverview() }
             { !loading && renderGreengrassComponentlList() }
         </Form>

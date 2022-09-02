@@ -1,9 +1,10 @@
 import { FunctionComponent, useEffect, useState } from 'react';
 import { useHistory, useLocation } from 'react-router-dom';
-import { KeyValuePair, StatusIndicator, Button, Form, FormSection, Link, LoadingIndicator, Text } from 'aws-northstar';
+import { KeyValuePair, StatusIndicator, Button, Form, FormSection, LoadingIndicator, Text } from 'aws-northstar';
 import axios from 'axios';
 import Grid from '@mui/material/Grid';
 import { getDurationByDates } from '../../Utils/Helper';
+import { useTranslation } from "react-i18next";
 
 const TransformJobProp: FunctionComponent = () => {
     const [ transformJobName, setTransformJobName ] = useState('')
@@ -23,6 +24,8 @@ const TransformJobProp: FunctionComponent = () => {
     const [ environment, setEnvironment ] = useState({})
     const [ tags, setTags ] = useState([])
     const [ loading, setLoading ] = useState(true);
+
+    const { t } = useTranslation();
 
     const history = useHistory();
 
@@ -71,32 +74,25 @@ const TransformJobProp: FunctionComponent = () => {
         }
     }
 
-    const getLink = (link: string) => {
-        if(link !== undefined)
-            return <Link href={link}> {link} </Link>
-        else
-            return ''
-    }
-
     const onClose = () => {
         history.goBack()
     }
 
     const renderTransformJobSummary = () => {
         return (
-            <FormSection header='Job summary'>
+            <FormSection header={t('industrial_models.transform_job.transform_ob_summary')}>
                 <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }}>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label='Job name' value={transformJobName}></KeyValuePair>
+                        <KeyValuePair label={t('industrial_models.transform_job.job_name')} value={transformJobName}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label='Status' value={getStatus(transformJobStatus)}></KeyValuePair>
+                        <KeyValuePair label={t('industrial_models.common.status')} value={getStatus(transformJobStatus)}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label='Approx. batch transform duration' value={getDurationByDates(transformStartTime, transformEndTime)}></KeyValuePair>
+                        <KeyValuePair label={t('industrial_models.common.duration')} value={getDurationByDates(transformStartTime, transformEndTime)}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label='Creation time' value={creationTime}></KeyValuePair>
+                        <KeyValuePair label={t('industrial_models.common.creation_time')} value={creationTime}></KeyValuePair>
                     </Grid>
                 </Grid>
             </FormSection>
@@ -105,31 +101,31 @@ const TransformJobProp: FunctionComponent = () => {
 
     const renderTransformJobConfiguration = () => {
         return (
-            <FormSection header='Job configuration'>
+            <FormSection header={t('industrial_models.transform_job.job_configuration')}>
                 <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }}>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label='Model name' value={modelName}></KeyValuePair>
+                        <KeyValuePair label={t('industrial_models.transform_job.model_name')} value={modelName}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label='Instance type' value={transformResources['InstanceType']}></KeyValuePair>
+                        <KeyValuePair label={t('industrial_models.transform_job.instance_type')} value={transformResources['InstanceType']}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label='Instance count' value={transformResources['InstanceCount']}></KeyValuePair>
+                        <KeyValuePair label={t('industrial_models.transform_job.instance_count')} value={transformResources['InstanceCount']}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label='Max concurrent transforms' value={maxConcurrentTransforms}></KeyValuePair>
+                        <KeyValuePair label={t('industrial_models.transform_job.max_concurrent_transform')} value={maxConcurrentTransforms}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label='Max payload size (MB)' value={maxPayloadInMB}></KeyValuePair>
+                        <KeyValuePair label={t('industrial_models.transform_job.max_payload_size_in_mb')} value={maxPayloadInMB}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label='Batch strategy' value={batchStrategy}></KeyValuePair>
+                        <KeyValuePair label={t('industrial_models.transform_job.batch_strategy')} value={batchStrategy}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label='Max invocation retries' value={modelClientConfig['InvocationsMaxRetries']}></KeyValuePair>
+                        <KeyValuePair label={t('industrial_models.transform_job.max_invocation_retries')} value={modelClientConfig['InvocationsMaxRetries']}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label='Invocation timeout in seconds' value={modelClientConfig['InvocationsTimeoutInSeconds']}></KeyValuePair>
+                        <KeyValuePair label={t('industrial_models.transform_job.invocation_timeout_in_seconds')} value={modelClientConfig['InvocationsTimeoutInSeconds']}></KeyValuePair>
                     </Grid>
                 </Grid>
             </FormSection>
@@ -138,22 +134,22 @@ const TransformJobProp: FunctionComponent = () => {
 
     const renderInputDataConfiguration = () => {
         return (
-            <FormSection header='Input data configuration'>
+            <FormSection header={t('industrial_models.transform_job.input_data_configuration')}>
                 <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }}>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label='S3 data type' value={transformInput['DataSource']['S3DataSource']['S3DataType']}></KeyValuePair>
+                        <KeyValuePair label={t('industrial_models.transform_job.s3_data_type')} value={transformInput['DataSource']['S3DataSource']['S3DataType']}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label='Split type' value={transformInput['SplitType']}></KeyValuePair>
+                        <KeyValuePair label={t('industrial_models.transform_job.split_type')} value={transformInput['SplitType']}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label='Compression type' value={transformInput['CompressionType']}></KeyValuePair>
+                        <KeyValuePair label={t('industrial_models.transform_job.compression')} value={transformInput['CompressionType']}></KeyValuePair>
                     </Grid>
+                    <Grid item xs={2} sm={4} md={4}>
+                        <KeyValuePair label={t('industrial_models.transform_job.content_type')} value={transformInput['ContentType']}></KeyValuePair>
+                    </Grid>               
                     <Grid item xs={4} sm={4} md={4}>
-                        <KeyValuePair label='S3 URI' value={getLink(transformInput['DataSource']['S3DataSource']['S3Uri'])}></KeyValuePair>
-                    </Grid>
-                    <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label='Content type' value={transformInput['ContentType']}></KeyValuePair>
+                        <KeyValuePair label={t('industrial_models.transform_job.s3_location')} value={transformInput['DataSource']['S3DataSource']['S3Uri']}></KeyValuePair>
                     </Grid>
                 </Grid>
             </FormSection>
@@ -162,16 +158,16 @@ const TransformJobProp: FunctionComponent = () => {
 
     const renderOutputDataConfiguration = () => {
         return (
-            <FormSection header='Output data configuration'>
+            <FormSection header={t('industrial_models.transform_job.output_data_configuration')}>
                 <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }}>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label='S3 output path' value={getLink(transformOutput['S3OutputPath'])}></KeyValuePair>
+                        <KeyValuePair label={t('industrial_models.transform_job.s3_output_path')} value={transformOutput['S3OutputPath']}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label='Accept' value={transformOutput['Accept']}></KeyValuePair>
+                        <KeyValuePair label={t('industrial_models.transform_job.assemble_with')} value={transformOutput['AssembleWith']}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label='Assemble with' value={transformOutput['AssembleWith']}></KeyValuePair>
+                        <KeyValuePair label={t('industrial_models.transform_job.accept')} value={transformOutput['Accept']}></KeyValuePair>
                     </Grid>
                 </Grid>
             </FormSection>
@@ -180,16 +176,16 @@ const TransformJobProp: FunctionComponent = () => {
 
     const renderDataProcessingConfiguration = () => {
         return (
-            <FormSection header='Data processing configuration'>
+            <FormSection header={t('industrial_models.transform_job.filtering_and_data_joins')}>
                 <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }}>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label='Input data filter' value={dataProcessing['InputFilter']}></KeyValuePair>
+                        <KeyValuePair label={t('industrial_models.transform_job.input_filter')} value={dataProcessing['InputFilter']}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label='Output data filter' value={dataProcessing['OutputFilter']}></KeyValuePair>
+                        <KeyValuePair label={t('industrial_models.transform_job.join_source')} value={dataProcessing['OutputFilter']}></KeyValuePair>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
-                        <KeyValuePair label='Join source to output' value={dataProcessing['JoinSource']}></KeyValuePair>
+                        <KeyValuePair label={t('industrial_models.transform_job.output_filter')} value={dataProcessing['JoinSource']}></KeyValuePair>
                     </Grid>
                 </Grid>
             </FormSection>
@@ -198,20 +194,20 @@ const TransformJobProp: FunctionComponent = () => {
 
     const renderTransformJobEnvironment = () => {
         return (
-            <FormSection header='Environment'>
+            <FormSection header={t('industrial_models.model.environments')}>
                 {
-                    Object.keys(environment).length > 0 &&
+                    environment !== undefined && Object.keys(environment).length > 0 &&
                     <Grid container spacing={{ xs: 2, md: 2 }} columns={{ xs: 4, sm: 8, md: 8 }}>
                         <Grid item xs={2} sm={4} md={4}>
-                            <Text> Key </Text>
+                            <Text> {t('industrial_models.common.key')} </Text>
                         </Grid>
                         <Grid item xs={2} sm={4} md={4}>
-                            <Text> Value </Text> 
+                            <Text> {t('industrial_models.common.value')} </Text> 
                         </Grid>
                     </Grid>
                 }
                 {
-                    Object.keys(environment).map((key, index) => (
+                    environment !== undefined && Object.keys(environment).map((key, index) => (
                         <Grid container spacing={{ xs: 2, md: 2 }} columns={{ xs: 4, sm: 8, md: 8 }}>
                             <Grid item xs={2} sm={4} md={4}>
                                 <Text>{key}</Text>
@@ -228,15 +224,15 @@ const TransformJobProp: FunctionComponent = () => {
 
     const renderTransformJobTags = () => {
         return (
-            <FormSection header='Tags'>
+            <FormSection header={t('industrial_models.common.tags')}>
                 {
                     tags !== undefined && 
                     <Grid container spacing={{ xs: 2, md: 2 }} columns={{ xs: 4, sm: 8, md: 8 }}>
                         <Grid item xs={2} sm={4} md={4}>
-                            <Text> Key </Text>
+                            <Text> {t('industrial_models.common.key')} </Text>
                         </Grid>
                         <Grid item xs={2} sm={4} md={4}>
-                            <Text> Value </Text> 
+                            <Text> {t('industrial_models.common.value')} </Text> 
                         </Grid>
                     </Grid>
                 }
@@ -258,14 +254,14 @@ const TransformJobProp: FunctionComponent = () => {
 
     return (
         <Form
-            header='Review batch transform job'
-            description='A transform job uses a model to transform data and stores the results at a specified location.'
+            header={t('industrial_models.transform_job.review_transform_job')}
+            description={t('industrial_models.transform_job.create_transform_job_description')}
             actions={
                 <div>
-                    <Button variant='primary' onClick={onClose}>Close</Button>
+                    <Button variant='primary' onClick={onClose}>{t('industrial_models.demo.close')}</Button>
                 </div>
             }>   
-            { loading && <LoadingIndicator label='Loading...'/> }
+            { loading && <LoadingIndicator label={t('industrial_models.demo.loading')}/> }
             { !loading && renderTransformJobSummary() }
             { !loading && renderTransformJobConfiguration() }
             { !loading && renderInputDataConfiguration() }

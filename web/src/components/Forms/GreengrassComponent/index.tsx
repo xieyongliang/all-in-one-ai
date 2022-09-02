@@ -8,6 +8,7 @@ import { UpdateGreengrassComponentName, UpdateGreengrassComponentVersion } from 
 import { AppState } from '../../../store';
 import { connect } from 'react-redux';
 import { v4 as uuidv4 } from 'uuid';
+import { useTranslation } from "react-i18next";
 
 interface IProps {
     updateGreengrassComponentNameAction: (greengrassComponentName: string) => any;
@@ -37,6 +38,8 @@ const GreengrassComponentForm: FunctionComponent<IProps> = (props) => {
     const [ componentVersion, setComponentVersion ] = useState(props.wizard ? props.greengrassComponentVersion : '')
     const [ itemsModel ] = useState({})
     const [ processing, setProcessing ] = useState(false)
+
+    const { t } = useTranslation();
 
     const history = useHistory();
     
@@ -111,10 +114,9 @@ const GreengrassComponentForm: FunctionComponent<IProps> = (props) => {
 
     const renderGreengrassComponentSetting = () => {
         return (
-            <FormSection header='Greengrass component setting'>
-                <FormField label='Component name' controlId={uuidv4()}>
+            <FormSection header={t('industrial_models.greengrass_component.greengrass_component_settings')}>
+                <FormField label={t('industrial_models.greengrass_component.component_name')} controlId={uuidv4()}>
                     <Select
-                            placeholder='Choose an option'
                             options={optionsComponents}
                             selectedOption={selectedComponent}
                             onChange={(event) => onChange('formFieldIdComponents', event)}
@@ -127,24 +129,23 @@ const GreengrassComponentForm: FunctionComponent<IProps> = (props) => {
     const renderGreengrassContent = () => {
         if(!wizard)
             return (
-                <FormSection header='Production variants'>
-                    <FormField label='Model name' controlId={uuidv4()}>
+                <FormSection header={t('industrial_models.greengrass_component.production_variant')}>
+                    <FormField label={t('industrial_models.greengrass_component.model_name')} controlId={uuidv4()}>
                         <Select
-                                placeholder='Choose an option'
                                 options={optionsModels}
                                 selectedOption={selectedModel}
                                 onChange={(event) => onChange('formFieldIdModels', event)}
                             />
                     </FormField>
-                    <FormField label='Component version' controlId={uuidv4()}>
+                    <FormField label={t('industrial_models.greengrass_component.component_version')} controlId={uuidv4()}>
                         <Input value={componentVersion} onChange={(event) => onChange('formFieldIdMComponentVersion', event)} />
                     </FormField>
                 </FormSection>
             )
         else
             return (
-                <FormSection header='Production variants'>
-                    <FormField label='Component version' controlId={uuidv4()}>
+                <FormSection header={t('industrial_models.greengrass_component.production_variant')}>
+                    <FormField label={t('industrial_models.greengrass_component.component_version')} controlId={uuidv4()}>
                         <Input value={componentVersion} onChange={(event) => onChange('formFieldIdMComponentVersion', event)} />
                     </FormField>
                 </FormSection>
@@ -154,7 +155,6 @@ const GreengrassComponentForm: FunctionComponent<IProps> = (props) => {
     if(wizard) {
         return (
             <Stack>
-                {renderGreengrassComponentSetting()}
                 {renderGreengrassContent()}
             </Stack>
         )
@@ -162,11 +162,11 @@ const GreengrassComponentForm: FunctionComponent<IProps> = (props) => {
     else {
         return (
             <Form
-                header='Create Greengrass component'
+                header={t('industrial_models.greengrass_component.create_greengrass_component')}
                 actions={
                     <div>
-                        <Button variant='link' onClick={onCancel}>Cancel</Button>
-                        <Button variant='primary' onClick={onSubmit} loading={processing}>Submit</Button>
+                        <Button variant='link' onClick={onCancel}>{t('industrial_models.common.cancel')}</Button>
+                        <Button variant='primary' onClick={onSubmit} loading={processing}>{t('industrial_models.common.submit')}</Button>
                     </div>
                 }>
                 {renderGreengrassComponentSetting()}

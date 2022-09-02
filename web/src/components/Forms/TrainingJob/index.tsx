@@ -12,25 +12,7 @@ import { PathParams } from '../../Interfaces/PathParams';
 import { TRAININGINPUTDATA, TRAININGOPTIONS } from '../../Data/data';
 import { v4 as uuidv4 } from 'uuid';
 import './index.scss';
-
-const timeUnitOptions : SelectOption[] = [
-    {
-        label: 'seconds',
-        value: 'seconds'
-    },
-    {
-        label: 'minutes',
-        value: 'minutes'
-    },
-    {
-        label: 'hours',
-        value: 'hours'
-    },
-    {
-        label: 'days',
-        value: 'days'
-    }
-]
+import { useTranslation } from "react-i18next";
 
 interface IProps {
     updateTrainingjobInstanceTypeAction: (trainingjobInstanceType: string) => any;
@@ -69,6 +51,27 @@ const TrainingJobForm: FunctionComponent<IProps> = (props) => {
     const [ maxWaitTime, setMaxWaitTime ] = useState(48)
     const [ selectedRuntimeUnit, setRuntimeUnit ] = useState<SelectOption>({label: 'hours', value: 'hours'})
     const [ maxRuntime, setMaxRuntime ] = useState(24)
+
+    const { t } = useTranslation();
+
+    const timeUnitOptions : SelectOption[] = [
+        {
+            label: t('industrial_models.common.seconds'),
+            value: 'seconds'
+        },
+        {
+            label: t('industrial_models.common.minutes'),
+            value: 'minutes'
+        },
+        {
+            label: t('industrial_models.common.hours'),
+            value: 'hours'
+        },
+        {
+            label: t('industrial_models.common.days'),
+            value: 'days'
+        }
+    ]
 
     const history = useHistory();
 
@@ -185,7 +188,7 @@ const TrainingJobForm: FunctionComponent<IProps> = (props) => {
                 .then((response) => {
                     history.goBack()
                 }, (error) => {
-                        alert('Error occured, please check and try it again');
+                        alert(t('industrial_models.common.error_occured'));
                         console.log(error);
                         setProcessing(false);
                     }
@@ -217,7 +220,7 @@ const TrainingJobForm: FunctionComponent<IProps> = (props) => {
                 .then((response) => {
                     history.goBack()
                 }, (error) => {
-                        alert('Error occured, please check and try it again');
+                        alert(t('industrial_models.common.error_occured'));
                         console.log(error);
                         setProcessing(false);
                     }
@@ -265,15 +268,20 @@ const TrainingJobForm: FunctionComponent<IProps> = (props) => {
 
     const renderTrainingJobSetting = () => {
         return (
-            <FormSection header='Job settings'>
+            <FormSection header={t('industrial_models.training_job.job_settings')}>
                 {
                     (!wizard) && 
                     <Grid container spacing={{ xs: 2, md: 2 }} columns={{ xs: 4, sm: 8, md: 8 }}>
                         <Grid item xs={2} sm={4} md={4}>
-                            <Text variant='p'>Job name</Text>
-                            <Text variant='small'>Maximum of 63 alphanumeric characters. Can include hyphens (-), but not spaces. Must be unique within your account in an AWS Region.</Text>
-                            <div style={{marginTop: '5px', marginBottom: '5px'}}>
+                            <Text variant='p'>{t('industrial_models.training_job.job_name')}</Text>
+                            <div style={{marginTop: '5px'}}>
                                 <Input type='text' value={trainingJobName} required={true} onChange={(event) => onChange('formFieldIdTrainingJobName', event)}/>
+                            </div>
+                        </Grid>
+                        <Grid item xs={2} sm={4} md={4}></Grid>
+                        <Grid item xs={2} sm={8} md={8}>
+                            <div style={{marginTop: '-22px'}}>
+                                <Text variant='small'>{t('industrial_models.training_job.job_name_hint')}</Text>
                             </div>
                         </Grid>
                     </Grid>
@@ -282,18 +290,18 @@ const TrainingJobForm: FunctionComponent<IProps> = (props) => {
                     !wizard && 
                     <div className='subheader'>
                         <div className='title'>
-                            Algorithm specification
+                            {t('industrial_models.training_job.algorithm_specification')}
                         </div>
                     </div>
                 }
                 {
                     !wizard && 
                     <div style={{marginBottom: '5px'}}>
-                        <FormField controlId={uuidv4()} description='Use SageMaker built-in container image or your own container image.'>
+                        <FormField controlId={uuidv4()} description={t('industrial_models.training_job.algorithm_container_options')}>
                             <RadioGroup onChange={onChangeOptions}
                                 items={[
-                                    <RadioButton value='BYOS' checked={scriptMode}>Bring your own script.</RadioButton>, 
-                                    <RadioButton value='BYOC' checked={!scriptMode}>Bring your own container.</RadioButton>,
+                                    <RadioButton value='BYOS' checked={scriptMode}>{t('industrial_models.training_job.algorithm_container_option_byos')}</RadioButton>, 
+                                    <RadioButton value='BYOC' checked={!scriptMode}>{t('industrial_models.training_job.algorithm_container_option_byoc')}</RadioButton>,
                                 ]}
                             /> 
                         </FormField>
@@ -303,7 +311,7 @@ const TrainingJobForm: FunctionComponent<IProps> = (props) => {
                     !scriptMode &&
                     <Grid container spacing={{ xs: 2, md: 2 }} columns={{ xs: 4, sm: 8, md: 8 }}>
                         <Grid item xs={2} sm={4} md={4}>
-                            <Text variant='p'>Container</Text>
+                            <Text variant='p'>{t('industrial_models.common.container')}</Text>
                             <div style={{marginTop: '5px', marginBottom: '5px'}}>
                                 <Input type='text' required={true} onChange={(event) => onChange('formFieldIdTrainingImage', event)}/>
                             </div>
@@ -312,21 +320,20 @@ const TrainingJobForm: FunctionComponent<IProps> = (props) => {
                 }
                 <div className='subheader'>
                     <div className='title'>
-                        Resource configuration
+                        {t('industrial_models.training_job.resource_configuration')}
                     </div>
                 </div>
                 <Grid container spacing={{ xs: 2, md: 2 }} columns={{ xs: 4, sm: 8, md: 8 }}>
                     <Grid item xs={2} sm={2} md={2}>
-                        <Text>Instance type</Text>
+                        <Text>{t('industrial_models.training_job.instance_type')}</Text>
                     </Grid>
                     <Grid item xs={2} sm={2} md={2}>
-                        <Text>Instance count</Text>
+                        <Text>{t('industrial_models.training_job.instance_count')}</Text>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}/>
                     <Grid item xs={2} sm={2} md={2}>
                     <div style={{marginTop: '-20px', marginBottom: '-5px'}}>
                             <Select
-                                placeholder='Choose an option'
                                 options={ TRAININGOPTIONS }
                                 selectedOption={selectedInstanceType}
                                 onChange={(event) => onChange('formFieldIdInstanceType', event)}
@@ -342,7 +349,7 @@ const TrainingJobForm: FunctionComponent<IProps> = (props) => {
                     {
                         !scriptMode && 
                         <Grid item xs={2} sm={4} md={4}>
-                            <Text variant='p'>Additional storage volume per instance (GB)</Text>
+                            <Text variant='p'>{t('industrial_models.training_job.additional_storage_volume_in_gb')}</Text>
                             <div style={{marginTop: '5px', marginBottom: '5px'}}>
                                 <Input type='number' value={volumeSizeInGB} required={true} onChange={(event) => onChange('formFieldIdVolumeSizeInGB', event)}/>
                             </div>
@@ -356,7 +363,7 @@ const TrainingJobForm: FunctionComponent<IProps> = (props) => {
                     !scriptMode && 
                     <div className='subheader'>
                         <div className='title'>
-                            Stop condiction
+                            {t('industrial_models.training_job.stop_condiction')}
                         </div>
                     </div>
                 }
@@ -364,7 +371,7 @@ const TrainingJobForm: FunctionComponent<IProps> = (props) => {
                     !scriptMode && 
                     <Grid container spacing={{ xs: 2, md: 2 }} columns={{ xs: 4, sm: 8, md: 8 }}>
                         <Grid item xs={2} sm={8} md={8}>
-                            <Text>Maximum runtime</Text>
+                            <Text>{t('industrial_models.training_job.maximum_runtime')}</Text>
                         </Grid>
                         <Grid item xs={2} sm={3} md={3}>
                             <div style={{marginTop: '-20px', marginBottom: '-5px'}}>
@@ -374,7 +381,6 @@ const TrainingJobForm: FunctionComponent<IProps> = (props) => {
                         <Grid item xs={2} sm={1} md={1}>
                             <div style={{marginTop: '-20px', marginBottom: '-5px'}}>
                                 <Select
-                                    placeholder='Choose an option'
                                     options={timeUnitOptions}
                                     selectedOption={selectedRuntimeUnit}
                                     onChange={(event) => onChange('formFieldIdStopRuntimeUnit', event)}
@@ -389,18 +395,17 @@ const TrainingJobForm: FunctionComponent<IProps> = (props) => {
 
     const renderHyperparameters = () => {
         return (
-            <FormSection header='Hyperparameters' description='You can use hyperparameters to finely control training. Choose Add hyperparameter to get started.'>
+            <FormSection header={t('industrial_models.training_job.hyperparameters')} description={t('industrial_models.training_job.hyperparameters_description')}>
                 {
                     hyperparameters.length>0 && 
                     <Grid container spacing={{ xs: 2, md: 2 }} columns={{ xs: 4, sm: 8, md: 12 }}>
                         <Grid item xs={2} sm={4} md={4}>
-                            <Text> Key </Text>
+                            <Text> {t('industrial_models.common.key')} </Text>
                         </Grid>
                         <Grid item xs={2} sm={4} md={4}>
-                            <Text> Value </Text> 
+                            <Text> {t('industrial_models.common.value')} </Text> 
                         </Grid>
                         <Grid item xs={2} sm={4} md={4}>
-                            <Text>  </Text>
                         </Grid>
                     </Grid>
                 }
@@ -419,14 +424,14 @@ const TrainingJobForm: FunctionComponent<IProps> = (props) => {
                         </Grid>
                     ))
                 }
-                <Button variant='link' size='large' onClick={onAddHyperparameter}>Add hyperparameter</Button>
+                <Button variant='link' size='large' onClick={onAddHyperparameter}>{t('industrial_models.training_job.add_hyperparameter')}</Button>
             </FormSection>
         )
     }
 
     const renderInputDataConfiguration = () => {
         return (
-            <FormSection header='Input data configuration' description='Create up to 20 channels of input sources. If the algorithm you chose supports multiple input channels, you can specify those here.'>
+            <FormSection header={t('industrial_models.training_job.input_data_configuration')} description={t('industrial_models.training_job.input_data_configuration_description')}>
                 {
                     inputData.map((channel, index) => (
                         <Grid container spacing={{ xs: 2, md: 2 }} columns={{ xs: 4, sm: 8, md: 8 }}>
@@ -445,17 +450,17 @@ const TrainingJobForm: FunctionComponent<IProps> = (props) => {
 
     const renderCheckpointConfiguration = () => {
         return (
-            <FormSection header='Checkpoint configuration - optional' description='The algorithm is responsible for periodically generating checkpoints. The checkpoints are saved to this location and used to resume managed spot training jobs'>
+            <FormSection header={t('industrial_models.training_job.checkpoint_configuration')} description={t('industrial_models.training_job.checkpoint_configuration_description')}>
                 <Grid container spacing={{ xs: 2, md: 2 }} columns={{ xs: 4, sm: 8, md: 8 }}>
                     <Grid item xs={2} sm={4} md={4}>
-                        <Text variant='p'>S3 location</Text>
+                        <Text variant='p'>{t('industrial_models.training_job.s3_location')}</Text>
                         <div style={{marginTop: '5px'}}/>
                         <Input value={checkpointS3Uri} placeholder='s3://{bucket}/path-to-your-data' required={true} onChange={(event) => onChange('formFieldIdCheckpointS3Uri', event)} />
                     </Grid>
                     <Grid item xs={2} sm={4} md={4} />
                     <Grid item xs={2} sm={4} md={4}>
-                        <Text variant='p'>Local path - optional</Text>
-                        <Text variant='small'>If you want Amazon SageMaker to encrypt the output of your training job using your own AWS KMS encryption key instead of the default S3 service key, provide its ID or ARN.</Text>
+                        <Text variant='p'>{t('industrial_models.training_job.local_path')}</Text>
+                        <Text variant='small'>{t('industrial_models.training_job.local_path_description')}</Text>
                         <div style={{marginTop: '5px'}}/>
                         <Input value={checkpointLocalPath} onChange={(event) => onChange('formFieldIdCheckpointLocalPath', event)} />
                     </Grid>
@@ -466,7 +471,7 @@ const TrainingJobForm: FunctionComponent<IProps> = (props) => {
 
     const renderOutputDataConfiguration = () => {
             return (
-                <FormSection header='Output data configuration'>
+                <FormSection header={t('industrial_models.training_job.output_data_configuration')}>
                     <Grid container spacing={{ xs: 2, md: 2 }} columns={{ xs: 4, sm: 8, md: 8 }}>
                         <Grid item xs={2} sm={4} md={4}>
                             <Input value={outputS3Uri} placeholder='s3://{bucket}/path-to-your-data' required={true} onChange={(event) => onChange('formFieldIdOutputS3Uri', event)} />
@@ -478,16 +483,14 @@ const TrainingJobForm: FunctionComponent<IProps> = (props) => {
 
     const renderManagedSpotTraining = () => {
         return (
-            <FormSection header='Managed spot training'>
+            <FormSection header={t('industrial_models.training_job.managed_spot_training')}>
                 <FormField controlId={uuidv4()}>
-                <Toggle label="Enable managed spot training - optional" description="Save compute costs for jobs that have flexibility in start and end times. Amazon SageMaker will use spare capacity only to run this job." onChange={(event) => onChange('formFieldIdSpotTrainingEnabled', event)} />   
+                <Toggle label={t('industrial_models.training_job.enable_managed_spot_training')} description={t('industrial_models.training_job.enable_managed_spot_training_description')} onChange={(event) => onChange('formFieldIdSpotTrainingEnabled', event)} />   
                 </FormField>
                 <Grid container spacing={{ xs: 2, md: 2 }} columns={{ xs: 4, sm: 8, md: 8 }}>
-                    <Grid item xs={2} sm={2} md={2}>
-                        <Text variant='p'>Maximum wait time before job terminates optional stopping condition</Text>
-                        <Text variant='small'>At the end of this duration you will receive the complete or partial results of you managed spot training job.</Text>
-                    </Grid>
-                    <Grid item xs={2} sm={2} md={2}>
+                    <Grid item xs={2} sm={4} md={4}>
+                        <Text variant='p'>{t('industrial_models.training_job.maximum_wait_time')}</Text>
+                        <Text variant='small'>{t('industrial_models.training_job.maximum_wait_time_description')}</Text>
                     </Grid>
                     <Grid item xs={2} sm={4} md={4}>
                     </Grid>
@@ -499,7 +502,6 @@ const TrainingJobForm: FunctionComponent<IProps> = (props) => {
                     <Grid item xs={2} sm={2} md={2}>
                         <div style={{marginTop: '5px', marginBottom: '5px'}}>
                             <Select
-                                placeholder='Choose an option'
                                 options={timeUnitOptions}
                                 selectedOption={selectedWaitiUnit}
                                 onChange={(event) => onChange('formFieldIdSpotTrainingUnit', event)}
@@ -514,15 +516,15 @@ const TrainingJobForm: FunctionComponent<IProps> = (props) => {
 
     const renderTrainingJobTag = () => {
         return (
-            <FormSection header='Tags - optional'>
+            <FormSection header={t('industrial_models.common.tags')}>
                 {
                     tags.length>0 && 
                     <Grid container spacing={{ xs: 2, md: 2 }} columns={{ xs: 4, sm: 8, md: 8 }}>
                         <Grid item xs={2} sm={2} md={2}>
-                            <Text> Key </Text>
+                            <Text> {t('industrial_models.common.key')} </Text>
                         </Grid>
                         <Grid item xs={2} sm={2} md={2}>
-                            <Text> Value </Text> 
+                            <Text> {t('industrial_models.common.value')} </Text> 
                         </Grid>
                         <Grid item xs={2} sm={2} md={2}>
                             <Text>  </Text>
@@ -539,12 +541,12 @@ const TrainingJobForm: FunctionComponent<IProps> = (props) => {
                                 <Input type='text' value={tag.value}/>
                             </Grid>
                             <Grid item xs={2} sm={2} md={2}>
-                                <Button onClick={() => onRemoveTag(index)}>Remove</Button>
+                                <Button onClick={() => onRemoveTag(index)}>{t('industrial_models.common.remove')}</Button>
                             </Grid>
                         </Grid>
                     ))
                 }
-                <Button variant='link' size='large' onClick={onAddTag}>Add tag</Button>
+                <Button variant='link' size='large' onClick={onAddTag}>{t('industrial_models.common.add_tag')}</Button>
             </FormSection>
         )
     }
@@ -565,12 +567,12 @@ const TrainingJobForm: FunctionComponent<IProps> = (props) => {
     else {
         return (
             <Form
-                header='Create training job'
-                description='When you create a training job, Amazon SageMaker sets up the distributed compute cluster, performs the training, and deletes the cluster when training has completed. The resulting model artifacts are stored in the location you specified when you created the training job.'
+                header={t('industrial_models.training_job.create_training_job')}
+                description={t('industrial_models.training_job.create_training_job_description')}
                 actions={
                     <div>
-                        <Button variant='link' onClick={onCancel}>Cancel</Button>
-                        <Button variant='primary' onClick={onSubmit} loading={processing}>Submit</Button>
+                        <Button variant='link' onClick={onCancel}>{t('industrial_models.common.cancel')}</Button>
+                        <Button variant='primary' onClick={onSubmit} loading={processing}>{t('industrial_models.common.submit')}</Button>
                     </div>
                 }>            
                 { renderTrainingJobSetting() }

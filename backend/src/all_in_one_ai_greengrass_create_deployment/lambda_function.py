@@ -1,8 +1,8 @@
 import json
 import boto3
-import traceback
 from datetime import date, datetime
 from decimal import Decimal
+import traceback
 
 greengrassv2_client = boto3.client('greengrassv2')
 

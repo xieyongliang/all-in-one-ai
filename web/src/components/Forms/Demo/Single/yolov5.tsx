@@ -6,6 +6,7 @@ import { useParams, useLocation, useHistory } from 'react-router-dom';
 import { PathParams } from '../../../Interfaces/PathParams';
 import { ProjectSubType, ProjectType } from '../../../../data/enums/ProjectType';
 import { v4 as uuidv4 } from 'uuid';
+import { useTranslation } from "react-i18next";
 
 interface IProps {
     advancedMode: boolean;
@@ -17,6 +18,8 @@ const Yolov5DemoForm: FunctionComponent<IProps> = (
         advancedMode,
         onAdvancedModeChange
     }) => {
+    const { t } = useTranslation();
+
     const history = useHistory();
 
     var params : PathParams = useParams();
@@ -34,8 +37,8 @@ const Yolov5DemoForm: FunctionComponent<IProps> = (
         return (
             <RadioGroup onChange={onChangeOptions}
                 items={[
-                    <RadioButton value='sample' checked={demoOption === 'sample'} >Realtime inference with sample image</RadioButton>,
-                    <RadioButton value='local' checked={demoOption === 'local'} >Realtime inference with local image</RadioButton>,
+                    <RadioButton value='sample' checked={demoOption === 'sample'} >{t('industrial_models.demo.demo_option_sample')}</RadioButton>,
+                    <RadioButton value='local' checked={demoOption === 'local'} >{t('industrial_models.demo.demo_option_local')}</RadioButton>,
                 ]}
             />
         )
@@ -43,12 +46,12 @@ const Yolov5DemoForm: FunctionComponent<IProps> = (
 
     return (
         <Stack>
-            <Container title = 'Demo options'>
+            <Container title = {t('industrial_models.demo.demo_options')}>
                 <FormField controlId={uuidv4()}>            
                     {renderDemoOptions()}
                 </FormField>
                 <FormField controlId={uuidv4()}>
-                    <Toggle label='Advanced mode' checked={advancedMode} onChange={onAdvancedModeChange}/>
+                    <Toggle label = {t('industrial_models.demo.advanced_mode')} checked={advancedMode} onChange={onAdvancedModeChange}/>
                 </FormField>
             </Container>
             {demoOption === 'sample' && <SampleImageForm type={ProjectType.OBJECT_DETECTION_RECT} subType={ProjectSubType.OBJECT_DETECTION}/>}
