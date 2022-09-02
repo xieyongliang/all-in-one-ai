@@ -34,7 +34,8 @@ interface IProps {
 }
 
 const languages = [
-    { label: "中文", value: "ch" },
+    { label: "简体中文", value: "zh-CHS" },
+    { label: "繁体中文", value: "zh-CHT" },
     { label: "English", value: "en" },
 ];
 

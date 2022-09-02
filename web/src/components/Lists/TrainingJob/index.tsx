@@ -322,13 +322,17 @@ const TrainingJobList: FunctionComponent = () => {
     const onSelectionChange = (selectedItems: TrainingJobItem[]) => {
         if(selectedItems.length > 0) {
             setSelectedTrainingJob(selectedItems[0])
-            setDisabledStop(false)
-            if(!showAll) {
+
+            var index;
+            if(showAll) {
+                index = trainingJobAllItems.findIndex((item) => item.trainingJobName === selectedItems[0].trainingJobName)
+                setDisabledStop(trainingJobAllItems === undefined ||(trainingJobAllItems[index].trainingJobStatus !== 'InProgress'))
                 setDisabledAttach(true)
                 setDisabledDetach(false)
             }
             else {
-                var index = trainingJobCurItems.findIndex((item) => item.trainingJobName === selectedItems[0].trainingJobName)
+                index = trainingJobCurItems.findIndex((item) => item.trainingJobName === selectedItems[0].trainingJobName)
+                setDisabledStop((trainingJobCurItems[index].trainingJobStatus !== 'InProgress'))
                 setDisabledAttach(index >= 0)
                 setDisabledDetach(index < 0) 
             }

@@ -73,7 +73,7 @@ const GreengrassDeploymentProp: FunctionComponent = () => {
         {
             id: 'name',
             width: 200,
-            Header: 'Component name',
+            Header: t('industrial_models.greengrass_deployment.component_name'),
             accessor: 'name',
             Cell: ({ row  }) => {
                 if (row && row.original) {
@@ -85,7 +85,7 @@ const GreengrassDeploymentProp: FunctionComponent = () => {
         {
             id: 'version',
             width: 200,
-            Header: 'Component version',
+            Header: t('industrial_models.greengrass_deployment.component_version'),
             accessor: 'version'
         }
     ];
