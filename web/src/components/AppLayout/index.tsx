@@ -47,13 +47,12 @@ const AppLayout: FunctionComponent<IProps> = ( {
 } ) => {
     const  { i18n } = useTranslation();
     const [ cookies, setCookie ] = useCookies();
-    const [ language, setLanguage ] = useState(cookies.language !== undefined? cookies.language : 'ch')
+    const [ language, setLanguage ] = useState(cookies.language !== undefined? cookies.language : 'zh-CHS')
     const [ industrialModelItems, setIndustrialModelItems ] = useState<SideNavigationItem[]>([])
     const [ algorithmsItems, setAlgorithmsItems ] = useState<SideNavigationItem[]>([])
     const [ scenariosItems, setScenariosItems ] = useState<SideNavigationItem[]>([])
 
     const onLanguageChange = (event) => {
-        console.log(event.target.value)
         setLanguage(event.target.value);
     };
 

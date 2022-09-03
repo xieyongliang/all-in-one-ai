@@ -16,7 +16,7 @@
 import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
 import NorthStarThemeProvider from 'aws-northstar/components/NorthStarThemeProvider';
 import AppLayout from './components/AppLayout';
-import Dashboard from './components/Dashboard/index'
+import Home from './components/Home/index'
 import IndustrialModelOverview from './components/Lists/IndustrialModel';
 import IndustrialModels from './components/IndustrialModels';
 import BatchAnnotationForm from './components/Forms/BatchAnnotation';
@@ -111,7 +111,7 @@ const App : FunctionComponent = () => {
                     <Route sensitive={true} exact path="/imodels/:id">{withLayout(IndustrialModels)}</Route>
                     <Route sensitive={true} exact path="/imodels">{withLayout(IndustrialModelOverview)}</Route>
                     <Route sensitive={true} exact path="/batchannotation">{withLayout(BatchAnnotationForm)}</Route>
-                    <Route sensitive={true} exact path="/">{withLayout(Dashboard)}</Route>                 
+                    <Route sensitive={true} exact path="/">{withLayout(Home)}</Route>                 
                     <Route sensitive={true} exact path="/callback">{withLayout(Callback)}</Route>
                     <Route sensitive={true} exact path="/signout">{withLayout(SignOut)}</Route>                                  
                 </Switch>

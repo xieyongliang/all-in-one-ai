@@ -66,6 +66,7 @@
     "@reduxjs/toolkit": "^1.7.1",
     "amazon-cognito-auth-js": "^1.3.3",
     "amazon-cognito-identity-js": "^5.2.0",
+    "aws-sdk": "latest",
     "react-i18next": "latest",
     "i18next-http-backend": "latest",
     "i18next": "latest"
