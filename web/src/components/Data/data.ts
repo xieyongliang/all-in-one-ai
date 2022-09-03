@@ -119,8 +119,8 @@ export const TRAININGINPUTDATA = {
 
 
 export const SCENARIOS = [
-    {label: 'PPE detector', value: 'ppe'}, 
-    {label: 'Track maintenance', value:'track'}, 
+    {label: 'ppe', value: 'ppe'}, 
+    {label: 'track', value:'track'}, 
 ]
 
 export const ENDPOINTOPTIONS : SelectOption[]= [

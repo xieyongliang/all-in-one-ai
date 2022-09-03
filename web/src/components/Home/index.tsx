@@ -59,7 +59,7 @@ const Home: FunctionComponent<IProps> = (
                                 <Heading variant='h2'>{t('home.architecture')}</Heading>
                             </div>
                             <div style={{textAlign: "center", marginTop: "10px", marginBottom: "10px"}}>
-                                <img src='/architecture.png' style={{width: "900px"}} />
+                                <img src='/architecture.png' style={{width: "900px"}} alt={t('home.architecture')}/>
                             </div>
                             <div style={{marginTop: "10px", marginBottom: "10px"}}>
                                 <Heading variant='h4'>{t('home.architecture_components')}</Heading>

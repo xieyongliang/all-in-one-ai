@@ -1,5 +1,5 @@
 import { FunctionComponent } from 'react';
-import { Stack, Container, Text, Link } from 'aws-northstar';
+import { Stack, Container, Text } from 'aws-northstar';
 import cognitoUtils from '../../../lib/cognitoUtils';
 import { connect } from 'react-redux';
 import { AppState } from '../../../store';

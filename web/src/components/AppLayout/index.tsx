@@ -21,10 +21,10 @@ import { ALGORITHMS } from '../Data/data';
 import { SCENARIOS } from '../Data/data';
 import { connect } from 'react-redux';
 import { AppState } from '../../store';
-import { useTranslation } from "react-i18next";
 import { Box, Select } from 'aws-northstar';
 import Header from "aws-northstar/components/Header";
 import { useCookies } from 'react-cookie';
+import { useTranslation } from "react-i18next";
 
 interface IProps {
     industrialModels : IIndustrialModel[];
@@ -104,10 +104,10 @@ const AppLayout: FunctionComponent<IProps> = ( {
     useEffect(() => {
         var items = []
             SCENARIOS.forEach((item) => {
-                items.push({text: item.label, type: SideNavigationItemType.LINK, href: `/scenarios/${item.value}`})
+                items.push({text: t(`scenarios.${item.label}.title`), type: SideNavigationItemType.LINK, href: `/scenarios/${item.value}`})
             })
             setScenariosItems(items)
-    }, [])     
+    }, [t])     
      
     useEffect(() => {
         console.log('8888888')
