@@ -32,6 +32,7 @@ import CPT from './components/Algorithms/CPT';
 import GABSA from './components/Algorithms/GABSA';
 import PaddleNLP from './components/Algorithms/PaddleNLP';
 import MDeBERTa from './components/Algorithms/mDeBERTa';
+import KeyBERT from './components/Algorithms/KeyBERT';
 import Track from './components/Scenarios/Track';
 import PPE from './components/Scenarios/PPE';
 import Callback from './components/Cognito/Callback';
@@ -108,6 +109,7 @@ const App : FunctionComponent = () => {
                     <Route sensitive={true} exact path="/algorithms/gabsa">{withLayout(GABSA)}</Route>                    
                     <Route sensitive={true} exact path="/algorithms/paddlenlp">{withLayout(PaddleNLP)}</Route>
                     <Route sensitive={true} exact path="/algorithms/mdeberta">{withLayout(MDeBERTa)}</Route>
+                    <Route sensitive={true} exact path="/algorithms/keybert">{withLayout(KeyBERT)}</Route>
                     <Route sensitive={true} exact path="/imodels/:id">{withLayout(IndustrialModels)}</Route>
                     <Route sensitive={true} exact path="/imodels">{withLayout(IndustrialModelOverview)}</Route>
                     <Route sensitive={true} exact path="/batchannotation">{withLayout(BatchAnnotationForm)}</Route>

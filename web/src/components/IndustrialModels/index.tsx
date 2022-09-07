@@ -40,6 +40,7 @@ import CPTDemoForm from '../Forms/Demo/Single/cpt';
 import GABSADemoFrom from '../Forms/Demo/Single/gabsa';
 import PaddleNLPDemoForm from '../Forms/Demo/Single/paddlenlp'
 import DeBERTaDemoForm from '../Forms/Demo/Single/mdeberta'
+import KeyBERTDemoForm from '../Forms/Demo/Single/keybert'
 import cognitoUtils from '../../lib/cognitoUtils';
 import { useTranslation } from "react-i18next";
 
@@ -241,6 +242,15 @@ const IndustrialModels: FunctionComponent<IProps> = (
                 label: t('industrial_models.demos'),
                 id: 'demo',
                 content: <DeBERTaDemoForm advancedMode={advancedMode} onAdvancedModeChange={onAdvancedModeChange}/>
+            }
+        ]     
+    }
+    else if(algorithm === 'keybert'){
+        tabs = [
+            {
+                label: t('industrial_models.demos'),
+                id: 'demo',
+                content: <KeyBERTDemoForm advancedMode={advancedMode} onAdvancedModeChange={onAdvancedModeChange}/>
             }
         ]     
     }

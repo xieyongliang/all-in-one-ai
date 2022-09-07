@@ -43,7 +43,8 @@ export const ALGORITHMS = [
     {label: 'CPT', value: 'cpt', type: 'single', trainable: true}, 
     {label: 'GABSA', value: 'gabsa', type: 'single', trainable: true},
     {label: 'PaddleNLP', value: 'paddlenlp', type: 'single', trainable: true},
-    {label: 'mDeBERTa', value: 'mdeberta', type: 'single', trainable: false}
+    {label: 'mDeBERTa', value: 'mdeberta', type: 'single', trainable: false},
+    {label: 'KeyBERT', value: 'keybert', type: 'single', trainable: false}
 ]
 
 export const TRAININGINPUTDATA = {
