@@ -35,7 +35,7 @@ def output_fn(prediction, content_type):
     """
     Serialize and prepare the prediction output
     """
-    return json.dumps({'keywords': prediction}, ensure_ascii=False)
+    return json.dumps({'result': prediction}, ensure_ascii=False)
 
 
 if __name__=='__main__':
