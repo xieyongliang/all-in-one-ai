@@ -229,6 +229,31 @@ def lambda_handler(event, context):
                 InvocationType = 'Event',
                 Payload = json.dumps(payload)
             )
+        elif(algorithm == 'keybert'):
+            source_dir = ssmh.get_parameter('/all_in_one_ai/config/meta/algorithms/{0}/source'.format(algorithm))
+            
+            payload = {
+                'body': {
+                    'industrial_model': industrial_model,
+                    'role': role_arn,
+                    'entry_point': 'inference.py',
+                    'source_dir': source_dir,
+                    'py_version': 'py38',
+                    'framework_version': '1.9.0',
+                    'model_name': model_name,
+                    'model_data': model_data_url,
+                    'model_environment': model_environment,
+                    'endpoint_name': endpoint_name,
+                    'instance_type': instance_type,
+                    'instance_count': instance_count,
+                }
+            }
+
+            response = lambda_client.invoke(
+                FunctionName = 'all_in_one_ai_create_deploy_pytorch',
+                InvocationType = 'Event',
+                Payload = json.dumps(payload)
+            )
         else:
             return {
                 'statusCode': 400,
