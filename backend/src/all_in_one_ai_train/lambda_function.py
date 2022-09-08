@@ -77,7 +77,6 @@ def lambda_handler(event, context):
                 'learning_rate': 0.001,
                 'momentum': 0.9,
                 'wd': 0.0001,
-                'num_gpus': 1,
                 'num_workers': 8,
                 'model_name': 'ResNet50_v2'
             }
@@ -99,6 +98,44 @@ def lambda_handler(event, context):
                     'inputs': inputs,
                     'py_version': 'py37',
                     'framework_version': '1.8.0'
+                }
+            }
+
+            response = lambda_client.invoke(
+                FunctionName = 'all_in_one_ai_create_train_mxnet',
+                InvocationType = 'Event',
+                Payload=json.dumps(payload)
+            )
+        elif(algorithm == 'gluonts'):
+            source_dir = ssmh.get_parameter('/all_in_one_ai/config/meta/algorithms/{0}/source'.format(algorithm)) 
+
+            default_hyperparameters = {
+                'algo-name': 'DeepAR', 
+                'freq': '1D', 
+                'prediction-length': 2*12, 
+                'context-length': 20*12, 
+                'epochs': 100, 
+                'batch-size': 2048  , 
+                'num-batches-per-epoch': 2
+            }
+            for key in default_hyperparameters.keys():
+                if(key not in hyperparameters.keys()):
+                    hyperparameters[key] = default_hyperparameters[key]
+            
+            payload = {
+                'body': {
+                    'job_name': job_name,
+                    'algorithm': algorithm,
+                    'industrial_model': industrial_model,
+                    'entry_point': 'train.py',
+                    'source_dir': source_dir,
+                    'role': role_arn,
+                    'instance_type': instance_type,
+                    'instance_count': instance_count,
+                    'hyperparameters': hyperparameters,
+                    'inputs': inputs,
+                    'py_version': 'py38',
+                    'framework_version': '1.9.0'
                 }
             }
 
@@ -162,8 +199,7 @@ def lambda_handler(event, context):
                 'eval_batch_size' :'16',
                 'train_batch_size' :'2',
                 'learning_rate' :'3e-4',
-                'num_train_epochs':'4',
-                'n_gpu': '1'
+                'num_train_epochs':'4'
             }
 
             for key in default_hyperparameters.keys():
@@ -266,7 +302,8 @@ def lambda_handler(event, context):
                 FunctionName = 'all_in_one_ai_create_train_tensorflow',
                 InvocationType = 'Event',
                 Payload=json.dumps(payload)
-            )
+            )        
+        else:
             return {
                 'statusCode': 400,
                 'body': 'Unsupported algorithm'

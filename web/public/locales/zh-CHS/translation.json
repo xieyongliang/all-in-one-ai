@@ -130,6 +130,9 @@
       "reverse_line_color": "反转边线颜色",
       "input": "输入",
       "output": "输出",
+      "data": "数据",
+      "original_data": "原始数据",
+      "prediction_data": "预测数据",
       "run": "运行",
       "sample_data": "示例数据",
       "loading": "加载中...",
@@ -167,7 +170,9 @@
       "image_search": "以图搜图",
       "image_select": "选择图片",
       "image_preview": "图片预览",
-      "search": "搜索"
+      "search": "搜索",
+      "unsupported": "暂不支持的演示",
+      "json_parse_error": "JSON 数据解析失败，请检查并重试"
     },
     "training_job": {
       "create_training_job": "创建训练任务",

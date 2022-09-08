@@ -215,20 +215,21 @@ const TransformJobList: FunctionComponent<IProps> = (props) => {
     const onSelectionChange = ((selectedItems: TransformJobItem[]) => {
         if(selectedItems.length > 0) {
             setSelectedTransformJob(selectedItems[0])
-            var index;
-            if(showAll) {
-                index = transformJobAllItems.findIndex((item) => item.transformJobName === selectedItems[0].transformJobName)
-                setDisabledStop((transformJobAllItems === undefined || transformJobAllItems[index].transformJobStatus !== 'InProgress'))
+            
+            var transformJobCurItem = transformJobCurItems.find((item) => item.transformJobName === selectedItems[0].transformJobName)
+            var transformJobAllItem = transformJobAllItems.find((item) => item.transformJobName === selectedItems[0].transformJobName)
+
+            if(!showAll) {
+                setDisabledStop(transformJobCurItem.transformJobStatus !== 'InProgress')
                 setDisabledAttach(true)
                 setDisabledDetach(false)
                 setDisabledReview(false)
             }
             else {
-                index = transformJobCurItems.findIndex((item) => item.transformJobName === selectedItems[0].transformJobName)
-                setDisabledStop((transformJobCurItems[index].transformJobStatus !== 'InProgress'))
-                setDisabledAttach(index >= 0)
-                setDisabledDetach(index < 0) 
-                setDisabledReview(index < 0)
+                setDisabledStop(transformJobAllItem.transformJobStatus !== 'InProgress')
+                setDisabledAttach(transformJobCurItem !== undefined)
+                setDisabledDetach(transformJobCurItem === undefined) 
+                setDisabledReview(transformJobCurItem === undefined)
             }
         }
     })

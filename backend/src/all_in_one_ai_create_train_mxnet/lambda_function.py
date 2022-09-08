@@ -1,9 +1,3 @@
-import os
-import sys
-if not os.path.exists('/tmp/package'):
-    os.mkdir('/tmp/package')
-os.system('pip3 install -U sagemaker -t /tmp/package')
-sys.path.append('/tmp/package')
 from sagemaker.mxnet import MXNet
 import traceback
 from utils import persist_meta

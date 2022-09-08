@@ -165,6 +165,26 @@ class NoCredentialsError(BotoCoreError):
     fmt = 'Unable to locate credentials'
 
 
+class NoAuthTokenError(BotoCoreError):
+    """
+    No authorization token could be found.
+    """
+
+    fmt = 'Unable to locate authorization token'
+
+
+class TokenRetrievalError(BotoCoreError):
+    """
+    Error attempting to retrieve a token from a remote source.
+
+    :ivar provider: The name of the token provider.
+    :ivar error_msg: The msg explaining why the token could not be retrieved.
+
+    """
+
+    fmt = 'Error when retrieving token from {provider}: {error_msg}'
+
+
 class PartialCredentialsError(BotoCoreError):
     """
     Only partial credentials were found.
@@ -635,7 +655,7 @@ class InvalidRetryConfigurationError(BotoCoreError):
 
     fmt = (
         'Cannot provide retry configuration for "{retry_config_option}". '
-        'Valid retry configuration options are: \'max_attempts\''
+        'Valid retry configuration options are: {valid_options}'
     )
 
 
@@ -653,7 +673,7 @@ class InvalidRetryModeError(InvalidRetryConfigurationError):
 
     fmt = (
         'Invalid value provided to "mode": "{provided_retry_mode}" must '
-        'be one of: "legacy", "standard", "adaptive"'
+        'be one of: {valid_modes}'
     )
 
 
@@ -735,7 +755,10 @@ class MissingServiceIdError(UndefinedModelAttributeError):
 
 
 class SSOError(BotoCoreError):
-    fmt = "An unspecified error happened when resolving SSO credentials"
+    fmt = (
+        "An unspecified error happened when resolving AWS credentials or an "
+        "access token from SSO."
+    )
 
 
 class SSOTokenLoadError(SSOError):

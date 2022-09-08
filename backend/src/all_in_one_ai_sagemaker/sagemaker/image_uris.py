@@ -24,6 +24,7 @@ from sagemaker.jumpstart.utils import is_jumpstart_model_input
 from sagemaker.spark import defaults
 from sagemaker.jumpstart import artifacts
 from sagemaker.workflow import is_pipeline_variable
+from sagemaker.workflow.utilities import override_pipeline_parameter_var
 
 logger = logging.getLogger(__name__)
 
@@ -31,6 +32,7 @@ ECR_URI_TEMPLATE = "{registry}.dkr.{hostname}/{repository}"
 HUGGING_FACE_FRAMEWORK = "huggingface"
 
 
+@override_pipeline_parameter_var
 def retrieve(
     framework,
     region,
@@ -114,7 +116,11 @@ def retrieve(
     args = dict(locals())
     for name, val in args.items():
         if is_pipeline_variable(val):
-            raise ValueError("%s should not be a pipeline variable (%s)" % (name, type(val)))
+            raise ValueError(
+                "When retrieving the image_uri, the argument %s should not be a pipeline variable "
+                "(%s) since pipeline variables are only interpreted in the pipeline execution time."
+                % (name, type(val))
+            )
 
     if is_jumpstart_model_input(model_id, model_version):
         return artifacts._retrieve_image_uri(
@@ -134,21 +140,18 @@ def retrieve(
             tolerate_vulnerable_model,
             tolerate_deprecated_model,
         )
-    if training_compiler_config is None:
+
+    if training_compiler_config and (framework == HUGGING_FACE_FRAMEWORK):
+        config = _config_for_framework_and_scope(
+            framework + "-training-compiler", image_scope, accelerator_type
+        )
+    else:
         _framework = framework
         if framework == HUGGING_FACE_FRAMEWORK:
             inference_tool = _get_inference_tool(inference_tool, instance_type)
             if inference_tool == "neuron":
                 _framework = f"{framework}-{inference_tool}"
         config = _config_for_framework_and_scope(_framework, image_scope, accelerator_type)
-    elif framework == HUGGING_FACE_FRAMEWORK:
-        config = _config_for_framework_and_scope(
-            framework + "-training-compiler", image_scope, accelerator_type
-        )
-    else:
-        raise ValueError(
-            "Unsupported Configuration: Training Compiler is only supported with HuggingFace"
-        )
 
     original_version = version
     version = _validate_version_and_set_if_needed(version, config, framework)
@@ -487,6 +490,9 @@ def get_training_image_uri(
     if image_uri:
         return image_uri
 
+    logger.info(
+        "image_uri is not presented, retrieving image_uri based on instance_type, framework etc."
+    )
     base_framework_version: Optional[str] = None
 
     if tensorflow_version is not None or pytorch_version is not None:

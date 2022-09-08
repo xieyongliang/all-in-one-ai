@@ -297,18 +297,39 @@ Resources:
   Parameter34:
     Type: AWS::SSM::Parameter
     Properties:
+      Name: /all_in_one_ai/config/meta/algorithms/gluonts/industrialmodels
+      Type: String
+      Value: !Sub s3://${S3Bucket}/${S3Key}algorithms/gluonts/industrialmodels/
+
+  Parameter35:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /all_in_one_ai/config/meta/algorithms/gluonts/source
+      Type: String
+      Value: !Sub s3://${S3Bucket}/${S3Key}algorithms/gluonts/source/sourcedir.tar.gz
+
+  Parameter36:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /all_in_one_ai/config/meta/algorithms/gluonts/artifact
+      Type: String
+      Value: !Sub s3://${S3Bucket}/${S3Key}algorithms/gluonts/artifact/model.tar.gz
+
+  Parameter37:
+    Type: AWS::SSM::Parameter
+    Properties:
       Name: /all_in_one_ai/config/meta/algorithms/keybert/industrialmodels
       Type: String
       Value: !Sub s3://${S3Bucket}/${S3Key}algorithms/keybert/industrialmodels/
 
-  Parameter35:
+  Parameter38:
     Type: AWS::SSM::Parameter
     Properties:
       Name: /all_in_one_ai/config/meta/algorithms/keybert/source
       Type: String
       Value: !Sub s3://${S3Bucket}/${S3Key}algorithms/keybert/source/sourcedir.tar.gz
 
-  Parameter36:
+  Parameter39:
     Type: AWS::SSM::Parameter
     Properties:
       Name: /all_in_one_ai/config/meta/algorithms/keybert/artifact

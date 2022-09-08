@@ -14,22 +14,22 @@
 from __future__ import absolute_import
 
 import logging
+from typing import Union, Optional
 
 from packaging.version import Version
 
-from sagemaker.deprecations import renamed_kwargs
 from sagemaker.estimator import Framework, EstimatorBase
 from sagemaker.fw_utils import (
     framework_name_from_image,
     framework_version_from_tag,
     python_deprecation_warning,
     validate_version_or_image_args,
-    warn_if_parameter_server_with_multi_gpu,
-    validate_smdistributed,
+    validate_distribution,
 )
 from sagemaker.pytorch import defaults
 from sagemaker.pytorch.model import PyTorchModel
 from sagemaker.vpc_utils import VPC_CONFIG_DEFAULT
+from sagemaker.workflow.entities import PipelineVariable
 
 logger = logging.getLogger("sagemaker")
 
@@ -38,13 +38,15 @@ class PyTorch(Framework):
     """Handle end-to-end training and deployment of custom PyTorch code."""
 
     _framework_name = "pytorch"
+    LAUNCH_PYTORCH_DDP_ENV_NAME = "sagemaker_pytorch_ddp_enabled"
+    INSTANCE_TYPE_ENV_NAME = "sagemaker_instance_type"
 
     def __init__(
         self,
-        entry_point,
+        entry_point: Union[str, PipelineVariable],
         framework_version=None,
         py_version=None,
-        source_dir=None,
+        source_dir: Optional[Union[str, PipelineVariable]] = None,
         hyperparameters=None,
         image_uri=None,
         distribution=None,
@@ -153,6 +155,19 @@ class PyTorch(Framework):
                         To find a complete list of parameters for SageMaker model parallelism,
                         see :ref:`sm-sdk-modelparallel-general`.
 
+                **To enable PyTorch DDP:**
+
+                    .. code:: python
+
+                        {
+                            "pytorchddp": {
+                                "enabled": True
+                            }
+                        }
+
+                    To learn more, see `Distributed PyTorch Training
+                    <https://sagemaker.readthedocs.io/en/stable/frameworks/pytorch/using_pytorch.html#distributed-pytorch-training>`_.
+
                 **To enable MPI:**
 
                     .. code:: python
@@ -196,24 +211,6 @@ class PyTorch(Framework):
         self.framework_version = framework_version
         self.py_version = py_version
 
-        if distribution is not None:
-            instance_type = renamed_kwargs(
-                "train_instance_type", "instance_type", kwargs.get("instance_type"), kwargs
-            )
-
-            validate_smdistributed(
-                instance_type=instance_type,
-                framework_name=self._framework_name,
-                framework_version=framework_version,
-                py_version=py_version,
-                distribution=distribution,
-                image_uri=image_uri,
-            )
-
-            warn_if_parameter_server_with_multi_gpu(
-                training_instance_type=instance_type, distribution=distribution
-            )
-
         if "enable_sagemaker_metrics" not in kwargs:
             # enable sagemaker metrics for PT v1.3 or greater:
             if self.framework_version and Version(self.framework_version) >= Version("1.3"):
@@ -222,12 +219,45 @@ class PyTorch(Framework):
         super(PyTorch, self).__init__(
             entry_point, source_dir, hyperparameters, image_uri=image_uri, **kwargs
         )
+        if distribution is not None:
+            distribution = validate_distribution(
+                distribution,
+                self.instance_groups,
+                self._framework_name,
+                framework_version,
+                py_version,
+                image_uri,
+                kwargs,
+            )
+
         self.distribution = distribution or {}
+
+    def _pytorch_distribution_configuration(self, distribution):
+        """Returns a dict of distribution config for PyTorch training
+
+        Args:
+            distribution (dict): A dictionary with information on how to run distributed training.
+        Returns:
+            dict containing Pytorch DDP config
+        """
+        distribution_config = {}
+        pytorch_ddp_enabled = False
+        if "pytorchddp" in distribution:
+            pytorch_ddp_enabled = distribution.get("pytorchddp").get("enabled", False)
+
+        if pytorch_ddp_enabled:
+            distribution_config[self.LAUNCH_PYTORCH_DDP_ENV_NAME] = pytorch_ddp_enabled
+            if self.instance_type is not None:
+                distribution_config[self.INSTANCE_TYPE_ENV_NAME] = self.instance_type
+        else:
+            distribution_config = self._distribution_configuration(distribution=distribution)
+
+        return distribution_config
 
     def hyperparameters(self):
         """Return hyperparameters used by your custom PyTorch code during model training."""
         hyperparameters = super(PyTorch, self).hyperparameters()
-        additional_hyperparameters = self._distribution_configuration(
+        additional_hyperparameters = self._pytorch_distribution_configuration(
             distribution=self.distribution
         )
         hyperparameters.update(

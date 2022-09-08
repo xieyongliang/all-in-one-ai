@@ -43,7 +43,6 @@ def init_args():
 
     # Other parameters
     parser.add_argument("--max_seq_length", default=128, type=int)
-    parser.add_argument("--n_gpu", default=0, type=int)
     parser.add_argument("--train_batch_size", default=16, type=int,
                         help="Batch size per GPU/CPU for training.")
     parser.add_argument("--eval_batch_size", default=16, type=int,
@@ -219,7 +218,11 @@ def evaluate(data_loader, model, paradigm, task, sents):
     """
     Compute scores given the predictions and gold labels
     """
-    device = torch.device(f'cuda:{args.n_gpu}')
+    if(torch.cuda.is_available()):
+        device = torch.device(f'cuda:{0}')
+    else:
+        device = torch.device('cpu')
+
     model.model.to(device)
     
     model.model.eval()
@@ -275,7 +278,6 @@ if __name__ == '__main__':
         train_params = dict(
             default_root_dir=args.output_dir,
             accumulate_grad_batches=args.gradient_accumulation_steps,
-            gpus=args.n_gpu,
             gradient_clip_val=1.0,
             #amp_level='O1',
             max_epochs=args.num_train_epochs,

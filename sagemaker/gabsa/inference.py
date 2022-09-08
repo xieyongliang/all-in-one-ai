@@ -13,21 +13,19 @@ def model_fn(model_dir):
     Load the model for inference
     """
 
-    num_gpus = os.environ['num_gpus'] if ('num_gpus' in os.environ) else 0
-    if(num_gpus > 0):
+    if(torch.cuda.is_available()):
         device = torch.device(f'cuda:{0}')
     else:
         device = torch.device('cpu')
 
-    saved_model_dir = '/opt/ml/model'
     all_checkpoints = []
-    for f in os.listdir(saved_model_dir):
-        file_name = os.path.join(saved_model_dir, f)
+    for f in os.listdir(model_dir):
+        file_name = os.path.join(model_dir, f)
         if 'cktepoch' in file_name:
             all_checkpoints.append(file_name)
     print ("all checkpoints: ", all_checkpoints)
 
-    checkpoint = os.path.join(saved_model_dir,all_checkpoints[-1])
+    checkpoint = os.path.join(model_dir,all_checkpoints[-1])
 
     model_ckpt = torch.load(checkpoint, map_location=device)
     model = T5FineTuner(model_ckpt['hyper_parameters'])
@@ -53,8 +51,7 @@ def predict_fn(input_data, model):
     data = input_data['inputs']
     max_seq_length=512
 
-    num_gpus = os.environ['num_gpus'] if ('num_gpus' in os.environ) else 0
-    if(num_gpus > 0):
+    if(torch.cuda.is_available()):
         device = torch.device(f'cuda:{0}')
     else:
         device = torch.device('cpu')

@@ -20,14 +20,15 @@ import time
 import shutil
 import tempfile
 from collections import namedtuple
-from typing import Optional
+from typing import Optional, Union, Dict
 
 import sagemaker.image_uris
 from sagemaker.session_settings import SessionSettings
 import sagemaker.utils
 from sagemaker.workflow import is_pipeline_variable
 
-from sagemaker.deprecations import renamed_warning
+from sagemaker.deprecations import renamed_warning, renamed_kwargs
+from sagemaker.workflow.entities import PipelineVariable
 
 logger = logging.getLogger(__name__)
 
@@ -52,8 +53,26 @@ PARAMETER_SERVER_MULTI_GPU_WARNING = (
     "only one worker per host regardless of the number of GPUs."
 )
 
-DEBUGGER_UNSUPPORTED_REGIONS = ("us-iso-east-1",)
-PROFILER_UNSUPPORTED_REGIONS = ("us-iso-east-1",)
+DEBUGGER_UNSUPPORTED_REGIONS = (
+    "us-iso-east-1",
+    "ap-southeast-3",
+    "ap-southeast-4",
+    "eu-south-2",
+    "me-central-1",
+    "ap-south-2",
+    "eu-central-2",
+    "us-gov-east-1",
+)
+PROFILER_UNSUPPORTED_REGIONS = (
+    "us-iso-east-1",
+    "ap-southeast-3",
+    "ap-southeast-4",
+    "eu-south-2",
+    "me-central-1",
+    "ap-south-2",
+    "eu-central-2",
+    "us-gov-east-1",
+)
 
 SINGLE_GPU_INSTANCE_TYPES = ("ml.p2.xlarge", "ml.p3.2xlarge")
 SM_DATAPARALLEL_SUPPORTED_INSTANCE_TYPES = (
@@ -81,6 +100,8 @@ SM_DATAPARALLEL_SUPPORTED_FRAMEWORK_VERSIONS = {
         "2.7.1",
         "2.8",
         "2.8.0",
+        "2.9",
+        "2.9.1",
     ],
     "pytorch": [
         "1.6",
@@ -98,8 +119,21 @@ SM_DATAPARALLEL_SUPPORTED_FRAMEWORK_VERSIONS = {
         "1.10.2",
         "1.11",
         "1.11.0",
+        "1.12",
+        "1.12.0",
     ],
 }
+
+PYTORCHDDP_SUPPORTED_FRAMEWORK_VERSIONS = [
+    "1.10",
+    "1.10.0",
+    "1.10.2",
+    "1.11",
+    "1.11.0",
+    "1.12",
+    "1.12.0",
+]
+
 SMDISTRIBUTED_SUPPORTED_STRATEGIES = ["dataparallel", "modelparallel"]
 
 
@@ -120,6 +154,58 @@ def validate_source_dir(script, directory):
             )
 
     return True
+
+
+def validate_source_code_input_against_pipeline_variables(
+    entry_point: Optional[Union[str, PipelineVariable]] = None,
+    source_dir: Optional[Union[str, PipelineVariable]] = None,
+    git_config: Optional[Dict[str, str]] = None,
+    enable_network_isolation: Union[bool, PipelineVariable] = False,
+):
+    """Validate source code input against pipeline variables
+
+    Args:
+        entry_point (str, PipelineVariable): The path to the local Python source file that
+            should be executed as the entry point to training (default: None).
+        source_dir (str, PipelineVariable): The Path to a directory with any other
+            training source code dependencies aside from the entry point file (default: None).
+        git_config (Dict[str, str]): Git configurations used for cloning files (default: None).
+        enable_network_isolation (bool, PipelineVariable): Specifies whether container will run
+            in network isolation mode (default: False).
+    """
+    if is_pipeline_variable(enable_network_isolation) or enable_network_isolation is True:
+        if is_pipeline_variable(entry_point) or is_pipeline_variable(source_dir):
+            raise TypeError(
+                "entry_point, source_dir should not be pipeline variables "
+                "when enable_network_isolation is a pipeline variable or it is set to True."
+            )
+    if git_config:
+        if is_pipeline_variable(entry_point) or is_pipeline_variable(source_dir):
+            raise TypeError(
+                "entry_point, source_dir should not be pipeline variables when git_config is given."
+            )
+    if is_pipeline_variable(entry_point):
+        if not source_dir:
+            raise TypeError(
+                "The entry_point should not be a pipeline variable when source_dir is missing."
+            )
+        if not is_pipeline_variable(source_dir) and not source_dir.lower().startswith("s3://"):
+            raise TypeError(
+                "The entry_point should not be a pipeline variable when source_dir is a local path."
+            )
+        logger.warning(
+            "The entry_point is a pipeline variable: %s. During pipeline execution, "
+            "the interpreted value of entry_point has to be a local path in the container "
+            "pointing to a Python source file which is located at the root of source_dir.",
+            type(entry_point),
+        )
+    if is_pipeline_variable(source_dir):
+        logger.warning(
+            "The source_dir is a pipeline variable: %s. During pipeline execution, "
+            "the interpreted value of source_dir has to be an S3 URI and "
+            "must point to a tar.gz file",
+            type(source_dir),
+        )
 
 
 def get_mp_parameters(distribution):
@@ -263,7 +349,7 @@ def tar_and_upload_dir(
         sagemaker.fw_utils.UserCode: An object with the S3 bucket and key (S3 prefix) and
             script name.
     """
-    if directory and directory.lower().startswith("s3://"):
+    if directory and (is_pipeline_variable(directory) or directory.lower().startswith("s3://")):
         return UploadedCode(s3_prefix=directory, script_name=script)
 
     script_name = script if directory else os.path.basename(script)
@@ -428,6 +514,10 @@ def warn_if_parameter_server_with_multi_gpu(training_instance_type, distribution
     """
     if training_instance_type == "local" or distribution is None:
         return
+    if is_pipeline_variable(training_instance_type):
+        # The training_instance_type is not available in compile time.
+        # Rather, it's given in Pipeline execution time
+        return
 
     is_multi_gpu_instance = (
         training_instance_type == "local_gpu"
@@ -484,6 +574,10 @@ def validate_smdistributed(
     """
     if "smdistributed" not in distribution:
         # Distribution strategy other than smdistributed is selected
+        return
+    if is_pipeline_variable(instance_type):
+        # The instance_type is not available in compile time.
+        # Rather, it's given in Pipeline execution time
         return
 
     # distribution contains smdistributed
@@ -586,6 +680,177 @@ def _validate_smdataparallel_args(
                 "Please specify py_version>=py3"
             )
 
+    if err_msg:
+        raise ValueError(err_msg)
+
+
+def validate_distribution(
+    distribution, instance_groups, framework_name, framework_version, py_version, image_uri, kwargs
+):
+    """Check if distribution strategy is correctly invoked by the user.
+
+    Currently, check for `dataparallel`, `modelparallel` and heterogeneous cluster set up.
+    Validate if the user requested strategy is supported.
+
+    Args:
+        distribution (dict): A dictionary with information to enable distributed training.
+            (Defaults to None if distributed training is not enabled.) For example:
+
+            .. code:: python
+
+                {
+                    "smdistributed": {
+                        "dataparallel": {
+                            "enabled": True
+                        }
+                    }
+                }
+        instance_groups ([InstanceGroup]): A list contains instance groups used for training.
+        framework_name (str): A string representing the name of framework selected.
+        framework_version (str): A string representing the framework version selected.
+        py_version (str): A string representing the python version selected.
+        image_uri (str): A string representing a Docker image URI.
+        kwargs(dict): Additional kwargs passed to this function
+
+    Returns:
+        distribution(dict): updated dictionary with validated information
+            to enable distributed training.
+
+    Raises:
+        ValueError: if distribution dictionary isn't correctly formatted or
+            multiple strategies are requested simultaneously or
+            an unsupported strategy is requested or
+            strategy-specific inputs are incorrect/unsupported or
+            heterogeneous cluster set up is incorrect
+    """
+    train_instance_groups = distribution.get("instance_groups", [])
+    if instance_groups is None:
+        if len(train_instance_groups) >= 1:
+            # if estimator's instance_groups is not defined but
+            # train_instance_groups are specified in distribution
+            raise ValueError("Instance groups not specified in the estimator !")
+    else:
+        if len(train_instance_groups) > len(instance_groups):
+            # if train_instance_groups in distribution are more than estimator's instance_groups
+            raise ValueError("Train instance groups oversubscribed !")
+        if len(instance_groups) == 1 and len(train_instance_groups) == 0:
+            # if just one instance_group but it is not specified in distribution, we set it for user
+            train_instance_groups = instance_groups
+        elif len(instance_groups) > 1 and len(train_instance_groups) != 1:
+            # currently we just support one train instance group
+            raise ValueError("Distribution should only contain one instance group name !")
+
+    if len(train_instance_groups) != 0:
+        # in this case, we are handling a heterogeneous cluster training job
+        instance_group_names = []
+        for train_instance_group in train_instance_groups:
+            # in future version we will support multiple train_instance_groups, so use loop here
+            if train_instance_group not in instance_groups:
+                # check if train instance groups belongs to what user defined in estimator set up
+                raise ValueError(
+                    f"Invalid training instance group {train_instance_group.instance_group_name} !"
+                )
+            instance_type = train_instance_group.instance_type
+            validate_smdistributed(
+                instance_type=instance_type,
+                framework_name=framework_name,
+                framework_version=framework_version,
+                py_version=py_version,
+                distribution=distribution,
+                image_uri=image_uri,
+            )
+            validate_pytorch_distribution(
+                distribution=distribution,
+                framework_name=framework_name,
+                framework_version=framework_version,
+                py_version=py_version,
+                image_uri=image_uri,
+            )
+            warn_if_parameter_server_with_multi_gpu(
+                training_instance_type=instance_type, distribution=distribution
+            )
+            # get instance group names
+            instance_group_names.append(train_instance_group.instance_group_name)
+        distribution["instance_groups"] = instance_group_names
+    else:
+        # in this case, we are handling a normal training job (without heterogeneous cluster)
+        instance_type = renamed_kwargs(
+            "train_instance_type", "instance_type", kwargs.get("instance_type"), kwargs
+        )
+        validate_smdistributed(
+            instance_type=instance_type,
+            framework_name=framework_name,
+            framework_version=framework_version,
+            py_version=py_version,
+            distribution=distribution,
+            image_uri=image_uri,
+        )
+        validate_pytorch_distribution(
+            distribution=distribution,
+            framework_name=framework_name,
+            framework_version=framework_version,
+            py_version=py_version,
+            image_uri=image_uri,
+        )
+        warn_if_parameter_server_with_multi_gpu(
+            training_instance_type=instance_type, distribution=distribution
+        )
+    return distribution
+
+
+def validate_pytorch_distribution(
+    distribution, framework_name, framework_version, py_version, image_uri
+):
+    """Check if pytorch distribution strategy is correctly invoked by the user.
+
+    Args:
+        distribution (dict): A dictionary with information to enable distributed training.
+            (Defaults to None if distributed training is not enabled.) For example:
+
+            .. code:: python
+
+                {
+                    "pytorchddp": {
+                        "enabled": True
+                    }
+                }
+        framework_name (str): A string representing the name of framework selected.
+        framework_version (str): A string representing the framework version selected.
+        py_version (str): A string representing the python version selected.
+        image_uri (str): A string representing a Docker image URI.
+
+    Raises:
+        ValueError: if
+            `py_version` is not python3 or
+            `framework_version` is not in PYTORCHDDP_SUPPORTED_FRAMEWORK_VERSIONS
+    """
+    if framework_name and framework_name != "pytorch":
+        # We need to validate only for PyTorch framework
+        return
+
+    pytorch_ddp_enabled = False
+    if "pytorchddp" in distribution:
+        pytorch_ddp_enabled = distribution.get("pytorchddp").get("enabled", False)
+    if not pytorch_ddp_enabled:
+        # Distribution strategy other than pytorchddp is selected
+        return
+
+    err_msg = ""
+    if not image_uri:
+        # ignore framework_version and py_version if image_uri is set
+        # in case image_uri is not set, then both are mandatory
+        if framework_version not in PYTORCHDDP_SUPPORTED_FRAMEWORK_VERSIONS:
+            err_msg += (
+                f"Provided framework_version {framework_version} is not supported by"
+                " pytorchddp.\n"
+                "Please specify one of the supported framework versions:"
+                f" {PYTORCHDDP_SUPPORTED_FRAMEWORK_VERSIONS} \n"
+            )
+        if "py3" not in py_version:
+            err_msg += (
+                f"Provided py_version {py_version} is not supported by pytorchddp.\n"
+                "Please specify py_version>=py3"
+            )
     if err_msg:
         raise ValueError(err_msg)
 

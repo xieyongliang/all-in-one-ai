@@ -5,6 +5,7 @@ import boto3
 import zipfile
 import io
 import tensorflow as tf
+import json
 from bert4keras.models import build_transformer_model
 from bert4keras.snippets import AutoRegressiveDecoder
 from bert4keras.tokenizers import Tokenizer
@@ -70,27 +71,17 @@ def model_fn(model_dir):
         max_c_len = max_c_len
     )
     return autotitle
-    
-def predict_fn(input_data, model):
-    """
-    Apply model to the incoming request
-    """
 
-    model.generate(input_data)
+def transform_fn(model: any, request_body: any, content_type: any, accept_type: any):
+    print('[DEBUG] request_body:', type(request_body))
+    print('[DEBUG] content_type:', content_type)
+    print('[DEBUG] accept_type:', accept_type)
 
-def input_fn(request_body, request_content_type):
-    """
-    Deserialize and prepare the prediction input
-    """
+    input_data = json.loads(request_body)
 
-    return request_body
+    result = model.generate(input_data['inputs'])
 
-def output_fn(prediction, content_type):
-    """
-    Serialize and prepare the prediction output
-    """
-    
-    return prediction
+    return { 'result': result }, 'application/json'
 
 class AutoTitle(AutoRegressiveDecoder):
     """seq2seq解码器

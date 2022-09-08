@@ -18,7 +18,6 @@ from typing import List, Union, Optional
 
 import attr
 
-from sagemaker.deprecations import deprecated_class
 from sagemaker.estimator import EstimatorBase
 from sagemaker.model import Model
 from sagemaker import PipelineModel
@@ -28,6 +27,7 @@ from sagemaker.workflow.entities import RequestType
 from sagemaker.workflow.steps import Step, CreateModelStep, TransformStep
 from sagemaker.workflow._utils import _RegisterModelStep, _RepackModelStep
 from sagemaker.workflow.retry import RetryPolicy
+from sagemaker.utils import update_container_with_inference_params
 
 
 @attr.s
@@ -51,20 +51,22 @@ class StepCollection:
         """The properties of the particular `StepCollection`."""
         if not self.steps:
             return None
-        size = len(self.steps)
-        return self.steps[size - 1].properties
+        return self.steps[-1].properties
 
 
 class RegisterModel(StepCollection):  # pragma: no cover
     """Register Model step collection for workflow."""
+
+    _REGISTER_MODEL_NAME_BASE = "RegisterModel"
+    _REPACK_MODEL_NAME_BASE = "RepackModel"
 
     def __init__(
         self,
         name: str,
         content_types,
         response_types,
-        inference_instances,
-        transform_instances,
+        inference_instances=None,
+        transform_instances=None,
         estimator: EstimatorBase = None,
         model_data=None,
         depends_on: Optional[List[Union[str, Step, StepCollection]]] = None,
@@ -82,6 +84,12 @@ class RegisterModel(StepCollection):  # pragma: no cover
         drift_check_baselines=None,
         customer_metadata_properties=None,
         domain=None,
+        sample_payload_url=None,
+        task=None,
+        framework=None,
+        framework_version=None,
+        nearest_model_name=None,
+        data_input_configuration=None,
         **kwargs,
     ):
         """Construct steps `_RepackModelStep` and `_RegisterModelStep` based on the estimator.
@@ -125,6 +133,18 @@ class RegisterModel(StepCollection):  # pragma: no cover
                 metadata properties (default: None).
             domain (str): Domain values can be "COMPUTER_VISION", "NATURAL_LANGUAGE_PROCESSING",
                 "MACHINE_LEARNING" (default: None).
+            sample_payload_url (str): The S3 path where the sample payload is stored
+                (default: None).
+            task (str): Task values which are supported by Inference Recommender are "FILL_MASK",
+                "IMAGE_CLASSIFICATION", "OBJECT_DETECTION", "TEXT_GENERATION", "IMAGE_SEGMENTATION",
+                "CLASSIFICATION", "REGRESSION", "OTHER" (default: None).
+            framework (str): Machine learning framework of the model package container image
+                (default: None).
+            framework_version (str): Framework version of the Model Package Container Image
+                (default: None).
+            nearest_model_name (str): Name of a pre-trained machine learning benchmarked by
+                Amazon SageMaker Inference Recommender (default: None).
+            data_input_configuration (str): Input object for the model (default: None).
 
             **kwargs: additional arguments to `create_model`.
         """
@@ -151,7 +171,7 @@ class RegisterModel(StepCollection):  # pragma: no cover
             kwargs = dict(**kwargs, output_kms_key=kwargs.pop("model_kms_key", None))
 
             repack_model_step = _RepackModelStep(
-                name=f"{name}RepackModel",
+                name="{}-{}".format(self.name, self._REPACK_MODEL_NAME_BASE),
                 depends_on=depends_on,
                 retry_policies=repack_model_step_retry_policies,
                 sagemaker_session=estimator.sagemaker_session,
@@ -195,7 +215,7 @@ class RegisterModel(StepCollection):  # pragma: no cover
                     model_name = model_entity.name or model_entity._framework_name
 
                     repack_model_step = _RepackModelStep(
-                        name=f"{model_name}RepackModel",
+                        name="{}-{}".format(model_name, self._REPACK_MODEL_NAME_BASE),
                         depends_on=depends_on,
                         retry_policies=repack_model_step_retry_policies,
                         sagemaker_session=sagemaker_session,
@@ -220,12 +240,26 @@ class RegisterModel(StepCollection):  # pragma: no cover
                     kwargs.pop("output_kms_key", None)
 
             if isinstance(model, PipelineModel):
-                self.container_def_list = model.pipeline_container_def(inference_instances[0])
+                self.container_def_list = model.pipeline_container_def(
+                    inference_instances[0] if inference_instances else None
+                )
             elif isinstance(model, Model):
-                self.container_def_list = [model.prepare_container_def(inference_instances[0])]
+                self.container_def_list = [
+                    model.prepare_container_def(
+                        inference_instances[0] if inference_instances else None
+                    )
+                ]
+
+            self.container_def_list = update_container_with_inference_params(
+                framework=framework,
+                framework_version=framework_version,
+                nearest_model_name=nearest_model_name,
+                data_input_configuration=data_input_configuration,
+                container_list=self.container_def_list,
+            )
 
         register_model_step = _RegisterModelStep(
-            name=name,
+            name="{}-{}".format(self.name, self._REGISTER_MODEL_NAME_BASE),
             estimator=estimator,
             model_data=model_data,
             content_types=content_types,
@@ -245,6 +279,8 @@ class RegisterModel(StepCollection):  # pragma: no cover
             retry_policies=register_model_step_retry_policies,
             customer_metadata_properties=customer_metadata_properties,
             domain=domain,
+            sample_payload_url=sample_payload_url,
+            task=task,
             **kwargs,
         )
         if not repack_model:
@@ -253,18 +289,15 @@ class RegisterModel(StepCollection):  # pragma: no cover
         steps.append(register_model_step)
         self.steps = steps
 
-        # TODO: add public document link here once ready
         warnings.warn(
             (
                 "We are deprecating the use of RegisterModel. "
-                "Instead, please use the ModelStep, which simply takes in the step arguments "
-                "generated by model.register()."
+                "Please use the ModelStep instead. For more, see: "
+                "https://sagemaker.readthedocs.io/en/stable/"
+                "amazon_sagemaker_model_building_pipeline.html#model-step"
             ),
             DeprecationWarning,
         )
-
-
-RegisterModel = deprecated_class(RegisterModel, "RegisterModel")
 
 
 class EstimatorTransformer(StepCollection):

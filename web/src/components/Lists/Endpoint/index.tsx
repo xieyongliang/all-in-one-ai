@@ -330,14 +330,16 @@ const EndpointList: FunctionComponent = () => {
         if(selectedItems.length > 0) {
             setSelectedEndpoint(selectedItems[0])
             setDisabledDelete(false)
+
+            var endpointCurItem = endpointCurItems.findIndex((item) => item.endpointName === selectedItems[0].endpointName)
+
             if(!showAll) {
                 setDisabledAttach(true)
                 setDisabledDetach(false)
             }
             else {
-                var index = endpointCurItems.findIndex((item) => item.endpointName === selectedItems[0].endpointName)
-                setDisabledAttach(index >= 0)
-                setDisabledDetach(index < 0) 
+                setDisabledAttach(endpointCurItem !== undefined)
+                setDisabledDetach(endpointCurItem === undefined) 
             }
         }
     }

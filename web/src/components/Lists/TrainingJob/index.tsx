@@ -323,18 +323,18 @@ const TrainingJobList: FunctionComponent = () => {
         if(selectedItems.length > 0) {
             setSelectedTrainingJob(selectedItems[0])
 
-            var index;
-            if(showAll) {
-                index = trainingJobAllItems.findIndex((item) => item.trainingJobName === selectedItems[0].trainingJobName)
-                setDisabledStop(trainingJobAllItems === undefined ||(trainingJobAllItems[index].trainingJobStatus !== 'InProgress'))
+            var trainingJobCurItem = trainingJobCurItems.find((item) => item.trainingJobName === selectedItems[0].trainingJobName)
+            var trainingJobAllItem = trainingJobAllItems.find((item) => item.trainingJobName === selectedItems[0].trainingJobName)
+            
+            if(!showAll) {
+                setDisabledStop(trainingJobCurItem.trainingJobStatus !== 'InProgress')
                 setDisabledAttach(true)
                 setDisabledDetach(false)
             }
             else {
-                index = trainingJobCurItems.findIndex((item) => item.trainingJobName === selectedItems[0].trainingJobName)
-                setDisabledStop((trainingJobCurItems[index].trainingJobStatus !== 'InProgress'))
-                setDisabledAttach(index >= 0)
-                setDisabledDetach(index < 0) 
+                setDisabledStop(trainingJobAllItem.trainingJobStatus !== 'InProgress')
+                setDisabledAttach(trainingJobCurItem !== undefined) 
+                setDisabledDetach(trainingJobCurItem === undefined) 
             }
         }
     }
