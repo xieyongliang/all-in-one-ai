@@ -390,6 +390,7 @@
   Promise.allSettled(promises).then((result) => {
     const targetDiv = document.getElementById(containerId);
     const fetchSuccess = result[0].status === "fulfilled";
+
     result[0].value = result[0].value.replaceAll('\.\/', rawDirectoryURL)
 
     if (type === 'code') {

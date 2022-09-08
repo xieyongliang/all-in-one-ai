@@ -11,6 +11,7 @@ import { AppState } from '../../../store';
 import { connect } from 'react-redux';
 import { IIndustrialModel } from '../../../store/industrialmodels/reducer';
 import { v4 as uuidv4 } from 'uuid';
+import { ALGORITHMS } from '../../Data/data';
 import { useTranslation } from "react-i18next";
 
 interface IProps {
@@ -191,7 +192,7 @@ const LocalTextOutputTextForm: FunctionComponent<IProps> = (
             <Container headingVariant='h4' title = {t('industrial_models.demo.quick_start')}>
                 <Inline>
                     <div className='quickstartaction'>
-                        <Button onClick={onStartTrain}>{t('industrial_models.demo.train')}</Button>
+                        <Button onClick={onStartTrain} disabled={!ALGORITHMS.find(algorithm => algorithm.value === industrialModel.algorithm).trainable}>{t('industrial_models.demo.train')}</Button>
                     </div>
                     <div className='quickstartaction'>
                         <Button onClick={onStartDeploy}>{t('industrial_models.demo.deploy')}</Button>

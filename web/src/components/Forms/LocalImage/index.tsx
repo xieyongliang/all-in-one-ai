@@ -7,7 +7,7 @@ import { github } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 import JSZip from 'jszip';
 import axios from 'axios';
 import ImageAnnotate from '../../Utils/ImageAnnotate';
-import { COLORS } from '../../Data/data';
+import { ALGORITHMS, COLORS } from '../../Data/data';
 import { PathParams } from '../../Interfaces/PathParams';
 import { AppState } from '../../../store';
 import { connect } from 'react-redux';
@@ -41,6 +41,8 @@ const LocalImageForm: FunctionComponent<IProps> = (props) => {
     
     var params : PathParams = useParams();
 
+    var industrialModel = props.industrialModels.find((item) => item.id === params.id)
+
     const getSourceCode = async (uri) => {
         const response = await axios.get('/_file/download', {params: {uri: encodeURIComponent(uri)}, responseType: 'blob'})
         return response.data
@@ -68,16 +70,11 @@ const LocalImageForm: FunctionComponent<IProps> = (props) => {
         }
     }, []);
 
-    var industrialModels = props.industrialModels
-
     useEffect(() => {
-        if(industrialModels.length > 0) {
-            var index = industrialModels.findIndex((item) => item.id === params.id)
-            setImageLabels(industrialModels[index].labels)
-            setCurImageItem('');
-            setVisibleImagePreview(false)
-        }
-    }, [params.id, industrialModels]);
+        setImageLabels(industrialModel.labels)
+        setCurImageItem('');
+        setVisibleImagePreview(false)
+    }, [params.id, industrialModel]);
 
     const onFileChange = (files: (File | FileMetadata)[]) => {
         setImageName(files[0].name.substring(0, files[0].name.lastIndexOf('.')))
@@ -102,8 +99,6 @@ const LocalImageForm: FunctionComponent<IProps> = (props) => {
         imageLabels.forEach(label => {
             labelsData.push(label + '\n');
         })
-
-        var industrialModel = industrialModels.find((item) => item.id === params.id)
 
         return (
             <ImageAnnotate 
@@ -145,7 +140,7 @@ const LocalImageForm: FunctionComponent<IProps> = (props) => {
             <Container headingVariant='h4' title = 'Quick start'>
                 <Inline>
                     <div className='quickstartaction'>
-                        <Button onClick={onStartTrain}>Start train</Button>
+                        <Button onClick={onStartTrain} disabled={!ALGORITHMS.find(algorithm => algorithm.value === industrialModel.algorithm).trainable}>Start train</Button>
                     </div>
                     <div className='quickstartaction'>
                         <Button onClick={onStartDeploy}>Start deploy</Button>
