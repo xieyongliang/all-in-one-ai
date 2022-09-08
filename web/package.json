@@ -69,8 +69,7 @@
     "aws-sdk": "latest",
     "react-i18next": "latest",
     "i18next-http-backend": "latest",
-    "i18next": "latest",
-    "react-helmet": "latest"
+    "i18next": "latest"
   },
   "devDependencies": {
     "@types/file-saver": "^2.0.3",
