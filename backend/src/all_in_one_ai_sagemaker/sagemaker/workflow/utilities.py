@@ -13,22 +13,31 @@
 """Utilities to support workflow."""
 from __future__ import absolute_import
 
+import inspect
+import logging
+from functools import wraps
 from pathlib import Path
-from typing import List, Sequence, Union
+from typing import List, Sequence, Union, Set, TYPE_CHECKING
 import hashlib
 from urllib.parse import unquote, urlparse
 from _hashlib import HASH as Hash
 
-from sagemaker.workflow.step_collections import StepCollection
+from sagemaker.workflow.parameters import Parameter
+from sagemaker.workflow.pipeline_context import _StepArguments
 from sagemaker.workflow.entities import (
     Entity,
     RequestType,
 )
 
+logger = logging.getLogger(__name__)
+
+if TYPE_CHECKING:
+    from sagemaker.workflow.step_collections import StepCollection
+
 BUF_SIZE = 65536  # 64KiB
 
 
-def list_to_request(entities: Sequence[Union[Entity, StepCollection]]) -> List[RequestType]:
+def list_to_request(entities: Sequence[Union[Entity, "StepCollection"]]) -> List[RequestType]:
     """Get the request structure for list of entities.
 
     Args:
@@ -36,6 +45,8 @@ def list_to_request(entities: Sequence[Union[Entity, StepCollection]]) -> List[R
     Returns:
         list: A request structure for a workflow service call.
     """
+    from sagemaker.workflow.step_collections import StepCollection
+
     request_dicts = []
     for entity in entities:
         if isinstance(entity, Entity):
@@ -132,3 +143,59 @@ def _hash_file(file: Union[str, Path], md5: Hash) -> Hash:
                 break
             md5.update(data)
     return md5
+
+
+def validate_step_args_input(
+    step_args: _StepArguments, expected_caller: Set[str], error_message: str
+):
+    """Validate the `_StepArguments` object which is passed into a pipeline step
+
+    Args:
+        step_args (_StepArguments): A `_StepArguments` object to be used for composing
+            a pipeline step.
+        expected_caller (Set[str]): The expected name of the caller function which is
+            intercepted by the PipelineSession to get the step arguments.
+        error_message (str): The error message to be thrown if the validation fails.
+    """
+    if not isinstance(step_args, _StepArguments):
+        raise TypeError(error_message)
+    if step_args.caller_name not in expected_caller:
+        raise ValueError(error_message)
+
+
+def override_pipeline_parameter_var(func):
+    """A decorator to override pipeline Parameters passed into a function
+
+    This is a temporary decorator to override pipeline Parameter objects with their default value
+    and display warning information to instruct users to update their code.
+
+    This decorator can help to give a grace period for users to update their code when
+    we make changes to explicitly prevent passing any pipeline variables to a function.
+
+    We should remove this decorator after the grace period.
+    """
+    warning_msg_template = (
+        "The input argument %s of function (%s) is a pipeline variable (%s), which is not allowed. "
+        "The default_value of this Parameter object will be used to override it."
+    )
+
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        func_name = "{}.{}".format(func.__module__, func.__name__)
+        params = inspect.signature(func).parameters
+        args = list(args)
+        for i, (arg_name, _) in enumerate(params.items()):
+            if i >= len(args):
+                break
+            if isinstance(args[i], Parameter):
+                logger.warning(warning_msg_template, arg_name, func_name, type(args[i]))
+                args[i] = args[i].default_value
+        args = tuple(args)
+
+        for arg_name, value in kwargs.items():
+            if isinstance(value, Parameter):
+                logger.warning(warning_msg_template, arg_name, func_name, type(value))
+                kwargs[arg_name] = value.default_value
+        return func(*args, **kwargs)
+
+    return wrapper

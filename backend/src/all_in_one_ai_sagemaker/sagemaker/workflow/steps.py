@@ -17,11 +17,12 @@ import abc
 import warnings
 
 from enum import Enum
-from typing import Dict, List, Union, Optional, TYPE_CHECKING
+from typing import Dict, List, Set, Union, Optional, Any, TYPE_CHECKING
 from urllib.parse import urlparse
 
 import attr
 
+from sagemaker import Session
 from sagemaker.estimator import EstimatorBase, _TrainingJob
 from sagemaker.inputs import CreateModelInput, TrainingInput, TransformInput, FileSystemInput
 from sagemaker.model import Model
@@ -34,16 +35,20 @@ from sagemaker.processing import (
 )
 from sagemaker.transformer import Transformer, _TransformJob
 from sagemaker.tuner import HyperparameterTuner, _TuningJob
+from sagemaker.workflow.conditions import Condition
+from sagemaker.workflow import is_pipeline_variable
 from sagemaker.workflow.entities import (
     DefaultEnumMeta,
     Entity,
     RequestType,
 )
+from sagemaker.workflow.pipeline_context import _JobStepArguments
 from sagemaker.workflow.properties import (
     PropertyFile,
     Properties,
 )
-from sagemaker.workflow.functions import Join
+from sagemaker.workflow.entities import PipelineVariable
+from sagemaker.workflow.functions import Join, JsonGet
 from sagemaker.workflow.retry import RetryPolicy
 
 if TYPE_CHECKING:
@@ -92,6 +97,15 @@ class Step(Entity):
     @abc.abstractmethod
     def arguments(self) -> RequestType:
         """The arguments to the particular `Step` service call."""
+
+    @property
+    def step_only_arguments(self) -> RequestType:
+        """The arguments to this Step only.
+
+        Compound Steps such as the ConditionStep will have to
+        override this method to return arguments pertaining to only that step.
+        """
+        return self.arguments
 
     @property
     @abc.abstractmethod
@@ -145,8 +159,122 @@ class Step(Entity):
             elif isinstance(step, str):
                 depends_on.append(step)
             else:
-                raise ValueError(f"Invalid input step name: {step}")
+                raise ValueError(f"Invalid input step type: {type(step)}")
         return depends_on
+
+    def _find_step_dependencies(
+        self, step_map: Dict[str, Union["Step", "StepCollection"]]
+    ) -> List[str]:
+        """Find the all step names this step is dependent on."""
+        step_dependencies = set()
+        if self.depends_on:
+            step_dependencies.update(self._find_dependencies_in_depends_on_list(step_map))
+        step_dependencies.update(
+            self._find_dependencies_in_step_arguments(self.step_only_arguments, step_map)
+        )
+        return list(step_dependencies)
+
+    def _find_dependencies_in_depends_on_list(
+        self, step_map: Dict[str, Union["Step", "StepCollection"]]
+    ) -> Set[str]:
+        """Find dependency steps referenced in the depends-on field of this step."""
+        # import here to prevent circular import
+        from sagemaker.workflow.step_collections import StepCollection
+
+        dependencies = set()
+        for step in self.depends_on:
+            if isinstance(step, Step):
+                dependencies.add(step.name)
+            elif isinstance(step, StepCollection):
+                dependencies.add(step.steps[-1].name)
+            elif isinstance(step, str):
+                # step could be the name of a `Step` or a `StepCollection`
+                dependencies.add(self._get_step_name_from_str(step, step_map))
+        return dependencies
+
+    def _find_dependencies_in_step_arguments(
+        self, obj: Any, step_map: Dict[str, Union["Step", "StepCollection"]]
+    ):
+        """Find the step dependencies referenced in the arguments of this step."""
+        dependencies = set()
+        if isinstance(obj, dict):
+            for value in obj.values():
+                if isinstance(value, (PipelineVariable, Condition)):
+                    for referenced_step in value._referenced_steps:
+                        dependencies.add(self._get_step_name_from_str(referenced_step, step_map))
+                    if isinstance(value, JsonGet):
+                        self._validate_json_get_function(value, step_map)
+                dependencies.update(self._find_dependencies_in_step_arguments(value, step_map))
+        elif isinstance(obj, list):
+            for item in obj:
+                if isinstance(item, (PipelineVariable, Condition)):
+                    for referenced_step in item._referenced_steps:
+                        dependencies.add(self._get_step_name_from_str(referenced_step, step_map))
+                    if isinstance(item, JsonGet):
+                        self._validate_json_get_function(item, step_map)
+                dependencies.update(self._find_dependencies_in_step_arguments(item, step_map))
+        return dependencies
+
+    def _validate_json_get_function(
+        self, json_get: JsonGet, step_map: Dict[str, Union["Step", "StepCollection"]]
+    ):
+        """Validate the JsonGet function inputs."""
+        property_file_reference = json_get.property_file
+        processing_step = step_map[json_get.step_name]
+        property_file = None
+        if isinstance(property_file_reference, str):
+            if not isinstance(processing_step, ProcessingStep):
+                raise ValueError(
+                    f"Invalid JsonGet function {json_get.expr} in step '{self.name}'. JsonGet "
+                    f"function can only be evaluated on processing step outputs."
+                )
+            for file in processing_step.property_files:
+                if file.name == property_file_reference:
+                    property_file = file
+                    break
+        elif isinstance(property_file_reference, PropertyFile):
+            property_file = property_file_reference
+        if property_file is None:
+            raise ValueError(
+                f"Invalid JsonGet function {json_get.expr} in step '{self.name}'. Property file "
+                f"reference '{property_file_reference}' is undefined in step "
+                f"'{processing_step.name}'."
+            )
+        property_file_output = None
+        if "ProcessingOutputConfig" in processing_step.arguments:
+            for output in processing_step.arguments["ProcessingOutputConfig"]["Outputs"]:
+                if output["OutputName"] == property_file.output_name:
+                    property_file_output = output
+        if property_file_output is None:
+            raise ValueError(
+                f"Processing output name '{property_file.output_name}' defined in property file "
+                f"'{property_file.name}' not found in processing step '{processing_step.name}'."
+            )
+
+    @staticmethod
+    def _get_step_name_from_str(
+        str_input: str, step_map: Dict[str, Union["Step", "StepCollection"]]
+    ) -> str:
+        """Convert a Step or StepCollection name input to step name."""
+        from sagemaker.workflow.step_collections import StepCollection
+
+        if str_input not in step_map:
+            raise ValueError(f"Step {str_input} is undefined.")
+        if isinstance(step_map[str_input], StepCollection):
+            return step_map[str_input].steps[-1].name
+        return str_input
+
+    @staticmethod
+    def _trim_experiment_config(request_dict: Dict):
+        """For job steps, trim the experiment config to keep the trial component display name."""
+        if request_dict.get("ExperimentConfig", {}).get("TrialComponentDisplayName"):
+            request_dict["ExperimentConfig"] = {
+                "TrialComponentDisplayName": request_dict["ExperimentConfig"][
+                    "TrialComponentDisplayName"
+                ]
+            }
+        else:
+            request_dict.pop("ExperimentConfig", None)
 
 
 @attr.s
@@ -237,7 +365,7 @@ class TrainingStep(ConfigurableRetryStep):
     def __init__(
         self,
         name: str,
-        step_args: Dict = None,
+        step_args: _JobStepArguments = None,
         estimator: EstimatorBase = None,
         display_name: str = None,
         description: str = None,
@@ -253,7 +381,7 @@ class TrainingStep(ConfigurableRetryStep):
 
         Args:
             name (str): The name of the `TrainingStep`.
-            step_args: The arguments for the `TrainingStep` definition.
+            step_args (_JobStepArguments): The arguments for the `TrainingStep` definition.
             estimator (EstimatorBase): A `sagemaker.estimator.EstimatorBase` instance.
             display_name (str): The display name of the `TrainingStep`.
             description (str): The description of the `TrainingStep`.
@@ -284,15 +412,22 @@ class TrainingStep(ConfigurableRetryStep):
         )
 
         if not (step_args is not None) ^ (estimator is not None):
-            raise ValueError("either step_args or estimator need to be given.")
+            raise ValueError("Either step_args or estimator need to be given.")
 
-        self.step_args = step_args
+        if step_args:
+            from sagemaker.workflow.utilities import validate_step_args_input
+
+            validate_step_args_input(
+                step_args=step_args,
+                expected_caller={Session.train.__name__},
+                error_message="The step_args of TrainingStep must be obtained from estimator.fit().",
+            )
+
+        self.step_args = step_args.args if step_args else None
         self.estimator = estimator
         self.inputs = inputs
 
-        self._properties = Properties(
-            path=f"Steps.{name}", shape_name="DescribeTrainingJobResponse"
-        )
+        self._properties = Properties(step_name=name, shape_name="DescribeTrainingJobResponse")
         self.cache_config = cache_config
 
         if self.cache_config:
@@ -325,7 +460,10 @@ class TrainingStep(ConfigurableRetryStep):
             # To avoid this, hash the contents of the training script and include it
             # in the `job_name` passed to the `Estimator`, which will be used
             # instead of the timestamped path.
-            self.job_name = self._generate_code_upload_path()
+            if not is_pipeline_variable(estimator.source_dir) and not is_pipeline_variable(
+                estimator.entry_point
+            ):
+                self.job_name = self._generate_code_upload_path()
 
     @property
     def arguments(self) -> RequestType:
@@ -347,7 +485,7 @@ class TrainingStep(ConfigurableRetryStep):
             request_dict["HyperParameters"].pop("sagemaker_job_name", None)
 
         request_dict.pop("TrainingJobName", None)
-        request_dict.pop("ExperimentConfig", None)
+        Step._trim_experiment_config(request_dict)
 
         return request_dict
 
@@ -430,14 +568,15 @@ class CreateModelStep(ConfigurableRetryStep):
         self.model = model
         self.inputs = inputs or CreateModelInput()
 
-        self._properties = Properties(path=f"Steps.{name}", shape_name="DescribeModelOutput")
+        self._properties = Properties(step_name=name, shape_name="DescribeModelOutput")
 
-        # TODO: add public document link here once ready
         warnings.warn(
             (
                 "We are deprecating the use of CreateModelStep. "
                 "Instead, please use the ModelStep, which simply takes in the step arguments "
-                "generated by model.create()."
+                "generated by model.create(). For more, see: "
+                "https://sagemaker.readthedocs.io/en/stable/"
+                "amazon_sagemaker_model_building_pipeline.html#model-step"
             ),
             DeprecationWarning,
         )
@@ -488,7 +627,7 @@ class TransformStep(ConfigurableRetryStep):
     def __init__(
         self,
         name: str,
-        step_args: Dict = None,
+        step_args: _JobStepArguments = None,
         transformer: Transformer = None,
         inputs: TransformInput = None,
         display_name: str = None,
@@ -504,7 +643,7 @@ class TransformStep(ConfigurableRetryStep):
 
         Args:
             name (str): The name of the `TransformStep`.
-            step_args: The arguments for the `TransformStep` definition.
+            step_args (_JobStepArguments): The arguments for the `TransformStep` definition.
             transformer (Transformer): A `sagemaker.transformer.Transformer` instance.
             inputs (TransformInput): A `sagemaker.inputs.TransformInput` instance.
             cache_config (CacheConfig): A `sagemaker.workflow.steps.CacheConfig` instance.
@@ -522,13 +661,21 @@ class TransformStep(ConfigurableRetryStep):
         if not (step_args is not None) ^ (transformer is not None):
             raise ValueError("either step_args or transformer need to be given, but not both.")
 
-        self.step_args = step_args
+        if step_args:
+            from sagemaker.workflow.utilities import validate_step_args_input
+
+            validate_step_args_input(
+                step_args=step_args,
+                expected_caller={Session.transform.__name__},
+                error_message="The step_args of TransformStep must be obtained "
+                "from transformer.transform().",
+            )
+
+        self.step_args = step_args.args if step_args else None
         self.transformer = transformer
         self.inputs = inputs
         self.cache_config = cache_config
-        self._properties = Properties(
-            path=f"Steps.{name}", shape_name="DescribeTransformJobResponse"
-        )
+        self._properties = Properties(step_name=name, shape_name="DescribeTransformJobResponse")
 
         if not self.step_args:
             if inputs is None:
@@ -569,7 +716,8 @@ class TransformStep(ConfigurableRetryStep):
             )
 
         request_dict.pop("TransformJobName", None)
-        request_dict.pop("ExperimentConfig", None)
+        Step._trim_experiment_config(request_dict)
+
         return request_dict
 
     @property
@@ -592,7 +740,7 @@ class ProcessingStep(ConfigurableRetryStep):
     def __init__(
         self,
         name: str,
-        step_args: Dict = None,
+        step_args: _JobStepArguments = None,
         processor: Processor = None,
         display_name: str = None,
         description: str = None,
@@ -613,7 +761,7 @@ class ProcessingStep(ConfigurableRetryStep):
 
         Args:
             name (str): The name of the `ProcessingStep`.
-            step_args: The arguments for the `ProcessingStep` definition.
+            step_args (_JobStepArguments): The arguments for the `ProcessingStep` definition.
             processor (Processor): A `sagemaker.processing.Processor` instance.
             display_name (str): The display name of the `ProcessingStep`.
             description (str): The description of the `ProcessingStep`
@@ -642,19 +790,26 @@ class ProcessingStep(ConfigurableRetryStep):
         if not (step_args is not None) ^ (processor is not None):
             raise ValueError("either step_args or processor need to be given, but not both.")
 
-        self.step_args = step_args
+        if step_args:
+            from sagemaker.workflow.utilities import validate_step_args_input
+
+            validate_step_args_input(
+                step_args=step_args,
+                expected_caller={Session.process.__name__},
+                error_message="The step_args of ProcessingStep must be obtained from processor.run().",
+            )
+
+        self.step_args = step_args.args if step_args else None
         self.processor = processor
         self.inputs = inputs
         self.outputs = outputs
         self.job_arguments = job_arguments
         self.code = code
-        self.property_files = property_files
+        self.property_files = property_files or []
         self.job_name = None
         self.kms_key = kms_key
         self.cache_config = cache_config
-        self._properties = Properties(
-            path=f"Steps.{name}", shape_name="DescribeProcessingJobResponse"
-        )
+        self._properties = Properties(step_name=name, shape_name="DescribeProcessingJobResponse")
 
         if not self.step_args:
             # Examine why run method in `sagemaker.processing.Processor`
@@ -663,6 +818,11 @@ class ProcessingStep(ConfigurableRetryStep):
             self.processor.arguments = job_arguments
 
             if code:
+                if is_pipeline_variable(code):
+                    raise ValueError(
+                        "code argument has to be a valid S3 URI or local file path "
+                        + "rather than a pipeline variable"
+                    )
                 code_url = urlparse(code)
                 if code_url.scheme == "" or code_url.scheme == "file":
                     # By default, `Processor` will upload the local code to an S3 path
@@ -705,7 +865,8 @@ class ProcessingStep(ConfigurableRetryStep):
             request_dict = self.processor.sagemaker_session._get_process_request(**process_args)
 
         request_dict.pop("ProcessingJobName", None)
-        request_dict.pop("ExperimentConfig", None)
+        Step._trim_experiment_config(request_dict)
+
         return request_dict
 
     @property
@@ -738,7 +899,7 @@ class TuningStep(ConfigurableRetryStep):
     def __init__(
         self,
         name: str,
-        step_args: Dict = None,
+        step_args: _JobStepArguments = None,
         tuner: HyperparameterTuner = None,
         display_name: str = None,
         description: str = None,
@@ -755,7 +916,7 @@ class TuningStep(ConfigurableRetryStep):
 
         Args:
             name (str): The name of the `TuningStep`.
-            step_args: The arguments for the `TuningStep` definition.
+            step_args (_JobStepArguments): The arguments for the `TuningStep` definition.
             tuner (HyperparameterTuner): A `sagemaker.tuner.HyperparameterTuner` instance.
             display_name (str): The display name of the `TuningStep`.
             description (str): The description of the `TuningStep`.
@@ -801,12 +962,21 @@ class TuningStep(ConfigurableRetryStep):
         if not (step_args is not None) ^ (tuner is not None):
             raise ValueError("either step_args or tuner need to be given, but not both.")
 
-        self.step_args = step_args
+        if step_args:
+            from sagemaker.workflow.utilities import validate_step_args_input
+
+            validate_step_args_input(
+                step_args=step_args,
+                expected_caller={Session.create_tuning_job.__name__},
+                error_message="The step_args of TuningStep must be obtained from tuner.fit().",
+            )
+
+        self.step_args = step_args.args if step_args else None
         self.tuner = tuner
         self.inputs = inputs
         self.job_arguments = job_arguments
         self._properties = Properties(
-            path=f"Steps.{name}",
+            step_name=name,
             shape_names=[
                 "DescribeHyperParameterTuningJobResponse",
                 "ListTrainingJobsForHyperParameterTuningJobResponse",

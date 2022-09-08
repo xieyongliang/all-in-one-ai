@@ -1,6 +1,9 @@
 from __future__ import annotations
 
 import textwrap
+from typing import cast
+
+import numpy as np
 
 from pandas._libs import (
     NaT,
@@ -10,6 +13,7 @@ from pandas.errors import InvalidIndexError
 
 from pandas.core.dtypes.common import is_dtype_equal
 
+from pandas.core.algorithms import safe_sort
 from pandas.core.indexes.base import (
     Index,
     _new_Index,
@@ -152,9 +156,14 @@ def _get_combined_index(
         index = union_indexes(indexes, sort=False)
         index = ensure_index(index)
 
-    if sort:
+    if sort and not index.is_monotonic_increasing:
         try:
-            index = index.sort_values()
+            array_sorted = safe_sort(index)
+            array_sorted = cast(np.ndarray, array_sorted)
+            if isinstance(index, MultiIndex):
+                index = MultiIndex.from_tuples(array_sorted, names=index.names)
+            else:
+                index = Index(array_sorted, name=index.name)
         except TypeError:
             pass
 

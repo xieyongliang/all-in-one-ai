@@ -1,12 +1,14 @@
+import sys
+
 from typing import (
     Any,
     Callable,
     Dict,
     Generic,
     List,
+    Mapping,
     Optional,
     Sequence,
-    Mapping,
     Tuple,
     Type,
     TypeVar,
@@ -15,12 +17,11 @@ from typing import (
 )
 
 # `import X as X` is required to make these public
+from . import converters as converters
 from . import exceptions as exceptions
 from . import filters as filters
-from . import converters as converters
 from . import setters as setters
 from . import validators as validators
-
 from ._version_info import VersionInfo
 
 __version__: str
@@ -37,6 +38,7 @@ __copyright__: str
 _T = TypeVar("_T")
 _C = TypeVar("_C", bound=type)
 
+_EqOrderType = Union[bool, Callable[[Any], Any]]
 _ValidatorType = Callable[[Any, Attribute[_T], _T], Any]
 _ConverterType = Callable[[Any], Any]
 _FilterType = Callable[[Attribute[_T], _T], bool]
@@ -46,7 +48,10 @@ _OnSetAttrType = Callable[[Any, Attribute[Any], Any], Any]
 _OnSetAttrArgType = Union[
     _OnSetAttrType, List[_OnSetAttrType], setters._NoOpType
 ]
-_FieldTransformer = Callable[[type, List[Attribute]], List[Attribute]]
+_FieldTransformer = Callable[
+    [type, List[Attribute[Any]]], List[Attribute[Any]]
+]
+_CompareWithType = Callable[[Any, Any], bool]
 # FIXME: in reality, if multiple validators are passed they must be in a list
 # or tuple, but those are invariant and so would prevent subtypes of
 # _ValidatorType from working when passed in a list or tuple.
@@ -59,22 +64,54 @@ NOTHING: object
 # NOTE: Factory lies about its return type to make this possible:
 # `x: List[int] # = Factory(list)`
 # Work around mypy issue #4554 in the common case by using an overload.
-@overload
-def Factory(factory: Callable[[], _T]) -> _T: ...
-@overload
-def Factory(
-    factory: Union[Callable[[Any], _T], Callable[[], _T]],
-    takes_self: bool = ...,
-) -> _T: ...
+if sys.version_info >= (3, 8):
+    from typing import Literal
+    @overload
+    def Factory(factory: Callable[[], _T]) -> _T: ...
+    @overload
+    def Factory(
+        factory: Callable[[Any], _T],
+        takes_self: Literal[True],
+    ) -> _T: ...
+    @overload
+    def Factory(
+        factory: Callable[[], _T],
+        takes_self: Literal[False],
+    ) -> _T: ...
+
+else:
+    @overload
+    def Factory(factory: Callable[[], _T]) -> _T: ...
+    @overload
+    def Factory(
+        factory: Union[Callable[[Any], _T], Callable[[], _T]],
+        takes_self: bool = ...,
+    ) -> _T: ...
+
+# Static type inference support via __dataclass_transform__ implemented as per:
+# https://github.com/microsoft/pyright/blob/1.1.135/specs/dataclass_transforms.md
+# This annotation must be applied to all overloads of "define" and "attrs"
+#
+# NOTE: This is a typing construct and does not exist at runtime.  Extensions
+# wrapping attrs decorators should declare a separate __dataclass_transform__
+# signature in the extension module using the specification linked above to
+# provide pyright support.
+def __dataclass_transform__(
+    *,
+    eq_default: bool = True,
+    order_default: bool = False,
+    kw_only_default: bool = False,
+    field_descriptors: Tuple[Union[type, Callable[..., Any]], ...] = (()),
+) -> Callable[[_T], _T]: ...
 
 class Attribute(Generic[_T]):
     name: str
     default: Optional[_T]
     validator: Optional[_ValidatorType[_T]]
     repr: _ReprArgType
-    cmp: bool
-    eq: bool
-    order: bool
+    cmp: _EqOrderType
+    eq: _EqOrderType
+    order: _EqOrderType
     hash: Optional[bool]
     init: bool
     converter: Optional[_ConverterType]
@@ -82,6 +119,7 @@ class Attribute(Generic[_T]):
     type: Optional[Type[_T]]
     kw_only: bool
     on_setattr: _OnSetAttrType
+    def evolve(self, **changes: Any) -> "Attribute[Any]": ...
 
 # NOTE: We had several choices for the annotation to use for type arg:
 # 1) Type[_T]
@@ -112,7 +150,7 @@ def attrib(
     default: None = ...,
     validator: None = ...,
     repr: _ReprArgType = ...,
-    cmp: Optional[bool] = ...,
+    cmp: Optional[_EqOrderType] = ...,
     hash: Optional[bool] = ...,
     init: bool = ...,
     metadata: Optional[Mapping[Any, Any]] = ...,
@@ -120,8 +158,8 @@ def attrib(
     converter: None = ...,
     factory: None = ...,
     kw_only: bool = ...,
-    eq: Optional[bool] = ...,
-    order: Optional[bool] = ...,
+    eq: Optional[_EqOrderType] = ...,
+    order: Optional[_EqOrderType] = ...,
     on_setattr: Optional[_OnSetAttrArgType] = ...,
 ) -> Any: ...
 
@@ -132,7 +170,7 @@ def attrib(
     default: None = ...,
     validator: Optional[_ValidatorArgType[_T]] = ...,
     repr: _ReprArgType = ...,
-    cmp: Optional[bool] = ...,
+    cmp: Optional[_EqOrderType] = ...,
     hash: Optional[bool] = ...,
     init: bool = ...,
     metadata: Optional[Mapping[Any, Any]] = ...,
@@ -140,8 +178,8 @@ def attrib(
     converter: Optional[_ConverterType] = ...,
     factory: Optional[Callable[[], _T]] = ...,
     kw_only: bool = ...,
-    eq: Optional[bool] = ...,
-    order: Optional[bool] = ...,
+    eq: Optional[_EqOrderType] = ...,
+    order: Optional[_EqOrderType] = ...,
     on_setattr: Optional[_OnSetAttrArgType] = ...,
 ) -> _T: ...
 
@@ -151,7 +189,7 @@ def attrib(
     default: _T,
     validator: Optional[_ValidatorArgType[_T]] = ...,
     repr: _ReprArgType = ...,
-    cmp: Optional[bool] = ...,
+    cmp: Optional[_EqOrderType] = ...,
     hash: Optional[bool] = ...,
     init: bool = ...,
     metadata: Optional[Mapping[Any, Any]] = ...,
@@ -159,8 +197,8 @@ def attrib(
     converter: Optional[_ConverterType] = ...,
     factory: Optional[Callable[[], _T]] = ...,
     kw_only: bool = ...,
-    eq: Optional[bool] = ...,
-    order: Optional[bool] = ...,
+    eq: Optional[_EqOrderType] = ...,
+    order: Optional[_EqOrderType] = ...,
     on_setattr: Optional[_OnSetAttrArgType] = ...,
 ) -> _T: ...
 
@@ -170,7 +208,7 @@ def attrib(
     default: Optional[_T] = ...,
     validator: Optional[_ValidatorArgType[_T]] = ...,
     repr: _ReprArgType = ...,
-    cmp: Optional[bool] = ...,
+    cmp: Optional[_EqOrderType] = ...,
     hash: Optional[bool] = ...,
     init: bool = ...,
     metadata: Optional[Mapping[Any, Any]] = ...,
@@ -178,8 +216,8 @@ def attrib(
     converter: Optional[_ConverterType] = ...,
     factory: Optional[Callable[[], _T]] = ...,
     kw_only: bool = ...,
-    eq: Optional[bool] = ...,
-    order: Optional[bool] = ...,
+    eq: Optional[_EqOrderType] = ...,
+    order: Optional[_EqOrderType] = ...,
     on_setattr: Optional[_OnSetAttrArgType] = ...,
 ) -> Any: ...
 @overload
@@ -213,8 +251,8 @@ def field(
     converter: Optional[_ConverterType] = ...,
     factory: Optional[Callable[[], _T]] = ...,
     kw_only: bool = ...,
-    eq: Optional[bool] = ...,
-    order: Optional[bool] = ...,
+    eq: Optional[_EqOrderType] = ...,
+    order: Optional[_EqOrderType] = ...,
     on_setattr: Optional[_OnSetAttrArgType] = ...,
 ) -> _T: ...
 
@@ -231,8 +269,8 @@ def field(
     converter: Optional[_ConverterType] = ...,
     factory: Optional[Callable[[], _T]] = ...,
     kw_only: bool = ...,
-    eq: Optional[bool] = ...,
-    order: Optional[bool] = ...,
+    eq: Optional[_EqOrderType] = ...,
+    order: Optional[_EqOrderType] = ...,
     on_setattr: Optional[_OnSetAttrArgType] = ...,
 ) -> _T: ...
 
@@ -249,17 +287,18 @@ def field(
     converter: Optional[_ConverterType] = ...,
     factory: Optional[Callable[[], _T]] = ...,
     kw_only: bool = ...,
-    eq: Optional[bool] = ...,
-    order: Optional[bool] = ...,
+    eq: Optional[_EqOrderType] = ...,
+    order: Optional[_EqOrderType] = ...,
     on_setattr: Optional[_OnSetAttrArgType] = ...,
 ) -> Any: ...
 @overload
+@__dataclass_transform__(order_default=True, field_descriptors=(attrib, field))
 def attrs(
     maybe_cls: _C,
     these: Optional[Dict[str, Any]] = ...,
     repr_ns: Optional[str] = ...,
     repr: bool = ...,
-    cmp: Optional[bool] = ...,
+    cmp: Optional[_EqOrderType] = ...,
     hash: Optional[bool] = ...,
     init: bool = ...,
     slots: bool = ...,
@@ -270,21 +309,23 @@ def attrs(
     kw_only: bool = ...,
     cache_hash: bool = ...,
     auto_exc: bool = ...,
-    eq: Optional[bool] = ...,
-    order: Optional[bool] = ...,
+    eq: Optional[_EqOrderType] = ...,
+    order: Optional[_EqOrderType] = ...,
     auto_detect: bool = ...,
     collect_by_mro: bool = ...,
     getstate_setstate: Optional[bool] = ...,
     on_setattr: Optional[_OnSetAttrArgType] = ...,
     field_transformer: Optional[_FieldTransformer] = ...,
+    match_args: bool = ...,
 ) -> _C: ...
 @overload
+@__dataclass_transform__(order_default=True, field_descriptors=(attrib, field))
 def attrs(
     maybe_cls: None = ...,
     these: Optional[Dict[str, Any]] = ...,
     repr_ns: Optional[str] = ...,
     repr: bool = ...,
-    cmp: Optional[bool] = ...,
+    cmp: Optional[_EqOrderType] = ...,
     hash: Optional[bool] = ...,
     init: bool = ...,
     slots: bool = ...,
@@ -295,15 +336,17 @@ def attrs(
     kw_only: bool = ...,
     cache_hash: bool = ...,
     auto_exc: bool = ...,
-    eq: Optional[bool] = ...,
-    order: Optional[bool] = ...,
+    eq: Optional[_EqOrderType] = ...,
+    order: Optional[_EqOrderType] = ...,
     auto_detect: bool = ...,
     collect_by_mro: bool = ...,
     getstate_setstate: Optional[bool] = ...,
     on_setattr: Optional[_OnSetAttrArgType] = ...,
     field_transformer: Optional[_FieldTransformer] = ...,
+    match_args: bool = ...,
 ) -> Callable[[_C], _C]: ...
 @overload
+@__dataclass_transform__(field_descriptors=(attrib, field))
 def define(
     maybe_cls: _C,
     *,
@@ -325,8 +368,10 @@ def define(
     getstate_setstate: Optional[bool] = ...,
     on_setattr: Optional[_OnSetAttrArgType] = ...,
     field_transformer: Optional[_FieldTransformer] = ...,
+    match_args: bool = ...,
 ) -> _C: ...
 @overload
+@__dataclass_transform__(field_descriptors=(attrib, field))
 def define(
     maybe_cls: None = ...,
     *,
@@ -348,6 +393,7 @@ def define(
     getstate_setstate: Optional[bool] = ...,
     on_setattr: Optional[_OnSetAttrArgType] = ...,
     field_transformer: Optional[_FieldTransformer] = ...,
+    match_args: bool = ...,
 ) -> Callable[[_C], _C]: ...
 
 mutable = define
@@ -364,6 +410,7 @@ def resolve_types(
     cls: _C,
     globalns: Optional[Dict[str, Any]] = ...,
     localns: Optional[Dict[str, Any]] = ...,
+    attribs: Optional[List[Attribute[Any]]] = ...,
 ) -> _C: ...
 
 # TODO: add support for returning a proper attrs class from the mypy plugin
@@ -375,7 +422,7 @@ def make_class(
     bases: Tuple[type, ...] = ...,
     repr_ns: Optional[str] = ...,
     repr: bool = ...,
-    cmp: Optional[bool] = ...,
+    cmp: Optional[_EqOrderType] = ...,
     hash: Optional[bool] = ...,
     init: bool = ...,
     slots: bool = ...,
@@ -386,8 +433,8 @@ def make_class(
     kw_only: bool = ...,
     cache_hash: bool = ...,
     auto_exc: bool = ...,
-    eq: Optional[bool] = ...,
-    order: Optional[bool] = ...,
+    eq: Optional[_EqOrderType] = ...,
+    order: Optional[_EqOrderType] = ...,
     collect_by_mro: bool = ...,
     on_setattr: Optional[_OnSetAttrArgType] = ...,
     field_transformer: Optional[_FieldTransformer] = ...,
@@ -400,13 +447,17 @@ def make_class(
 # these:
 # https://github.com/python/mypy/issues/4236
 # https://github.com/python/typing/issues/253
+# XXX: remember to fix attrs.asdict/astuple too!
 def asdict(
     inst: Any,
     recurse: bool = ...,
     filter: Optional[_FilterType[Any]] = ...,
     dict_factory: Type[Mapping[Any, Any]] = ...,
     retain_collection_types: bool = ...,
-    value_serializer: Optional[Callable[[type, Attribute, Any], Any]] = ...,
+    value_serializer: Optional[
+        Callable[[type, Attribute[Any], Any], Any]
+    ] = ...,
+    tuple_keys: Optional[bool] = ...,
 ) -> Dict[str, Any]: ...
 
 # TODO: add support for returning NamedTuple from the mypy plugin

@@ -273,14 +273,16 @@ const ModelList: FunctionComponent = () => {
         if(selectedItems.length > 0) {
             setSelectedModel(selectedItems[0])
             setDisabledDelete(false)
+
+            var modelCurItem = modelCurItems.findIndex((item) => item.modelName === selectedItems[0].modelName);
+
             if(!showAll) {
                 setDisabledAttach(true)
                 setDisabledDetach(false)
             }
             else {
-                var index = modelCurItems.findIndex((item) => item.modelName === selectedItems[0].modelName)
-                setDisabledAttach(index >= 0)
-                setDisabledDetach(index < 0) 
+                setDisabledAttach(modelCurItem !== undefined)
+                setDisabledDetach(modelCurItem === undefined) 
             }
         }
     }

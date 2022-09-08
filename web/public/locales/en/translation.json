@@ -130,6 +130,9 @@
       "reverse_line_color": "Reverse line color",
       "input": "Input",
       "output": "Output",
+      "data": "Data",
+      "original_data": "Orignal data",
+      "prediction_data": "Predicted data",
       "run": "Run",
       "sample_data": "Sample data",
       "loading": "Loading...",
@@ -167,7 +170,9 @@
       "image_search": "Search by image",
       "image_select": "Select image",
       "image_preview": "Preview image",
-      "search": "Search"
+      "search": "Search",
+      "unsupported": "unsupported demo",
+      "json_parse_error": "JSON data parse error, please check it and try again"
     },
     "training_job": {
       "create_training_job": "Create training job",

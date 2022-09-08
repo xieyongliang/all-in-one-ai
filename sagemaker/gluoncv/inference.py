@@ -11,8 +11,7 @@ s3_client = boto3.client('s3')
 def get_embedding_advance(input_pic, seq_net, use_layer):
     img = input_pic
     
-    num_gpus = int(os.environ['num_gpus']) if ('num_gpus' in os.environ) else 0
-    ctx = [mx.gpu(i) for i in range(num_gpus)] if num_gpus > 0 else [mx.cpu()]
+    ctx = [mx.gpu(i) for i in range(mx.context.num_gpus())] if mx.context.num_gpus() else [mx.cpu()]
     img = transform_eval(img).copyto(ctx[0])
     pred = None
     for i in range(len(seq_net)):
@@ -31,8 +30,7 @@ def model_fn(model_dir):
     classes = int(os.environ['classes']) if ('classes' in os.environ) else 10
     model_name = os.environ['model_name'] if('model_name' in os.environ) else 'ResNet50_v2'
 
-    num_gpus = int(os.environ['num_gpus']) if ('num_gpus' in os.environ) else 0
-    ctx = [mx.gpu(i) for i in range(num_gpus)] if num_gpus > 0 else [mx.cpu()]
+    ctx = [mx.gpu(i) for i in range(mx.context.num_gpus())] if mx.context.num_gpus() else [mx.cpu()]
     saved_params = os.path.join(model_dir, 'model-0000.params')
     if not os.path.exists(saved_params):
         saved_params = ''

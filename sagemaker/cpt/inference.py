@@ -1,5 +1,6 @@
 import json
 import os
+import torch
 from transformers import BertTokenizer
 from lib.modeling_cpt import CPTForConditionalGeneration
 
@@ -8,8 +9,13 @@ def model_fn(model_dir):
     Load the model for inference
     """
 
-    engine = CPTForConditionalGeneration.from_pretrained(model_dir)
-    tokenizer = BertTokenizer.from_pretrained(model_dir)
+    if(torch.cuda.is_available()):
+        device = torch.device(f'cuda:{0}')
+    else:
+        device = torch.device('cpu')
+
+    engine = CPTForConditionalGeneration.from_pretrained(model_dir).to(device)
+    tokenizer = BertTokenizer.from_pretrained(model_dir).to(device)
 
     return engine, tokenizer
 

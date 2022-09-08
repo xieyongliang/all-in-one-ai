@@ -25,13 +25,7 @@ import { IIndustrialModel } from './store/industrialmodels/reducer';
 import axios from 'axios'; 
 import { store } from '.';
 import { Action } from './store/Actions';
-import Yolov5 from './components/Algorithms/Yolov5'
-import GluonCV from './components/Algorithms/GluonCV';
-import PaddleOCR from './components/Algorithms/PaddleOCR';
-import CPT from './components/Algorithms/CPT';
-import GABSA from './components/Algorithms/GABSA';
-import PaddleNLP from './components/Algorithms/PaddleNLP';
-import MDeBERTa from './components/Algorithms/mDeBERTa';
+import AlgorithmForm from './components/Algorithms'
 import Track from './components/Scenarios/Track';
 import PPE from './components/Scenarios/PPE';
 import Callback from './components/Cognito/Callback';
@@ -101,13 +95,7 @@ const App : FunctionComponent = () => {
                 <Switch>
                     <Route sensitive={true} exact path="/scenarios/ppe">{withLayout(PPE)}</Route>
                     <Route sensitive={true} exact path="/scenarios/track">{withLayout(Track)}</Route>
-                    <Route sensitive={true} exact path="/algorithms/yolov5">{withLayout(Yolov5)}</Route>
-                    <Route sensitive={true} exact path="/algorithms/gluoncv">{withLayout(GluonCV)}</Route>
-                    <Route sensitive={true} exact path="/algorithms/paddleocr">{withLayout(PaddleOCR)}</Route>
-                    <Route sensitive={true} exact path="/algorithms/cpt">{withLayout(CPT)}</Route>
-                    <Route sensitive={true} exact path="/algorithms/gabsa">{withLayout(GABSA)}</Route>                    
-                    <Route sensitive={true} exact path="/algorithms/paddlenlp">{withLayout(PaddleNLP)}</Route>
-                    <Route sensitive={true} exact path="/algorithms/mdeberta">{withLayout(MDeBERTa)}</Route>
+                    <Route sensitive={true} exact path="/algorithms/:id">{withLayout(AlgorithmForm)}</Route>
                     <Route sensitive={true} exact path="/imodels/:id">{withLayout(IndustrialModels)}</Route>
                     <Route sensitive={true} exact path="/imodels">{withLayout(IndustrialModelOverview)}</Route>
                     <Route sensitive={true} exact path="/batchannotation">{withLayout(BatchAnnotationForm)}</Route>

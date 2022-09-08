@@ -110,8 +110,6 @@ const AppLayout: FunctionComponent<IProps> = ( {
     }, [t])     
      
     useEffect(() => {
-        console.log('8888888')
-        console.log(language)
         i18n.changeLanguage(language);
         setCookie('language', language, { path: '/' });
      }, [ language, i18n, setCookie ])  

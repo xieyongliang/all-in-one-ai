@@ -30,10 +30,10 @@ def train(args):
     learning_rate_factor = 0.75
     learning_rate_steps = [10, 20, 30, np.inf]
 
-    num_gpus = args.num_gpus  # 1
     num_workers = args.num_workers  # 8
-    ctx = [mx.gpu(i) for i in range(num_gpus)] if num_gpus > 0 else [mx.cpu()]
-    batch_size = per_device_batch_size * max(num_gpus, 1)
+    ctx = [mx.gpu(i) for i in range(mx.context.num_gpus())] if mx.context.num_gpus() else [mx.cpu()]
+
+    batch_size = per_device_batch_size * max(mx.context.num_gpus(), 1)
 
     jitter_param = 0.4
     lighting_param = 0.1
@@ -132,7 +132,6 @@ def parse_args():
     parser.add_argument("--learning_rate", type=float, default=0.01)
     parser.add_argument("--momentum", type=float, default=0.9)
     parser.add_argument("--wd", type=float, default=0.0001)
-    parser.add_argument("--num_gpus", type=int, default=1)
     parser.add_argument("--num_workers", type=int, default=8)
     parser.add_argument("--model_name", type=str, default='ResNet50_v2')
     parser.add_argument("--output_dir", type=str, default='/opt/ml/model')

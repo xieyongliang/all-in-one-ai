@@ -1,0 +1,606 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>emgithub</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-gH2yIJqKdNHPEq0n4Mqa/HGKIhSkIHeL5AyhkYV8i59U5AR6csBvApHHNl/vI1Bx" crossorigin="anonymous">
+  <style>
+    /* Fixed sidebar */
+    html {
+      overflow-y: scroll;
+    }
+
+    .custom-popover {
+      --bs-popover-body-padding-x: .8rem;
+      --bs-popover-body-padding-y: .5rem;
+    }
+
+    a {
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    .custom-select {
+      padding: .375rem 2.25rem .375rem .75rem !important;
+    }
+  </style>
+</head>
+
+<body>
+  <main role="main" class="container my-5">
+    <h1>emgithub</h1>
+    <p class="lead">Embed a file from GitHub repository just like <a target="_blank"
+        href="https://gist.github.com/">GitHub Gist</a>. See <a target="_blank"
+        href="https://github.com/yusanshi/emgithub">the GitHub repository</a> for details.</p>
+    <form id="goForm" class="my-4">
+      <div class="input-group input-group-lg has-validation my-2">
+        <input type="text" name="target" id="target" class="form-control w-50">
+
+        <select id="style" name="style" class="form-select custom-select">
+          <option value="default" selected>Default</option>
+          <option value="a11y-dark">A 11 Y Dark</option>
+          <option value="a11y-light">A 11 Y Light</option>
+          <option value="agate">Agate</option>
+          <option value="an-old-hope">An Old Hope</option>
+          <option value="androidstudio">Androidstudio</option>
+          <option value="arduino-light">Arduino Light</option>
+          <option value="arta">Arta</option>
+          <option value="ascetic">Ascetic</option>
+          <option value="atom-one-dark">Atom One Dark</option>
+          <option value="atom-one-dark-reasonable">Atom One Dark Reasonable</option>
+          <option value="atom-one-light">Atom One Light</option>
+          <option value="brown-paper">Brown Paper</option>
+          <option value="codepen-embed">Codepen Embed</option>
+          <option value="color-brewer">Color Brewer</option>
+          <option value="dark">Dark</option>
+          <option value="devibeans">Devibeans</option>
+          <option value="docco">Docco</option>
+          <option value="far">Far</option>
+          <option value="felipec">Felipec</option>
+          <option value="foundation">Foundation</option>
+          <option value="github">Github</option>
+          <option value="github-dark">Github Dark</option>
+          <option value="github-dark-dimmed">Github Dark Dimmed</option>
+          <option value="gml">Gml</option>
+          <option value="googlecode">Googlecode</option>
+          <option value="gradient-dark">Gradient Dark</option>
+          <option value="gradient-light">Gradient Light</option>
+          <option value="grayscale">Grayscale</option>
+          <option value="hybrid">Hybrid</option>
+          <option value="idea">Idea</option>
+          <option value="intellij-light">Intellij Light</option>
+          <option value="ir-black">Ir Black</option>
+          <option value="isbl-editor-dark">Isbl Editor Dark</option>
+          <option value="isbl-editor-light">Isbl Editor Light</option>
+          <option value="kimbie-dark">Kimbie Dark</option>
+          <option value="kimbie-light">Kimbie Light</option>
+          <option value="lightfair">Lightfair</option>
+          <option value="lioshi">Lioshi</option>
+          <option value="magula">Magula</option>
+          <option value="mono-blue">Mono Blue</option>
+          <option value="monokai">Monokai</option>
+          <option value="monokai-sublime">Monokai Sublime</option>
+          <option value="night-owl">Night Owl</option>
+          <option value="nnfx-dark">Nnfx Dark</option>
+          <option value="nnfx-light">Nnfx Light</option>
+          <option value="nord">Nord</option>
+          <option value="obsidian">Obsidian</option>
+          <option value="panda-syntax-dark">Panda Syntax Dark</option>
+          <option value="panda-syntax-light">Panda Syntax Light</option>
+          <option value="paraiso-dark">Paraiso Dark</option>
+          <option value="paraiso-light">Paraiso Light</option>
+          <option value="pojoaque">Pojoaque</option>
+          <option value="purebasic">Purebasic</option>
+          <option value="qtcreator-dark">Qtcreator Dark</option>
+          <option value="qtcreator-light">Qtcreator Light</option>
+          <option value="rainbow">Rainbow</option>
+          <option value="routeros">Routeros</option>
+          <option value="school-book">School Book</option>
+          <option value="shades-of-purple">Shades Of Purple</option>
+          <option value="srcery">Srcery</option>
+          <option value="stackoverflow-dark">Stackoverflow Dark</option>
+          <option value="stackoverflow-light">Stackoverflow Light</option>
+          <option value="sunburst">Sunburst</option>
+          <option value="tokyo-night-dark">Tokyo Night Dark</option>
+          <option value="tokyo-night-light">Tokyo Night Light</option>
+          <option value="tomorrow-night-blue">Tomorrow Night Blue</option>
+          <option value="tomorrow-night-bright">Tomorrow Night Bright</option>
+          <option value="vs">Vs</option>
+          <option value="vs2015">Vs 2015</option>
+          <option value="xcode">Xcode</option>
+          <option value="xt256">Xt 256</option>
+          <option value="base16/3024">Base16 / 3024</option>
+          <option value="base16/apathy">Base16 / Apathy</option>
+          <option value="base16/apprentice">Base16 / Apprentice</option>
+          <option value="base16/ashes">Base16 / Ashes</option>
+          <option value="base16/atelier-cave">Base16 / Atelier Cave</option>
+          <option value="base16/atelier-cave-light">Base16 / Atelier Cave Light</option>
+          <option value="base16/atelier-dune">Base16 / Atelier Dune</option>
+          <option value="base16/atelier-dune-light">Base16 / Atelier Dune Light</option>
+          <option value="base16/atelier-estuary">Base16 / Atelier Estuary</option>
+          <option value="base16/atelier-estuary-light">Base16 / Atelier Estuary Light</option>
+          <option value="base16/atelier-forest">Base16 / Atelier Forest</option>
+          <option value="base16/atelier-forest-light">Base16 / Atelier Forest Light</option>
+          <option value="base16/atelier-heath">Base16 / Atelier Heath</option>
+          <option value="base16/atelier-heath-light">Base16 / Atelier Heath Light</option>
+          <option value="base16/atelier-lakeside">Base16 / Atelier Lakeside</option>
+          <option value="base16/atelier-lakeside-light">Base16 / Atelier Lakeside Light</option>
+          <option value="base16/atelier-plateau">Base16 / Atelier Plateau</option>
+          <option value="base16/atelier-plateau-light">Base16 / Atelier Plateau Light</option>
+          <option value="base16/atelier-savanna">Base16 / Atelier Savanna</option>
+          <option value="base16/atelier-savanna-light">Base16 / Atelier Savanna Light</option>
+          <option value="base16/atelier-seaside">Base16 / Atelier Seaside</option>
+          <option value="base16/atelier-seaside-light">Base16 / Atelier Seaside Light</option>
+          <option value="base16/atelier-sulphurpool">Base16 / Atelier Sulphurpool</option>
+          <option value="base16/atelier-sulphurpool-light">Base16 / Atelier Sulphurpool Light</option>
+          <option value="base16/atlas">Base16 / Atlas</option>
+          <option value="base16/bespin">Base16 / Bespin</option>
+          <option value="base16/black-metal">Base16 / Black Metal</option>
+          <option value="base16/black-metal-bathory">Base16 / Black Metal Bathory</option>
+          <option value="base16/black-metal-burzum">Base16 / Black Metal Burzum</option>
+          <option value="base16/black-metal-dark-funeral">Base16 / Black Metal Dark Funeral</option>
+          <option value="base16/black-metal-gorgoroth">Base16 / Black Metal Gorgoroth</option>
+          <option value="base16/black-metal-immortal">Base16 / Black Metal Immortal</option>
+          <option value="base16/black-metal-khold">Base16 / Black Metal Khold</option>
+          <option value="base16/black-metal-marduk">Base16 / Black Metal Marduk</option>
+          <option value="base16/black-metal-mayhem">Base16 / Black Metal Mayhem</option>
+          <option value="base16/black-metal-nile">Base16 / Black Metal Nile</option>
+          <option value="base16/black-metal-venom">Base16 / Black Metal Venom</option>
+          <option value="base16/brewer">Base16 / Brewer</option>
+          <option value="base16/bright">Base16 / Bright</option>
+          <option value="base16/brogrammer">Base16 / Brogrammer</option>
+          <option value="base16/brush-trees">Base16 / Brush Trees</option>
+          <option value="base16/brush-trees-dark">Base16 / Brush Trees Dark</option>
+          <option value="base16/chalk">Base16 / Chalk</option>
+          <option value="base16/circus">Base16 / Circus</option>
+          <option value="base16/classic-dark">Base16 / Classic Dark</option>
+          <option value="base16/classic-light">Base16 / Classic Light</option>
+          <option value="base16/codeschool">Base16 / Codeschool</option>
+          <option value="base16/colors">Base16 / Colors</option>
+          <option value="base16/cupcake">Base16 / Cupcake</option>
+          <option value="base16/cupertino">Base16 / Cupertino</option>
+          <option value="base16/danqing">Base16 / Danqing</option>
+          <option value="base16/darcula">Base16 / Darcula</option>
+          <option value="base16/dark-violet">Base16 / Dark Violet</option>
+          <option value="base16/darkmoss">Base16 / Darkmoss</option>
+          <option value="base16/darktooth">Base16 / Darktooth</option>
+          <option value="base16/decaf">Base16 / Decaf</option>
+          <option value="base16/default-dark">Base16 / Default Dark</option>
+          <option value="base16/default-light">Base16 / Default Light</option>
+          <option value="base16/dirtysea">Base16 / Dirtysea</option>
+          <option value="base16/dracula">Base16 / Dracula</option>
+          <option value="base16/edge-dark">Base16 / Edge Dark</option>
+          <option value="base16/edge-light">Base16 / Edge Light</option>
+          <option value="base16/eighties">Base16 / Eighties</option>
+          <option value="base16/embers">Base16 / Embers</option>
+          <option value="base16/equilibrium-dark">Base16 / Equilibrium Dark</option>
+          <option value="base16/equilibrium-gray-dark">Base16 / Equilibrium Gray Dark</option>
+          <option value="base16/equilibrium-gray-light">Base16 / Equilibrium Gray Light</option>
+          <option value="base16/equilibrium-light">Base16 / Equilibrium Light</option>
+          <option value="base16/espresso">Base16 / Espresso</option>
+          <option value="base16/eva">Base16 / Eva</option>
+          <option value="base16/eva-dim">Base16 / Eva Dim</option>
+          <option value="base16/flat">Base16 / Flat</option>
+          <option value="base16/framer">Base16 / Framer</option>
+          <option value="base16/fruit-soda">Base16 / Fruit Soda</option>
+          <option value="base16/gigavolt">Base16 / Gigavolt</option>
+          <option value="base16/github">Base16 / Github</option>
+          <option value="base16/google-dark">Base16 / Google Dark</option>
+          <option value="base16/google-light">Base16 / Google Light</option>
+          <option value="base16/grayscale-dark">Base16 / Grayscale Dark</option>
+          <option value="base16/grayscale-light">Base16 / Grayscale Light</option>
+          <option value="base16/green-screen">Base16 / Green Screen</option>
+          <option value="base16/gruvbox-dark-hard">Base16 / Gruvbox Dark Hard</option>
+          <option value="base16/gruvbox-dark-medium">Base16 / Gruvbox Dark Medium</option>
+          <option value="base16/gruvbox-dark-pale">Base16 / Gruvbox Dark Pale</option>
+          <option value="base16/gruvbox-dark-soft">Base16 / Gruvbox Dark Soft</option>
+          <option value="base16/gruvbox-light-hard">Base16 / Gruvbox Light Hard</option>
+          <option value="base16/gruvbox-light-medium">Base16 / Gruvbox Light Medium</option>
+          <option value="base16/gruvbox-light-soft">Base16 / Gruvbox Light Soft</option>
+          <option value="base16/hardcore">Base16 / Hardcore</option>
+          <option value="base16/harmonic16-dark">Base16 / Harmonic 16 Dark</option>
+          <option value="base16/harmonic16-light">Base16 / Harmonic 16 Light</option>
+          <option value="base16/heetch-dark">Base16 / Heetch Dark</option>
+          <option value="base16/heetch-light">Base16 / Heetch Light</option>
+          <option value="base16/helios">Base16 / Helios</option>
+          <option value="base16/hopscotch">Base16 / Hopscotch</option>
+          <option value="base16/horizon-dark">Base16 / Horizon Dark</option>
+          <option value="base16/horizon-light">Base16 / Horizon Light</option>
+          <option value="base16/humanoid-dark">Base16 / Humanoid Dark</option>
+          <option value="base16/humanoid-light">Base16 / Humanoid Light</option>
+          <option value="base16/ia-dark">Base16 / Ia Dark</option>
+          <option value="base16/ia-light">Base16 / Ia Light</option>
+          <option value="base16/icy-dark">Base16 / Icy Dark</option>
+          <option value="base16/ir-black">Base16 / Ir Black</option>
+          <option value="base16/isotope">Base16 / Isotope</option>
+          <option value="base16/kimber">Base16 / Kimber</option>
+          <option value="base16/london-tube">Base16 / London Tube</option>
+          <option value="base16/macintosh">Base16 / Macintosh</option>
+          <option value="base16/marrakesh">Base16 / Marrakesh</option>
+          <option value="base16/materia">Base16 / Materia</option>
+          <option value="base16/material">Base16 / Material</option>
+          <option value="base16/material-darker">Base16 / Material Darker</option>
+          <option value="base16/material-lighter">Base16 / Material Lighter</option>
+          <option value="base16/material-palenight">Base16 / Material Palenight</option>
+          <option value="base16/material-vivid">Base16 / Material Vivid</option>
+          <option value="base16/mellow-purple">Base16 / Mellow Purple</option>
+          <option value="base16/mexico-light">Base16 / Mexico Light</option>
+          <option value="base16/mocha">Base16 / Mocha</option>
+          <option value="base16/monokai">Base16 / Monokai</option>
+          <option value="base16/nebula">Base16 / Nebula</option>
+          <option value="base16/nord">Base16 / Nord</option>
+          <option value="base16/nova">Base16 / Nova</option>
+          <option value="base16/ocean">Base16 / Ocean</option>
+          <option value="base16/oceanicnext">Base16 / Oceanicnext</option>
+          <option value="base16/one-light">Base16 / One Light</option>
+          <option value="base16/onedark">Base16 / Onedark</option>
+          <option value="base16/outrun-dark">Base16 / Outrun Dark</option>
+          <option value="base16/papercolor-dark">Base16 / Papercolor Dark</option>
+          <option value="base16/papercolor-light">Base16 / Papercolor Light</option>
+          <option value="base16/paraiso">Base16 / Paraiso</option>
+          <option value="base16/pasque">Base16 / Pasque</option>
+          <option value="base16/phd">Base16 / Phd</option>
+          <option value="base16/pico">Base16 / Pico</option>
+          <option value="base16/pop">Base16 / Pop</option>
+          <option value="base16/porple">Base16 / Porple</option>
+          <option value="base16/qualia">Base16 / Qualia</option>
+          <option value="base16/railscasts">Base16 / Railscasts</option>
+          <option value="base16/rebecca">Base16 / Rebecca</option>
+          <option value="base16/ros-pine">Base16 / Ros Pine</option>
+          <option value="base16/ros-pine-dawn">Base16 / Ros Pine Dawn</option>
+          <option value="base16/ros-pine-moon">Base16 / Ros Pine Moon</option>
+          <option value="base16/sagelight">Base16 / Sagelight</option>
+          <option value="base16/sandcastle">Base16 / Sandcastle</option>
+          <option value="base16/seti-ui">Base16 / Seti Ui</option>
+          <option value="base16/shapeshifter">Base16 / Shapeshifter</option>
+          <option value="base16/silk-dark">Base16 / Silk Dark</option>
+          <option value="base16/silk-light">Base16 / Silk Light</option>
+          <option value="base16/snazzy">Base16 / Snazzy</option>
+          <option value="base16/solar-flare">Base16 / Solar Flare</option>
+          <option value="base16/solar-flare-light">Base16 / Solar Flare Light</option>
+          <option value="base16/solarized-dark">Base16 / Solarized Dark</option>
+          <option value="base16/solarized-light">Base16 / Solarized Light</option>
+          <option value="base16/spacemacs">Base16 / Spacemacs</option>
+          <option value="base16/summercamp">Base16 / Summercamp</option>
+          <option value="base16/summerfruit-dark">Base16 / Summerfruit Dark</option>
+          <option value="base16/summerfruit-light">Base16 / Summerfruit Light</option>
+          <option value="base16/synth-midnight-terminal-dark">Base16 / Synth Midnight Terminal Dark</option>
+          <option value="base16/synth-midnight-terminal-light">Base16 / Synth Midnight Terminal Light</option>
+          <option value="base16/tango">Base16 / Tango</option>
+          <option value="base16/tender">Base16 / Tender</option>
+          <option value="base16/tomorrow">Base16 / Tomorrow</option>
+          <option value="base16/tomorrow-night">Base16 / Tomorrow Night</option>
+          <option value="base16/twilight">Base16 / Twilight</option>
+          <option value="base16/unikitty-dark">Base16 / Unikitty Dark</option>
+          <option value="base16/unikitty-light">Base16 / Unikitty Light</option>
+          <option value="base16/vulcan">Base16 / Vulcan</option>
+          <option value="base16/windows-10">Base16 / Windows 10</option>
+          <option value="base16/windows-10-light">Base16 / Windows 10 Light</option>
+          <option value="base16/windows-95">Base16 / Windows 95</option>
+          <option value="base16/windows-95-light">Base16 / Windows 95 Light</option>
+          <option value="base16/windows-high-contrast">Base16 / Windows High Contrast</option>
+          <option value="base16/windows-high-contrast-light">Base16 / Windows High Contrast Light</option>
+          <option value="base16/windows-nt">Base16 / Windows Nt</option>
+          <option value="base16/windows-nt-light">Base16 / Windows Nt Light</option>
+          <option value="base16/woodland">Base16 / Woodland</option>
+          <option value="base16/xcode-dusk">Base16 / Xcode Dusk</option>
+          <option value="base16/zenburn">Base16 / Zenburn</option>
+        </select>
+
+        <select id="type" name="type" class="form-select custom-select">
+          <option value="code" selected>raw code</option>
+          <option value="markdown">Markdown</option>
+          <option value="ipynb">Jupyter Notebook</option>
+        </select>
+        <button id="goButton" type="submit" class="btn btn-primary">Go</button>
+
+        <div class="invalid-feedback">Invalid URL.</div>
+      </div>
+
+      <div class="form-check form-check-inline">
+        <input type="checkbox" class="form-check-input" name="showBorder" id="showBorder" checked>
+        <label class="form-check-label" for="showBorder">Border</label>
+      </div>
+      <div class="form-check form-check-inline">
+        <input type="checkbox" class="form-check-input" name="showLineNumbers" id="showLineNumbers" checked>
+        <label class="form-check-label" for="showLineNumbers">Line numbers</label>
+      </div>
+      <div class="form-check form-check-inline">
+        <input type="checkbox" class="form-check-input" name="showFileMeta" id="showFileMeta" checked>
+        <label class="form-check-label" for="showFileMeta">File meta</label>
+      </div>
+      <div class="form-check form-check-inline">
+        <input type="checkbox" class="form-check-input" name="showFullPath" id="showFullPath" checked>
+        <label class="form-check-label" for="showFullPath">Full path in meta</label>
+      </div>
+      <div class="form-check form-check-inline">
+        <input type="checkbox" class="form-check-input" name="showCopy" id="showCopy" checked>
+        <label class="form-check-label" for="showCopy">Copy button</label>
+      </div>
+      <div class="form-check form-check-inline">
+        <input type="checkbox" class="form-check-input" name="fetchFromJsDelivr" id="fetchFromJsDelivr">
+        <label class="form-check-label" for="fetchFromJsDelivr">
+          Fetch from <a target="_blank" href="https://www.jsdelivr.com/">jsDelivr</a>
+          <i data-bs-toggle="popover" data-bs-trigger="hover" data-bs-placement="bottom"
+            data-bs-custom-class="custom-popover"
+            data-bs-content="Fetch raw files from jsDelivr instead of GitHub repository, could be faster but may experience the cache issue (new changes may not be reflected timely).">
+            <svg width="16" height="16" viewBox="0 0 16 16" style="vertical-align:-.125em">
+              <path
+                d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM5.496 6.033h.825c.138 0 .248-.113.266-.25.09-.656.54-1.134 1.342-1.134.686 0 1.314.343 1.314 1.168 0 .635-.374.927-.965 1.371-.673.489-1.206 1.06-1.168 1.987l.003.217a.25.25 0 0 0 .25.246h.811a.25.25 0 0 0 .25-.25v-.105c0-.718.273-.927 1.01-1.486.609-.463 1.244-.977 1.244-2.056 0-1.511-1.276-2.241-2.673-2.241-1.267 0-2.655.59-2.75 2.286a.237.237 0 0 0 .241.247zm2.325 6.443c.61 0 1.029-.394 1.029-.927 0-.552-.42-.94-1.029-.94-.584 0-1.009.388-1.009.94 0 .533.425.927 1.01.927z"
+                fill="#888888" />
+            </svg>
+          </i>
+        </label>
+      </div>
+    </form>
+
+    <label for="embededCode" class="form-label">Code to embed</label>
+    <div class="input-group input-group-lg mb-4">
+      <input type="text" id="embededCode" class="form-control" onclick="this.select();" readonly>
+
+      <!-- Not use <button> here, see https://getbootstrap.com/docs/5.2/components/popovers/#dismiss-on-next-click -->
+      <a tabindex="0" class="btn btn btn-outline-secondary text-decoration-none" id="copyButton" role="button"
+        data-bs-toggle="popover" data-bs-custom-class="custom-popover" data-bs-trigger="focus"
+        data-bs-placement="bottom" data-bs-content="Copied!">Copy</a>
+
+    </div>
+    <label for="previewArea">Preview</label>
+    <div style="margin-bottom:-0.5em"></div>
+    <div id="previewArea">
+      <div class="text-center m-5">
+        <svg width="80" height="80" viewBox="0 0 522.468 522.469">
+          <path
+            d="M325.762,70.513l-17.706-4.854c-2.279-0.76-4.524-0.521-6.707,0.715c-2.19,1.237-3.669,3.094-4.429,5.568L190.426,440.53    c-0.76,2.475-0.522,4.809,0.715,6.995c1.237,2.19,3.09,3.665,5.568,4.425l17.701,4.856c2.284,0.766,4.521,0.526,6.71-0.712    c2.19-1.243,3.666-3.094,4.425-5.564L332.042,81.936c0.759-2.474,0.523-4.808-0.716-6.999    C330.088,72.747,328.237,71.272,325.762,70.513z"
+            fill="#888888" />
+          <path
+            d="M166.167,142.465c0-2.474-0.953-4.665-2.856-6.567l-14.277-14.276c-1.903-1.903-4.093-2.857-6.567-2.857    s-4.665,0.955-6.567,2.857L2.856,254.666C0.95,256.569,0,258.759,0,261.233c0,2.474,0.953,4.664,2.856,6.566l133.043,133.044    c1.902,1.906,4.089,2.854,6.567,2.854s4.665-0.951,6.567-2.854l14.277-14.268c1.903-1.902,2.856-4.093,2.856-6.57    c0-2.471-0.953-4.661-2.856-6.563L51.107,261.233l112.204-112.201C165.217,147.13,166.167,144.939,166.167,142.465z"
+            fill="#888888" />
+          <path
+            d="M519.614,254.663L386.567,121.619c-1.902-1.902-4.093-2.857-6.563-2.857c-2.478,0-4.661,0.955-6.57,2.857l-14.271,14.275    c-1.902,1.903-2.851,4.09-2.851,6.567s0.948,4.665,2.851,6.567l112.206,112.204L359.163,373.442    c-1.902,1.902-2.851,4.093-2.851,6.563c0,2.478,0.948,4.668,2.851,6.57l14.271,14.268c1.909,1.906,4.093,2.854,6.57,2.854    c2.471,0,4.661-0.951,6.563-2.854L519.614,267.8c1.903-1.902,2.854-4.096,2.854-6.57    C522.468,258.755,521.517,256.565,519.614,254.663z"
+            fill="#888888" />
+        </svg>
+      </div>
+    </div>
+  </main>
+  <a target="_blank" href="https://github.com/yusanshi/emgithub" class="github-corner"
+    aria-label="View source on GitHub">
+    <svg width="80" height="80" viewBox="0 0 250 250"
+      style="fill:#64CEAA; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true">
+      <path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path>
+      <path
+        d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2"
+        fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path>
+      <path
+        d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z"
+        fill="currentColor" class="octo-body"></path>
+    </svg>
+  </a>
+  <style>
+    .github-corner:hover .octo-arm {
+      animation: octocat-wave 560ms ease-in-out
+    }
+
+    @keyframes octocat-wave {
+
+      0%,
+      100% {
+        transform: rotate(0)
+      }
+
+      20%,
+      60% {
+        transform: rotate(-25deg)
+      }
+
+      40%,
+      80% {
+        transform: rotate(10deg)
+      }
+    }
+
+    @media (max-width:500px) {
+      .github-corner:hover .octo-arm {
+        animation: none
+      }
+
+      .github-corner .octo-arm {
+        animation: octocat-wave 560ms ease-in-out
+      }
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-A3rJD856KowSb7dwlZdYEkO39Gagi7vIsF0jrRAoQmDKKtQBHUuLZ9AsSv4jD4Xa"
+    crossorigin="anonymous"></script>
+  <script>
+    window.addEventListener('DOMContentLoaded', () => {
+      // Initialize popovers
+      const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]');
+      const popoverList = [...popoverTriggerList].map(popoverTriggerEl => new bootstrap.Popover(popoverTriggerEl));
+
+
+      // Load options from localStorage if possible
+      ['showBorder', 'showLineNumbers', 'showFileMeta', 'showFullPath', 'showCopy', 'fetchFromJsDelivr'].forEach(e => {
+        const isShown = localStorage.getItem(e);
+        if (isShown !== null) {
+          document.getElementById(e).checked = (isShown === 'true');
+        }
+      });
+      const style = localStorage.getItem('style');
+      if (style !== null) {
+        document.getElementById('style').value = style;
+      }
+
+      const targetInput = document.querySelector("#target");
+
+      document.querySelector("#goForm").addEventListener("submit", (e) => {
+        e.preventDefault();
+
+        // Save current options using localStorage
+        ['showBorder', 'showLineNumbers', 'showFileMeta', 'showFullPath', 'showCopy', 'fetchFromJsDelivr'].forEach(e => {
+          const element = document.getElementById(e);
+          if (!element.parentElement.classList.contains('d-none')) {
+            // Only save the non-hidden options
+            const newValue = element.checked ? 'true' : 'false';
+            localStorage.setItem(e, newValue);
+          }
+        });
+        localStorage.setItem('style', document.getElementById('style').value);
+
+        const target = targetInput.value;
+        const pattern = /^https:\/\/github\.com\/(?:[A-Za-z0-9_\-\.]+\/){2}blob\/[A-Za-z0-9_\-\.]+\//;
+        if (pattern.test(target)) {
+          targetInput.classList.remove("is-invalid");
+          targetInput.classList.add("is-valid");
+
+          const jsURL = `${parseURL().current}embed-v2.js?${new URLSearchParams(new FormData(document.querySelector("#goForm"))).toString()}`;
+          const scriptTag = `<script src=\"${jsURL}\"><\/script>`;
+          document.querySelector("#embededCode").value = scriptTag;
+          const script = document.createElement('script');
+          script.src = jsURL;
+          const previewArea = document.getElementById("previewArea");
+          previewArea.innerHTML = '';
+          previewArea.appendChild(script);
+        } else {
+          targetInput.classList.remove("is-valid");
+          targetInput.classList.add("is-invalid");
+        }
+      });
+
+      document.querySelector("#copyButton").addEventListener("click", (e) => {
+        copyTextToClipboard(document.querySelector("#embededCode").value);
+      });
+
+      toggleInputGroupClass();
+      window.addEventListener('resize', toggleInputGroupClass);
+
+      targetInput.addEventListener('input', switchTypeSelect);
+
+      toggleFullPathCheckDisplay();
+      document.querySelector("#showFileMeta").addEventListener('change', toggleFullPathCheckDisplay);
+
+      document.querySelector("#type").addEventListener('change', toggleCheckStatus);
+
+      const parts = parseURL();
+      if (parts.target !== null) {
+        // Fill in target and simulate clicking
+        targetInput.value = "https://github.com/" + parts.target;
+        switchTypeSelect();
+        document.querySelector("#goButton").click();
+      } else {
+        // Is entering the site directly
+        targetInput.placeholder = "https://github.com/user/repository/blob/branch/src/hello.cpp#L2-L6";
+      }
+
+      // Add the favicon dynamically
+      const link = document.createElement("link");
+      link.type = "image/png";
+      link.rel = "icon";
+      link.href = `${parts.current}favicon.png`;
+      document.head.appendChild(link);
+    });
+
+    function switchTypeSelect() {
+      const fileExtension = document.querySelector("#target").value.split('.').pop().toLowerCase();
+      const typeSelect = document.querySelector('#type');
+      if (fileExtension == 'md' || fileExtension == 'markdown') {
+        typeSelect.value = 'markdown';
+      } else if (fileExtension == 'ipynb') {
+        typeSelect.value = 'ipynb';
+      } else {
+        typeSelect.value = 'code';
+      }
+      toggleCheckStatus();
+    }
+
+    function toggleInputGroupClass() {
+      document.querySelectorAll(".input-group").forEach(e => {
+        if (window.matchMedia('(min-width: 768px)').matches) {
+          e.classList.add('input-group-lg');
+        } else {
+          e.classList.remove('input-group-lg');
+        }
+      });
+    }
+
+    function toggleFullPathCheckDisplay() {
+      const showFullPathCheck = document.querySelector('#showFullPath').parentElement;
+      if (document.querySelector('#showFileMeta').checked) {
+        showFullPathCheck.classList.remove('d-none');
+      } else {
+        showFullPathCheck.classList.add('d-none');
+      }
+    }
+
+    function toggleCheckStatus() {
+      const typeSelect = document.querySelector('#type');
+      ['showLineNumbers', 'showCopy'].forEach(e => {
+        const check = document.getElementById(e).parentElement;
+        if (typeSelect.value == 'code') {
+          check.classList.remove('d-none');
+        } else {
+          check.classList.add('d-none');
+        }
+      });
+    }
+
+    // https://stackoverflow.com/questions/400212/how-do-i-copy-to-the-clipboard-in-javascript
+    function copyTextToClipboard(text) {
+      if (!navigator.clipboard) {
+        fallbackCopyTextToClipboard(text);
+        return;
+      }
+      navigator.clipboard.writeText(text).then(() => {
+        console.log('Async: Copying to clipboard was successful!');
+      }, (err) => {
+        console.error('Async: Could not copy text: ', err);
+      });
+    }
+
+    function fallbackCopyTextToClipboard(text) {
+      const textArea = document.createElement("textarea");
+      textArea.value = text;
+      textArea.style.position = "fixed"; //avoid scrolling to bottom
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+
+      try {
+        const successful = document.execCommand('copy');
+        const msg = successful ? 'successful' : 'unsuccessful';
+        console.log('Fallback: Copying text command was ' + msg);
+      } catch (err) {
+        console.error('Fallback: Oops, unable to copy', err);
+      }
+      document.body.removeChild(textArea);
+    }
+
+    function parseURL() {
+      // Returns:
+      //  parts.current: the current directory where the embed.js exists.
+      //  parts.target: the target file for embedding (if entering the site by replacing github.com)
+      const parts = {
+        current: null,
+        target: null,
+      };
+      const pattern = /(.+?)((?:[A-Za-z0-9_\-\.]+\/){2}blob\/[A-Za-z0-9_\-\.]+\/.+)/;
+      const match = window.location.href.match(pattern);
+      if (match === null) {
+        // Entering the site directly, no target specified.
+        parts.current = new URL("./", window.location.href).href;
+      } else {
+        // Entering the site by replacing github.com to XXXX. Parse the target from the URL.
+        parts.current = match[1];
+        parts.target = match[2];
+      }
+      return parts;
+    }
+  </script>
+</body>
+
+</html>

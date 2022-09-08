@@ -293,3 +293,24 @@ Resources:
       Name: /all_in_one_ai/config/meta/algorithms/mdeberta/industrialmodels
       Type: String
       Value: !Sub s3://${S3Bucket}/${S3Key}algorithms/mdeberta/industrialmodels/
+
+  Parameter34:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /all_in_one_ai/config/meta/algorithms/gluonts/industrialmodels
+      Type: String
+      Value: !Sub s3://${S3Bucket}/${S3Key}algorithms/gluonts/industrialmodels/
+
+  Parameter35:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /all_in_one_ai/config/meta/algorithms/gluonts/source
+      Type: String
+      Value: !Sub s3://${S3Bucket}/${S3Key}algorithms/gluonts/source/sourcedir.tar.gz
+
+  Parameter36:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /all_in_one_ai/config/meta/algorithms/gluonts/artifact
+      Type: String
+      Value: !Sub s3://${S3Bucket}/${S3Key}algorithms/gluonts/artifact/model.tar.gz

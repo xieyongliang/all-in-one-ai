@@ -33,6 +33,7 @@ import { AppState } from '../../store';
 import { connect } from 'react-redux';
 import { IIndustrialModel } from '../../store/industrialmodels/reducer';
 import GluonCVDemoForm from '../Forms/Demo/Single/gluoncv'
+import GluonTSDemoForm from '../Forms/Demo/Single/gluonts'
 import { LoadingIndicator } from 'aws-northstar';
 import PaddleOCRDemoForm from '../Forms/Demo/Single/paddleocr';
 import Yolov5PaddleOCRDemoForm from '../Forms/Demo/Mixed/yolov5&paddleocr';
@@ -208,6 +209,15 @@ const IndustrialModels: FunctionComponent<IProps> = (
             }
         ]
     }
+    else if(algorithm === 'gluonts'){
+        tabs = [
+            {
+                label: t('industrial_models.demos'),
+                id: 'demo',
+                content: <GluonTSDemoForm advancedMode={advancedMode} onAdvancedModeChange={onAdvancedModeChange}/>
+            }
+        ]
+    }
     else if(algorithm === 'cpt'){
         tabs = [
             {
@@ -244,12 +254,21 @@ const IndustrialModels: FunctionComponent<IProps> = (
             }
         ]     
     }
-    else {
+    else if(algorithm === 'yolov5paddleocr'){
         tabs = [
             {
                 label: t('industrial_models.demos'),
                 id: 'demo',
                 content: <Yolov5PaddleOCRDemoForm advancedMode={advancedMode} onAdvancedModeChange={onAdvancedModeChange}/>
+            }
+        ];
+    }
+    else{
+        tabs = [
+            {
+                label: t('industrial_models.demos'),
+                id: 'demo',
+                content: <div>{t('industrial_models.demo.unsupported')}</div>
             }
         ];
     }

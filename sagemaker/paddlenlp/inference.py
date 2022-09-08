@@ -57,6 +57,10 @@ def input_fn(request_body, request_content_type):
 
     
 def predict_fn(input_data, model):
+    """
+    Apply model to the incoming request
+    """
+        
     inputs = [ input_data['inputs'] ]
 
     outputs = model.predict(inputs)

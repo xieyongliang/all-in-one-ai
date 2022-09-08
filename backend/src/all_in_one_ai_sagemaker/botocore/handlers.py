@@ -59,7 +59,6 @@ from botocore.signers import (
 from botocore.utils import (
     SAFE_CHARS,
     conditionally_calculate_md5,
-    is_global_accesspoint,
     percent_encode,
     switch_host_with_param,
 )
@@ -70,6 +69,7 @@ from botocore import translate  # noqa
 from botocore.compat import MD5_AVAILABLE  # noqa
 from botocore.exceptions import MissingServiceIdError  # noqa
 from botocore.utils import hyphenize_service_id  # noqa
+from botocore.utils import is_global_accesspoint  # noqa
 
 
 logger = logging.getLogger(__name__)
@@ -102,11 +102,11 @@ def handle_service_name_alias(service_name, **kwargs):
 
 def add_recursion_detection_header(params, **kwargs):
     has_lambda_name = 'AWS_LAMBDA_FUNCTION_NAME' in os.environ
-    trace_id = os.environ.get('_X_AMZ_TRACE_ID')
+    trace_id = os.environ.get('_X_AMZN_TRACE_ID')
     if has_lambda_name and trace_id:
         headers = params['headers']
         if 'X-Amzn-Trace-Id' not in headers:
-            headers['X-Amzn-Trace-Id'] = quote(trace_id)
+            headers['X-Amzn-Trace-Id'] = quote(trace_id, safe='-=;:+&[]{}"\',')
 
 
 def escape_xml_payload(params, **kwargs):
@@ -194,28 +194,30 @@ def set_operation_specific_signer(context, signing_name, **kwargs):
     if auth_type == 'none':
         return botocore.UNSIGNED
 
-    if auth_type == 'v4a':
-        # If sigv4a is chosen, we must add additional
-        # signing config for global signature.
-        signing = {'region': '*', 'signing_name': signing_name}
-        if 'signing' in context:
-            context['signing'].update(signing)
-        else:
-            context['signing'] = signing
-        return 'v4a'
+    if auth_type == 'bearer':
+        return 'bearer'
 
     if auth_type.startswith('v4'):
-        signature_version = 'v4'
-        if signing_name == 's3':
-            if is_global_accesspoint(context):
-                signature_version = 's3v4a'
+        if auth_type == 'v4a':
+            # If sigv4a is chosen, we must add additional signing config for
+            # global signature.
+            signing = {'region': '*', 'signing_name': signing_name}
+            if 'signing' in context:
+                context['signing'].update(signing)
             else:
-                signature_version = 's3v4'
+                context['signing'] = signing
+            signature_version = 'v4a'
+        else:
+            signature_version = 'v4'
 
         # If the operation needs an unsigned body, we set additional context
         # allowing the signer to be aware of this.
         if auth_type == 'v4-unsigned-body':
             context['payload_signing_enabled'] = False
+
+        # S3 has customized signers "s3v4" and "s3v4a"
+        if signing_name == 's3':
+            signature_version = f's3{signature_version}'
 
         return signature_version
 
@@ -632,7 +634,7 @@ def fix_route53_ids(params, model, **kwargs):
     members = [
         name
         for (name, shape) in input_shape.members.items()
-        if shape.name in ['ResourceId', 'DelegationSetId']
+        if shape.name in ['ResourceId', 'DelegationSetId', 'ChangeId']
     ]
 
     for name in members:
@@ -1109,6 +1111,7 @@ BUILTIN_HANDLERS = [
     ('before-parameter-build.s3.UploadPart', sse_md5),
     ('before-parameter-build.s3.UploadPartCopy', sse_md5),
     ('before-parameter-build.s3.UploadPartCopy', copy_source_sse_md5),
+    ('before-parameter-build.s3.SelectObjectContent', sse_md5),
     ('before-parameter-build.ec2.RunInstances', base64_encode_user_data),
     (
         'before-parameter-build.autoscaling.CreateLaunchConfiguration',

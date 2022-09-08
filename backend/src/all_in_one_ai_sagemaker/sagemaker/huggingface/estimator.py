@@ -15,6 +15,7 @@ from __future__ import absolute_import
 
 import logging
 import re
+from typing import Optional, Union, Dict
 
 from sagemaker.deprecations import renamed_kwargs
 from sagemaker.estimator import Framework, EstimatorBase
@@ -26,7 +27,8 @@ from sagemaker.fw_utils import (
 from sagemaker.huggingface.model import HuggingFaceModel
 from sagemaker.vpc_utils import VPC_CONFIG_DEFAULT
 
-from sagemaker.training_compiler.config import TrainingCompilerConfig
+from sagemaker.huggingface.training_compiler.config import TrainingCompilerConfig
+from sagemaker.workflow.entities import PipelineVariable
 
 logger = logging.getLogger("sagemaker")
 
@@ -38,16 +40,16 @@ class HuggingFace(Framework):
 
     def __init__(
         self,
-        py_version,
-        entry_point,
-        transformers_version=None,
-        tensorflow_version=None,
-        pytorch_version=None,
-        source_dir=None,
-        hyperparameters=None,
-        image_uri=None,
-        distribution=None,
-        compiler_config=None,
+        py_version: str,
+        entry_point: Union[str, PipelineVariable],
+        transformers_version: Optional[str] = None,
+        tensorflow_version: Optional[str] = None,
+        pytorch_version: Optional[str] = None,
+        source_dir: Optional[Union[str, PipelineVariable]] = None,
+        hyperparameters: Optional[Dict[str, Union[str, PipelineVariable]]] = None,
+        image_uri: Optional[Union[str, PipelineVariable]] = None,
+        distribution: Optional[Dict] = None,
+        compiler_config: Optional[TrainingCompilerConfig] = None,
         **kwargs,
     ):
         """This estimator runs a Hugging Face training script in a SageMaker training environment.
@@ -139,6 +141,28 @@ class HuggingFace(Framework):
                             }
                         }
                     }
+
+                To enable distributed training with
+                `SageMaker Training Compiler <https://docs.aws.amazon.com/sagemaker/latest/dg/training-compiler.html>`_
+                for Hugging Face Transformers with PyTorch:
+
+                .. code:: python
+
+                    {
+                        "pytorchxla": {
+                            "enabled": True
+                        }
+                    }
+
+                To learn more, see `SageMaker Training Compiler
+                <https://docs.aws.amazon.com/sagemaker/latest/dg/training-compiler.html>`_
+                in the *Amazon SageMaker Developer Guide*.
+
+                .. note::
+
+                    When you use this PyTorch XLA option for distributed training strategy,
+                    you must add the ``compiler_config`` parameter and activate SageMaker
+                    Training Compiler.
             compiler_config (:class:`~sagemaker.huggingface.TrainingCompilerConfig`):
                 Configures SageMaker Training Compiler to accelerate training.
 
@@ -190,6 +214,8 @@ class HuggingFace(Framework):
             entry_point, source_dir, hyperparameters, image_uri=image_uri, **kwargs
         )
 
+        self.distribution = distribution or {}
+
         if compiler_config is not None:
             if not isinstance(compiler_config, TrainingCompilerConfig):
                 error_string = (
@@ -199,13 +225,14 @@ class HuggingFace(Framework):
                 )
                 raise ValueError(error_string)
             if compiler_config:
-                compiler_config.validate(
-                    image_uri=image_uri,
-                    instance_type=instance_type,
-                    distribution=distribution,
-                )
-
-        self.distribution = distribution or {}
+                compiler_config.validate(self)
+        elif distribution is not None and "pytorchxla" in distribution:
+            raise ValueError(
+                "Distributed training through PyTorch XLA is currently only supported "
+                "when SageMaker Training Compiler is enabled. To learn more, "
+                "see Enable SageMaker Training Compiler at "
+                "https://docs.aws.amazon.com/sagemaker/latest/dg/training-compiler-enable.html."
+            )
         self.compiler_config = compiler_config
 
     def _validate_args(self, image_uri):

@@ -672,8 +672,8 @@ class _MergeOperation:
         if _left.columns.nlevels != _right.columns.nlevels:
             msg = (
                 "merging between different levels is deprecated and will be removed "
-                f"in a future version. ({left.columns.nlevels} levels on the left, "
-                f"{right.columns.nlevels} on the right)"
+                f"in a future version. ({_left.columns.nlevels} levels on the left, "
+                f"{_right.columns.nlevels} on the right)"
             )
             # stacklevel chosen to be correct when this is reached via pd.merge
             # (and not DataFrame.join)
@@ -1201,23 +1201,27 @@ class _MergeOperation:
 
                 # check whether ints and floats
                 elif is_integer_dtype(rk.dtype) and is_float_dtype(lk.dtype):
-                    if not (lk == lk.astype(rk.dtype))[~np.isnan(lk)].all():
-                        warnings.warn(
-                            "You are merging on int and float "
-                            "columns where the float values "
-                            "are not equal to their int representation.",
-                            UserWarning,
-                        )
+                    # GH 47391 numpy > 1.24 will raise a RuntimeError for nan -> int
+                    with np.errstate(invalid="ignore"):
+                        if not (lk == lk.astype(rk.dtype))[~np.isnan(lk)].all():
+                            warnings.warn(
+                                "You are merging on int and float "
+                                "columns where the float values "
+                                "are not equal to their int representation.",
+                                UserWarning,
+                            )
                     continue
 
                 elif is_float_dtype(rk.dtype) and is_integer_dtype(lk.dtype):
-                    if not (rk == rk.astype(lk.dtype))[~np.isnan(rk)].all():
-                        warnings.warn(
-                            "You are merging on int and float "
-                            "columns where the float values "
-                            "are not equal to their int representation.",
-                            UserWarning,
-                        )
+                    # GH 47391 numpy > 1.24 will raise a RuntimeError for nan -> int
+                    with np.errstate(invalid="ignore"):
+                        if not (rk == rk.astype(lk.dtype))[~np.isnan(rk)].all():
+                            warnings.warn(
+                                "You are merging on int and float "
+                                "columns where the float values "
+                                "are not equal to their int representation.",
+                                UserWarning,
+                            )
                     continue
 
                 # let's infer and see if we are ok

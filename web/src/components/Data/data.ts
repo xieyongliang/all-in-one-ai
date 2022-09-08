@@ -36,14 +36,15 @@ export const APIS = {
 }
 
 export const ALGORITHMS = [
-    {label: 'Yolov5', value: 'yolov5', type: 'single', trainable: true}, 
-    {label: 'GluonCV', value:'gluoncv', type: 'single', trainable: true}, 
-    {label: 'PaddleOCR', value: 'paddleocr', type: 'single', trainable: true}, 
-    {label: 'Yolov5PaddleOCR', value: 'yolov5paddleocr', type: 'mixed'}, 
-    {label: 'CPT', value: 'cpt', type: 'single', trainable: true}, 
-    {label: 'GABSA', value: 'gabsa', type: 'single', trainable: true},
-    {label: 'PaddleNLP', value: 'paddlenlp', type: 'single', trainable: true},
-    {label: 'mDeBERTa', value: 'mdeberta', type: 'single', trainable: false}
+    {label: 'Yolov5', value: 'yolov5', reference: 'https://github.com/ultralytics/yolov5/blob/master/README.md', type: 'single', trainable: true}, 
+    {label: 'GluonCV', value:'gluoncv', reference: 'https://github.com/dmlc/gluon-cv/blob/master/README.md', type: 'single', trainable: true}, 
+    {label: 'GluonTS', value:'gluonts', reference: 'https://github.com/awslabs/gluonts/blob/dev/README.md', type: 'single', trainable: true},
+    {label: 'PaddleOCR', value: 'paddleocr', reference: 'https://github.com/PaddlePaddle/PaddleOCR/blob/release/2.6/README.md',type: 'single', trainable: true}, 
+    {label: 'CPT', value: 'cpt', reference:'https://github.com/fastnlp/CPT/blob/master/README.md', type: 'single', trainable: true}, 
+    {label: 'GABSA', value: 'gabsa', reference: 'https://github.com/IsakZhang/Generative-ABSA/blob/main/readme.md', type: 'single', trainable: true},
+    {label: 'PaddleNLP', value: 'paddlenlp', reference: 'https://github.com/PaddlePaddle/PaddleNLP/blob/develop/README_en.md', type: 'single', trainable: true},
+    {label: 'mDeBERTa', value: 'mdeberta', reference: 'https://github.com/microsoft/DeBERTa/blob/master/README.md', type: 'single', trainable: false},
+    {label: 'Yolov5PaddleOCR', value: 'yolov5paddleocr', type: 'mixed'}
 ]
 
 export const TRAININGINPUTDATA = {
@@ -114,7 +115,17 @@ export const TRAININGINPUTDATA = {
             key: 'pretrained_models',
             value: ''
         }
-    ]    
+    ],
+    'gluonts': [
+        {
+            key: 'train',
+            value: ''
+        },
+        {
+            key: 'test',
+            value: ''
+        }
+    ]
 }
 
 
