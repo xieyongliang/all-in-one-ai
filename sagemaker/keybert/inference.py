@@ -107,7 +107,6 @@ def predict_fn(input_data, model):
         diversity = diversity,
         nr_candidates = nr_candidates,
         highlight = highlight
-
     )
     return keywords
 
