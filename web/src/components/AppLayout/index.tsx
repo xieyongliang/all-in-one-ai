@@ -62,6 +62,7 @@ const AppLayout: FunctionComponent<IProps> = ( {
         return (
             <Header
                 title={t('header')} 
+                logoPath = 'favicon.ico'
                 rightContent={
                     <Box display="flex" alignItems="center">
                         <Select

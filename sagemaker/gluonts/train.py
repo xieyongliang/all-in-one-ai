@@ -580,8 +580,8 @@ def parse_args():
     parser.add_argument('--algo-name', type=str, default='DeepAR')
     parser.add_argument('--model-dir', type=str, default='/opt/ml/model')  # os.environ['SM_MODEL_DIR']
     parser.add_argument('--output-dir', type=str, default='/opt/ml/output')  # os.environ['SM_MODEL_DIR']
-    parser.add_argument('--train', type=str, default='/opt/ml/input/data/train')  # os.environ['SM_CHANNEL_TRAINING']
-    parser.add_argument('--test', type=str, default='/opt/ml/input/data/test')  # os.environ['SM_CHANNEL_TEST']
+    parser.add_argument('--train', type=str, default='/opt/ml/input/data/dataset')  # os.environ['SM_CHANNEL_TRAINING']
+    parser.add_argument('--test', type=str, default='/opt/ml/input/data/dataset')  # os.environ['SM_CHANNEL_TEST']
     
     parser.add_argument('--freq', type=str, default='1H')
     parser.add_argument('--prediction-length', type=int, default=3*24)

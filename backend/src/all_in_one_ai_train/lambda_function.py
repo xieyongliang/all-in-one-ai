@@ -154,9 +154,9 @@ def lambda_handler(event, context):
                 'text_column': 'text',
                 'summary_column': 'summary',
                 'output_dir': '/opt/ml/model',
-                'train_file': '/opt/ml/input/data/train/train.json',
-                'validation_file':'/opt/ml/input/data/validation/val.json',
-                'test_file': '/opt/ml/input/data/test/test.json',
+                'train_file': '/opt/ml/input/data/dataset/train.json',
+                'validation_file':'/opt/ml/input/data/dataset/val.json',
+                'test_file': '/opt/ml/input/data/dataset/test.json',
                 'val_max_target_length': 80,
                 'path': 'json'
             }

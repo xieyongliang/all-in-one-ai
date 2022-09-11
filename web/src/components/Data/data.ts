@@ -83,15 +83,7 @@ export const TRAININGINPUTDATA = {
     ],
     'cpt': [
         {
-            key: 'train',
-            value: ''
-        },
-        {
-            key: 'validation',
-            value: ''
-        },
-        {
-            key: 'test',
+            key: 'dataset',
             value: ''
         }
     ],
@@ -119,11 +111,7 @@ export const TRAININGINPUTDATA = {
     ],
     'gluonts': [
         {
-            key: 'train',
-            value: ''
-        },
-        {
-            key: 'test',
+            key: 'dataset',
             value: ''
         }
     ]
