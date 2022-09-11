@@ -386,6 +386,15 @@
     }
   }
 
+  function iterate (parent) {
+    const children = parent.childNodes;
+    for (const child of children) {
+      if(child.src != undefined)
+        child.src = child.src.replaceAll(`${window.location.protocol}//${window.location.host}/algorithms/`, rawDirectoryURL);
+      iterate(child);
+    }
+  }
+
   // Do the happy embedding
   Promise.allSettled(promises).then((result) => {
     const targetDiv = document.getElementById(containerId);
@@ -445,6 +454,7 @@
 
     } else if (type === 'markdown') {
       targetDiv.querySelector(".html-area").innerHTML = fetchSuccess ? marked.parse(result[0].value, { baseUrl: rawDirectoryURL }) : result[0].reason;
+      iterate(targetDiv.querySelector(".html-area"))
     } else if (type === 'ipynb') {
       try {
         if (fetchSuccess) {
@@ -494,7 +504,10 @@
 
 })();
 
-
+function onLoad() {
+  alert('onload...')
+  console.log('.........*********')
+}
 
 function loadScript(src) {
   return new Promise((resolve, reject) => {
