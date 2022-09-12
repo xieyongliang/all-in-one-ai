@@ -1,4 +1,4 @@
-# Solution Overview
+# About All-In-One AI
 
 ## Background
 2022 Gartner Survey revealed a 3.6% year-over-year growth rate, the fastest in more than a decade. In terms of specific technologies driving this surge in expenditure would be artificial intelligence (AI) and machine learning (ML), accounting for a whopping 48% of the whole pie. The survey also highlights the relative immaturity of AI technologies compared to the other innovation areas. Just over half of respondents report significant target customer adoption of their AI-enabled products and services. 41% of respondents cited AI emerging technologies as still being in development or early adoption stages, meaning there is a wave of potential adoption as new or augmented AI products and services enter general availability. 
@@ -18,7 +18,7 @@ The customers can be defined as business related (business owner and business op
 
 To be simplified, term “Business” will represent the business owner and business operation in short and term “IT” will represent the data scientist and application developer in short.                             
 
-## Solution brief
+## Solution overview
 This solution includes AI/ML models suitable for specific business scenarios, such as object detection, image classification, text recognition, object extraction/generation, text summarization, intent recognition, knowledge graph, time series prediction, etc. which can be commonly used in manufacturing, maintenance, enterprise security production, content production, document recognition, comment recognition, short video content understanding and generation, personalized recommendation, advertisement placement, sales forecast, etc.
 
 This solution includes the basic functions of data labelling, model training, deployment and inference in the cloud and device terminals commonly used in the AI/ML process, enabling the entire process to achieve low threshold, full functionality, visualization, and customization. Customer can also complete the entire AI/ML process through a graphical interface to solve business problems in specific business scenarios even they don’t have in-depth knowledge on AI/ML.
