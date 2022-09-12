@@ -310,6 +310,36 @@ def lambda_handler(event, context):
                 instance_type = training_job_instance_type,
                 instance_count = training_job_instance_count
             )
+        elif(model_algorithm == 'gluonts'):
+            source_dir = ssmh.get_parameter('/all_in_one_ai/config/meta/algorithms/{0}/source'.format(model_algorithm))
+
+            default_hyperparameters = {
+                'algo-name': 'DeepAR', 
+                'freq': '1M', 
+                'prediction-length': 2*12, 
+                'context-length': 20*12, 
+                'epochs': 200, 
+                'batch-size': 2048  , 
+                'num-batches-per-epoch': 2
+            }
+            training_job_hyperparameters = training_job_hyperparameters
+            for key in default_hyperparameters.keys():
+                if(key not in training_job_hyperparameters.keys()):
+                    training_job_hyperparameters[key] = default_hyperparameters[key]
+
+            entry_point = 'train.py'
+            framework_version = '1.9.0'
+            py_version = 'py38'
+            estimator = MXNet(
+                entry_point = entry_point,
+                source_dir = source_dir,
+                role = role,
+                hyperparameters = training_job_hyperparameters,
+                framework_version = framework_version, 
+                py_version = py_version,
+                instance_type = training_job_instance_type,
+                instance_count = training_job_instance_count
+            )
         else:
             return {
                 'statusCode': 400,

@@ -111,10 +111,10 @@ def lambda_handler(event, context):
 
             default_hyperparameters = {
                 'algo-name': 'DeepAR', 
-                'freq': '1D', 
+                'freq': '1M', 
                 'prediction-length': 2*12, 
                 'context-length': 20*12, 
-                'epochs': 100, 
+                'epochs': 200, 
                 'batch-size': 2048  , 
                 'num-batches-per-epoch': 2
             }
@@ -176,7 +176,7 @@ def lambda_handler(event, context):
                     'instance_count': instance_count,
                     'hyperparameters': hyperparameters,
                     'transformers_version' : '4.12.3',
-                    'pytorch_version': '1.9.0',
+                    'pytorch_version': '1.9.1',
                     'tensorflow_version': None,
                     'py_version': 'py38',
                     'inputs': inputs
