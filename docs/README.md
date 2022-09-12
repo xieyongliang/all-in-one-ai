@@ -18,7 +18,7 @@ The customers can be defined as business related (business owner and business op
 
 To be simplified, term “Business” will represent the business owner and business operation in short and term “IT” will represent the data scientist and application developer in short.                             
 
-## Solution overview
+## Solution brief
 This solution includes AI/ML models suitable for specific business scenarios, such as object detection, image classification, text recognition, object extraction/generation, text summarization, intent recognition, knowledge graph, time series prediction, etc. which can be commonly used in manufacturing, maintenance, enterprise security production, content production, document recognition, comment recognition, short video content understanding and generation, personalized recommendation, advertisement placement, sales forecast, etc.
 
 This solution includes the basic functions of data labelling, model training, deployment and inference in the cloud and device terminals commonly used in the AI/ML process, enabling the entire process to achieve low threshold, full functionality, visualization, and customization. Customer can also complete the entire AI/ML process through a graphical interface to solve business problems in specific business scenarios even they don’t have in-depth knowledge on AI/ML.
@@ -41,7 +41,7 @@ This solution can further export AI/ML models for these specific business scenar
 
 ## Architecture
 
-![Architecture diagram!](/assets/images/architecture.png "Architecture of All-In-One AI")
+![Architecture diagram!](./assets/images/architecture.png "Architecture of All-In-One AI")
 
 *   Use Amazon Application Load Balancer to distribute traffic to backend web servers
 *   Use Amazon ECS to host your web server 
