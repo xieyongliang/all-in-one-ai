@@ -16,7 +16,7 @@ do
         ./build_and_push.sh ${region}
         touch dummy
         tar czvf model.tar.gz dummy
-        aws s3 cp model.tar.gz ${s3uri}/algorithms/${algorithm}/artifact/
+        aws s3 cp model.tar.gz ${s3uri}/algorithms/${algorithm}/artifact/ --region ${region}
         rm dummy
         rm model.tar.gz        
     else
@@ -27,18 +27,15 @@ do
         algorithm=${array[$index]}
         touch dummy
         tar czvf model.tar.gz dummy
-        aws s3 cp model.tar.gz ${s3uri}/algorithms/${algorithm}/artifact/
+        aws s3 cp model.tar.gz ${s3uri}/algorithms/${algorithm}/artifact/ --region ${region}
         rm dummy
         rm model.tar.gz
         tar czvf sourcedir.tar.gz *
-        aws s3 cp sourcedir.tar.gz ${s3uri}/algorithms/${algorithm}/source/
+        aws s3 cp sourcedir.tar.gz ${s3uri}/algorithms/${algorithm}/source/ --region ${region}
         rm sourcedir.tar.gz
     fi
 done
 cd ${project_dir}/web
 ./build_and_push.sh ${region}
 
-cd ${project_dir}/backend && ./build.sh
-
-aws s3 cp ${project_dir}/backend/build/codes ${s3uri}/codes --recursive
-aws s3 cp ${project_dir}/deployment/templates ${s3uri}/templates --recursive
+cd ${project_dir}/backend && ./build_and_push.sh ${s3uri} ${region}

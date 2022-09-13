@@ -2,14 +2,20 @@
 set -v
 set -e
 #
-# This script should be run from the repo's deployment directory
+
+# This script should be run from the repo's backend directory
 #
 #
+# Get s3uri and region from command line
+s3uri=$1
+region=$2
+
 # Get reference for all important folders
-template_dir="$PWD"
-build_dist_dir="$template_dir/build/codes"
-source_dir="$template_dir/src"
-build_dir="$template_dir/build/tmp"
+backend_dir="$PWD"
+project_dir="$backend_dir/.."
+build_dist_dir="$backend_dir/build/codes"
+source_dir="$backend_dir/src"
+build_dir="$backend_dir/build/tmp"
 
 echo "------------------------------------------------------------------------------"
 echo "[Init] Clean old dist, node_modules and bower_components folders"
@@ -144,3 +150,5 @@ for lambda_folder in $lambda_foldes; do
     rm ${build_dir}/${lambda_folder}.zip
 done
 
+aws s3 cp ${project_dir}/backend/build/codes ${s3uri}/codes --recursive --region ${region}
+aws s3 cp ${project_dir}/deployment/templates ${s3uri}/templates --recursive --region ${region}
