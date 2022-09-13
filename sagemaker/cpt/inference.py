@@ -15,7 +15,7 @@ def model_fn(model_dir):
         device = torch.device('cpu')
 
     engine = CPTForConditionalGeneration.from_pretrained(model_dir).to(device)
-    tokenizer = BertTokenizer.from_pretrained(model_dir).to(device)
+    tokenizer = BertTokenizer.from_pretrained(model_dir)
 
     return engine, tokenizer
 
