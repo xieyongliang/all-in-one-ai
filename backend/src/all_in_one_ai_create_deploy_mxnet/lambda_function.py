@@ -1,6 +1,4 @@
 from sagemaker.mxnet.model import MXNetModel
-from sagemaker.serializers import IdentitySerializer
-from sagemaker.deserializers import JSONDeserializer
 import traceback
 from utils import persist_meta
 
@@ -37,8 +35,6 @@ def lambda_handler(event, context):
             endpoint_name = endpoint_name, 
             instance_type = instance_type, 
             initial_instance_count = instance_count,
-            serializer=IdentitySerializer(),
-            deserializer=JSONDeserializer(),
             wait = False
         )
 
