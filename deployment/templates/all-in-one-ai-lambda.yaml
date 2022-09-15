@@ -2563,7 +2563,7 @@ Resources:
       Handler: lambda_function.lambda_handler
       Role: !GetAtt AllInOneAIS3FunctionRole.Arn
       Timeout: 900
-      MemorySize: 10240
+      MemorySize: 2048
       Runtime: python3.9
       VpcConfig:
         SubnetIds: 
@@ -3294,7 +3294,7 @@ Resources:
       Handler: lambda_function.lambda_handler
       Role: !GetAtt AllInOneAITransformJobReviewFunctionRole.Arn
       Timeout: 900
-      MemorySize: 10240
+      MemorySize: 2048
       Runtime: python3.9
       VpcConfig:
         SubnetIds: 
@@ -3856,7 +3856,7 @@ Resources:
       Handler: lambda_function.lambda_handler
       Role: !GetAtt AllInOneAICreateTrainPyTorchFunctionRole.Arn
       Timeout: 900
-      MemorySize: 10240    
+      MemorySize: 2048    
       Runtime: python3.9
       VpcConfig:
         SubnetIds: 
@@ -3932,7 +3932,7 @@ Resources:
       Role: !GetAtt AllInOneAICreateTrainMxnetFunctionRole.Arn
       Timeout: 900
       Runtime: python3.9
-      MemorySize: 10240
+      MemorySize: 2048
       VpcConfig:
         SubnetIds: 
           - !Ref PrivateSubnet1
@@ -4005,7 +4005,7 @@ Resources:
       Handler: lambda_function.lambda_handler
       Role: !GetAtt AllInOneAICreateTrainTensorFlowFunctionRole.Arn
       Timeout: 900
-      MemorySize: 10240    
+      MemorySize: 2048    
       Runtime: python3.9
       VpcConfig:
         SubnetIds: 
@@ -4079,7 +4079,7 @@ Resources:
       Handler: lambda_function.lambda_handler
       Role: !GetAtt AllInOneAICreateTrainHuggingfaceFunctionRole.Arn
       Timeout: 900
-      MemorySize: 10240
+      MemorySize: 2048
       Runtime: python3.9
       VpcConfig:
         SubnetIds: 
@@ -4270,7 +4270,7 @@ Resources:
       Handler: lambda_function.lambda_handler
       Role: !GetAtt AllInOneAICreateDeployPyTorchFunctionRole.Arn
       Timeout: 900
-      MemorySize: 10240
+      MemorySize: 2048
       Runtime: python3.9
       VpcConfig:
         SubnetIds: 
@@ -4348,7 +4348,7 @@ Resources:
       Handler: lambda_function.lambda_handler
       Role: !GetAtt AllInOneAICreateDeployMxnetFunctionRole.Arn
       Timeout: 900
-      MemorySize: 10240    
+      MemorySize: 2048    
       Runtime: python3.9
       VpcConfig:
         SubnetIds: 
@@ -4426,7 +4426,7 @@ Resources:
       Handler: lambda_function.lambda_handler
       Role: !GetAtt AllInOneAICreateDeployTensorFlowFunctionRole.Arn
       Timeout: 900
-      MemorySize: 10240
+      MemorySize: 2048
       Runtime: python3.9
       VpcConfig:
         SubnetIds: 
@@ -4504,7 +4504,7 @@ Resources:
       Handler: lambda_function.lambda_handler
       Role: !GetAtt AllInOneAICreateDeployHuggingfaceFunctionRole.Arn
       Timeout: 900
-      MemorySize: 10240
+      MemorySize: 2048
       Runtime: python3.9
       VpcConfig:
         SubnetIds: 
@@ -5298,7 +5298,7 @@ Resources:
       Handler: lambda_function.lambda_handler
       Role: !GetAtt AllInOneAIGreengrassCreateComponentVersionFunctionRole.Arn
       Timeout: 900
-      MemorySize: 10240
+      MemorySize: 2048
       Runtime: python3.9
       VpcConfig:
         SubnetIds: 
@@ -5493,7 +5493,7 @@ Resources:
       Handler: lambda_function.lambda_handler
       Role: !GetAtt AllInOneAIImportOpensearchHelperFunctionRole.Arn
       Timeout: 900
-      MemorySize: 10240
+      MemorySize: 2048
       Runtime: python3.9
       VpcConfig:
         SubnetIds: 
