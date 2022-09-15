@@ -15,6 +15,7 @@ import { IIndustrialModel } from '../../../store/industrialmodels/reducer';
 import { ProjectSubType, ProjectType } from '../../../data/enums/ProjectType';
 import { v4 as uuidv4 } from 'uuid';
 import './index.scss'
+import { useTranslation } from "react-i18next";
 
 interface FileMetadata {
     name: string;
@@ -37,6 +38,9 @@ const LocalImageForm: FunctionComponent<IProps> = (props) => {
     const [ sampleConsole, setSampleConsole ] = useState('')
     const [ visibleSampleCode, setVisibleSampleCode ] = useState(false)
     const [ visibleImagePreview, setVisibleImagePreview ] = useState(false)
+
+    const { t } = useTranslation();
+
     const history = useHistory();
     
     var params : PathParams = useParams();
@@ -118,10 +122,11 @@ const LocalImageForm: FunctionComponent<IProps> = (props) => {
 
     const renderImageUpload = () => {
         return (
-            <Container title='Select local image'>
+            <Container title={t('industrial_models.demo.select_local_image')}>
                 <FileUpload
                     controlId={uuidv4()}
                     onChange={onFileChange}
+                    buttonText={t('industrial_models.common.choose_file')}
                 ></FileUpload>
             </Container>
         )
@@ -137,13 +142,13 @@ const LocalImageForm: FunctionComponent<IProps> = (props) => {
 
     const renderQuickStart = () => {
         return (
-            <Container headingVariant='h4' title = 'Quick start'>
+            <Container headingVariant='h4' title = {t('industrial_models.demo.quick_start')}>
                 <Inline>
                     <div className='quickstartaction'>
-                        <Button onClick={onStartTrain} disabled={!ALGORITHMS.find(algorithm => algorithm.value === industrialModel.algorithm).trainable}>Start train</Button>
+                        <Button onClick={onStartTrain} disabled={!ALGORITHMS.find(algorithm => algorithm.value === industrialModel.algorithm).trainable}>{t('industrial_models.demo.train')}</Button>
                     </div>
                     <div className='quickstartaction'>
-                        <Button onClick={onStartDeploy}>Start deploy</Button>
+                        <Button onClick={onStartDeploy}>{t('industrial_models.demo.deploy')}</Button>
                     </div>
                 </Inline>
             </Container>
@@ -151,9 +156,9 @@ const LocalImageForm: FunctionComponent<IProps> = (props) => {
     }    
     const renderSampleCode = () => {
         return (
-            <Container title = 'Sample code'>
-                <Toggle label={visibleSampleCode ? 'Show sample code' : 'Hide sample code'} checked={visibleSampleCode} onChange={(checked) => {setVisibleSampleCode(checked)}} />
-                <Link href={sampleConsole}>Open in AWS Lambda console</Link>
+            <Container title = {t('industrial_models.demo.sample_code')}>
+                <Toggle label={visibleSampleCode ? t('industrial_models.demo.show_sample_code') : t('industrial_models.demo.hide_sample_code')} checked={visibleSampleCode} onChange={(checked) => {setVisibleSampleCode(checked)}} />
+                <Link href={sampleConsole}>{t('industrial_models.demo.open_function_in_aws_console')}</Link>
                 {
                     visibleSampleCode && <SyntaxHighlighter language='python' style={github} showLineNumbers={true}>
                         {sampleCode}

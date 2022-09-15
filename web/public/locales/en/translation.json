@@ -126,6 +126,7 @@
       "select_endpoint": "Select a SageMaker endpoint",
       "select_endpoint_object_detection": "Select a SageMaker endpoint for object detection",
       "select_endpoint_text_recognition": "Select a SageMaker endpoint for text recognition",
+      "select_local_image": "Select local image",
       "select_text_field": "Select text field",
       "reverse_line_color": "Reverse line color",
       "input": "Input",

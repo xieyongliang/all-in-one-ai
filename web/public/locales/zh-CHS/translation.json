@@ -126,6 +126,7 @@
       "select_endpoint": "选择SageMaker推理端点",
       "select_endpoint_object_detection": "选择目标检测任务的SageMaker推理端点",
       "select_endpoint_text_recognition": "选择文字识别任务的SageMaker推理端点",
+      "select_local_image": "选择本地图片",
       "select_text_field": "选择文本字段",
       "reverse_line_color": "反转边线颜色",
       "input": "输入",
