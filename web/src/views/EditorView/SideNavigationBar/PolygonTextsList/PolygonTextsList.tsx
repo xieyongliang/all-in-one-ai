@@ -11,7 +11,7 @@ import {
     updateTextImageDataById
 } from "../../../../store/texts/actionCreators";
 import { TextActions } from '../../../../logic/actions/TextActions';
-import { Typography } from '@mui/material';
+import { Grid, Typography } from '@mui/material';
 import { ProjectSubType } from '../../../../data/enums/ProjectType';
 import axios from 'axios';
 import { TextsSelector } from '../../../../store/selectors/TextsSelector';
@@ -62,6 +62,8 @@ const PolygonTextsList: React.FC<IProps> = (
         onLoaded
     }) => {
     const [ yolov5EndpointOptions, setYolov5EndpointOptions ] = useState([]);
+    const [ extractKeyValues, setExtractKeyValues ] = useState(false);
+    const [ keyValues, setKeyValues ] = useState([])
     const [ selectedYolov5Endpoint, setSelectedYolov5Endpoint ] = useState<SelectOption>();
     const [ paddleocrEndpointOptions, setPaddleOCREndpointOptions ] = useState([]);
     const [ selectedPaddleOCREndpoint, setSelectedPaddleOCREndpoint ] = useState<SelectOption>();
@@ -227,6 +229,7 @@ const PolygonTextsList: React.FC<IProps> = (
     useEffect(() => {
         if(selectedYolov5Endpoint !== undefined) {
             var industrialModel = industrialModels.find((item) => item.id === yolov5EndpointsMapping[selectedYolov5Endpoint.value]);
+
             var labels = industrialModel.labels;
             var textFields = [];
             labels.forEach((label) => {
@@ -304,12 +307,25 @@ const PolygonTextsList: React.FC<IProps> = (
     const getPaddleOCRInference = async (bbox = undefined) => {
         handleProcessing()
 
+        var industrialModel = industrialModels.find((item) => item.id === params.id);
+
+        var keywords = []
+        industrialModel.labels.forEach(label => {
+            keywords.push(label)
+        })
+
         var response = undefined
         if(imageBucket !== undefined && imageKey!== undefined)  {
-            response = await axios.get('/_inference/sample', { params : { endpoint_name: selectedPaddleOCREndpoint.value, bucket: imageBucket, key: imageKey, crop: bbox } })
+            if(extractKeyValues)
+                response = await axios.get('/_inference/sample', { params : { endpoint_name: selectedPaddleOCREndpoint.value, bucket: imageBucket, key: imageKey, crop: bbox, post_process: 'ocr_key_value_extraction', keywords: JSON.stringify(keywords) } })
+            else
+                response = await axios.get('/_inference/sample', { params : { endpoint_name: selectedPaddleOCREndpoint.value, bucket: imageBucket, key: imageKey, crop: bbox } })
         }
         else if(imageId !== undefined) {
-            response = await axios.get(`/_inference/image/${imageId}`, { params : { endpoint_name: selectedPaddleOCREndpoint.value, bucket: imageBucket, key: imageKey, crop: JSON.stringify(bbox) } })
+            if(extractKeyValues)
+                response = await axios.get(`/_inference/image/${imageId}`, { params : { endpoint_name: selectedPaddleOCREndpoint.value, bucket: imageBucket, key: imageKey, crop: JSON.stringify(bbox), post_process: 'ocr_key_value_extraction', keywords: JSON.stringify(keywords) } })
+            else
+                response = await axios.get(`/_inference/image/${imageId}`, { params : { endpoint_name: selectedPaddleOCREndpoint.value, bucket: imageBucket, key: imageKey, crop: JSON.stringify(bbox) } })
         }
         if(response === undefined)
             return response
@@ -372,6 +388,8 @@ const PolygonTextsList: React.FC<IProps> = (
                     store.dispatch(updateActiveTextId(textPolygon.id));
                     index++;
                 })
+                if(extractKeyValues)
+                    setKeyValues(data.outputs)
                 handleProcessed();
             }, (error) => {
                 console.log(error);
@@ -438,9 +456,43 @@ const PolygonTextsList: React.FC<IProps> = (
                         <Button variant="primary" size="small" onClick={onInference}>{t('industrial_models.demo.run')}</Button>
                         <div>
                             <Toggle label={t('industrial_models.demo.reverse_line_color')} checked={reverseLineColor} onChange={(checked)=>updateReverseLineColor(checked)}/>
+                            {
+                                (projectSubType !== ProjectSubType.OBJECT_DETECTION) &&
+                                <Toggle label={t('industrial_models.demo.key_value_extraction')} checked={extractKeyValues} onChange={(checked)=>setExtractKeyValues(checked)}/>
+                            }
                         </div>
                     </div>
                 </Stack>
+                {
+                    (projectSubType !== ProjectSubType.OBJECT_DETECTION) && extractKeyValues &&
+                    <div 
+                        className="PolygonTextsListContent"
+                        style={{color: "white", fontSize: '10px', marginLeft: '15px', marginRight: '-2px'}}
+                    >
+                        <Grid container spacing={{ xs: 2, md: 2 }} columns={{ xs: 4, sm: 16, md: 16 }}>
+                            <Grid item xs={2} sm={6} md={6}>
+                                {t('industrial_models.common.key')}
+                            </Grid>
+                            <Grid item xs={2} sm={10} md={10}>
+                                {t('industrial_models.common.value')}
+                            </Grid>
+                            {
+                                keyValues.map((item) => {
+                                    return (
+                                        <Grid container spacing={{ xs: 2, md: 2 }} columns={{ xs: 4, sm: 16, md: 16 }}>
+                                            <Grid item xs={2} sm={6} md={6}>
+                                                {item['key']}
+                                            </Grid>
+                                            <Grid item xs={2} sm={10} md={10}>
+                                                {item['value']}
+                                            </Grid>
+                                        </Grid>
+                                    )
+                                })
+                            }
+                        </Grid>
+                    </div>
+                }
                 <div
                     className="PolygonTextsListContent"
                     style={listStyleContent}

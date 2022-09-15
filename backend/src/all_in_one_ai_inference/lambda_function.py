@@ -18,6 +18,8 @@ def lambda_handler(event, context):
             content_type = None
 
         endpoint_name = event['queryStringParameters']['endpoint_name']
+        post_process = event['queryStringParameters']['post_process'] if('post_process' in event['queryStringParameters']) else None
+        keywords = json.loads(event['queryStringParameters']['keywords']) if('keywords' in event['queryStringParameters']) else None
 
         body = {
             "endpoint_name": endpoint_name,
@@ -35,6 +37,29 @@ def lambda_handler(event, context):
             payload = response["Payload"].read().decode("utf-8")
             payload = json.loads(payload)
             print(payload['body'])
+            if(post_process != None):
+                body = {
+                    'post_process': post_process,
+                    'payload': json.loads(payload['body']),
+                    'extra': keywords
+                }
+                
+                response = lambda_client.invoke(
+                    FunctionName = 'all_in_one_ai_inference_post_process',
+                    InvocationType = 'RequestResponse',
+                    Payload = json.dumps(body)
+                )                
+
+                if('FunctionError' not in response):
+                    payload = response["Payload"].read().decode("utf-8")
+                    payload = json.loads(payload)
+                    print(payload['body'])
+                else:
+                    return {
+                        'statusCode': 400,
+                        'body': response["FunctionError"]
+                    }
+
             return {
                 'statusCode': payload['statusCode'],
                 'body': payload['body']

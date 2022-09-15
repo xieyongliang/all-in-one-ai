@@ -81,7 +81,7 @@ const LocalImageForm: FunctionComponent<IProps> = (props) => {
     }, [params.id, industrialModel]);
 
     const onFileChange = (files: (File | FileMetadata)[]) => {
-        setImageName(files[0].name.substring(0, files[0].name.lastIndexOf('.')))
+        setImageName(files[0].name)
         axios.post('/_image', files[0])
         .then((response) => {
             var filename : string = response.data;

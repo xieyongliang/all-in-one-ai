@@ -44,12 +44,14 @@ module.exports = function(app) {
     app.get('/_inference/image/:file_name', (req, res) => {
         try {
             var endpoint_name = req.query['endpoint_name'];
+            var post_process = req.query['post_process']
+            var keywords = req.query['keywords']
             var file_name = req.params.file_name;
             var crop = req.query['crop'];
 
             if(crop === undefined) {
                 var buffer = fs.readFileSync('images/' + file_name + '.jpg');
-                var options = { headers: {'content-type': 'image/jpg'}, params : {endpoint_name: endpoint_name}};
+                var options = { headers: {'content-type': 'image/jpg'}, params : { endpoint_name: endpoint_name, post_process: post_process, keywords: keywords }};
                 axios.post(baseUrl + '/inference', buffer, options)
                     .then((response) => {
                         res.send(response.data);
@@ -73,7 +75,7 @@ module.exports = function(app) {
                     var w = parseInt(rect.w * width)
                     var h = parseInt(rect.h * height)
                     image.crop(x, y, w, h);
-                    var options = { headers: {'content-type': 'image/jpg'}, params : {endpoint_name: endpoint_name}};
+                    var options = { headers: {'content-type': 'image/jpg'}, params : { endpoint_name: endpoint_name, post_process: post_process, keywords: keywords }};
                     image.write('./images/crop.png')
                     image.getBuffer(Jimp.MIME_PNG, (err, buffer) => {
                         axios.post(baseUrl + '/inference', buffer, options)
@@ -110,6 +112,8 @@ module.exports = function(app) {
     app.get('/_inference/sample', (req, res) => {
         try {
             var endpoint_name = req.query['endpoint_name'];
+            var post_process = req.query['post_process']
+            var keywords = req.query['keywords']
             var bucket = req.query['bucket'];
             var key = req.query['key'];
             var crop = req.query['crop'];
@@ -120,7 +124,7 @@ module.exports = function(app) {
                     'image_uri': key,
                     'content_type': 'application/json'
                 }
-                options = {headers: {'content-type': 'application/json'}, params : {endpoint_name: endpoint_name}};
+                options = {headers: {'content-type': 'application/json'}, params : { endpoint_name: endpoint_name, post_process: post_process, keywords: keywords }};
                 axios.post(baseUrl + '/inference', buffer, options)
                     .then((response) => {
                         res.send(response.data)
@@ -148,7 +152,7 @@ module.exports = function(app) {
                             var w = parseInt(rect.w * width)
                             var h = parseInt(rect.h * height)
                             image.crop(x, y, w, h);
-                            var options = { headers: {'content-type': 'image/jpg'}, params : {endpoint_name: endpoint_name}};
+                            var options = { headers: {'content-type': 'image/jpg'}, params : { endpoint_name: endpoint_name, post_process: post_process, keywords: keywords }};
                             image.write('./images/crop.png')
                             image.getBuffer(Jimp.MIME_PNG, (err, buffer) => {
                                 axios.post(baseUrl + '/inference', buffer, options)
