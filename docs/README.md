@@ -68,7 +68,7 @@ There are 3 kinds of AI/ML algorithms supported in All-In-One AI:
 
     - [Yolov5](https://github.com/ultralytics/yolov5)
     - [GluonCV](https://github.com/dmlc/gluon-cv)
-    - [PaddleNLP](https://github.com/PaddlePaddle/PaddleOCR)
+    - [PaddleOCR](https://github.com/PaddlePaddle/PaddleOCR)
 
 2.  natural language processing algorithms for text summarization, text classification, keyword extract, named entity and relationship recognition, generative aspect based sentiment analysis, etc.
 
