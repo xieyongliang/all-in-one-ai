@@ -16,7 +16,7 @@ const initialState: GeneralState = {
     projectData: {
         type: null,
         subType: null,
-        name: 'my-project-name',
+        name: '',
     },
     zoom: ViewPointSettings.MIN_ZOOM,
     env: {}

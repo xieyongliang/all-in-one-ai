@@ -148,7 +148,7 @@ const ImageAnnotate: React.FC<IProps> = (
         updateActiveTextIdAction(null);
         updateLabelNamesAction([]);
         updateTextsAction([]);
-        updateProjectDataAction({type: null, subType: null, name: 'my-project-name'});
+        updateProjectDataAction({type: null, subType: null, name: ''});
         updateActiveLabelImageIndexAction(null);
         updateActiveTextImageIndexAction(null);
         updateLabelImageDataAction([]);
@@ -237,6 +237,11 @@ const ImageAnnotate: React.FC<IProps> = (
         setLoading(false)
     }
 
+    const onCleanup = () => {
+        updateProjectDataAction({type: null, subType: null, name: ''});
+        onClosed();
+    }
+
     if(!ready)
         return (
             <Dialog open={true}>
@@ -259,7 +264,7 @@ const ImageAnnotate: React.FC<IProps> = (
                         imageId = {imageId}
                         imageNames = {imageNames}
                         onLoaded = {onLoaded}
-                        onClosed = {onClosed}
+                        onClosed = {onCleanup}
                     /> 
                 }
                 {

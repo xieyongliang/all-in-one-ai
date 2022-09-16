@@ -5,6 +5,58 @@ import math
 def compare(elem):
     return elem[0]
 
+def length(item):
+    return len(item)
+
+def extract_key_values(keywords, content):
+    origin_content = content
+
+    candidates_outputs = []
+
+    outputs = []
+
+    start = 0
+
+    while(len(content) > 0):
+        candidate_keywords = []
+        for keyword in keywords:
+            if(content.startswith(keyword)):
+                candidate_keywords.append(keyword)
+        candidate_keywords.sort(key=length)
+        if(len(candidate_keywords) > 0):
+            candidates_outputs.append(
+                {
+                    'keyword': candidate_keywords[0],
+                    'start': start
+                }
+            )
+            content = content[len(candidate_keywords[0]) : ]
+            start += len(candidate_keywords[0])
+        else:
+            start += 1
+            content = content[1 : ]
+
+    for index in range(0, len(candidates_outputs)):
+        key = candidates_outputs[index]['keyword']
+        if(index < len(candidates_outputs) - 1):
+            value = origin_content[candidates_outputs[index]['start'] + len(candidates_outputs[index]['keyword']) : candidates_outputs[index + 1]['start']]
+        else:
+            value = origin_content[candidates_outputs[index]['start'] + len(candidates_outputs[index]['keyword']) : ]
+        
+        if(value.startswith(':') or value.startswith('：')):
+            value = value[ 1 : ]
+
+        outputs.append(
+            {
+                'key': key,
+                'value': value
+            }
+        )
+
+    print(outputs)
+
+    return outputs
+
 def lambda_handler(event, context):
     try:
         print(event)
@@ -87,36 +139,27 @@ def lambda_handler(event, context):
                 content = ''
                 for item in result:
                     content += item[1]
-                matched = False
-                for keyword in keywords:
-                    index = content.find(keyword)
-                    if(index != -1):
-                        matched = True
-                        value = content[index + len(keyword) : -1] if(index + len(keyword) < len(content)) else ''
-                        if(value.startswith(':') or value.startswith('：')):
-                            value = value[ 1 : -1 ]
-                        outputs.append(
-                            {
-                                'key': keyword,
-                                'value': value
-                            }
-                        )
-                        break
-                if(not matched):
+
+                sentence_outputs = extract_key_values(keywords = keywords, content = content)
+
+                if(len(sentence_outputs) == 0):
                     outputs.append(
                         {
                             'key': '',
                             'value': content
                         }
                     )
-                
+                else:
+                    for sentence_output in sentence_outputs:
+                        outputs.append(sentence_output)
+
         print(outputs)
         
         payload['outputs'] = outputs
     
         return {
             'statusCode': 200,
-            'body': json.dumps(payload)
+            'body': json.dumps(payload, ensure_ascii = False)
         }
     
     except Exception as e:

@@ -274,7 +274,7 @@ const ModelList: FunctionComponent = () => {
             setSelectedModel(selectedItems[0])
             setDisabledDelete(false)
 
-            var modelCurItem = modelCurItems.findIndex((item) => item.modelName === selectedItems[0].modelName);
+            var modelCurItem = modelCurItems.find((item) => item.modelName === selectedItems[0].modelName);
 
             if(!showAll) {
                 setDisabledAttach(true)

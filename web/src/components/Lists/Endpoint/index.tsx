@@ -331,7 +331,8 @@ const EndpointList: FunctionComponent = () => {
             setSelectedEndpoint(selectedItems[0])
             setDisabledDelete(false)
 
-            var endpointCurItem = endpointCurItems.findIndex((item) => item.endpointName === selectedItems[0].endpointName)
+            var endpointCurItem = endpointCurItems.find((item) => item.endpointName === selectedItems[0].endpointName)
+            console.log(endpointCurItem)
 
             if(!showAll) {
                 setDisabledAttach(true)

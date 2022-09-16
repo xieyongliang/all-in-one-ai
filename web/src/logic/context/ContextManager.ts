@@ -51,6 +51,9 @@ export class ContextManager {
     }
 
     private static onDown(event: KeyboardEvent): void {
+        if(store.getState().general.projectData.type == null && store.getState().general.projectData.subType == null)
+            return;
+
         const keyCode: string = ContextManager.getKeyCodeFromEvent(event);
         if (!ContextManager.isInCombo(keyCode)) {
             ContextManager.addToCombo(keyCode);
@@ -59,11 +62,17 @@ export class ContextManager {
     }
 
     private static onUp(event: KeyboardEvent): void {
-        const keyCode: string = ContextManager.getKeyCodeFromEvent(event);
+        if(store.getState().general.projectData.type == null && store.getState().general.projectData.subType == null)
+            return;
+
+            const keyCode: string = ContextManager.getKeyCodeFromEvent(event);
         ContextManager.removeFromCombo(keyCode);
     }
 
     public static onFocus() {
+        if(store.getState().general.projectData.type == null && store.getState().general.projectData.subType == null)
+            return;
+
         ContextManager.activeCombo = [];
     }
 
