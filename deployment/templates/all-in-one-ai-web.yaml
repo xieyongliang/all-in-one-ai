@@ -18,6 +18,10 @@ Parameters:
     Type: String
     Description: API Prod stage endpoint
 
+  WebSocketGatewayProdEndpoint:
+    Type: String
+    Description: WebSocket Prod stage endpoint  
+
   DomainName:
     Type: String
     Description: Domain Name
@@ -154,6 +158,8 @@ Resources:
           Environment:
             - Name: API_GATEWAY_PROD_ENDPOINT
               Value: !Ref ApiGatewayProdEndpoint
+            - Name: WEBSOCKET_GATEWAY_PROD_ENDPOINT
+              Value: !Ref WebSocketGatewayProdEndpoint
             - Name: UserPool
               Value: !Ref UserPool
             - Name: UserPoolClient

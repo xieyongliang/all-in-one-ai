@@ -17,7 +17,7 @@ app.get('/env', (req, res) => {
         CallbackURL:process.env.CallbackURL,
         LogoutURL:process.env.LogoutURL,
         CognitoRegion:process.env.CognitoRegion,
-        SocketURL:process.env.WEBSOCKET_API_GATEWAY_PROD_ENDPOINT
+        SocketURL:process.env.WEBSOCKET_GATEWAY_PROD_ENDPOINT
     }
     res.send(result)
 })

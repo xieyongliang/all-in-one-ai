@@ -6387,7 +6387,7 @@ Outputs:
     Description: Arn of AllInOneAIImportOpensearchHelperFunction
     Value: !GetAtt AllInOneAIImportOpensearchHelperFunction.Arn
   
-  WebSocketProdURI:
+  WebSocketGatewayProdEndpoint:
     Description: "The WSS Protocol URI to connect to"
     Value: !Sub wss://${ApiGatewayWebSocket}.execute-api.${AWS::Region}.amazonaws.com/${Stage}
 

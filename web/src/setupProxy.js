@@ -16,7 +16,7 @@ module.exports = function(app) {
             CallbackURL:process.env.CallbackURL,
             LogoutURL:process.env.LogoutURL,
             CognitoRegion:process.env.CognitoRegion,
-            SocketURL:process.env.WEBSOCKET_API_GATEWAY_PROD_ENDPOINT
+            SocketURL:process.env.WEBSOCKET_GATEWAY_PROD_ENDPOINT
         }
         res.send(result)
     })
