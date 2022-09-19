@@ -3825,7 +3825,11 @@ Resources:
         - !If
           - Globally                                                  
           - 'arn:aws:iam::aws:policy/AmazonSSMFullAccess'
-          - 'arn:aws-cn:iam::aws:policy/AmazonSSMFullAccess'    
+          - 'arn:aws-cn:iam::aws:policy/AmazonSSMFullAccess' 
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/service-role/AWSLambdaRole'
+          - 'arn:aws-cn:iam::aws:policy/service-role/AWSLambdaRole'   
   
   AllInOneAICreateTrainPyTorchFunctionAdditionalPermission:
     Type: 'AWS::IAM::Policy'
@@ -3900,7 +3904,11 @@ Resources:
         - !If
           - Globally                                                  
           - 'arn:aws:iam::aws:policy/AmazonSSMFullAccess'
-          - 'arn:aws-cn:iam::aws:policy/AmazonSSMFullAccess'  
+          - 'arn:aws-cn:iam::aws:policy/AmazonSSMFullAccess'
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/service-role/AWSLambdaRole'
+          - 'arn:aws-cn:iam::aws:policy/service-role/AWSLambdaRole'
   
   AllInOneAICreateTrainMxnetFunctionAdditionalPermission:
     Type: 'AWS::IAM::Policy'
@@ -3974,7 +3982,11 @@ Resources:
         - !If
           - Globally                                                  
           - 'arn:aws:iam::aws:policy/AmazonSSMFullAccess'
-          - 'arn:aws-cn:iam::aws:policy/AmazonSSMFullAccess'    
+          - 'arn:aws-cn:iam::aws:policy/AmazonSSMFullAccess' 
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/service-role/AWSLambdaRole'
+          - 'arn:aws-cn:iam::aws:policy/service-role/AWSLambdaRole'   
   
   AllInOneAICreateTrainTensorFlowFunctionAdditionalPermission:
     Type: 'AWS::IAM::Policy'
@@ -4049,7 +4061,11 @@ Resources:
           - Globally                                                  
           - 'arn:aws:iam::aws:policy/AmazonSSMFullAccess'
           - 'arn:aws-cn:iam::aws:policy/AmazonSSMFullAccess'    
-  
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/service-role/AWSLambdaRole'
+          - 'arn:aws-cn:iam::aws:policy/service-role/AWSLambdaRole'
+
   AllInOneAICreateTrainHuggingfaceFunctionAdditionalPermission:
     Type: 'AWS::IAM::Policy'
     Properties:
@@ -4239,7 +4255,11 @@ Resources:
         - !If
           - Globally                                                  
           - 'arn:aws:iam::aws:policy/AmazonSSMFullAccess'
-          - 'arn:aws-cn:iam::aws:policy/AmazonSSMFullAccess'       
+          - 'arn:aws-cn:iam::aws:policy/AmazonSSMFullAccess'   
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/service-role/AWSLambdaRole'
+          - 'arn:aws-cn:iam::aws:policy/service-role/AWSLambdaRole'    
   
   AllInOneAICreateDeployPyTorchFunctionAdditionalPermission:
     Type: 'AWS::IAM::Policy'
@@ -4318,7 +4338,11 @@ Resources:
           - Globally                                                  
           - 'arn:aws:iam::aws:policy/AmazonSSMFullAccess'
           - 'arn:aws-cn:iam::aws:policy/AmazonSSMFullAccess'       
-  
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/service-role/AWSLambdaRole'
+          - 'arn:aws-cn:iam::aws:policy/service-role/AWSLambdaRole'
+
   AllInOneAICreateDeployMxnetFunctionAdditionalPermission:
     Type: 'AWS::IAM::Policy'
     Properties:
@@ -4396,7 +4420,11 @@ Resources:
           - Globally                                                  
           - 'arn:aws:iam::aws:policy/AmazonSSMFullAccess'
           - 'arn:aws-cn:iam::aws:policy/AmazonSSMFullAccess'       
-  
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/service-role/AWSLambdaRole'
+          - 'arn:aws-cn:iam::aws:policy/service-role/AWSLambdaRole'
+
   AllInOneAICreateDeployTensorFlowFunctionAdditionalPermission:
     Type: 'AWS::IAM::Policy'
     Properties:
@@ -4474,6 +4502,10 @@ Resources:
           - Globally                                                  
           - 'arn:aws:iam::aws:policy/AmazonSSMFullAccess'
           - 'arn:aws-cn:iam::aws:policy/AmazonSSMFullAccess'   
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/service-role/AWSLambdaRole'
+          - 'arn:aws-cn:iam::aws:policy/service-role/AWSLambdaRole'          
   
   AllInOneAICreateDeployHuggingfaceFunctionAdditionalPermission:
     Type: 'AWS::IAM::Policy'
@@ -4540,6 +4572,10 @@ Resources:
           - Globally                                                  
           - 'arn:aws:iam::aws:policy/AmazonSageMakerFullAccess'
           - 'arn:aws-cn:iam::aws:policy/AmazonSageMakerFullAccess'
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/service-role/AWSLambdaRole'
+          - 'arn:aws-cn:iam::aws:policy/service-role/AWSLambdaRole'          
   
   AllInOneAICreatePipelineFunctionAdditionalPermission:
     Type: 'AWS::IAM::Policy'
