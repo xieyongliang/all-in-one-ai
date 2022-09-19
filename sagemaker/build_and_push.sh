@@ -12,11 +12,12 @@ dirlist=$(find . -mindepth 1 -maxdepth 1 -type d)
 for subdir in $dirlist
 do
     cd ${sagemaker_dir}/${subdir}
+    echo ${sagemaker_dir}/${subdir}
     array=($(echo ${subdir} | tr "/" "\n"))
     size=${#array[@]}
     index=$((size - 1))
     algorithm=${array[$index]}
-    echo ${algorithm}
+    if [ -f "./build_and_push.sh" ]; 
     then
         ./build_and_push.sh ${region}
         touch dummy
