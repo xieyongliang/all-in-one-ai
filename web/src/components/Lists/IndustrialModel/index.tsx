@@ -18,6 +18,7 @@ import { useHistory } from 'react-router-dom';
 import Image from '../../Utils/Image';
 import cognitoUtils from '../../../lib/cognitoUtils';
 import { useTranslation } from "react-i18next";
+import { logOutput } from '../../Utils/Helper';
 
 interface IProps {
     updateIndustrialModelsAction: (industrialModels: IIndustrialModel[]) => any;
@@ -34,7 +35,7 @@ const IndustrialModelList: FunctionComponent<IProps> = (props) => {
     const [ visibleIndustrialModelProp, setVisibleIndustrialModelProp ] = useState(false)
     const [ visibleConfirmationDialog, setVisibleConfirmationDialog ] = useState(false)
     const [ processing, setProssing ] = useState(false)
-    const [anchorEl, setAnchorEl] = useState(null);
+    const [ anchorEl, setAnchorEl ] = useState(null);
 
     const { t } = useTranslation();
 
@@ -222,7 +223,7 @@ const IndustrialModelList: FunctionComponent<IProps> = (props) => {
                 setVisibleConfirmationDialog(false)
                 setProssing(false)
             }, (error) => {
-                    alert(error)
+                    logOutput('error', error.response.data, undefined, error);
                 }
             )
     }
@@ -268,7 +269,7 @@ const IndustrialModelList: FunctionComponent<IProps> = (props) => {
             cognitoUtils.getCognitoSignInUri().then(data => {
                 window.location.href = data
             }).catch((error) => {
-                console.log(error)
+                logOutput('error', error.response.data, undefined, error);
             });
         return (<div></div>)
     }

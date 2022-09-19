@@ -4,6 +4,7 @@ import cognitoUtils from '../../../lib/cognitoUtils';
 import { connect } from 'react-redux';
 import { AppState } from '../../../store';
 import { useTranslation } from "react-i18next";
+import { logOutput } from '../../Utils/Helper';
 
 interface IProps {
     isLogin: boolean;
@@ -40,7 +41,7 @@ const Track: FunctionComponent<IProps> = (
             cognitoUtils.getCognitoSignInUri().then(data => {
                 window.location.href = data
             }).catch((error) => {
-                console.log(error)
+                logOutput('error', error.response.data, undefined, error);
             });
         return (<div></div>)
     }

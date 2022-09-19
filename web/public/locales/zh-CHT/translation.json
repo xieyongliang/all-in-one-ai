@@ -36,7 +36,16 @@
       "industrial_models": "行業模型",
       "algorithms": "算法",
       "overview": "概覽",
-      "home": "首頁"
+      "home": "首頁",
+      "train_task_success": "訓練任務啟動成功",
+      "train_task_info": "訓練任務信息",
+      "train_task_error": "訓練任務啟動失敗",
+      "deploy_task_success": "部署任務啟成功",
+      "deploy_task_info": "部署任務信息",
+      "deploy_task_error": "部署任務啟動失敗",
+      "pipeline_task_success": "流水線任務啟動成功",
+      "pipeline_task_info": "流水線任務信息",
+      "pipeline_task_error": "流水線任務啟動失敗"
     },
     "scenarios": {
       "ppe": {
@@ -174,7 +183,8 @@
         "image_preview": "圖片預覽",
         "search": "搜索",
         "unsupported": "暫不支持的演示",
-        "json_parse_error": "JSON 數據解析失敗，請檢查並重試"
+        "json_parse_error": "JSON 數據解析失敗，請檢查並重試",
+        "unzip_error": "ZIP 文件解壓縮失敗，請檢查並重試"
       },
       "training_job": {
         "create_training_job": "創建訓練任務",
@@ -349,7 +359,12 @@
         "pipeline_option_byoc": "使用您自己的算法容器",
         "Pipeline_step_pipeline": "流水線",
         "pipeline_step_train": "訓練",
-        "pipeline_step_deploy": "部署"
+        "pipeline_step_deploy": "部署",
+        "pipeline_type": "流水線類型",
+        "pipline_type_1": "在雲端和終端訓練、部署和推理",
+        "pipline_type_2": "僅在雲端訓練、部署和推理",
+        "pipeline_type_3": "在雲端和終端僅部署和推理",
+        "pipeline_type_4": "僅在雲端部署和推理"
       },
       "api": {
         "create_api": "創建 REST API",

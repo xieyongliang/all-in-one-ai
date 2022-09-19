@@ -16,6 +16,7 @@ import { ProjectSubType, ProjectType } from '../../../data/enums/ProjectType';
 import { v4 as uuidv4 } from 'uuid';
 import './index.scss'
 import { useTranslation } from "react-i18next";
+import { logOutput } from '../../Utils/Helper';
 
 interface FileMetadata {
     name: string;
@@ -88,7 +89,7 @@ const LocalImageForm: FunctionComponent<IProps> = (props) => {
             setCurImageItem(filename);
             setVisibleImagePreview(true)
         }, (error) => {
-            console.log(error);
+            logOutput('error', error.response.data, undefined, error);
         });
     }
 

@@ -8,6 +8,7 @@ import { PathParams } from '../../Interfaces/PathParams';
 import { APIS } from '../../Data/data';
 import { v4 as uuidv4 } from 'uuid';
 import { useTranslation } from "react-i18next";
+import { logOutput } from '../../Utils/Helper';
 
 const RestApiForm: FunctionComponent = () => {
     const [ apiName, setApiName ] = useState('')
@@ -41,7 +42,7 @@ const RestApiForm: FunctionComponent = () => {
                     setRestApisOptions(items)
             }
         }, (error) => {
-            console.log(error);
+            logOutput('error', error.response.data, undefined, error);
         });
         
         var apis = [];
@@ -97,8 +98,7 @@ const RestApiForm: FunctionComponent = () => {
             .then((response) => {
                 history.goBack()
             }, (error) => {
-                alert('Error occured, please check and try it again');
-                console.log(error);
+                logOutput('error', error.response.data, undefined, error);
                 setProcessing(false);
             });
     }
@@ -231,9 +231,9 @@ const RestApiForm: FunctionComponent = () => {
                     <Button variant='primary' onClick={onSubmit} loading={processing}>{t('industrial_models.common.submit')}</Button>
                 </div>
             }> 
-            {renderRestApiSetting()}
-            {renderRestApiFormContent()}
-            {renderRestApiTag()}
+            { renderRestApiSetting() }
+            { renderRestApiFormContent() }
+            { renderRestApiTag() }
         </Form>
     )
 }

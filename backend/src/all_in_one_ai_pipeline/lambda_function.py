@@ -51,23 +51,25 @@ def lambda_handler(event, context):
             )
     
             if('FunctionError' not in response):
-                pipeline_execution_arn = response['Payload'].read().decode('utf-8')
-                pipeline_execution_arn = pipeline_execution_arn[1 : len(pipeline_execution_arn) - 1]
-                
-                params = {}
-                params['pipeline_execution_arn'] = pipeline_execution_arn
-                params['industrial_model'] = industrial_model
-                params['model_algorithm'] = model_algorithm
-                params['pipeline_name'] = pipeline_name
-                params['pipeline_type'] = pipeline_type
-                params['pipeline_id'] = pipeline_id
-                params['model_name'] = request['model_name']
-                params['endpoint_config_name'] = request['endpoint_config_name']
-                params['endpoint_name'] = request['endpoint_name']
-                params['script_mode'] = script_mode
-                print(params)
-                
-                item = ddbh.put_item(params)
+                payload = response["Payload"].read().decode("utf-8")
+                payload = json.loads(payload)
+
+                if(payload['statusCode'] == 200):             
+                    params = {}
+                    params['pipeline_execution_arn'] = payload['body'][1 : len(payload['body']) - 1]
+                    params['industrial_model'] = industrial_model
+                    params['model_algorithm'] = model_algorithm
+                    params['pipeline_name'] = pipeline_name
+                    params['pipeline_type'] = pipeline_type
+                    params['pipeline_id'] = pipeline_id
+                    params['model_name'] = request['model_name']
+                    params['endpoint_config_name'] = request['endpoint_config_name']
+                    params['endpoint_name'] = request['endpoint_name']
+                    params['script_mode'] = script_mode
+
+                    print(params)
+                    
+                    item = ddbh.put_item(params)
                 
                 return {
                     'statusCode': response['StatusCode'],

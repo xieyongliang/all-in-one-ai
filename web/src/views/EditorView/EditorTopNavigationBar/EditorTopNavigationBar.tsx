@@ -28,6 +28,7 @@ import { updateActiveLabelType, updateLabelImageData, updateLabelNames } from '.
 import JSZip from 'jszip';
 import axios from 'axios';
 import { useTranslation } from "react-i18next";
+import { logOutput } from '../../../components/Utils/Helper';
 
 const BUTTON_SIZE: ISize = {width: 30, height: 30};
 const BUTTON_PADDING: number = 10;
@@ -208,7 +209,7 @@ const EditorTopNavigationBar: React.FC<IProps> = (
     }, [ imageAnnotations, imageColors, imageLabels, updateActiveLabelType, updateLabelImageData, updateLabelNames, onProcessed]);
     
     const onAnnotationsLoadFailure = useCallback((error?:Error) => {    
-        console.log(error)
+        logOutput('alert', error, undefined, error);
         onProcessed();
     }, [onProcessed]);
     
@@ -237,10 +238,10 @@ const EditorTopNavigationBar: React.FC<IProps> = (
                     })
                 });
             }, function (e) {
-                console.log(e)
+                logOutput('alert', t('unzip_error'), undefined, e);
             });
         }
-    }, [ imageLabels, onAnnotationLoadSuccess, onAnnotationsLoadFailure, onProcessing ]);
+    }, [ imageLabels, t, onAnnotationLoadSuccess, onAnnotationsLoadFailure, onProcessing ]);
     
     const onFileSelect = (file) => {
         var reader = new FileReader();

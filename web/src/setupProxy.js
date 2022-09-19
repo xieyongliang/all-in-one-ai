@@ -5,7 +5,7 @@ const { default: axios } = require('axios');
 const url = require('url');
 var Jimp = require('jimp');
 
-const baseUrl = process.env.API_GATEWAY_PROD_ENDPOINT
+const ApiURL = process.env.API_GATEWAY_PROD_ENDPOINT
 
 module.exports = function(app) {
     app.get('/env', (req, res) => {
@@ -15,7 +15,8 @@ module.exports = function(app) {
             UserPoolDomain:process.env.UserPoolDomain,
             CallbackURL:process.env.CallbackURL,
             LogoutURL:process.env.LogoutURL,
-            CognitoRegion:process.env.CognitoRegion
+            CognitoRegion:process.env.CognitoRegion,
+            SocketURL:process.env.WEBSOCKET_API_GATEWAY_PROD_ENDPOINT
         }
         res.send(result)
     })
@@ -52,7 +53,7 @@ module.exports = function(app) {
             if(crop === undefined) {
                 var buffer = fs.readFileSync('images/' + file_name + '.jpg');
                 var options = { headers: {'content-type': 'image/jpg'}, params : { endpoint_name: endpoint_name, post_process: post_process, keywords: keywords }};
-                axios.post(baseUrl + '/inference', buffer, options)
+                axios.post(ApiURL + '/inference', buffer, options)
                     .then((response) => {
                         res.send(response.data);
                     }, (error) => {
@@ -78,7 +79,7 @@ module.exports = function(app) {
                     var options = { headers: {'content-type': 'image/jpg'}, params : { endpoint_name: endpoint_name, post_process: post_process, keywords: keywords }};
                     image.write('./images/crop.png')
                     image.getBuffer(Jimp.MIME_PNG, (err, buffer) => {
-                        axios.post(baseUrl + '/inference', buffer, options)
+                        axios.post(ApiURL + '/inference', buffer, options)
                             .then((response) => {
                                 response.data.bbox.forEach((item) => {
                                     item[0][0] += x;
@@ -125,7 +126,7 @@ module.exports = function(app) {
                     'content_type': 'application/json'
                 }
                 options = {headers: {'content-type': 'application/json'}, params : { endpoint_name: endpoint_name, post_process: post_process, keywords: keywords }};
-                axios.post(baseUrl + '/inference', buffer, options)
+                axios.post(ApiURL + '/inference', buffer, options)
                     .then((response) => {
                         res.send(response.data)
                     }, (error) => {
@@ -140,7 +141,7 @@ module.exports = function(app) {
             }
             else {
                 var s3uri = `s3://${bucket}/${key}`
-                axios.get(baseUrl + '/s3', {params : { s3uri : s3uri}})
+                axios.get(ApiURL + '/s3', {params : { s3uri : s3uri}})
                     .then((response) => {
                         var httpuri = response.data.payload[0].httpuri;
                         Jimp.read(httpuri, function (err, image) {
@@ -155,7 +156,7 @@ module.exports = function(app) {
                             var options = { headers: {'content-type': 'image/jpg'}, params : { endpoint_name: endpoint_name, post_process: post_process, keywords: keywords }};
                             image.write('./images/crop.png')
                             image.getBuffer(Jimp.MIME_PNG, (err, buffer) => {
-                                axios.post(baseUrl + '/inference', buffer, options)
+                                axios.post(ApiURL + '/inference', buffer, options)
                                     .then((response) => {
                                         response.data.bbox.forEach((item) => {
                                             item[0][0] += x;
@@ -217,7 +218,7 @@ module.exports = function(app) {
                 var data = fs.readFileSync('images/' + file_name + '.jpg');
         
                 var options = {headers: {'content-type': 'image/jpg'}, params: {endpoint_name: endpoint_name, industrial_model: industrial_model}};
-                axios.post(baseUrl + '/search/image', data, options)
+                axios.post(ApiURL + '/search/image', data, options)
                 .then((response) => {
                     res.send(response.data);
                 }, (error) => {
@@ -251,7 +252,7 @@ module.exports = function(app) {
 
                 options = {headers: {'content-type': 'application/json'}};
                 if(model_id === undefined) {
-                    axios.post(baseUrl + '/industrialmodel', body, options)
+                    axios.post(ApiURL + '/industrialmodel', body, options)
                         .then((response) => {
                             res.send(response.data);
                         }, (error) => {
@@ -265,7 +266,7 @@ module.exports = function(app) {
                     }
                 else {
                     delete body.model_id
-                    axios.post(baseUrl + `/industrialmodel/${model_id}`, body, options)
+                    axios.post(ApiURL + `/industrialmodel/${model_id}`, body, options)
                         .then((response) => {
                             res.send(response.data);
                         }, (error) => {
@@ -284,7 +285,7 @@ module.exports = function(app) {
         })
     })
     app.use(createProxyMiddleware('/inference', {
-        target: baseUrl + '/inference',
+        target: ApiURL + '/inference',
         pathRewrite: {
             '^/inference': ''
         },
@@ -293,7 +294,7 @@ module.exports = function(app) {
         ws: false,
     }));
     app.use(createProxyMiddleware('/transformjob', {
-        target: baseUrl + '/transformjob',
+        target: ApiURL + '/transformjob',
         pathRewrite: {
             '^/transformjob': ''
         },
@@ -302,7 +303,7 @@ module.exports = function(app) {
         ws: false,
     }));
     app.use(createProxyMiddleware('/trainingjob', {
-        target: baseUrl + '/trainingjob',
+        target: ApiURL + '/trainingjob',
         pathRewrite: {
             '^/trainingjob': ''
         },
@@ -311,7 +312,7 @@ module.exports = function(app) {
         ws: false,
     }));
     app.use(createProxyMiddleware('/modelpackage', {
-        target: baseUrl + '/modelpackage',
+        target: ApiURL + '/modelpackage',
         pathRewrite: {
             '^/modelpackage': ''
         },
@@ -320,7 +321,7 @@ module.exports = function(app) {
         ws: false,
     }));
     app.use(createProxyMiddleware('/industrialmodel', {
-        target: baseUrl + '/industrialmodel',
+        target: ApiURL + '/industrialmodel',
         pathRewrite: {
             '^/industrialmodel': ''
         },
@@ -329,7 +330,7 @@ module.exports = function(app) {
         ws: false,
     }));
     app.use(createProxyMiddleware('/model', {
-        target: baseUrl + '/model',
+        target: ApiURL + '/model',
         pathRewrite: {
             '^/model': ''
         },
@@ -338,7 +339,7 @@ module.exports = function(app) {
         ws: false,
     }));
     app.use(createProxyMiddleware('/endpoint', {
-        target: baseUrl + '/endpoint',
+        target: ApiURL + '/endpoint',
         pathRewrite: {
             '^/endpoint': ''
         },
@@ -347,7 +348,7 @@ module.exports = function(app) {
         ws: false,
     }));
     app.use(createProxyMiddleware('/function', {
-        target: baseUrl + '/function',
+        target: ApiURL + '/function',
         pathRewrite: {
             '^/function': ''
         },
@@ -356,7 +357,7 @@ module.exports = function(app) {
         ws: false,
     }));
     app.use(createProxyMiddleware('/api', {
-        target: baseUrl + '/api',
+        target: ApiURL + '/api',
         pathRewrite: {
             '^/api': ''
         },
@@ -365,7 +366,7 @@ module.exports = function(app) {
         ws: false,
     }));
     app.use(createProxyMiddleware('/greengrass', {
-        target: baseUrl + '/greengrass',
+        target: ApiURL + '/greengrass',
         pathRewrite: {
             '^/greengrass': ''
         },
@@ -374,7 +375,7 @@ module.exports = function(app) {
         ws: false,
     }));
     app.use(createProxyMiddleware('/pipeline', {
-        target: baseUrl + '/pipeline',
+        target: ApiURL + '/pipeline',
         pathRewrite: {
             '^/pipeline': ''
         },
@@ -383,7 +384,7 @@ module.exports = function(app) {
         ws: false,
     }));
     app.use(createProxyMiddleware('/s3', {
-        target: baseUrl + '/s3',
+        target: ApiURL + '/s3',
         pathRewrite: {
             '^/s3': ''
         },
@@ -392,7 +393,7 @@ module.exports = function(app) {
         ws: false,
     }));
     app.use(createProxyMiddleware('/search/import', {
-        target: baseUrl + '/search/import',
+        target: ApiURL + '/search/import',
         pathRewrite: {
             '^/search/import': ''
         },
@@ -401,7 +402,7 @@ module.exports = function(app) {
         ws: false,
     }));
     app.use(createProxyMiddleware('/train', {
-        target: baseUrl + '/train',
+        target: ApiURL + '/train',
         pathRewrite: {
             '^/train': ''
         },
@@ -410,7 +411,7 @@ module.exports = function(app) {
         ws: false,
     }));    
     app.use(createProxyMiddleware('/deploy', {
-        target: baseUrl + '/deploy',
+        target: ApiURL + '/deploy',
         pathRewrite: {
             '^/deploy': ''
         },
@@ -419,7 +420,7 @@ module.exports = function(app) {
         ws: false,
     }));    
     app.use(createProxyMiddleware('/annotation', {
-        target: baseUrl + '/annotation',
+        target: ApiURL + '/annotation',
         pathRewrite: {
             '^/annotation': ''
         },

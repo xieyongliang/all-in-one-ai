@@ -26,6 +26,7 @@ import { useParams } from 'react-router-dom';
 import { PathParams } from '../../../../components/Interfaces/PathParams';
 import Select from '../../../../components/Utils/Select';
 import { useTranslation } from "react-i18next";
+import { logOutput } from '../../../../components/Utils/Helper';
 
 interface IProps {
     size: ISize;
@@ -370,7 +371,7 @@ const PolygonTextsList: React.FC<IProps> = (
                 }
                 handleProcessed();
             }, (error => {
-                console.log(error)
+                logOutput('alert', error.response.data, undefined, error);
                 handleProcessed();
             }))
         else
@@ -392,7 +393,7 @@ const PolygonTextsList: React.FC<IProps> = (
                     setKeyValues(data.outputs)
                 handleProcessed();
             }, (error) => {
-                console.log(error);
+                logOutput('alert', error.response.data, undefined, error);
                 handleProcessed();
             });
     }

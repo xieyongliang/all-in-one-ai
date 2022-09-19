@@ -13,6 +13,7 @@ import { TRAININGINPUTDATA, TRAININGOPTIONS } from '../../Data/data';
 import { v4 as uuidv4 } from 'uuid';
 import './index.scss';
 import { useTranslation } from "react-i18next";
+import { logOutput } from '../../Utils/Helper';
 
 interface IProps {
     updateTrainingjobInstanceTypeAction: (trainingjobInstanceType: string) => any;
@@ -188,8 +189,7 @@ const TrainingJobForm: FunctionComponent<IProps> = (props) => {
                 .then((response) => {
                     history.goBack()
                 }, (error) => {
-                        alert(t('industrial_models.common.error_occured'));
-                        console.log(error);
+                        logOutput('error', error.response.data, undefined, error);
                         setProcessing(false);
                     }
                 );
@@ -220,8 +220,7 @@ const TrainingJobForm: FunctionComponent<IProps> = (props) => {
                 .then((response) => {
                     history.goBack()
                 }, (error) => {
-                        alert(t('industrial_models.common.error_occured'));
-                        console.log(error);
+                        logOutput('error', error.response.data, undefined, error);  
                         setProcessing(false);
                     }
                 );
@@ -574,7 +573,7 @@ const TrainingJobForm: FunctionComponent<IProps> = (props) => {
                         <Button variant='link' onClick={onCancel}>{t('industrial_models.common.cancel')}</Button>
                         <Button variant='primary' onClick={onSubmit} loading={processing}>{t('industrial_models.common.submit')}</Button>
                     </div>
-                }>            
+                }>        
                 { renderTrainingJobSetting() }
                 { scriptMode && renderHyperparameters() }
                 { renderInputDataConfiguration() }

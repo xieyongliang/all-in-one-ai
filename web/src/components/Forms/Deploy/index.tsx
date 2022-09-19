@@ -12,13 +12,10 @@ import { UpdateEndpointInitialInstanceCount, UpdateEndpointInstanceType, UpdateE
 import { ENDPOINTOPTIONS } from '../../Data/data'
 import { v4 as uuidv4 } from 'uuid';
 import { useTranslation } from "react-i18next";
+import { addPopupMessage } from '../../../store/general/actionCreators';
+import { logOutput } from '../../Utils/Helper';
 
 interface IProps {
-    updateModelNameAction: (modelName: string) => any;
-    updateModelEnvironmentAction: (modelEnvironment: any[]) => any;
-    updateEndpointNameAction: (endpointName: string) => any;
-    updateEndpointInstanceTypeAction: (instanceType: string) => any;
-    updateEndpointInstanceCountAction: (instanceCount: number) => any;
     industrialModels : IIndustrialModel[];
     modelName: string;
     modelEnvironment: any[];
@@ -26,6 +23,12 @@ interface IProps {
     endpointInstanceType: string;
     endpointInstanceCount: number;
     wizard?: boolean;
+    updateModelNameAction: (modelName: string) => any;
+    updateModelEnvironmentAction: (modelEnvironment: any[]) => any;
+    updateEndpointNameAction: (endpointName: string) => any;
+    updateEndpointInstanceTypeAction: (instanceType: string) => any;
+    updateEndpointInstanceCountAction: (instanceCount: number) => any;
+    addPopupMessageAction: (message: Object) => any;
 }
 
 const DeployForm: FunctionComponent<IProps> = (props) => {
@@ -92,14 +95,13 @@ const DeployForm: FunctionComponent<IProps> = (props) => {
             body['model_environment'] = JSON.stringify(environment)
         }
                 
-        setProcessing(true)
+        setProcessing(true);
         axios.post('/deploy', body,  { headers: {'content-type': 'application/json' }}) 
             .then((response) => {
-                history.goBack()
+                history.goBack();
             }, (error) => {
-                alert('Error occured, please check and try it again');
-                setProcessing(false)
-                console.log(error);
+                logOutput('error', error.response.data, undefined, error);
+                setProcessing(false);
             }
         );
     }
@@ -222,7 +224,8 @@ const mapDispatchToProps = {
     updateModelEnvironmentAction: UpdateModelEnvironment,
     updateEndpointNameAction: UpdateEndpointName,
     updateEndpointInstanceTypeAction: UpdateEndpointInstanceType,
-    updateEndpointInstanceCountAction: UpdateEndpointInitialInstanceCount
+    updateEndpointInstanceCountAction: UpdateEndpointInitialInstanceCount,
+    addPopupMessageAction: addPopupMessage,
 };
 
 const mapStateToProps = (state: AppState) => ({

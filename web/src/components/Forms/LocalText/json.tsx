@@ -15,6 +15,7 @@ import { v4 as uuidv4 } from 'uuid';
 import ReactJson from 'react-json-view';
 import { ALGORITHMS } from '../../Data/data';
 import { useTranslation } from "react-i18next";
+import { logOutput } from '../../Utils/Helper';
 
 interface IProps {
     industrialModels: IIndustrialModel[];
@@ -157,13 +158,10 @@ const LocalTextOutputJsonForm: FunctionComponent<IProps> = (
                 setOutput(JSON.stringify((deploy_framework === 'huggingface') ? response.data : response.data.result));
                 setProcessing(false);
             }, (error) => {
-                    console.log(error);
-                    setProcessing(false);
+                    logOutput('error', error.response.data, undefined, error);
+                    setProcessing(false);                   
                 }
-            ).catch((e) => {
-                console.log(e);
-            }
-        );
+            )
     }
 
     const onAddLabel = () => {

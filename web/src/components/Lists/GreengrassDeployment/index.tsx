@@ -6,7 +6,7 @@ import { Stack, Button, StatusIndicator, Table} from 'aws-northstar';
 import Inline from 'aws-northstar/layouts/Inline';
 import axios from 'axios';
 import { PathParams } from '../../Interfaces/PathParams';
-import { getUtcDate } from '../../Utils/Helper';
+import { getLocaleDate, logOutput } from '../../Utils/Helper';
 import './index.scss'
 import { useTranslation } from "react-i18next";
 
@@ -46,7 +46,7 @@ const GreengrassDeploymentList: FunctionComponent = () => {
                         }
                     }
             }, (error) => {
-                console.log(error);
+                logOutput('error', error.response.data, undefined, error);
                 setLoading(false);
             });
     }, [params.id])
@@ -118,7 +118,7 @@ const GreengrassDeploymentList: FunctionComponent = () => {
             accessor: 'creationTime',
             Cell: ({ row  }) => {
                 if (row && row.original) {
-                    return getUtcDate(row.original.creationTime)
+                    return getLocaleDate(row.original.creationTime)
                 }
                 return null;
             }
@@ -145,7 +145,6 @@ const GreengrassDeploymentList: FunctionComponent = () => {
                 columnDefinitions={columnDefinitions}
                 items={greengrassDeploymentItems}
                 loading={loading}
-                onSelectionChange={console.log}
                 getRowId={getRowId}
             />
         )

@@ -30,6 +30,7 @@ import Track from './components/Scenarios/Track';
 import PPE from './components/Scenarios/PPE';
 import Callback from './components/Cognito/Callback';
 import SignOut from './components/Cognito/SignOut';
+import { logOutput } from './components/Utils/Helper';
 
 const App : FunctionComponent = () => {
     const withLayout = (Component : any, props? : any) => {
@@ -69,7 +70,7 @@ const App : FunctionComponent = () => {
             })
             store.dispatch({ type: Action.UPDATE_INDUSTRIAL_MODELS, payload: {industrialModels : industrialModels}})
         }, (error) => {
-            console.log(error);
+            logOutput('error', error.response.data, undefined, error);
         });
 
         getEnv().then((data) => {
@@ -81,11 +82,12 @@ const App : FunctionComponent = () => {
             env['callbackUri'] = data.callbackUri;
             env['signoutUri'] = data.signoutUri;
             env['tokenScopes'] = data.tokenScopes;
-            env['apiUri'] = data.LogoutURL;
+            env['logoutUri'] = data.LogoutURL;
+            env['socketUri'] = data.SocketURL; 
 
             store.dispatch({ type: Action.UPDATE_ENV, payload: {env : env}})
         }, (error) => {
-            console.log(error);
+            logOutput('error', error.response.data, undefined, error);
         });
     }, [])
 

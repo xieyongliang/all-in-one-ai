@@ -7,6 +7,7 @@ import { PathParams } from '../../Interfaces/PathParams';
 import axios from 'axios';
 import './index.scss'
 import { useTranslation } from "react-i18next";
+import { logOutput } from '../../Utils/Helper';
 
 interface DataType {
     name: string;
@@ -43,7 +44,7 @@ const GreengrassComponentList: FunctionComponent = () => {
                         }       
                     }
             }, (error) => {
-                console.log(error);
+                logOutput('error', error.response.data, undefined, error);
                 setLoading(false);
             });
     }, [params.id])
@@ -105,7 +106,6 @@ const GreengrassComponentList: FunctionComponent = () => {
                 columnDefinitions={columnDefinitions}
                 items={greengrassComponentItems}
                 loading={loading}
-                onSelectionChange={console.log}
                 getRowId={getRowId}
             />
         )

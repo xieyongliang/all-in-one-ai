@@ -1,3 +1,6 @@
+import { store } from '../../../';
+import { Action } from '../../../store/Actions';
+
 export const getDurationBySeconds = (duration_in_seconds) => {
     if(isNaN(duration_in_seconds))
         return '-'
@@ -28,7 +31,27 @@ export const getDurationByDates = (startTime, endTime) => {
     return getDurationBySeconds(seconds)
 }
 
-export const getUtcDate = (date_in_string) => {
+export const getLocaleDate = (date_in_string) => {
+    const userLocale =
+    navigator.languages && navigator.languages.length
+      ? navigator.languages[0]
+      : navigator.language;
+
     var date = new Date(date_in_string) 
-    return date.toUTCString()
+    return date.toLocaleString(userLocale)
+}
+
+export const logOutput = (type, content, time, error) => {
+    if(time === undefined) 
+        time = getLocaleDate(new Date());
+    var message = {
+        'type': type,
+        'content': `[${time}] ${content}`
+    }
+    if(type === 'alert')
+        alert(content)
+    else
+        store.dispatch({ type: Action.ADD_POPUP_MESSAGE, payload: {message : message}})
+    if(error !== undefined)
+        console.log(error)
 }

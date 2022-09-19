@@ -38,6 +38,13 @@ Resources:
   Parameter2:
     Type: AWS::SSM::Parameter
     Properties:
+      Name: /all_in_one_ai/config/meta/algorithms/yolov5/greengrass/components/com.example.yolov5/artifacts
+      Type: String
+      Value: !Sub s3://${S3Bucket}/${S3Key}algorithms/yolov5/greengrass/components/com.example.yolov5/artifacts
+
+  Parameter3:
+    Type: AWS::SSM::Parameter
+    Properties:
       Name: /all_in_one_ai/config/meta/algorithms/yolov5/greengrass/components/com.example.yolov5/deployment/deployment_policy
       Type: String
       Value: !Sub |
@@ -52,7 +59,7 @@ Resources:
           }
         }
 
-  Parameter3:
+  Parameter4:
     Type: AWS::SSM::Parameter
     Properties:
       Name: /all_in_one_ai/config/meta/algorithms/yolov5/greengrass/components/com.example.yolov5/deployment/iot_job_configurations
@@ -84,26 +91,19 @@ Resources:
           }
         }
 
-  Parameter4:
+  Parameter5:
     Type: AWS::SSM::Parameter
     Properties:
       Name: /all_in_one_ai/config/meta/sagemaker_role_arn
       Type: String
       Value: !Ref SageMakerRole
 
-  Parameter5:
+  Parameter6:
     Type: AWS::SSM::Parameter
     Properties:
       Name: /all_in_one_ai/config/meta/algorithms/yolov5paddleocr/industrialmodels
       Type: String
       Value: !Sub s3://${S3Bucket}/${S3Key}algorithms/yolov5paddleocr/industrialmodels/
-
-  Parameter6:
-    Type: AWS::SSM::Parameter
-    Properties:
-      Name: /all_in_one_ai/config/meta/algorithms/yolov5gluoncv/industrialmodels
-      Type: String
-      Value: !Sub s3://${S3Bucket}/${S3Key}algorithms/yolov5gluoncv/industrialmodels/
 
   Parameter7:
     Type: AWS::SSM::Parameter

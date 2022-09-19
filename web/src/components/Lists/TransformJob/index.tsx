@@ -11,7 +11,7 @@ import ImageAnnotate from '../../Utils/ImageAnnotate';
 import Image from '../../Utils/Image';
 import { PathParams } from '../../Interfaces/PathParams';
 import '../../Utils/Image/index.scss'
-import { getDurationByDates, getUtcDate } from '../../Utils/Helper';
+import { getDurationByDates, getLocaleDate, logOutput } from '../../Utils/Helper';
 import Pagination from '@mui/material/Pagination';  
 import { AppState } from '../../../store';
 import { connect } from 'react-redux';
@@ -33,30 +33,30 @@ interface IProps {
 }
 
 const TransformJobList: FunctionComponent<IProps> = (props) => {
-    const [ disabledReview, setDisabledReview ] = useState(true)
-    const [ loadingTable, setLoadingTable ] = useState(true)
-    const [ visibleReview, setVisibleReview ] = useState(false)
-    const [ processingReview, setProcessingReview ] = useState(true)
+    const [ disabledReview, setDisabledReview ] = useState(true);
+    const [ loadingTable, setLoadingTable ] = useState(true);
+    const [ visibleReview, setVisibleReview ] = useState(false);
+    const [ processingReview, setProcessingReview ] = useState(true);
     const [ curImageItem, setCurImageItem ] = useState('')
-    const [ transformJobResult, setTransformJobResult ] = useState<any>({})
-    const [ imageLabels,  setImageLabels ] = useState([])
-    const [ imageAnnotations, setImageAnnotations ] = useState([])
-    const [ visibleImagePreview, setVisibleImagePreview ] = useState(false)
-    const [ imagePage, setImagePage ] = useState(1)
-    const [ selectedTransformJob, setSelectedTransformJob ] = useState<TransformJobItem>()
-    const [ showAll, setShowAll ] = useState(false)
+    const [ transformJobResult, setTransformJobResult ] = useState<any>({});
+    const [ imageLabels,  setImageLabels ] = useState([]);
+    const [ imageAnnotations, setImageAnnotations ] = useState([]);
+    const [ visibleImagePreview, setVisibleImagePreview ] = useState(false);
+    const [ imagePage, setImagePage ] = useState(1);
+    const [ selectedTransformJob, setSelectedTransformJob ] = useState<TransformJobItem>();
+    const [ showAll, setShowAll ] = useState(false);
     const [ visibleStopConfirmation, setVisibleStopConfirmation ] = useState(false);
     const [ processingStop, setProcessingStop ] = useState(false);
-    const [ disabledStop, setDisabledStop ] = useState(true)
-    const [ visibleAttachConfirmation, setVisibleAttachConfirmation ] = useState(false)
+    const [ disabledStop, setDisabledStop ] = useState(true);
+    const [ visibleAttachConfirmation, setVisibleAttachConfirmation ] = useState(false);
     const [ processingAttach, setProcessingAttach ] = useState(false);
-    const [ disabledAttach, setDisabledAttach ] = useState(true)
-    const [ visibleDetachConfirmation, setVisibleDetachConfirmation ] = useState(false)
+    const [ disabledAttach, setDisabledAttach ] = useState(true);
+    const [ visibleDetachConfirmation, setVisibleDetachConfirmation ] = useState(false);
     const [ processingDetach, setProcessingDetach ] = useState(false);
-    const [ disabledDetach, setDisabledDetach ] = useState(true)   
+    const [ disabledDetach, setDisabledDetach ] = useState(true);
     const [ pageIndex, setPageIndex ] = useState(0);
-    const [ transformJobCurItems, setTransformJobCurItems ] = useState([])
-    const [ transformJobAllItems, setTransformJobAllItems ] = useState([])
+    const [ transformJobCurItems, setTransformJobCurItems ] = useState([]);
+    const [ transformJobAllItems, setTransformJobAllItems ] = useState([]);
 
     const { t } = useTranslation();
 
@@ -110,7 +110,7 @@ const TransformJobList: FunctionComponent<IProps> = (props) => {
                         }
                     }
                 }, (error) => {
-                    console.log(error);
+                    logOutput('error', error.response.data, undefined, error);
                     setLoadingTable(false);
                 }
             );
@@ -143,7 +143,7 @@ const TransformJobList: FunctionComponent<IProps> = (props) => {
                         }
                     }
                 }, (error) => {
-                    console.log(error);
+                    logOutput('error', error.response.data, undefined, error);
                     setLoadingTable(false);
                 }
             );
@@ -194,7 +194,7 @@ const TransformJobList: FunctionComponent<IProps> = (props) => {
             setImageLabels(labelsData)
             setVisibleImagePreview(true)
         }, (error) => {
-            console.log(error);
+            logOutput('error', error.response.data, undefined, error);
         });
 
     }
@@ -207,7 +207,7 @@ const TransformJobList: FunctionComponent<IProps> = (props) => {
                 setTransformJobResult(response.data)
                 setProcessingReview(false)
             }, (error) => {
-                console.log(error);
+                logOutput('error', error.response.data, undefined, error);
             }
         );
     }
@@ -245,8 +245,7 @@ const TransformJobList: FunctionComponent<IProps> = (props) => {
             setTransformJobResult(response.data)
             setProcessingReview(false)
         }, (error) => {
-            alert(t('industrial_models.common.error_occured'));
-            console.log(error);
+            logOutput('error', error.response.data, undefined, error);
         });
     }
 
@@ -287,9 +286,8 @@ const TransformJobList: FunctionComponent<IProps> = (props) => {
                 setVisibleStopConfirmation(false);
                 setProcessingStop(false);
             }, (error) => {
-                alert(t('industrial_models.common.error_occured'));
-                console.log(error);
-                setProcessingStop(false)
+                logOutput('error', error.response.data, undefined, error);
+                setProcessingStop(false);
             }
         );        
     }
@@ -319,8 +317,7 @@ const TransformJobList: FunctionComponent<IProps> = (props) => {
                 setVisibleAttachConfirmation(false);
                 setProcessingAttach(false);
             }, (error) => {
-                alert('Error occured, please check and try it again');
-                console.log(error);
+                logOutput('error', error.response.data, undefined, error);
                 setProcessingAttach(false);
             }
         );        
@@ -351,9 +348,8 @@ const TransformJobList: FunctionComponent<IProps> = (props) => {
                 setVisibleDetachConfirmation(false);
                 setProcessingDetach(false);
             }, (error) => {
-                alert(t('industrial_models.common.error_occured'));
-                console.log(error);
-                setProcessingDetach(false)
+                logOutput('error', error.response.data, undefined, error);
+                setProcessingDetach(false);
             }
         );        
     }
@@ -380,7 +376,7 @@ const TransformJobList: FunctionComponent<IProps> = (props) => {
             accessor: 'creationTime',
             Cell: ({ row  }) => {
                 if (row && row.original) {
-                    return getUtcDate(row.original.creationTime)
+                    return getLocaleDate(row.original.creationTime)
                 }
                 return null;
             }

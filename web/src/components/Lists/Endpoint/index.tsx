@@ -7,7 +7,7 @@ import DeleteConfirmationDialog from '../../Utils/DeleteConfirmationDialog';
 import Inline from 'aws-northstar/layouts/Inline';
 import axios from 'axios';
 import { PathParams } from '../../Interfaces/PathParams';
-import { getUtcDate } from '../../Utils/Helper/index';
+import { getLocaleDate, logOutput } from '../../Utils/Helper/index';
 import { FetchDataOptions } from 'aws-northstar/components/Table';
 import './index.scss'
 import { useTranslation } from "react-i18next";
@@ -33,8 +33,8 @@ const EndpointList: FunctionComponent = () => {
     const [ processingDetach, setProcessingDetach ] = useState(false);
     const [ disabledDetach, setDisabledDetach ] = useState(true);
     const [ pageIndex, setPageIndex ] = useState(0);
-    const [ endpointCurItems, setEndpointCurItems ] = useState([])
-    const [ endpointAllItems, setEndpointAllItems ] = useState([])
+    const [ endpointCurItems, setEndpointCurItems ] = useState([]);
+    const [ endpointAllItems, setEndpointAllItems ] = useState([]);
 
     const { t } = useTranslation();
 
@@ -95,8 +95,8 @@ const EndpointList: FunctionComponent = () => {
                     }
                 }
             }, (error) => {
-                console.log(error);
-                setLoading(false)
+                logOutput('error', error.response.data, undefined, error);
+                setLoading(false);
             }
         );
         axios.get('/endpoint', {params : {'industrial_model': params.id}})
@@ -128,8 +128,8 @@ const EndpointList: FunctionComponent = () => {
                     }
                 }
             }, (error) => {
-                console.log(error);
-                setLoading(false)
+                logOutput('error', error.response.data, undefined, error);
+                setLoading(false);
             }
         );
     }, [params.id])
@@ -188,7 +188,7 @@ const EndpointList: FunctionComponent = () => {
             accessor: 'creationTime',
             Cell: ({ row  }) => {
                 if (row && row.original) {
-                    return getUtcDate(row.original.creationTime)
+                    return getLocaleDate(row.original.creationTime)
                 }
                 return null;
             }
@@ -200,7 +200,7 @@ const EndpointList: FunctionComponent = () => {
             accessor: 'lastModifiedTime',
             Cell: ({ row  }) => {
                 if (row && row.original) {
-                    return getUtcDate(row.original.lastModifiedTime)
+                    return getLocaleDate(row.original.lastModifiedTime)
                 }
                 return null;
             }
@@ -257,8 +257,7 @@ const EndpointList: FunctionComponent = () => {
             setVisibleDeleteConfirmation(false);
             setProcessingDelete(false);
         }, (error) => {
-                alert('Error occured, please check and try it again');
-                console.log(error);
+                logOutput('error', error.response.data, undefined, error);
                 setProcessingDelete(false);
             }        
         )
@@ -288,8 +287,7 @@ const EndpointList: FunctionComponent = () => {
             setVisibleAttachConfirmation(false);
             setProcessingAttach(false);
         }, (error) => {
-                alert('Error occured, please check and try it again');
-                console.log(error);
+                logOutput('error', error.response.data, undefined, error);
                 setProcessingAttach(false);
             }        
         )
@@ -319,8 +317,7 @@ const EndpointList: FunctionComponent = () => {
             setVisibleDetachConfirmation(false);
             setProcessingDetach(false);
         }, (error) => {
-                alert('Error occured, please check and try it again');
-                console.log(error);
+                logOutput('error', error.response.data, undefined, error);
                 setProcessingDetach(false);
             }        
         )
@@ -332,7 +329,6 @@ const EndpointList: FunctionComponent = () => {
             setDisabledDelete(false)
 
             var endpointCurItem = endpointCurItems.find((item) => item.endpointName === selectedItems[0].endpointName)
-            console.log(endpointCurItem)
 
             if(!showAll) {
                 setDisabledAttach(true)
@@ -366,7 +362,7 @@ const EndpointList: FunctionComponent = () => {
             />
         )
     }
-
+        
     return (
         <Stack>
             { selectedEndpoint !== undefined && renderDeleteConfirmationDialog() }

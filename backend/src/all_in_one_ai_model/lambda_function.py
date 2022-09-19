@@ -63,6 +63,7 @@ def lambda_handler(event, context):
             if('FunctionError' not in response):
                 payload = response["Payload"].read().decode("utf-8")
                 payload = json.loads(payload)
+                
                 if(payload['statusCode'] == 200):
                     params = {}
                     params['model_name'] = request['model_name']

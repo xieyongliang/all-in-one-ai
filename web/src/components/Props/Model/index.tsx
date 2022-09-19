@@ -4,6 +4,7 @@ import { KeyValuePair, Button, Form, FormSection, LoadingIndicator, Text } from 
 import axios from 'axios';
 import Grid from '@mui/material/Grid';
 import { useTranslation } from "react-i18next";
+import { logOutput } from '../../Utils/Helper';
 
 const ModelProp: FunctionComponent = () => {
     const [ modelName, setModelName ] = useState('')
@@ -32,7 +33,7 @@ const ModelProp: FunctionComponent = () => {
                 setLoading(false);
             }
         }, (error) => {
-            console.log(error);
+            logOutput('error', error.response.data, undefined, error);
         });
     }, [id])
 

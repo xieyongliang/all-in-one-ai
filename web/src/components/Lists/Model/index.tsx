@@ -5,7 +5,7 @@ import { Stack, Toggle, Table, Button, Inline, ButtonDropdown, Text } from 'aws-
 import DeleteConfirmationDialog from '../../Utils/DeleteConfirmationDialog';
 import axios from 'axios';
 import { PathParams } from '../../Interfaces/PathParams';
-import { getUtcDate } from '../../Utils/Helper';
+import { getLocaleDate, logOutput } from '../../Utils/Helper';
 import { FetchDataOptions } from 'aws-northstar/components/Table';
 import './index.scss'
 import { useTranslation } from "react-i18next";
@@ -17,20 +17,20 @@ interface ModelItem {
 
 const ModelList: FunctionComponent = () => {
     const [ loading, setLoading ] = useState(true);
-    const [ selectedModel, setSelectedModel ] = useState<ModelItem>()
-    const [ showAll, setShowAll ] = useState(false)
+    const [ selectedModel, setSelectedModel ] = useState<ModelItem>();
+    const [ showAll, setShowAll ] = useState(false);
     const [ visibleDeleteConfirmation, setVisibleDeleteConfirmation ] = useState(false);
     const [ processingDelete, setProcessingDelete ] = useState(false);
-    const [ disabledDelete, setDisabledDelete ] = useState(true)
-    const [ visibleAttachConfirmation, setVisibleAttachConfirmation ] = useState(false)
+    const [ disabledDelete, setDisabledDelete ] = useState(true);
+    const [ visibleAttachConfirmation, setVisibleAttachConfirmation ] = useState(false);
     const [ processingAttach, setProcessingAttach ] = useState(false);
-    const [ disabledAttach, setDisabledAttach ] = useState(true)
-    const [ visibleDetachConfirmation, setVisibleDetachConfirmation ] = useState(false)
+    const [ disabledAttach, setDisabledAttach ] = useState(true);
+    const [ visibleDetachConfirmation, setVisibleDetachConfirmation ] = useState(false);
     const [ processingDetach, setProcessingDetach ] = useState(false);
-    const [ disabledDetach, setDisabledDetach ] = useState(true)    
+    const [ disabledDetach, setDisabledDetach ] = useState(true);
     const [ pageIndex, setPageIndex ] = useState(0);
-    const [ modelCurItems, setModelCurItems ] = useState([])
-    const [ modelAllItems, setModelAllItems ] = useState([])
+    const [ modelCurItems, setModelCurItems ] = useState([]);
+    const [ modelAllItems, setModelAllItems ] = useState([]);
 
     const { t } = useTranslation();
 
@@ -68,8 +68,8 @@ const ModelList: FunctionComponent = () => {
                     }
                 }
             }, (error) => {
-                console.log(error);
-                setLoading(false)
+                logOutput('error', error.response.data, undefined, error);
+                setLoading(false);            
             }
         );
         axios.get('/model', {params : {'industrial_model': params.id}})
@@ -94,7 +94,7 @@ const ModelList: FunctionComponent = () => {
                     }
                 }
             }, (error) => {
-                console.log(error);
+                logOutput('error', error.response.data, undefined, error);
                 setLoading(false);
             }
         );
@@ -142,7 +142,7 @@ const ModelList: FunctionComponent = () => {
             accessor: 'creationTime',
             Cell: ({ row  }) => {
                 if (row && row.original) {
-                    return getUtcDate(row.original.creationTime)
+                    return getLocaleDate(row.original.creationTime)
                 }
                 return null;
             }
@@ -200,8 +200,7 @@ const ModelList: FunctionComponent = () => {
             setVisibleDeleteConfirmation(false);
             setProcessingDelete(false);
         }, (error) => {
-                alert(t('industrial_models.common.error_occured'));
-                console.log(error);
+                logOutput('error', error.response.data, undefined, error);
                 setProcessingDelete(false);
             }
         )
@@ -231,9 +230,8 @@ const ModelList: FunctionComponent = () => {
             setVisibleAttachConfirmation(false);
             setProcessingAttach(false);
         }, (error) => {
-                alert(t('industrial_models.common.error_occured'));
-                console.log(error);
-                setProcessingAttach(false)
+                logOutput('error', error.response.data, undefined, error);
+                setProcessingAttach(false);
             }        
         )
     }
@@ -262,8 +260,7 @@ const ModelList: FunctionComponent = () => {
             setVisibleDetachConfirmation(false);
             setProcessingDetach(false);
         }, (error) => {
-                alert(t('industrial_models.common.error_occured'));
-                console.log(error);
+                logOutput('error', error.response.data, undefined, error);
                 setProcessingDetach(false);
             }        
         )

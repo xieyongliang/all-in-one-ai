@@ -19,6 +19,7 @@ import ImagePreview from '../../../Utils/ImagePreview';
 import { v4 as uuidv4 } from 'uuid';
 import '../index.scss'
 import { useTranslation } from "react-i18next";
+import { logOutput } from '../../../Utils/Helper';
 
 interface IProps {
     industrialModels: IIndustrialModel[];
@@ -147,9 +148,8 @@ const GluonCVDemoForm: FunctionComponent<IProps> = (
             .then((response) => {
                 setImporting(false)
             }, (error) => {
-                setImporting(false)
-                alert(error)
-                console.log(error);
+                logOutput('error', error.response.data, undefined, error);
+                setImporting(false);
             })
     }
 
@@ -161,7 +161,7 @@ const GluonCVDemoForm: FunctionComponent<IProps> = (
                 var current = response.data.current;
                 setImportedCount(Math.floor((current * 100) / imageCount));
             }, (error) => {
-                console.log(error);
+                logOutput('error', error.response.data, undefined, error);
             })
         }, 1000);
         return () => clearInterval(interval);
@@ -227,7 +227,7 @@ const GluonCVDemoForm: FunctionComponent<IProps> = (
                 setCurSearchImageItem('');
                 setVisibleSearchImage(false);
             }, (error) => {
-                console.log(error);
+                logOutput('error', error.response.data, undefined, error);
             });
     }
 
@@ -239,9 +239,8 @@ const GluonCVDemoForm: FunctionComponent<IProps> = (
                 setVisibleSearchImage(true);
                 setProcessing(false)
             }, (error) => {
-                alert(error)
-                setProcessing(false)
-                console.log(error);
+                logOutput('error', error.response.data, undefined, error);
+                setProcessing(false);
             });
     }
 

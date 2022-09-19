@@ -21,6 +21,7 @@ import { store } from '../../../..';
 import { Button, Select, Stack } from 'aws-northstar';
 import { SelectOption } from 'aws-northstar/components/Select';
 import { IIndustrialModel } from '../../../../store/industrialmodels/reducer';
+import { logOutput } from '../../../../components/Utils/Helper';
 
 interface IProps {
     size: ISize;
@@ -283,7 +284,7 @@ const RectTextsList: React.FC<IProps> = (
                 }
                 handleProcessed();
             }, (error => {
-                console.log(error)
+                logOutput('alert', error.response.data, undefined, error);
                 handleProcessed();
             }))
         else
@@ -308,7 +309,7 @@ const RectTextsList: React.FC<IProps> = (
                 })
                 handleProcessed();
             }, (error) => {
-                console.log(error);
+                logOutput('alert', error.response.data, undefined, error);
                 handleProcessed();
             });
     }

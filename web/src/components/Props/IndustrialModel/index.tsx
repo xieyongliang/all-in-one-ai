@@ -11,6 +11,7 @@ import { Updateindustrialmodels } from "../../../store/industrialmodels/actionCr
 import { ALGORITHMS } from '../../Data/data';
 import { v4 as uuidv4 } from 'uuid';
 import { useTranslation } from "react-i18next";
+import { logOutput } from "../../Utils/Helper";
 
 interface IProps {
     updateindustrialmodelsAction : (industrialModels : IIndustrialModel[]) => any
@@ -20,21 +21,21 @@ interface IProps {
 }
 
 const InustrialModelProp: FunctionComponent<IProps> = (props) => {
-    var labels = ''
+    var labels = '';
 
     if(props.industrialModel.labels !== undefined) {
         props.industrialModel.labels.forEach((label) => {
-            labels += label + '\n'
+            labels += label + '\n';
         })
-        labels = labels.substring(0, labels.length - 1)
+        labels = labels.substring(0, labels.length - 1);
     }
-    const [ modelName, setModelName ] = useState(props.industrialModel.name)
-    const [ modelDescription, setModelDescription ] = useState(props.industrialModel.description)
-    const [ modelSamples, setModelSamples ] = useState(props.industrialModel.samples)
-    const [ modelLables, setModelLabels ] = useState(labels)
-    const [ iconHttpUri, setIconHttpUri ] = useState('')
-    const [ fileName, setFileName ] = useState('')
-    const [ processing, setProcessing ] = useState(false)
+    const [ modelName, setModelName ] = useState(props.industrialModel.name);
+    const [ modelDescription, setModelDescription ] = useState(props.industrialModel.description);
+    const [ modelSamples, setModelSamples ] = useState(props.industrialModel.samples);
+    const [ modelLables, setModelLabels ] = useState(labels);
+    const [ iconHttpUri, setIconHttpUri ] = useState('');
+    const [ fileName, setFileName ] = useState('');
+    const [ processing, setProcessing ] = useState(false);
 
     const { t } = useTranslation();
 
@@ -68,7 +69,7 @@ const InustrialModelProp: FunctionComponent<IProps> = (props) => {
             setFileName(filename);
             setIconHttpUri(`/_image/${fileName}`)
         }, (error) => {
-            console.log(error);
+            logOutput('error', error.response.data, undefined, error);
         });
     }
 
@@ -202,9 +203,8 @@ const InustrialModelProp: FunctionComponent<IProps> = (props) => {
                 props.updateindustrialmodelsAction(copyIndustrialModels)
                 props.onClose()
             }).catch((error) => {
-                alert(error)
-                console.log(error)
-                setProcessing(false)
+                logOutput('error', error.response.data, undefined, error);
+                setProcessing(false);
             })
     };
 

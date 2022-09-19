@@ -7,7 +7,7 @@ import {Column} from 'react-table'
 import { useHistory, useParams } from 'react-router-dom';
 import { PathParams } from '../../Interfaces/PathParams';
 import axios from 'axios';
-import { getUtcDate } from '../../Utils/Helper';
+import { getLocaleDate, logOutput } from '../../Utils/Helper';
 import './index.scss'
 import { useTranslation } from "react-i18next";
 
@@ -47,7 +47,7 @@ const PipelineList: FunctionComponent = () => {
                     }
                 }
         }, (error) => {
-            console.log(error);
+            logOutput('error', error.response.data, undefined, error);
             setLoading(false);
         });
     }, [params.id])
@@ -113,7 +113,7 @@ const PipelineList: FunctionComponent = () => {
             accessor: 'creationTime',
             Cell: ({ row  }) => {
                 if (row && row.original) {
-                    return getUtcDate(row.original.creationTime)
+                    return getLocaleDate(row.original.creationTime)
                 }
                 return null;
             }
@@ -125,7 +125,7 @@ const PipelineList: FunctionComponent = () => {
             accessor: 'lastModifiedTime',
             Cell: ({ row  }) => {
                 if (row && row.original) {
-                    return getUtcDate(row.original.lastModifiedTime)
+                    return getLocaleDate(row.original.lastModifiedTime)
                 }
                 return null;
             }
@@ -151,7 +151,6 @@ const PipelineList: FunctionComponent = () => {
                 multiSelect={false}
                 columnDefinitions={columnDefinitions}
                 items={pipelineItems}
-                onSelectionChange={console.log}
                 loading={loading}
                 getRowId={getRowId}
             />

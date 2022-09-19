@@ -4,6 +4,7 @@ import { Button, Form, FormSection, KeyValuePair } from 'aws-northstar';
 import axios from 'axios';
 import { PathParams } from '../../Interfaces/PathParams';
 import { useTranslation } from "react-i18next";
+import { logOutput } from '../../Utils/Helper';
 
 const PipelineProp: FunctionComponent = () => {
     const [ pipelineType, setPipelineType ] = useState('')
@@ -37,7 +38,7 @@ const PipelineProp: FunctionComponent = () => {
                     setScriptMode(response.data[0].script_mode)
             }
         }, (error) => {
-            console.log(error);
+            logOutput('error', error.response.data, undefined, error);
         });
     }, [id, params.id])
 

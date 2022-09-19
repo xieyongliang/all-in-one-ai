@@ -19,7 +19,8 @@ const initialState: GeneralState = {
         name: '',
     },
     zoom: ViewPointSettings.MIN_ZOOM,
-    env: {}
+    env: {},
+    messages: []
 };
 
 export function generalReducer(
@@ -98,7 +99,17 @@ export function generalReducer(
                 ...state,
                 env: action.payload.env
             }
-        }        
+        }   
+        case Action.ADD_POPUP_MESSAGE: {
+            var copyMessages = [
+                ...state.messages
+            ]
+            copyMessages.push(action.payload.message)
+            return {
+                ...state,
+                messages: copyMessages
+            }
+        }             
         default:
             return state;
     }

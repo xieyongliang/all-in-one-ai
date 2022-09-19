@@ -11,6 +11,7 @@ import { UpdateGreengrassDeploymentComponents, UpdateGreengrassDeploymentName, U
 import { PathParams } from '../../Interfaces/PathParams';
 import { v4 as uuidv4 } from 'uuid';
 import { useTranslation } from "react-i18next";
+import { logOutput } from '../../Utils/Helper';
 
 interface IProps {
     updateGreengrassDeploymentNameAction: (greengrassDeploymentName: string) => any;
@@ -109,7 +110,7 @@ const GreengrassDeploymentForm: FunctionComponent<IProps> = (props) => {
                 }
                 setLoading(false);
             })).catch((e) => {
-                console.log(e);
+                logOutput('error', e.response.data, undefined, e);
                 setLoading(false);
             })
     }, [wizard, greengrassDeploymentTargetType, greengrassDeploymentTargetArn, greengrassComponentName, greengrassComponentVersion, itemsComponents, itemsCoreDevices, itemsThingGroups, optionsCoreDevices, optionsThingGroups, selectedComponentVersions]);
@@ -169,8 +170,7 @@ const GreengrassDeploymentForm: FunctionComponent<IProps> = (props) => {
             .then((response) => {
                 history.goBack();
             }, (error) => {
-                alert('Error occured, please check and try it again');
-                console.log(error);
+                logOutput('error', error.response.data, undefined, error);
                 setProcessing(false);
             });
     }
@@ -394,8 +394,8 @@ const GreengrassDeploymentForm: FunctionComponent<IProps> = (props) => {
     if(wizard) {
         return (
             <Stack>
-                {renderGreengrassDeploymentTarget()}
-                {renderGreengrassDeploymentContent()}
+                { renderGreengrassDeploymentTarget() }
+                { renderGreengrassDeploymentContent() }
             </Stack>
         )
     }
@@ -409,11 +409,11 @@ const GreengrassDeploymentForm: FunctionComponent<IProps> = (props) => {
                         <Button variant='link' onClick={onCancel}>{t('industrial_models.common.cancel')}</Button>
                         <Button variant='primary' onClick={onSubmit} loading={processing}>{t('industrial_models.common.submit')}</Button>
                     </div>
-                }>        
-                {renderGreengrassDeploymentSetting()}
-                {renderGreengrassDeploymentTarget()}
-                {renderGreengrassDeploymentContent()}
-                {renderGreengrassDeploymentTag()}
+                }>
+                { renderGreengrassDeploymentSetting() }
+                { renderGreengrassDeploymentTarget() }
+                { renderGreengrassDeploymentContent() }
+                { renderGreengrassDeploymentTag() }
             </Form>
         )
     }

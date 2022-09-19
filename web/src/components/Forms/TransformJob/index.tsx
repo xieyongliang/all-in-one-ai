@@ -10,6 +10,7 @@ import { IIndustrialModel } from '../../../store/industrialmodels/reducer';
 import Grid from '@mui/material/Grid';
 import { v4 as uuidv4 } from 'uuid';
 import { useTranslation } from "react-i18next";
+import { logOutput } from '../../Utils/Helper';
 
 interface IProps {
     industrialModels : IIndustrialModel[];
@@ -141,7 +142,7 @@ const TransformJobForm: FunctionComponent<IProps> = (props) => {
             }
             setModelOptions(items);
         }, (error) => {
-            console.log(error);
+            logOutput('error', error.response.data, undefined, error);
         });
     }, [params.id])
 
@@ -247,8 +248,7 @@ const TransformJobForm: FunctionComponent<IProps> = (props) => {
             .then((response) => {
                 history.goBack()
             }, (error) => {
-                alert(t('industrial_models.common.error_occured'));
-                console.log(error);
+                logOutput('error', error.response.data, undefined, error);
                 setProcessing(false);
             });
     }

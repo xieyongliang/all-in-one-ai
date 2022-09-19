@@ -12,6 +12,7 @@ import { PathParams } from '../../Interfaces/PathParams';
 import { ENDPOINTOPTIONS, ACCELERALATOROPTIONS } from '../../Data/data'
 import { v4 as uuidv4 } from 'uuid';
 import { useTranslation } from "react-i18next";
+import { logOutput } from '../../Utils/Helper';
 
 interface IProps {
     updateEndpointInstanceTypeAction: (endpointInstanceType: string) => any;
@@ -53,7 +54,7 @@ const EndpointForm: FunctionComponent<IProps> = (props) => {
                         setModelOptions(items);
                 }
             }, (error) => {
-                console.log(error);
+                logOutput('error', error.response.data, undefined, error);
             });
     }, [params.id])
 
@@ -102,8 +103,7 @@ const EndpointForm: FunctionComponent<IProps> = (props) => {
             .then((response) => {
                 history.goBack()
             }, (error) => {
-                alert(t('industrial_models.common.error_occured'));
-                console.log(error);
+                logOutput('error', error.response.data, undefined, error);
                 setProcessing(false)
             });
     }
@@ -226,8 +226,8 @@ const EndpointForm: FunctionComponent<IProps> = (props) => {
     if(wizard) {
         return (
             <Stack>
-                {renderEndpointFormContent()}
-                {renderEndpointTag()}
+                { renderEndpointFormContent() }
+                { renderEndpointTag() }
             </Stack>
         )
     }
@@ -242,9 +242,9 @@ const EndpointForm: FunctionComponent<IProps> = (props) => {
                         <Button variant='primary' onClick={onSubmit} loading={processing}>{t('industrial_models.common.submit')}</Button>
                     </div>
                 }>
-                {renderEndpointSetting()}
-                {renderEndpointFormContent()}
-                {renderEndpointTag()}
+                { renderEndpointSetting() }
+                { renderEndpointFormContent() }
+                { renderEndpointTag() }
             </Form>
         )
     }

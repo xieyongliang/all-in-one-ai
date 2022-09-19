@@ -22,6 +22,7 @@ import { store } from '../../..';
 import { AnnotationFormatType } from '../../../data/enums/AnnotationFormatType';
 import { ImporterSpecData } from '../../../data/ImporterSpecData';
 import { useTranslation } from "react-i18next";
+import { logOutput } from '../Helper';
 
 const OVERLAY_STYLE = {
     position: "fixed" as 'fixed',
@@ -125,7 +126,7 @@ const ImageAnnotate: React.FC<IProps> = (
     }
 
     const onAnnotationsLoadFailure = (error?:Error) => {    
-        console.log(error);
+        logOutput('error', error, undefined, error);
         onLoaded();
     };
 

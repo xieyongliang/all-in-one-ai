@@ -13,6 +13,7 @@ import { IIndustrialModel } from '../../../store/industrialmodels/reducer';
 import { v4 as uuidv4 } from 'uuid';
 import { ALGORITHMS } from '../../Data/data';
 import { useTranslation } from "react-i18next";
+import { logOutput } from '../../Utils/Helper';
 
 interface IProps {
     industrialModels: IIndustrialModel[];
@@ -147,13 +148,10 @@ const LocalTextOutputTextForm: FunctionComponent<IProps> = (
                 setOutput(response.data.result)
                 setProcessing(false);
             }, (error) => {
-                    console.log(error);
+                logOutput('error', error.response.data, undefined, error);
                     setProcessing(false);
                 }
-            ).catch((e) => {
-                console.log(e);
-            }
-        );
+            )
     }
 
     const renderInference = () => {

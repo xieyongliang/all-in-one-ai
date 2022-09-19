@@ -1,5 +1,7 @@
 import json
 import boto3
+import traceback
+from datetime import datetime
 import sagemaker
 from sagemaker.workflow.condition_step import ConditionStep
 from sagemaker.workflow.fail_step import FailStep
@@ -26,12 +28,16 @@ ssmh = helper.ssm_helper()
 
 sagemaker_client = boto3.client("sagemaker")
 
+lambda_client = boto3.client('lambda')
+
 boto_session = boto3.Session()
 
 sagemaker_session = sagemaker.session.Session(boto_session=boto_session, sagemaker_client = sagemaker_client)
 
 def lambda_handler(event, context):
     print(event)
+
+    time = datetime.now()
 
     pipeline_name = event['body']['pipeline_name']
     pipeline_type = event['body']['pipeline_type']
@@ -57,7 +63,7 @@ def lambda_handler(event, context):
         inference_image = event['body']['inference_image']
         if(inference_image == ''):
             try: 
-                inference_image = ssmh.get_parameter('/all_in_one_ai/config/meta/algorithms/{0}/inference_image'.format(algorithm))
+                inference_image = ssmh.get_parameter('/all_in_one_ai/config/meta/algorithms/{0}/inference_image'.format(model_algorithm))
             except Exception as e:
                 print(e)     
         model_name = event['body']['model_name']
@@ -73,7 +79,7 @@ def lambda_handler(event, context):
             training_image = event['body']['training_image']
             if(training_image == ''):
                 try: 
-                    training_image = ssmh.get_parameter('/all_in_one_ai/config/meta/algorithms/{0}/training_image'.format(algorithm))
+                    training_image = ssmh.get_parameter('/all_in_one_ai/config/meta/algorithms/{0}/training_image'.format(model_algorithm))
                 except Exception as e:
                     print(e)
             training_job_instance_type = event['body']['training_job_instance_type']
@@ -91,7 +97,7 @@ def lambda_handler(event, context):
             training_image = event['body']['training_image']
             if(training_image == ''):
                 try: 
-                    training_image = ssmh.get_parameter('/all_in_one_ai/config/meta/algorithms/{0}/training_image'.format(algorithm))
+                    training_image = ssmh.get_parameter('/all_in_one_ai/config/meta/algorithms/{0}/training_image'.format(model_algorithm))
                 except Exception as e:
                     print(e)            
             training_job_instance_type = event['body']['training_job_instance_type']
@@ -107,7 +113,7 @@ def lambda_handler(event, context):
             model_data_url = event['body']['model_data_url']
             if(model_data_url == ''):
                 try: 
-                    model_data_url = ssmh.get_parameter('/all_in_one_ai/config/meta/algorithms/{0}/artifact'.format(algorithm))
+                    model_data_url = ssmh.get_parameter('/all_in_one_ai/config/meta/algorithms/{0}/artifact'.format(model_algorithm))
                 except Exception as e:
                     print(e)
             greengrass_deployment_name = event['body']['greengrass_deployment_name']
@@ -536,25 +542,68 @@ def lambda_handler(event, context):
         else_steps = [step_fail_pipeline_helper_lambda]
     )
     
-    if(script_mode):
-        pipeline = Pipeline(
-            name = pipeline_name,
-            steps = [step_train_model, step_pipeline_helper_lambda, step_cond_pipeline_helper_lambda]
-        )
-    elif(pipeline_type == '0' or pipeline_type == '1'):
-        pipeline = Pipeline(
-            name = pipeline_name,
-            steps = [step_train_model, step_register_model, step_pipeline_helper_lambda, step_cond_pipeline_helper_lambda]
-        )
-    else:
-        pipeline = Pipeline(
-            name = pipeline_name,
-            steps = [step_pipeline_helper_lambda, step_cond_pipeline_helper_lambda]
+    try:
+        if(script_mode):
+            pipeline = Pipeline(
+                name = pipeline_name,
+                steps = [step_train_model, step_pipeline_helper_lambda, step_cond_pipeline_helper_lambda]
+            )
+        elif(pipeline_type == '0' or pipeline_type == '1'):
+            pipeline = Pipeline(
+                name = pipeline_name,
+                steps = [step_train_model, step_register_model, step_pipeline_helper_lambda, step_cond_pipeline_helper_lambda]
+            )
+        else:
+            pipeline = Pipeline(
+                name = pipeline_name,
+                steps = [step_pipeline_helper_lambda, step_cond_pipeline_helper_lambda]
+            )
+
+        print(pipeline.definition())
+        pipeline.upsert(role_arn=role)
+
+        response = pipeline.start()
+
+        traceback.print_exc()
+
+        payload = {
+            'body': {
+                'time': time,
+                'type': 'pipeline',
+                'status': 1             
+            }
+        }
+
+        response = lambda_client.invoke(
+            FunctionName = 'all_in_one_ai_websocket_send_message',
+            InvocationType = 'RequestResponse',
+            Payload=json.dumps(payload)
         )
 
-    print(pipeline.definition())
-    pipeline.upsert(role_arn=role)
+        return {
+            'statusCode': 200,
+            'body': response.arn
+        }
 
-    response = pipeline.start()
-    
-    return response.arn
+    except Exception as e:
+        traceback.print_exc()
+
+        payload = {
+            'body': {
+                'time': time,
+                'type': 'pipeline',
+                'status': -1,
+                'message': str(e)                
+            }
+        }
+
+        response = lambda_client.invoke(
+            FunctionName = 'all_in_one_ai_websocket_send_message',
+            InvocationType = 'RequestResponse',
+            Payload=json.dumps(payload)
+        )
+
+        return {
+            'statusCode': 400,
+            'body': str(e)
+        }

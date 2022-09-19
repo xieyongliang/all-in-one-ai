@@ -9,7 +9,7 @@ import { connect } from 'react-redux';
 import { UpdateModelModelPackageGroupName, UpdateModelModelPackageArn, UpdateModelDataUrl, UpdateModelEnvironment } from '../../../store/pipelines/actionCreators';
 import { IIndustrialModel } from '../../../store/industrialmodels/reducer';
 import { PathParams } from '../../Interfaces/PathParams';
-import { getUtcDate } from '../../Utils/Helper';
+import { getLocaleDate, logOutput } from '../../Utils/Helper';
 import { v4 as uuidv4 } from 'uuid';
 import { useTranslation } from "react-i18next";
 
@@ -35,20 +35,20 @@ interface IProps {
 }
 
 const ModelForm: FunctionComponent<IProps> = (props) => {
-    const [ modelPackageGroupItems, setModelPackageGroupItems ] = useState([])
-    const [ modelPackageVersionItems, setModelPackageVersionItems ] = useState({})
-    const [ modelPackageGroupName, setModelPackageGroupName ] = useState('')
+    const [ modelPackageGroupItems, setModelPackageGroupItems ] = useState([]);
+    const [ modelPackageVersionItems, setModelPackageVersionItems ] = useState({});
+    const [ modelPackageGroupName, setModelPackageGroupName ] = useState('');
     const [ loading, setLoading ] = useState(true);
-    const [ modelName, setModelName ] = useState('')
-    const [ containerIamge, setContainerImage ] = useState('')
-    const [ modelDataUrl, setModelDataUrl ] = useState('')
-    const [ containerInputType, setContainerInputType ] = useState(props.wizard  ? '1' : '0')
-    const [ containerModelType, setContainerModelType ] = useState('SingleModel')
+    const [ modelName, setModelName ] = useState('');
+    const [ containerIamge, setContainerImage ] = useState('');
+    const [ modelDataUrl, setModelDataUrl ] = useState('');
+    const [ containerInputType, setContainerInputType ] = useState(props.wizard  ? '1' : '0');
+    const [ containerModelType, setContainerModelType ] = useState('SingleModel');
     const [ selectedModelPackageGroup, setSelectedModelPackageGroup ] = useState({});
     const [ selectedModelPackageGroupVersions, setSelectedModelPackageGroupVersions ] = useState({});
-    const [ tags, setTags ] = useState([{key:'', value:''}])
-    const [ environments, setEnvironments ] = useState([])
-    const [ processing, setProcessing ] = useState(false)
+    const [ tags, setTags ] = useState([{key:'', value:''}]);
+    const [ environments, setEnvironments ] = useState([]);
+    const [ processing, setProcessing ] = useState(false);
     const [ processingModelPackage, setProcessingModelPackage ] = useState(false);
     const [ processingModelPackageGroup, setProcessingModelPackageGroup ] = useState(false);
 
@@ -106,13 +106,13 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
                         setLoading(false)
                     }
                 })
-                modelPackageGroupItems.push({name: item.ModelPackageGroupName, creation_time: getUtcDate(item.CreationTime), versions: []})
+                modelPackageGroupItems.push({name: item.ModelPackageGroupName, creation_time: getLocaleDate(item.CreationTime), versions: []})
                 if(Object.keys(modelPackageGroupItems).length === data.length) {
                     setModelPackageGroupItems(modelPackageGroupItems)
                 }
             }
         }, (error) => {
-            console.log(error);
+            logOutput('error', error.response.data, undefined, error);
         });
     }, [props.modelModelPackageArn])
 
@@ -194,8 +194,7 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
                 .then((response) => {
                     history.goBack()
                 }, (error) => {
-                    alert(t('industrial_models.common.error_occured'));
-                    console.log(error);
+                    logOutput('error', error.response.data, undefined, error);
                     setProcessing(false)
                 });
         }
@@ -217,9 +216,8 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
                 .then((response) => {
                     history.goBack()
                 }, (error) => {
-                    alert(t('industrial_models.common.error_occured'));
-                    console.log(error);
-                    setProcessing(false)
+                    logOutput('error', error.response.data, undefined, error);
+                    setProcessing(false)                  
                 });
             }
     }
@@ -405,8 +403,7 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
                 setModelPackageGroupItems(copyModelPackageGroupItems)
                 setProcessingModelPackageGroup(false);
             }, (error) => {
-                alert(t('industrial_models.common.error_occured'));
-                console.log(error);
+                logOutput('error', error.response.data, undefined, error);
                 setProcessingModelPackageGroup(false);
             }
         );
@@ -467,9 +464,8 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
                     setProcessingModelPackage(false);
                 })                
             }, (error) => {
-                alert(t('industrial_models.common.error_occured'));
-                console.log(error);
-                setProcessingModelPackage(false)
+                logOutput('error', error.response.data, undefined, error);
+                setProcessingModelPackage(false);
             });
     }
 
@@ -587,8 +583,8 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
     if(wizard) {
         return (
             <Stack>
-                {renderModelFormContent()}
-                {renderModelTags()}
+                { renderModelFormContent() }
+                { renderModelTags() }
             </Stack>
         )
     }
@@ -603,9 +599,9 @@ const ModelForm: FunctionComponent<IProps> = (props) => {
                         <Button variant='primary' onClick={onSubmit} loading={processing}>{t('industrial_models.common.submit')}</Button>
                     </div>
                 }>            
-                {renderModelSetting()}
-                {renderModelFormContent()}
-                {renderModelTags()}
+                { renderModelSetting() }
+                { renderModelFormContent() }
+                { renderModelTags() }
             </Form>
         )
     }

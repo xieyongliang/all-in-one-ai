@@ -44,6 +44,7 @@ import DeBERTaDemoForm from '../Forms/Demo/Single/mdeberta'
 import KeyBERTDemoForm from '../Forms/Demo/Single/keybert'
 import cognitoUtils from '../../lib/cognitoUtils';
 import { useTranslation } from "react-i18next";
+import { logOutput } from '../Utils/Helper';
 
 interface IProps {
     industrialModels : IIndustrialModel[];
@@ -296,7 +297,7 @@ const IndustrialModels: FunctionComponent<IProps> = (
             cognitoUtils.getCognitoSignInUri().then(data => {
                 window.location.href = data
             }).catch((error) => {
-                console.log(error)
+                logOutput('error', error.response.data, undefined, error);
             });
         return (<div></div>)
     }

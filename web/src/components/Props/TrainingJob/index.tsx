@@ -3,7 +3,7 @@ import { useHistory, useLocation } from 'react-router-dom';
 import { KeyValuePair, StatusIndicator, Button, Form, FormSection, LoadingIndicator, Text } from 'aws-northstar';
 import axios from 'axios';
 import Grid from '@mui/material/Grid';
-import { getUtcDate } from '../../Utils/Helper';
+import { getLocaleDate, logOutput } from '../../Utils/Helper';
 import { useTranslation } from "react-i18next";
 
 const TrainingJobProp: FunctionComponent = () => {
@@ -40,10 +40,10 @@ const TrainingJobProp: FunctionComponent = () => {
             .then((response) => {
             if(response.data.length > 0) {
                 setTrainingJobName(response.data[0].TrainingJobName)
-                setCreationTime(getUtcDate(response.data[0].CreationTime))
-                setLastModifiedTime(getUtcDate(response.data[0].LastModifiedTime))
-                setTrainingStartTime(('TrainingStartTime' in response.data[0] ? getUtcDate(response.data[0].TrainingStartTime) : '-'))
-                setTrainingEndTime(('TrainingEndTime' in response.data[0] ? getUtcDate(response.data[0].TrainingEndTime) : '-'))
+                setCreationTime(getLocaleDate(response.data[0].CreationTime))
+                setLastModifiedTime(getLocaleDate(response.data[0].LastModifiedTime))
+                setTrainingStartTime(('TrainingStartTime' in response.data[0] ? getLocaleDate(response.data[0].TrainingStartTime) : '-'))
+                setTrainingEndTime(('TrainingEndTime' in response.data[0] ? getLocaleDate(response.data[0].TrainingEndTime) : '-'))
                 setTrainingTimeInSeconds(response.data[0].TrainingTimeInSeconds)
                 setBillableTimeInSeconds(response.data[0].BillableTimeInSeconds)
                 setTrainingJobStatus(response.data[0].TrainingJobStatus)
@@ -59,7 +59,7 @@ const TrainingJobProp: FunctionComponent = () => {
                 setLoading(false);
             }
         }, (error) => {
-            console.log(error);
+            logOutput('error', error.response.data, undefined, error);
         });
     }, [id])
 

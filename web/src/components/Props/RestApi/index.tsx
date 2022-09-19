@@ -5,6 +5,7 @@ import axios from 'axios';
 import Grid from '@mui/material/Grid';
 import { PathParams } from '../../Interfaces/PathParams';
 import { useTranslation } from "react-i18next";
+import { logOutput } from '../../Utils/Helper';
 
 const RestApiProp: FunctionComponent = () => {
     const [ apilName, setApilName ] = useState('')
@@ -39,7 +40,7 @@ const RestApiProp: FunctionComponent = () => {
             setApiUrl(response.data[0].api_url);
             setLoading(false);
         }, (error) => {
-            console.log(error);
+            logOutput('error', error.response.data, undefined, error);
         });
     }, [id, params.id])
 

@@ -36,7 +36,16 @@
     "industrial_models": "Industrial models",
     "algorithms": "Algorithms",
     "overview": "Overview",
-    "home": "Home"
+    "home": "Home",
+    "train_task_success": "Train task was started successfly",
+    "train_task_info": "Train task is in progress",
+    "train_task_error": "Train task was failed to start",
+    "deploy_task_success": "Deploy task was started successfly",
+    "deploy_task_info": "Deploy task is in progress",
+    "deploy_task_error": "Deploy task was failed to start",
+    "pipeline_task_success": "Pipeline task was started successfly",
+    "pipeline_task_info": "Pipeline task is in progress",
+    "pipeline_task_error": "Pipeline task was failed to start"
   },
   "scenarios": {
     "ppe": {
@@ -82,9 +91,9 @@
       "add_or_edit_tags": "Add/Edit tags",
       "container": "Container",
       "days": "Days",
-      "hours": "Hour",
-      "minutes": "Minute",
-      "seconds": "Second",
+      "hours": "Hours",
+      "minutes": "Minutes",
+      "seconds": "Seconds",
       "tags": "Tags - optional",
       "add_tag": "Add tag",
       "show_all": "Show all",
@@ -174,7 +183,8 @@
       "image_preview": "Preview image",
       "search": "Search",
       "unsupported": "unsupported demo",
-      "json_parse_error": "JSON data parse error, please check it and try again"
+      "json_parse_error": "JSON data parse error, please check it and try again",
+      "unzip_error": "Unzip files error, please check it and try again"
     },
     "training_job": {
       "create_training_job": "Create training job",
@@ -350,7 +360,12 @@
       "pipeline_option_byoc": "Bring your own container image",
       "Pipeline_step_pipeline": "Pipeline",
       "pipeline_step_train": "Train",
-      "pipeline_step_deploy": "deploy"
+      "pipeline_step_deploy": "deploy",
+      "pipeline_type": "Pipeline type",
+      "pipeline_type_1": "Both training and inference and deploy in both cloud and edge",
+      "pipeline_type_2": "Both training and inference and deploy only in cloud",
+      "pipeline_type_3": "Only inference and deploy in both cloud and edge",
+      "pipeline_type_4": "Only inference and deploy only in cloud"
     },
     "api": {
       "create_api": "Create REST API",

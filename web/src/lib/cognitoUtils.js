@@ -23,7 +23,7 @@ const createCognitoAuth = () => {
 						"profile",
 						response.data.LogoutURL,
 					],
-					"apiUri":response.data.LogoutURL
+					"logoutUri":response.data.LogoutURL
 				}
 				AWSConfig.region = response.data.CognitoRegion
 				const appWebDomain = appConfig.userPoolBaseUri.replace('https://', '').replace('http://', '')
@@ -71,7 +71,7 @@ const createCognitoUserPool = () => {
 						"profile",
 						response.data.LogoutURL,
 					],
-					"apiUri":response.data.LogoutURL
+					"logoutUri":response.data.LogoutURL
 				}
 				AWSConfig.region = response.data.CognitoRegion
 
@@ -107,7 +107,7 @@ const getCognitoSignInUri = () => {
 						"profile",
 						response.data.LogoutURL,
 					],
-					"apiUri":response.data.LogoutURL
+					"logoutUri":response.data.LogoutURL
 				}
 				AWSConfig.region = response.data.CognitoRegion
 				const signinUri = `${appConfig.userPoolBaseUri}/login?response_type=code&client_id=${appConfig.clientId}&redirect_uri=${appConfig.callbackUri}`

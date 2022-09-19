@@ -9,6 +9,7 @@ import { AppState } from '../../../store';
 import { connect } from 'react-redux';
 import { v4 as uuidv4 } from 'uuid';
 import { useTranslation } from "react-i18next";
+import { logOutput } from '../../Utils/Helper';
 
 interface IProps {
     updateGreengrassComponentNameAction: (greengrassComponentName: string) => any;
@@ -64,7 +65,7 @@ const GreengrassComponentForm: FunctionComponent<IProps> = (props) => {
             }
             setOptionsModels(items);
         }, (error) => {
-            console.log(error);
+            logOutput('error', error.response.data, undefined, error);
         });
     }, [params.id, itemsModel])
 
@@ -96,9 +97,8 @@ const GreengrassComponentForm: FunctionComponent<IProps> = (props) => {
             .then((response) => {
                 history.goBack()
             }, (error) => {
-                alert('Error occured, please check and try it again');
-                console.log(error);
-                setProcessing(false);
+                logOutput('error', error.response.data, undefined, error);
+                setProcessing(false);             
             })
     }
 
@@ -150,12 +150,12 @@ const GreengrassComponentForm: FunctionComponent<IProps> = (props) => {
                     </FormField>
                 </FormSection>
             )
-}
+    }
 
     if(wizard) {
         return (
             <Stack>
-                {renderGreengrassContent()}
+                { renderGreengrassContent() }
             </Stack>
         )
     }
@@ -169,8 +169,8 @@ const GreengrassComponentForm: FunctionComponent<IProps> = (props) => {
                         <Button variant='primary' onClick={onSubmit} loading={processing}>{t('industrial_models.common.submit')}</Button>
                     </div>
                 }>
-                {renderGreengrassComponentSetting()}
-                {renderGreengrassContent()}
+                { renderGreengrassComponentSetting() }
+                { renderGreengrassContent() }
             </Form>
         )
     }

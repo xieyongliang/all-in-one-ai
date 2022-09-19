@@ -6,7 +6,7 @@ import { Inline, Stack }  from 'aws-northstar/layouts';
 import DeleteConfirmationDialog from '../../Utils/DeleteConfirmationDialog';
 import axios from 'axios';
 import { PathParams } from '../../Interfaces/PathParams';
-import { getDurationBySeconds, getUtcDate } from '../../Utils/Helper/index';
+import { getDurationBySeconds, getLocaleDate, logOutput } from '../../Utils/Helper/index';
 import { FetchDataOptions } from 'aws-northstar/components/Table';
 import './index.scss'
 import { useTranslation } from "react-i18next";
@@ -78,7 +78,7 @@ const TrainingJobList: FunctionComponent = () => {
                     }
                 }
             }, (error) => {
-                console.log(error);
+                logOutput('error', error.response.data, undefined, error);
                 setLoading(false);
             }
         );
@@ -111,7 +111,7 @@ const TrainingJobList: FunctionComponent = () => {
                     }
                 }
             }, (error) => {
-                console.log(error);
+                logOutput('error', error.response.data, undefined, error);
                 setLoading(false);
             }
         );
@@ -162,8 +162,7 @@ const TrainingJobList: FunctionComponent = () => {
                 setVisibleStopConfirmation(false);
                 setProcessingStop(false);
             }, (error) => {
-                alert(t('industrial_models.common.error_occured'));
-                console.log(error);
+                logOutput('error', error.response.data, undefined, error);
                 setProcessingStop(false);
             }
         );        
@@ -194,8 +193,7 @@ const TrainingJobList: FunctionComponent = () => {
                 setVisibleAttachConfirmation(false);
                 setProcessingAttach(false);
             }, (error) => {
-                alert(t('industrial_models.common.error_occured'));
-                console.log(error);
+                logOutput('error', error.response.data, undefined, error);
                 setProcessingAttach(false);
             }        
         );
@@ -226,8 +224,7 @@ const TrainingJobList: FunctionComponent = () => {
                 setVisibleDetachConfirmation(false);
                 setProcessingDetach(false);
             }, (error) => {
-                alert(t('industrial_models.common.error_occured'));
-                console.log(error);
+                logOutput('error', error.response.data, undefined, error);
                 setProcessingDetach(false);
             }
         );
@@ -255,7 +252,7 @@ const TrainingJobList: FunctionComponent = () => {
             accessor: 'creationTime',
             Cell: ({ row  }) => {
                 if (row && row.original) {
-                    return getUtcDate(row.original.creationTime)
+                    return getLocaleDate(row.original.creationTime)
                 }
                 return null;
             }

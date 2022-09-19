@@ -31,6 +31,7 @@ import { LabelsSelector } from '../../../../store/selectors/LabelsSelector';
 import { ProjectSubType } from '../../../../data/enums/ProjectType';
 import Select from '../../../../components/Utils/Select';
 import { useTranslation } from "react-i18next";
+import { logOutput } from '../../../../components/Utils/Helper';
 
 interface IProps {
     size: ISize;
@@ -200,8 +201,8 @@ const RectLabelsList: React.FC<IProps> = (
     }, [ computedAnnotations, imageColors, imageLabels, onProcessed]);
 
     const onAnnotationsLoadFailure = useCallback((error?:Error) => {   
+        logOutput('alert', error, undefined, error);
         onProcessed(); 
-        console.log(error)
     }, [onProcessed]);
 
     const importAnnotations = useCallback(() => {
@@ -244,7 +245,7 @@ const RectLabelsList: React.FC<IProps> = (
                 
             importAnnotations();
         }, (error) => {
-            console.log(error);
+            logOutput('alert', error.response.data, undefined, error);
             onProcessed();
         });
     }

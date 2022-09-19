@@ -1,11 +1,17 @@
-from sagemaker.pytorch.model import PyTorchModel
+import json
+import boto3
 import traceback
+from sagemaker.pytorch.model import PyTorchModel
 from utils import persist_meta
+from datetime import datetime
+
+lambda_client = boto3.client('lambda')
 
 def lambda_handler(event, context):
     print(event)
     
     try:
+        time = datetime.now().isoformat()
         pipeline_id = event['body']['pipeline_id'] if('pipeline_id' in event['body']) else None
         model_name = event['body']['model_name'] if('model_name' in event['body'] and event['body']['model_name'] != '') else None
         endpoint_name = event['body']['endpoint_name'] if('endpoint_name' in event['body'] and event['body']['endpoint_name'] != '') else None
@@ -40,6 +46,20 @@ def lambda_handler(event, context):
         
         persist_meta(model.name, model.endpoint_name, industrial_model, pipeline_id)
         
+        payload = {
+            'body': {
+                'time': time,
+                'type': 'deploy',
+                'status': 1
+            }
+        }
+
+        response = lambda_client.invoke(
+            FunctionName = 'all_in_one_ai_websocket_send_message',
+            InvocationType = 'RequestResponse',
+            Payload=json.dumps(payload)
+        )
+
         return {
             'statusCode': 200,
             'body': {
@@ -50,6 +70,21 @@ def lambda_handler(event, context):
 
     except Exception as e:
         traceback.print_exc()
+
+        payload = {
+            'body': {
+                'time': time,
+                'type': 'deploy',
+                'status': -1,
+                'message': str(e)                
+            }
+        }
+
+        response = lambda_client.invoke(
+            FunctionName = 'all_in_one_ai_websocket_send_message',
+            InvocationType = 'RequestResponse',
+            Payload=json.dumps(payload)
+        )
 
         return {
             'statusCode': 400,

@@ -1,17 +1,12 @@
-import json
-import boto3
 import helper
 from boto3.dynamodb.conditions import Key
 import traceback
 
-video_connection_table = 'all_in_one_ai_video_connection'
-ddbh = helper.ddb_helper({'table_name': video_connection_table})
+websocket_connection_table = 'all_in_one_ai_websocket_connection'
+ddbh = helper.ddb_helper({'table_name': websocket_connection_table})
 
 def lambda_handler(event, context):
     print(event)
-
-    endpoint_url = "https://" + event["requestContext"]["domainName"] + "/" + event["requestContext"]["stage"]
-    gatewayapi = boto3.client("apigatewaymanagementapi", endpoint_url = endpoint_url)
     
     connection_id = event['requestContext']['connectionId']
     
@@ -20,8 +15,7 @@ def lambda_handler(event, context):
         
         for item in items:
             key = {
-                'camera_id' : item['camera_id'],
-                'connection_id': connection_id
+                'connection_id' : item['connection_id']
             }
             ddbh.delete_item(key)
     

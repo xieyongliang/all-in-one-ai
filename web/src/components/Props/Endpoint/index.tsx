@@ -3,7 +3,7 @@ import { useHistory, useLocation } from 'react-router-dom';
 import { KeyValuePair, StatusIndicator, Button, Form, FormSection, Stack, LoadingIndicator, Text } from 'aws-northstar';
 import axios from 'axios';
 import Grid from '@mui/material/Grid';
-import { getUtcDate } from '../../Utils/Helper';
+import { getLocaleDate, logOutput } from '../../Utils/Helper';
 import { useTranslation } from "react-i18next";
 
 const EndpointProp: FunctionComponent = () => {
@@ -28,8 +28,8 @@ const EndpointProp: FunctionComponent = () => {
             .then((response) => {
             if(response.data.length > 0) {
                 setEndpointName(response.data[0].EndpointName)
-                setCreationTime(getUtcDate(response.data[0].CreationTime))
-                setLastModifiedTime(getUtcDate(response.data[0].LastModifiedTime))
+                setCreationTime(getLocaleDate(response.data[0].CreationTime))
+                setLastModifiedTime(getLocaleDate(response.data[0].LastModifiedTime))
                 setEndpointStatus(response.data[0].EndpointStatus)
                 setEndpointConfig(response.data[0].EndpointConfig)
                 setProductionVariants(response.data[0].ProductionVariants)
@@ -37,7 +37,7 @@ const EndpointProp: FunctionComponent = () => {
                 setLoading(false);
             }
         }, (error) => {
-            console.log(error);
+            logOutput('error', error.response.data, undefined, error);
         });
     }, [id])
 
@@ -151,7 +151,7 @@ const EndpointProp: FunctionComponent = () => {
                             <KeyValuePair label={t('industrial_models.endpoint.endpoint_configuration_name')} value={endpointConfig['EndpointConfigName']}></KeyValuePair>
                         </Grid>
                         <Grid item xs={2} sm={4} md={4}>
-                            <KeyValuePair label={t('industrial_models.common.creation_time')} value={getUtcDate(endpointConfig['CreationTime'])}></KeyValuePair>
+                            <KeyValuePair label={t('industrial_models.common.creation_time')} value={getLocaleDate(endpointConfig['CreationTime'])}></KeyValuePair>
                         </Grid>
                     </Grid>
                     <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }}>

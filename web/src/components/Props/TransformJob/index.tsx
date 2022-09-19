@@ -3,7 +3,7 @@ import { useHistory, useLocation } from 'react-router-dom';
 import { KeyValuePair, StatusIndicator, Button, Form, FormSection, LoadingIndicator, Text } from 'aws-northstar';
 import axios from 'axios';
 import Grid from '@mui/material/Grid';
-import { getDurationByDates } from '../../Utils/Helper';
+import { getDurationByDates, logOutput } from '../../Utils/Helper';
 import { useTranslation } from "react-i18next";
 
 const TransformJobProp: FunctionComponent = () => {
@@ -55,7 +55,7 @@ const TransformJobProp: FunctionComponent = () => {
                 setLoading(false);
             }
         }, (error) => {
-            console.log(error);
+            logOutput('error', error.response.data, undefined, error);
         });
     }, [id])
 

@@ -19,6 +19,7 @@ import { Box, Dialog } from '@material-ui/core';
 import { v4 as uuidv4 } from 'uuid';
 import DeployForm from '../Deploy';
 import { useTranslation } from "react-i18next";
+import { logOutput } from '../../Utils/Helper';
 
 interface IProps {
     updatePipelineTypeAction: (pipelineType : string) => any;
@@ -160,9 +161,8 @@ const PipelineForm: FunctionComponent<IProps> = (props) => {
         .then((response) => {
             history.goBack()
         }, (error) => {
-            alert('Error occured, please check and try it again');
-            console.log(error);
-            setProcessing(false)
+            logOutput('error', error.response.data, undefined, error);
+            setProcessing(false);
         });
     }
 
@@ -174,10 +174,10 @@ const PipelineForm: FunctionComponent<IProps> = (props) => {
         return (
             <RadioGroup onChange={onChangePipelineOptions}
                 items={[
-                    <RadioButton value='0' checked={pipelineType==='0'}>Both training and inference and deploy in both cloud and edge</RadioButton>, 
-                    <RadioButton value='1' checked={pipelineType==='1'}>Both training and inference and deploy only in cloud</RadioButton>,
-                    <RadioButton value='2' checked={pipelineType==='2'}>Only inference and deploy in both cloud and edge</RadioButton>,
-                    <RadioButton value='3' checked={pipelineType==='3'}>Only inference and deploy only in cloud</RadioButton>
+                    <RadioButton value='0' checked={pipelineType==='0'}>{t('industrial_models.pipeline.pipeline_type_1')}</RadioButton>, 
+                    <RadioButton value='1' checked={pipelineType==='1'}>{t('industrial_models.pipeline.pipeline_type_2')}</RadioButton>,
+                    <RadioButton value='2' checked={pipelineType==='2'}>{t('industrial_models.pipeline.pipeline_type_3')}</RadioButton>,
+                    <RadioButton value='3' checked={pipelineType==='3'}>{t('industrial_models.pipeline.pipeline_type_4')}</RadioButton>
                 ]}
             />
         )
@@ -203,7 +203,7 @@ const PipelineForm: FunctionComponent<IProps> = (props) => {
                 </FormField>
                 {
                     !scriptMode && 
-                    <FormField label='Pipeline type' controlId={uuidv4()}>
+                    <FormField label={t('industrial_models.pipeline.pipeline_type')} controlId={uuidv4()}>
                         {renderPipelineOptions()}
                     </FormField>
                 }
@@ -214,7 +214,7 @@ const PipelineForm: FunctionComponent<IProps> = (props) => {
         )
     }
 
-    const steps = [
+    const steps0 = [
         {
             title: t('industrial_models.pipelines'),
             content: 
@@ -232,7 +232,7 @@ const PipelineForm: FunctionComponent<IProps> = (props) => {
         }
     ]
 
-    const steps0 = [
+    const steps1 = [
         {
             title: t('industrial_models.pipelines'),
             content: 
@@ -265,7 +265,7 @@ const PipelineForm: FunctionComponent<IProps> = (props) => {
         }
     ];
 
-    const steps1 = [
+    const steps2 = [
         {
             title: t('industrial_models.pipelines'),
             content: 
@@ -288,7 +288,7 @@ const PipelineForm: FunctionComponent<IProps> = (props) => {
         }  
     ]
 
-    const steps2 = [
+    const steps3 = [
         {
             title: t('industrial_models.pipelines'),
             content: 
@@ -316,7 +316,7 @@ const PipelineForm: FunctionComponent<IProps> = (props) => {
         }    
     ]
     
-    const steps3 = [
+    const steps4 = [
         {
             title: t('industrial_models.pipelines'),
             content: 
@@ -334,86 +334,33 @@ const PipelineForm: FunctionComponent<IProps> = (props) => {
         } 
     ]
 
-    if(scriptMode) {
-        return (
-            <BrowserRouter>
-                <Container>
-                    {
-                        processing && <Dialog open={true}>
-                            <Box p={3}>
-                                <LoadingIndicator label={t('industrial_models.demo.processing')}/>
-                            </Box>
-                        </Dialog>
-                    }
-                    <Wizard steps={steps} onSubmitButtonClick={onSubmit} onCancelButtonClick={onCancel}/>
-                </Container>
-            </BrowserRouter>
-        )
-    }
-    else if(pipelineType === '0') {
-        return (
-            <BrowserRouter>
-                <Container>
-                    {
-                        processing && <Dialog open={true}>
-                            <Box p={3}>
-                                <LoadingIndicator label={t('industrial_models.demo.processing')}/>
-                            </Box>
-                        </Dialog>
-                    }
-                    <Wizard steps={steps0} onSubmitButtonClick={onSubmit} onCancelButtonClick={onCancel}/>
-                </Container>
-            </BrowserRouter>
-        )
-    }
-    else if(pipelineType === '1') {
-        return (
-            <BrowserRouter>
-                <Container>
-                    {
-                        processing && <Dialog open={true}>
-                            <Box p={3}>
-                                <LoadingIndicator label={t('industrial_models.demo.processing')}/>
-                            </Box>
-                        </Dialog>
-                    }
-                    <Wizard steps={steps1} onSubmitButtonClick={onSubmit} onCancelButtonClick={onCancel}/>
-                </Container>
-            </BrowserRouter>
-        )
-    }
-    else if(pipelineType === '2') {
-        return (
-            <BrowserRouter>
-                <Container>
-                    {
-                        processing && <Dialog open={true}>
-                            <Box p={3}>
-                                <LoadingIndicator label={t('industrial_models.demo.processing')}/>
-                            </Box>
-                         </Dialog>
-                    }
-                    <Wizard steps={steps2} onSubmitButtonClick={onSubmit} onCancelButtonClick={onCancel}/>
-                </Container>
-            </BrowserRouter>
-        )
-    }
-    else{
-        return (
-            <BrowserRouter>
-                <Container>
-                    {
-                        processing && <Dialog open={true}>
-                            <Box p={3}>
-                                <LoadingIndicator label={t('industrial_models.demo.processing')}/>
-                            </Box>
-                        </Dialog>
-                    }
-                    <Wizard steps={steps3} onSubmitButtonClick={onSubmit} onCancelButtonClick={onCancel}/>
-                </Container>
-            </BrowserRouter>
-        )
-    }
+    var steps;
+
+    if(scriptMode)
+        steps = steps0;
+    else if(pipelineType === '0')
+        steps = steps1;
+    else if(pipelineType === '1')
+        steps = steps2;
+    else if(pipelineType === '2')
+        steps = steps3;
+    else
+        steps = steps4;
+    
+    return (
+        <BrowserRouter>
+            <Container>
+                {
+                    processing && <Dialog open={true}>
+                        <Box p={3}>
+                            <LoadingIndicator label={t('industrial_models.demo.processing')}/>
+                        </Box>
+                    </Dialog>
+                }
+                <Wizard steps={steps} onSubmitButtonClick={onSubmit} onCancelButtonClick={onCancel}/>
+            </Container>
+        </BrowserRouter>
+    )
 }
 
 const mapDispatchToProps = {

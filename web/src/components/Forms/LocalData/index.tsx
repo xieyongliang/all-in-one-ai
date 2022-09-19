@@ -15,6 +15,7 @@ import { v4 as uuidv4 } from 'uuid';
 import ReactJson from 'react-json-view';
 import { ALGORITHMS } from '../../Data/data';
 import { useTranslation } from "react-i18next";
+import { logOutput } from '../../Utils/Helper';
 
 interface IProps {
     industrialModels: IIndustrialModel[];
@@ -164,16 +165,12 @@ const LocalDataForm: FunctionComponent<IProps> = (
                     setOutput(response.data.result);
                     setProcessing(false);
                 }, (error) => {
-                        console.log(error);
+                        logOutput('error', error.response.data, undefined, error);
                         setProcessing(false);
                     }
-                ).catch((e) => {
-                    console.log(e);
-                }
-            ); 
+                )
         } catch(e) {
-            console.log(e);
-            alert(t('industrial_models.demo.json_parse_error'))
+            logOutput('error', t('industrial_models.demo.json_parse_error'), undefined, e);
         }
     }
 
@@ -185,7 +182,6 @@ const LocalDataForm: FunctionComponent<IProps> = (
         try {
             var jsonData = JSON.parse(input);
         } catch(e) {
-            console.log(e)
             return (
                 <div/>
             )
@@ -323,7 +319,6 @@ const LocalDataForm: FunctionComponent<IProps> = (
         try {
             var json = JSON.parse(input);
         } catch(e) {
-            console.log(e); // error in the above string (in this case, yes)!
             return (
                 <div />
             )
@@ -403,7 +398,6 @@ const LocalDataForm: FunctionComponent<IProps> = (
             </Container>
         )
     }    
-
     return (
         <Stack>
             { renderInference() }

@@ -103,11 +103,20 @@ export function updatePerClassColorationStatus(enablePerClassColoration: boolean
     };
 }
 
-export function updateENV(env: boolean): GeneralActionTypes {
+export function updateENV(env: Object): GeneralActionTypes {
     return {
         type: Action.UPDATE_ENV,
         payload: {
             env,
+        },
+    };
+}
+
+export function addPopupMessage(message: Object): GeneralActionTypes {
+    return {
+        type: Action.ADD_POPUP_MESSAGE,
+        payload: {
+            message,
         },
     };
 }

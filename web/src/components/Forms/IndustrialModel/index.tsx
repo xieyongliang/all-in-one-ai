@@ -11,6 +11,7 @@ import { Updateindustrialmodels } from "../../../store/industrialmodels/actionCr
 import { ALGORITHMS } from '../../Data/data';
 import { v4 as uuidv4 } from 'uuid';
 import { useTranslation } from "react-i18next";
+import { logOutput } from "../../Utils/Helper";
 
 interface IProps {
     updateindustrialmodelsAction : (industrialModels : IIndustrialModel[]) => any
@@ -57,7 +58,7 @@ const IndustrialModelForm: FunctionComponent<IProps> = (props) => {
             var filename : string = response.data;
             setFileName(filename);
         }, (error) => {
-            console.log(error);
+            logOutput('error', error.response.data, undefined, error);
         });
     }
 
@@ -136,14 +137,15 @@ const IndustrialModelForm: FunctionComponent<IProps> = (props) => {
     const renderCreateIndustrialModel = () => {
         return (
             <Form
-            header={t('industrial_models.overview.create_industrial_model')}
-            description={t('industrial_models.overview.create_industrial_model_description')}
-            actions={
-                <div>
-                    <Button variant='link' onClick={onCancel}>{t('industrial_models.common.cancel')}</Button>
-                    <Button variant='primary' onClick={onSubmit} loading={processing}>{t('industrial_models.common.submit')}</Button>
-                </div>
-            }>
+                header={t('industrial_models.overview.create_industrial_model')}
+                description={t('industrial_models.overview.create_industrial_model_description')}
+                actions={
+                    <div>
+                        <Button variant='link' onClick={onCancel}>{t('industrial_models.common.cancel')}</Button>
+                        <Button variant='primary' onClick={onSubmit} loading={processing}>{t('industrial_models.common.submit')}</Button>
+                    </div>
+                }
+            >
                 { renderModelSetting() }
                 { renderImagePreview() }
                 { renderClassDefinition() }
@@ -170,13 +172,13 @@ const IndustrialModelForm: FunctionComponent<IProps> = (props) => {
                 props.updateindustrialmodelsAction(industrialModels)
                 props.onClose();
             }).catch((error) => {
-                console.log(error);
+                logOutput('error', error.response.data, undefined, error);
                 setProcessing(false);
             })
     };
     
     return (
-         renderCreateIndustrialModel()
+        renderCreateIndustrialModel()
     )
 }
 

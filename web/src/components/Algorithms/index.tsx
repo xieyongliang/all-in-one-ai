@@ -5,6 +5,7 @@ import { AppState } from '../../store';
 import { ALGORITHMS } from '../Data/data';
 import { useParams } from 'react-router-dom';
 import { PathParams } from '../Interfaces/PathParams';
+import { logOutput } from '../Utils/Helper';
 
 interface IProps {
     isLogin: boolean;
@@ -79,7 +80,7 @@ const AlgorithmForm: FunctionComponent<IProps> = (
             cognitoUtils.getCognitoSignInUri().then(data => {
                 window.location.href = data
             }).catch((error) => {
-                console.log(error)
+                logOutput('error', error.response.data, undefined, error);
             });
         return (<div></div>)
     }

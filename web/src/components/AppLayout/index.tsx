@@ -13,7 +13,7 @@
   See the License for the specific language governing permissions and
   limitations under the License.                                                                              *
  ******************************************************************************************************************** */
-import { FunctionComponent, ReactNode, useEffect, useMemo, useState } from 'react';
+import { FunctionComponent, ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
 import AppLayoutBase from 'aws-northstar/layouts/AppLayout';
 import SideNavigationBase, { SideNavigationItem, SideNavigationItemType } from 'aws-northstar/components/SideNavigation';
 import { IIndustrialModel } from '../../store/industrialmodels/reducer';
@@ -21,16 +21,19 @@ import { ALGORITHMS } from '../Data/data';
 import { SCENARIOS } from '../Data/data';
 import { connect } from 'react-redux';
 import { AppState } from '../../store';
-import { Box, Select } from 'aws-northstar';
+import { Alert, Box, Select, Stack } from 'aws-northstar';
 import Header from "aws-northstar/components/Header";
 import { useCookies } from 'react-cookie';
+import useWebSocket from 'react-use-websocket';
 import { useTranslation } from "react-i18next";
+import { getLocaleDate, logOutput } from '../Utils/Helper';
 
 interface IProps {
     industrialModels : IIndustrialModel[];
     isLogin: boolean;
     env: Object;
     children: ReactNode;
+    messages: Object[];
 }
 
 const languages = [
@@ -43,7 +46,8 @@ const AppLayout: FunctionComponent<IProps> = ( {
     industrialModels,
     isLogin,
     env,
-    children
+    messages,
+    children,
 } ) => {
     const  { i18n } = useTranslation();
     const [ cookies, setCookie ] = useCookies();
@@ -51,18 +55,54 @@ const AppLayout: FunctionComponent<IProps> = ( {
     const [ industrialModelItems, setIndustrialModelItems ] = useState<SideNavigationItem[]>([])
     const [ algorithmsItems, setAlgorithmsItems ] = useState<SideNavigationItem[]>([])
     const [ scenariosItems, setScenariosItems ] = useState<SideNavigationItem[]>([])
-
+  
     const onLanguageChange = (event) => {
         setLanguage(event.target.value);
     };
 
     const { t } = useTranslation();
 
+    const getSocketUrl = useCallback(() => {
+        return new Promise<string>((resolve) => {
+            var timer = setInterval(() => {
+                if(env['socketUri'] !== undefined) {
+                    resolve(env['socketUri']);
+                    clearInterval(timer)
+                }
+            }, 1000);
+        });
+    }, [env]);
+
+    const { getWebSocket } = useWebSocket(getSocketUrl, {
+        shouldReconnect: (closeEvent) => {
+          return true;
+        },
+        reconnectAttempts: 10,
+        reconnectInterval: 3000,
+      }
+    );  
+
+    const onMessage = (event) => {
+        var data = JSON.parse(event.data)
+
+        var time = getLocaleDate(data.time);
+        var type = data.status === 1 ? "success" : (data.status === 0 ? "info" : "error");       
+        var description = t(`app_layout.${data.type}_task_${type}`);
+        var content = `${description}`;
+        if(type !== 'sucess')
+            content += ` - ${data.message}`;
+
+        logOutput(type, content, time);
+    }
+
+    if(getWebSocket() !== null)
+        getWebSocket().onmessage = onMessage; 
+
     const AppHeader = useMemo(() => {
         return (
             <Header
                 title={t('header')} 
-                logoPath = 'favicon.ico'
+                logoPath = '/ico/all-in-one-ai.ico'
                 rightContent={
                     <Box display="flex" alignItems="center">
                         <Select
@@ -145,7 +185,20 @@ const AppLayout: FunctionComponent<IProps> = ( {
             AppLayoutBase header={AppHeader}
             navigation={env['cognitoRegion'] === '' || env['cognitoRegion'] === undefined || isLogin ? SideNavigation : null}
         >
-            {children}
+            <Stack>
+                {
+                    messages.map((message) => {
+                        return (
+                            <Alert type={message['type']} dismissible={true}>
+                                {message['content']}
+                            </Alert>
+                        )
+                    })  
+                }
+                {
+                    children
+                }
+            </Stack>
         </AppLayoutBase>
     );
 };
@@ -153,7 +206,8 @@ const AppLayout: FunctionComponent<IProps> = ( {
 const mapStateToProps = (state: AppState) => ({
     industrialModels : state.industrialmodel.industrialModels,
     isLogin: state.session.isLogin,
-    env: state.general.env
+    env: state.general.env,
+    messages: state.general.messages
 });
 
 export default connect(

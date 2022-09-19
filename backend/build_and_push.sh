@@ -134,7 +134,10 @@ all_in_one_ai_stop_transform_job
 all_in_one_ai_train
 all_in_one_ai_training_job
 all_in_one_ai_transform_job
-all_in_one_ai_transform_job_review"
+all_in_one_ai_transform_job_review
+all_in_one_ai_websocket_connect
+all_in_one_ai_websocket_disconnect
+all_in_one_ai_websocket_send_message"
 
 for lambda_folder in $lambda_foldes; do
     # build and copy console distribution files
@@ -153,3 +156,4 @@ done
 
 aws s3 cp ${project_dir}/backend/build/codes ${s3uri}/codes --recursive --region ${region}
 aws s3 cp ${project_dir}/deployment/templates ${s3uri}/templates --recursive --region ${region}
+aws s3 cp ${project_dir}/assets/greengrass  ${s3uri}/algorithms/yolov5/greengrass/ --recursive --region ${region}

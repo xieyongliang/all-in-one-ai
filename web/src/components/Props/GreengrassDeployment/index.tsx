@@ -6,6 +6,7 @@ import Grid from '@mui/material/Grid';
 import { PathParams } from '../../Interfaces/PathParams';
 import { Column } from 'react-table'
 import { useTranslation } from "react-i18next";
+import { logOutput } from '../../Utils/Helper';
 
 const GreengrassDeploymentProp: FunctionComponent = () => {
     const [ targetArn, setTargetArn ] = useState('')
@@ -59,7 +60,7 @@ const GreengrassDeploymentProp: FunctionComponent = () => {
                 }
               );
         }, (error) => {
-            console.log(error);
+            logOutput('error', error.response.data, undefined, error);
         });
     }, [id, params.id, items])
 
@@ -122,7 +123,6 @@ const GreengrassDeploymentProp: FunctionComponent = () => {
                 columnDefinitions={columnDefinitions}
                 items={items}
                 loading={loading}
-                onSelectionChange={console.log}
                 getRowId={getRowId}
             />
         )

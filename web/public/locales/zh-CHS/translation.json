@@ -36,7 +36,16 @@
     "industrial_models": "行业模型",
     "algorithms": "算法",
     "overview": "概览",
-    "home": "首页"
+    "home": "首页",
+    "train_task_success": "训练任务启动成功",
+    "train_task_info": "训练任务信息",
+    "train_task_error": "训练任务启动失败",
+    "deploy_task_success": "部署任务启成功",
+    "deploy_task_info": "部署任务信息",
+    "deploy_task_error": "部署任务启动失败",
+    "pipeline_task_success": "流水线任务启动成功",
+    "pipeline_task_info": "流水线任务信息",
+    "pipeline_task_error": "流水线任务启动失败"
   },
   "scenarios": {
     "ppe": {
@@ -174,7 +183,8 @@
       "image_preview": "图片预览",
       "search": "搜索",
       "unsupported": "暂不支持的演示",
-      "json_parse_error": "JSON 数据解析失败，请检查并重试"
+      "json_parse_error": "JSON 数据解析失败，请检查并重试",
+      "unzip_error": "ZIP 文件解压缩失败，请检查并重试"
     },
     "training_job": {
       "create_training_job": "创建训练任务",
@@ -350,7 +360,12 @@
       "pipeline_option_byoc": "使用您自己的算法容器",
       "Pipeline_step_pipeline": "流水线",
       "pipeline_step_train": "训练",
-      "pipeline_step_deploy": "部署"
+      "pipeline_step_deploy": "部署",
+      "pipeline_type": "流水线类型",
+      "pipeline_type_1": "在云端和终端训练、部署和推理",
+      "pipeline_type_2": "仅在云端训练、部署和推理",
+      "pipeline_type_3": "在云端和终端仅部署和推理",
+      "pipeline_type_4": "仅在云端部署和推理"
     },
     "api": {
       "create_api": "创建 REST API",

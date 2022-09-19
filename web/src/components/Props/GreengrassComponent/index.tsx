@@ -5,6 +5,7 @@ import axios from 'axios';
 import Grid from '@mui/material/Grid';
 import { PathParams } from '../../Interfaces/PathParams';
 import { useTranslation } from "react-i18next";
+import { logOutput } from '../../Utils/Helper';
 
 const GreengrassComponentProp: FunctionComponent = () => {
     const [ componentName, setComponentName ] = useState('')
@@ -41,7 +42,7 @@ const GreengrassComponentProp: FunctionComponent = () => {
             setPlatforms(`os : ${response.data.platforms[0]['attributes'].os}`);
             setLoading(false);
         }, (error) => {
-            console.log(error);
+            logOutput('error', error.response.data, undefined, error);
         });
     }, [id, params.id])
 

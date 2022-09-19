@@ -24,6 +24,7 @@ export type GeneralState = {
     projectData: ProjectData;
     zoom: number;
     env: Object;
+    messages: Object[];
 }
 
 interface UpdateProjectData {
@@ -110,6 +111,14 @@ interface UpdateENV {
     }
 }
 
+interface AddPopupMesssage {
+    type: typeof Action.ADD_POPUP_MESSAGE,
+    payload: {
+        message: Object;
+    }
+}
+
+
 export type GeneralActionTypes = UpdateProjectData
     | UpdateWindowSize
     | UpdateActivePopupType
@@ -122,3 +131,4 @@ export type GeneralActionTypes = UpdateProjectData
     | UpdateZoom
     | UpdatePerClassColoration
     | UpdateENV
+    | AddPopupMesssage
