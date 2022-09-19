@@ -156,4 +156,4 @@ done
 
 aws s3 cp ${project_dir}/backend/build/codes ${s3uri}/codes --recursive --region ${region}
 aws s3 cp ${project_dir}/deployment/templates ${s3uri}/templates --recursive --region ${region}
-aws s3 cp ${project_dir}/assets/greengrass  ${s3uri}/algorithms/yolov5/greengrass/ --recursive --region ${region}
+aws s3 cp ${project_dir}/backend/assets/greengrass  ${s3uri}/algorithms/yolov5/greengrass/ --recursive --region ${region}
