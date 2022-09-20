@@ -4,6 +4,7 @@ import helper
 from datetime import date, datetime
 from decimal import Decimal
 import traceback
+from botocore.exceptions import EndpointConnectionError
 
 ssmh = helper.ssm_helper()
 
@@ -80,10 +81,16 @@ def lambda_handler(event, context):
 
     except Exception as e:
         traceback.print_exc()
-        return {
-            'statusCode': 400,
-            'body': str(e)
-        }
+        if isinstance(e, EndpointConnectionError):
+            return {
+                'statusCode': 200,
+                'body': json.dumps([], default = defaultencode)
+            }
+        else:
+            return {
+                'statusCode': 400,
+                'body': str(e)
+            }
         
 def defaultencode(o):
     if isinstance(o, Decimal):
