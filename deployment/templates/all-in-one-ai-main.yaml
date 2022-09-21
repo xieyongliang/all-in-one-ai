@@ -278,6 +278,7 @@ Resources:
         PrivateSubnets: !Join [",", [!GetAtt VPC.Outputs.PrivateSubnet1, !GetAtt VPC.Outputs.PrivateSubnet2]]
         PublicSubnets: !Join [",", [!GetAtt VPC.Outputs.PublicSubnet1, !GetAtt VPC.Outputs.PublicSubnet2]]
         ApiGatewayProdEndpoint: !GetAtt LAMBDA.Outputs.ApiGatewayProdEndpoint
+        WebSocketGatewayProdEndpoint: !GetAtt LAMBDA.Outputs.WebSocketGatewayProdEndpoint
         DomainName: !Ref DomainName
         Certificate: !Ref Certificate
         UserPool: !Ref UserPool
