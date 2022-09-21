@@ -24,7 +24,7 @@ ENV PATH="/opt/ml/code:${PATH}"
 RUN pip install ninja
 
 # /opt/ml and all subdirectories are utilized by SageMaker, we use the /code subdirectory to store our user code.
-COPY /stylegan2 /opt/ml/code
+COPY stylegan2/ /opt/ml/code/
 COPY changehostname.c /opt/ml/code
 COPY start_with_right_hostname.sh /usr/local/bin/start_with_right_hostname.sh
 

@@ -84,7 +84,7 @@ class UIEPredictor(object):
         if not isinstance(args.device, six.string_types):
             print(
                 ">>> [InferBackend] The type of device must be string, but the type you set is: ",
-                type(device))
+                type(args.device))
             exit(0)
         if args.device not in ['cpu', 'gpu']:
             print(
