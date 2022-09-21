@@ -1,6 +1,0 @@
-click
-requests 
-tqdm 
-pyspng 
-ninja 
-imageio-ffmpeg==0.4.3 
