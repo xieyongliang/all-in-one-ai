@@ -8,6 +8,31 @@ from gluoncv.data.transforms.presets.imagenet import transform_eval
 
 s3_client = boto3.client('s3')
 
+def transform_fn(model: any, request_body: any, content_type: any, accept_type: any):
+    print('[DEBUG] request_body:', type(request_body))
+    print('[DEBUG] content_type:', content_type)
+    print('[DEBUG] accept_type:', accept_type)
+
+    if content_type == 'image/jpg' or content_type == 'image/jpeg' or content_type == 'image/png':
+        bytes = request_body
+        input_data = mx.image.imdecode(request_body)
+    elif content_type == 'application/json':
+        data = json.loads(request_body)
+        bucket = data['bucket']
+        image_uri = data['image_uri']
+        s3_object = s3_client.get_object(Bucket = bucket, Key = image_uri) 
+        bytes = s3_object["Body"].read()
+        input_data = mx.image.imdecode(bytes)
+    else:
+        input_data = request_body
+
+    task = os.environ['task'] if('task' in os.environ) else 'search'
+    use_layer = len(model) - 1 if(task == 'search') else len(model)
+    pred = get_embedding_advance(input_data, model, use_layer=use_layer)
+    result = pred.tolist()
+
+    return json.dumps({'predictions': [result]})
+
 def get_embedding_advance(input_pic, seq_net, use_layer):
     img = input_pic
     
@@ -49,39 +74,3 @@ def model_fn(model_dir):
         seq_net.add(net.features[i])
 
     return seq_net
-
-def predict_fn(input_data, model):
-    """
-    Apply model to the incoming request
-    """
-
-    task = os.environ['task'] if('task' in os.environ) else 'search'
-    use_layer = len(model) - 1 if(task == 'search') else len(model)
-    pred = get_embedding_advance(input_data, model, use_layer=use_layer)
-    result = pred.tolist()
-    return json.dumps({'predictions': [result]})
-
-def input_fn(request_body, request_content_type):
-    """
-    Deserialize and prepare the prediction input
-    """
-
-    if request_content_type == 'image/jpg' or request_content_type == 'image/jpeg' or request_content_type == 'image/png':
-        bytes = request_body
-        return mx.image.imdecode(request_body)
-    elif request_content_type == 'application/json':
-        data = json.loads(request_body)
-        bucket = data['bucket']
-        image_uri = data['image_uri']
-        s3_object = s3_client.get_object(Bucket = bucket, Key = image_uri) 
-        bytes = s3_object["Body"].read()
-        return mx.image.imdecode(bytes)
-    else:
-        return request_body
-
-def output_fn(prediction, content_type):
-    """
-    Serialize and prepare the prediction output
-    """
-    
-    return prediction

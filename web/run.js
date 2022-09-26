@@ -10,16 +10,23 @@ var Jimp = require('jimp');
 const ApiURL = process.env.API_GATEWAY_PROD_ENDPOINT
 
 app.get('/env', (req, res) => {
-    result = {
-        UserPool:process.env.UserPool,
-        UserPoolClient:process.env.UserPoolClient,
-        UserPoolDomain:process.env.UserPoolDomain,
-        CallbackURL:process.env.CallbackURL,
-        LogoutURL:process.env.LogoutURL,
-        CognitoRegion:process.env.CognitoRegion,
-        SocketURL:process.env.WEBSOCKET_GATEWAY_PROD_ENDPOINT
+    try {
+        result = {
+            UserPool:process.env.UserPool,
+            UserPoolClient:process.env.UserPoolClient,
+            UserPoolDomain:process.env.UserPoolDomain,
+            CallbackURL:process.env.CallbackURL,
+            LogoutURL:process.env.LogoutURL,
+            CognitoRegion:process.env.CognitoRegion,
+            SocketURL:process.env.WEBSOCKET_GATEWAY_PROD_ENDPOINT
+        }
+        res.send(result)
     }
-    res.send(result)
+    catch (e) {
+        res.status(500);
+        res.send(JSON.Stringify(e));
+        console.log(e);
+    }
 })
 app.post('/_image', (req, res) => {
     var data = [];
@@ -30,18 +37,34 @@ app.post('/_image', (req, res) => {
         try {
             var file_name = uuid.v4();
             var buffer = Buffer.concat(data);
-            fs.writeFileSync('images/' + file_name + '.jpg', buffer);
-            res.send(file_name);
+            var fileSizeInMegabytes = buffer.length  * 1.0 / (1024*1024)
+            if(fileSizeInMegabytes >= 6) {
+                res.status(400);
+                res.send('Image file size larger than 6M');
+            }
+            else {
+                fs.writeFileSync('images/' + file_name + '.jpg', buffer);
+                res.send(file_name);
+            }
         }
-        catch (error) {
-            console.log(error);
+        catch (e) {
+            res.status(500)
+            res.send(JSON.Stringify(e))
+            console.log(e);
         }
     })
 })
 app.get('/_image/:file_name', (req, res) => {
-    var file_name = req.params.file_name;
-    var buffer = fs.readFileSync('images/' + file_name + '.jpg');
-    res.send(buffer);
+    try {
+        var file_name = req.params.file_name;
+        var buffer = fs.readFileSync('images/' + file_name + '.jpg');
+        res.send(buffer);
+    }
+    catch (e) {
+        res.status(500)
+        res.send(JSON.Stringify(e))
+        console.log(e);
+    }        
 })
 app.get('/_inference/image/:file_name', (req, res) => {
     try {
@@ -58,15 +81,12 @@ app.get('/_inference/image/:file_name', (req, res) => {
                 .then((response) => {
                     res.send(response.data);
                 }, (error) => {
-                        res.status(400);
-                        res.send(res.data);
+                        res.status(error.response.status);
+                        res.send(error.response.data);
                         console.log(error);
                     }
-                ).catch((e) => {
-                    console.log(e);
-                }
-            );
-        }
+                )
+            }
         else {
             Jimp.read('images/' + file_name + '.jpg', function (err, image) {
                 var rect = JSON.parse(crop)
@@ -94,21 +114,19 @@ app.get('/_inference/image/:file_name', (req, res) => {
                             });
                             res.send(response.data);
                         }, (error) => {
-                                res.status(400);
-                                res.send(res.data);
+                                res.status(error.response.status);
+                                res.send(error.response.data);
                                 console.log(error);
-                            }
-                        ).catch((e) => {
-                            console.log(e);
-                        }
-                        );     
-                    }
-                );
+                            } 
+                        )
+                })
             })
         }
     }
-    catch (error) {
-        console.log(error)
+    catch (e) {
+        res.status(500)
+        res.send(JSON.Stringify(e))
+        console.log(e);
     }
 })
 app.get('/_inference/sample', (req, res) => {
@@ -131,14 +149,11 @@ app.get('/_inference/sample', (req, res) => {
                 .then((response) => {
                     res.send(response.data)
                 }, (error) => {
-                        res.status(400);
-                        res.send(res.data);
+                        res.status(error.response.status);
+                        res.send(error.response.data);
                         console.log(error);
                     }
-                ).catch((e) => {
-                    console.log(e);
-                }
-            );
+                )
         }
         else {
             var s3uri = `s3://${bucket}/${key}`
@@ -171,14 +186,11 @@ app.get('/_inference/sample', (req, res) => {
                                     });
                                     res.send(response.data);
                                 }, (error) => {
-                                        res.status(400);
-                                        res.send(res.data);
+                                        res.status(error.response.status);
+                                        res.send(error.response.data);
                                         console.log(error);
                                     }
-                                ).catch((e) => {
-                                    console.log(e);
-                                }
-                                );     
+                                )     
                             }
                         );
                     })
@@ -186,8 +198,10 @@ app.get('/_inference/sample', (req, res) => {
             )
         }
     }
-    catch (error) {
-        console.log(error)
+    catch (e) {
+        res.status(500)
+        res.send(JSON.Stringify(e))
+        console.log(e)
     }
 })
 app.get('/_file/download', (req, res) => {
@@ -198,17 +212,16 @@ app.get('/_file/download', (req, res) => {
                 res.setHeader('content-type', response.headers['content-type']);
                 res.send(response.data);
             }, (error) => {
-                    res.status(400);
-                    res.send(res.data);
+                    res.status(error.response.status);
+                    res.send(error.response.data);
                     console.log(error);
                 }
-            ).catch((e) => {
-                console.log(e);
-            }
-        );
+            )
     }
-    catch (error) {
-        console.log(error)
+    catch (e) {
+        res.status(500)
+        res.send(JSON.Stringify(e))
+        console.log(expect)
     }
 })
 app.get('/_search/image', (req, res) => {
@@ -223,17 +236,16 @@ app.get('/_search/image', (req, res) => {
             .then((response) => {
                 res.send(response.data);
             }, (error) => {
-                    res.status(400);
-                    res.send(res.data);
+                    res.status(error.response.status);
+                    res.send(error.response.data);
                     console.log(error);
                 }
-            ).catch((e) => {
-                console.log(e);
-            }
-        );
+            )
     }
-    catch (error) {
-        console.log(error)
+    catch (e) {
+        res.status(500)
+        res.send(JSON.Stringify(e))
+        console.log(e);
     }
 })
 app.post('/_industrialmodel', (req, res) => {
@@ -257,31 +269,29 @@ app.post('/_industrialmodel', (req, res) => {
                     .then((response) => {
                         res.send(response.data);
                     }, (error) => {
-                            res.status(400);
-                            res.send(res.data);
+                            res.status(error.response.status);
+                            res.send(error.response.data);
                             console.log(error);
                         }
-                    ).catch((e) => {
-                        console.log(e);
-                    })
-                }
+                    )
+            }
             else {
                 delete body.model_id
                 axios.post(ApiURL + `/industrialmodel/${model_id}`, body, options)
                     .then((response) => {
                         res.send(response.data);
                     }, (error) => {
-                            res.status(400);
-                            res.send(res.data);
+                            res.status(error.response.status);
+                            res.send(error.response.data);
                             console.log(error);
                         }
-                    ).catch((e) => {
-                        console.log(e);
-                    })
+                    )
             }
         }    
-        catch (error) {
-            console.log(error)
+        catch (e) {
+            res.status(500)
+            res.send(JSON.Stringify(e))
+            console.log(e)
         }
     })
 })

@@ -145,7 +145,7 @@ const EditorContainer: React.FC<IProps> = (
                     onLoaded = {onLoaded}
                 />
             )
-        else
+        else if(projectType === ProjectType.OBJECT_DETECTION || projectType === ProjectType.OBJECT_DETECTION_RECT)
             return (
                 <LabelsToolkit
                     imageBuckets = {imageBuckets}
@@ -159,6 +159,14 @@ const EditorContainer: React.FC<IProps> = (
                     onProcessed = {onProcessed}
                     onLoaded = {onLoaded}
                 />
+            )
+        else if(projectType === ProjectType.IMAGE_RANK)
+            return (
+                <div/>
+            )
+        else
+            return (
+                <div />
             )
     };
 

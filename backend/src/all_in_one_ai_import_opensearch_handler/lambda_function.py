@@ -3,7 +3,9 @@ import os
 import helper
 import boto3
 from botocore.exceptions import ClientError
+from elasticsearch import Elasticsearch
 import traceback
+from time import sleep
 
 sqs_resource = boto3.resource('sqs')
 sqs_client = boto3.client('sqs')
@@ -24,6 +26,7 @@ def lambda_handler(event, context):
         sqs_client.purge_queue(
             QueueUrl = queue.url
         )
+        sleep(60)
         bucket, key = get_bucket_and_key(model_samples)
         s3uris = get_s3_images(bucket, key)
         for s3uri in s3uris:
@@ -36,11 +39,11 @@ def lambda_handler(event, context):
                     }
                 )
             )
-            print(response['ResponseMetadata']['HTTPStatusCode'])
             if(response['ResponseMetadata']['HTTPStatusCode'] == 200):
                 num_success += 1
             else:
                 num_failed += 1
+
         print(num_success)
         print(num_failed)
         print(len(s3uris))
@@ -71,7 +74,6 @@ def get_s3_images(bucket, key):
             if(keycount > 0):
                 for key in page['Contents']:
                     file = key['Key']
-                    print(file)
                     file_in_lowercase = file.lower()
                     if(file_in_lowercase.endswith('.png') or file_in_lowercase.endswith('.jpg') or file_in_lowercase.endswith('.jpeg')):
                         s3uris.append('s3://{0}/{1}'.format(bucket, file))
@@ -80,3 +82,5 @@ def get_s3_images(bucket, key):
         return s3uris
     except ClientError as e:
         print(str(e))
+    else:
+        print('Operatio completed')

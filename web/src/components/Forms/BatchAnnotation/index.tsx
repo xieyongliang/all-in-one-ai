@@ -20,7 +20,8 @@ const BatchAnnotationForm: FunctionComponent = () => {
     }
 
     return (
-        <ImagePanel 
+        <ImagePanel
+            type='abc'
             s3uri={s3uri} 
             labels={labels}
             projectName={projectName} 

@@ -58,7 +58,7 @@ export function labelsReducer(
         case Action.ADD_LABEL_IMAGES_DATA: {
             return {
                 ...state,
-                imagesData: state.imagesData.concat(action.payload.imageData)
+                imagesData: state.imagesData.concat(action.payload.imagesData)
             }
         }
         case Action.UPDATE_LABEL_IMAGES_DATA: {

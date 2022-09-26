@@ -125,7 +125,7 @@ interface UpdateLabelImageDataById {
 interface AddLabelImageData {
     type: typeof Action.ADD_LABEL_IMAGES_DATA;
     payload: {
-        imageData: LabelImageData[];
+        imagesData: LabelImageData[];
     }
 }
 

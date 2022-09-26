@@ -49,10 +49,10 @@ def lambda_handler(event, context):
         )
 
         if('FunctionError' not in response):
-            statusCode = response['StatusCode']
             body = response["Payload"].read().decode("utf-8")
+            payload = json.loads(body)
+            statusCode = payload['statusCode']
             if(statusCode == 200):
-                payload = json.loads(body)
                 payload = json.loads(payload['body'])
                 prediction = payload['predictions'][0]
                 print(prediction)
@@ -65,7 +65,7 @@ def lambda_handler(event, context):
                 print(response)
                 payload = []
                 for x in range(k_neighbors):
-                    s3uri = response['hits']['hits'][x]['_source']['image']
+                    s3uri = response['hits']['hits'][x]['_source']['img_s3uri']
                     bucket, key = get_bucket_and_key(s3uri)
                     httpuri = get_presigned_url(bucket, key)
                     score = response['hits']['hits'][x]['_score']

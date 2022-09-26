@@ -32,6 +32,8 @@ interface IProps {
     labels: string[];
     projectName: string;
     pageSize?: number;
+    type: string;
+    subtype?: string;
     onClose: () => any;
 }  
 

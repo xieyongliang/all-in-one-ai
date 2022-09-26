@@ -57,11 +57,11 @@ export function updateLabelImageDataById(id: string, newImageData: LabelImageDat
     };
 }
 
-export function addLabelImageData(imageData: LabelImageData[]): LabelsActionTypes {
+export function addLabelImageData(imagesData: LabelImageData[]): LabelsActionTypes {
     return {
         type: Action.ADD_LABEL_IMAGES_DATA,
         payload: {
-            imageData,
+            imagesData,
         },
     };
 }

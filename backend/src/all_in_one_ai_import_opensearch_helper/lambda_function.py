@@ -13,13 +13,33 @@ def lambda_handler(event, context):
     messages_to_reprocess = []
     batch_failure_response = {}
     
+    print('num_of_records:', len(event['Records']))
+    
     for record in event['Records']:
         payload = json.loads(record["body"])
+        print(payload)
         s3uri = payload['s3uri']
         index = payload['index']
+        endpoint_name = payload['endpoint_name']
+        
+        query = {
+            "query": {
+                "match": {
+                    "img_s3uri": s3uri
+                }
+            }
+        }
+        
+        response = es.search(
+            index = index,
+            body = query
+        )
+        
+        if(len(response['hits']['hits']) > 0):
+            continue
+        
         bucket, key = get_bucket_and_key(s3uri)
         content_type = 'application/json'
-        endpoint_name = payload['endpoint_name']
         payload = {
             'bucket' : bucket, 
             'image_uri' : key,
@@ -38,33 +58,34 @@ def lambda_handler(event, context):
         )
         
         if('FunctionError' not in response):
-            statusCode = response['StatusCode']
             payload = response["Payload"].read().decode("utf-8")
+            payload = json.loads(payload)
+            print(payload)
+            statusCode = payload['statusCode']
             if(statusCode == 200):
-                payload = json.loads(payload)
+
                 payload = json.loads(payload['body'])
                 prediction = payload['predictions'][0]
                 response = es.index(
                     index = index,
                     body = {
                         "img_vector": prediction, 
-                        "image": s3uri
+                        "img_s3uri": s3uri
                     }
                 )
+                print(response)
             else:
                 messages_to_reprocess.append({"itemIdentifier": record['messageId']})
         else:
             messages_to_reprocess.append({"itemIdentifier": record['messageId']})
-            
-    query = {
-        "query": {
-            "match_all": {}
-        }
-    }
-    count = es.count(index=index, body = query)['count']
-    print('ES index - {0} has {1} items'.format(index, count))
-
+    
+    es.indices.refresh(index = index)
+    count = es.count(index = index)['count']
+    print('vector count', count)
+    print(es.indices.get(index = index))
+    
     batch_failure_response["batchItemFailures"] = messages_to_reprocess
+    print(messages_to_reprocess)
     return batch_failure_response
     
 def get_bucket_and_key(s3uri):

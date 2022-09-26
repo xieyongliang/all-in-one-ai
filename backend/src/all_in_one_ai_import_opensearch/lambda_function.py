@@ -23,12 +23,7 @@ def lambda_handler(event, context):
             action = event['queryStringParameters']['action']
         if(action == 'query'):
             if es.indices.exists(index = index):
-                query = {
-                    "query": {
-                        "match_all": {}
-                        }
-                    }
-                count = es.count(index = index, body = query)['count']
+                count = es.count(index = index,)['count']
             else:
                 count = 0
 
@@ -72,7 +67,7 @@ def lambda_handler(event, context):
 def create_index(es, index):
     if es.indices.exists(index = index):
         es.indices.delete(index = index)
-    
+
     knn_index = {
         "settings": {
             "index.knn": True
@@ -82,9 +77,15 @@ def create_index(es, index):
                 "img_vector": {
                     "type": "knn_vector",
                     "dimension": 2048
-                }
+                },
+                 "img_s3uri": {
+                     "type": "keyword", 
+                     "index": "true"
+                 }
             }
         }
     }
+
     es.indices.create(index = index, body = knn_index, ignore = 400)
     print(es.indices.get(index = index))
+    

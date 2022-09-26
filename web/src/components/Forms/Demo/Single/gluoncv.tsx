@@ -93,13 +93,17 @@ const GluonCVDemoForm: FunctionComponent<IProps> = (
         if(industrialModel !== undefined) {
             setLoading(true)
             var s3uri = industrialModel.samples
-            axios.get('/s3', {params : { s3uri : s3uri, page_num: imagePage, page_size: 20, include_filter : 'jpg,jpeg,png' }})
-                .then((response) => {
-                    setOriginImageItems(response.data.payload);
-                    setImageCount(response.data.count);
-                    setLoading(false);
-                }
-            )
+            if(s3uri !== ''){
+                axios.get('/s3', {params : { s3uri : s3uri, page_num: imagePage, page_size: 20, include_filter : 'jpg,jpeg,png' }})
+                    .then((response) => {
+                        setOriginImageItems(response.data.payload);
+                        setImageCount(response.data.count);
+                        setLoading(false);
+                    }
+                )
+            }
+            else
+                setLoading(false);
             axios.get('/endpoint', {params: { industrial_model: industrialModel.id}})
                 .then((response) => {
                     var items = []
@@ -146,7 +150,9 @@ const GluonCVDemoForm: FunctionComponent<IProps> = (
         setImporting(true)
         axios.get('/search/import', {params : {industrial_model : params.id, endpoint_name: selectedEndpoint.value, model_samples: industrialModel.samples}})
             .then((response) => {
-                setImporting(false)
+                setTimeout(() => {
+                    setImporting(false)
+                  }, 60000);
             }, (error) => {
                 logOutput('error', error.response.data, undefined, error);
                 setImporting(false);
@@ -227,7 +233,10 @@ const GluonCVDemoForm: FunctionComponent<IProps> = (
                 setCurSearchImageItem('');
                 setVisibleSearchImage(false);
             }, (error) => {
-                logOutput('error', error.response.data, undefined, error);
+                if(error.response.status === 400)
+                    logOutput('error', t('industrial_models.demo.file_size_over_6M'), undefined, error);
+                else
+                    logOutput('error', error.response.data, undefined, error);
             });
     }
 

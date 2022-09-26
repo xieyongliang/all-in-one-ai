@@ -1,23 +1,22 @@
 import React from "react";
-import './TextsToolkit.scss';
-import { TextImageData } from "../../../../store/texts/types";
-import { updateTextImageDataById } from "../../../../store/texts/actionCreators";
+import './RanksToolkit.scss';
+import { RankImageData } from "../../../../store/ranks/types";
+import { updateRankImageDataById } from "../../../../store/ranks/actionCreators";
 import { AppState } from "../../../../store";
 import { connect } from "react-redux";
 import { ProjectType } from "../../../../data/enums/ProjectType";
 import { ISize } from "../../../../interfaces/ISize";
 import { Settings } from "../../../../settings/Settings";
 import { EventType } from "../../../../data/enums/EventType";
-import PolygonTextsList from "../PolygonTextsList/PolygonTextsList";
 
 interface IProps {
     activeImageIndex:number,
-    imagesData: TextImageData[];
+    imagesData: RankImageData[];
     projectType: ProjectType;
     imageBuckets?: string[];
     imageKeys?: string[];
     imageId?: string;
-    updateTextImageDataById: (id: string, newImageData: TextImageData) => any;
+    updateRankImageDataById: (id: string, newImageData: RankImageData) => any;
     onProcessing: () => any;
     onProcessed: () => any;
     onLoaded: () => any;
@@ -27,8 +26,8 @@ interface IState {
     size: ISize;
 }
 
-class TextsToolkit extends React.Component<IProps, IState> {
-    private textsToolkitRef: HTMLDivElement;
+class RanksToolkit extends React.Component<IProps, IState> {
+    private ranksToolkitRef: HTMLDivElement;
 
     constructor(props) {
         super(props);
@@ -48,10 +47,10 @@ class TextsToolkit extends React.Component<IProps, IState> {
     }
 
     private updateToolkitSize = () => {
-        if (!this.textsToolkitRef)
+        if (!this.ranksToolkitRef)
             return;
 
-        const listBoundingBox = this.textsToolkitRef.getBoundingClientRect();
+        const listBoundingBox = this.ranksToolkitRef.getBoundingClientRect();
         this.setState({
             size: {
                 width: listBoundingBox.width,
@@ -71,19 +70,9 @@ class TextsToolkit extends React.Component<IProps, IState> {
                 className="Content"
                 style={{height: activeContentHeight}}
             >
-                <PolygonTextsList
-                    size={{
-                        width: size.width - 20,
-                        height: activeContentHeight - 20
-                    }}
-                    imageData = {imagesData[activeImageIndex]}
-                    imageBucket = {this.props.imageBuckets !== undefined ? this.props.imageBuckets[activeImageIndex] : undefined}
-                    imageKey = {this.props.imageKeys !== undefined ? this.props.imageKeys[activeImageIndex] : undefined}
-                    imageId = {this.props.imageId}
-                    onProcessing = {this.props.onProcessing}
-                    onProcessed = {this.props.onProcessed}
-                    onLoaded = {this.props.onLoaded} 
-                />
+                <div >
+                    <input value={activeImageIndex}></input>
+                </div>
             </div>;
         return content;
     };
@@ -91,8 +80,8 @@ class TextsToolkit extends React.Component<IProps, IState> {
     public render() {
         return(
             <div
-                className="TextsToolkit"
-                ref={ref => this.textsToolkitRef = ref}
+                className="RanksToolkit"
+                ref={ref => this.ranksToolkitRef = ref}
             >
                 {this.state.size && this.renderChildren()}
             </div>
@@ -101,16 +90,16 @@ class TextsToolkit extends React.Component<IProps, IState> {
 }
 
 const mapDispatchToProps = {
-    updateTextImageDataById
+    updateRankImageDataById
 };
 
 const mapStateToProps = (state: AppState) => ({
-    activeImageIndex: state.texts.activeImageIndex,
-    imagesData: state.texts.imagesData,
+    activeImageIndex: state.ranks.activeImageIndex,
+    imagesData: state.ranks.imagesData,
     projectType: state.general.projectData.type
 });
 
 export default connect(
     mapStateToProps,
     mapDispatchToProps
-)(TextsToolkit);
+)(RanksToolkit);
