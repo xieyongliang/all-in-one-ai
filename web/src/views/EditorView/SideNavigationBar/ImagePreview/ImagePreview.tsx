@@ -8,22 +8,29 @@ import { ISize } from "../../../../interfaces/ISize";
 import { ImageRepository } from "../../../../logic/imageRepository/ImageRepository";
 import { AppState } from "../../../../store";
 import { updateLabelImageDataById } from "../../../../store/labels/actionCreators";
+import { updateTextImageDataById } from "../../../../store/texts/actionCreators";
+import { updateRankImageDataById } from "../../../../store/ranks/actionCreators";
 import { LabelImageData } from "../../../../store/labels/types";
 import { TextImageData } from "../../../../store/texts/types";
+import { RankImageData } from "../../../../store/ranks/types";
 import { FileUtil } from "../../../../utils/FileUtil";
 import { RectUtil } from "../../../../utils/RectUtil";
 import './ImagePreview.scss';
 import { CSSHelper } from "../../../../logic/helpers/CSSHelper";
+import { ProjectType } from "../../../../data/enums/ProjectType";
 
 interface IProps {
-    imageData: LabelImageData | TextImageData;
+    imageData: LabelImageData | TextImageData | RankImageData ;
+    projectType: ProjectType;
     style: React.CSSProperties;
     size: ISize;
     isScrolling?: boolean;
     isChecked?: boolean;
     onClick?: () => any;
+    updateLabelImageDataById: () => any;
+    updateTextImageDataById: () => any;
+    updateRankImageDataById: () => any;
     isSelected?: boolean;
-    updateLabelImageDataById: (id: string, newImageData: LabelImageData | TextImageData) => any;
 }
 
 interface IState {
@@ -69,7 +76,7 @@ class ImagePreview extends React.Component<IProps, IState> {
         )
     }
 
-    private loadImage = async (imageData: LabelImageData | TextImageData, isScrolling: boolean) => {
+    private loadImage = async (imageData: LabelImageData | TextImageData | RankImageData, isScrolling: boolean) => {
         if (imageData.loadStatus) {
             const image = ImageRepository.getById(imageData.id);
             if (this.state.image !== image) {
@@ -85,9 +92,14 @@ class ImagePreview extends React.Component<IProps, IState> {
         }
     };
 
-    private saveLoadedImage = (image: HTMLImageElement, imageData: LabelImageData | TextImageData) => {
+    private saveLoadedImage = (image: HTMLImageElement, imageData: any) => {
         imageData.loadStatus = true;
-        this.props.updateLabelImageDataById(imageData.id, imageData);
+        if(this.props.projectType === ProjectType.IMAGE_RANK)
+            updateRankImageDataById(imageData.id, imageData);
+        else if(this.props.projectType === ProjectType.TEXT_RECOGNITION)
+            updateTextImageDataById(imageData.id, imageData);
+        else
+            updateLabelImageDataById(imageData.id, imageData);
         ImageRepository.storeImage(imageData.id, image);
         if (imageData.id === this.props.imageData.id) {
             this.setState({ image });
@@ -184,10 +196,14 @@ class ImagePreview extends React.Component<IProps, IState> {
 }
 
 const mapDispatchToProps = {
-    updateLabelImageDataById
+    updateLabelImageDataById,
+    updateTextImageDataById,
+    updateRankImageDataById
 };
 
-const mapStateToProps = (state: AppState) => ({});
+const mapStateToProps = (state: AppState) => ({
+    projectType: state.general.projectData.type
+});
 
 export default connect(
     mapStateToProps,

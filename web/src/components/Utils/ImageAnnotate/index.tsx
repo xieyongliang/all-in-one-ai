@@ -23,6 +23,9 @@ import { AnnotationFormatType } from '../../../data/enums/AnnotationFormatType';
 import { ImporterSpecData } from '../../../data/ImporterSpecData';
 import { useTranslation } from "react-i18next";
 import { logOutput } from '../Helper';
+import { RankImageData } from '../../../store/ranks/types';
+import { addRankImageData, updateActiveRankImageIndex, updateRankImageData } from '../../../store/ranks/actionCreators';
+import { RankImageDataUtil } from '../../../utils/RankImageDataUtil';
 
 const OVERLAY_STYLE = {
     position: "fixed" as 'fixed',
@@ -46,10 +49,13 @@ interface IProps {
     updateProjectDataAction: (projectData: ProjectData) => any;
     updateActiveLabelImageIndexAction: (activeImageIndex: number) => any;
     updateActiveTextImageIndexAction: (activeImageIndex: number) => any;
+    updateActiveRankImageIndexAction: (activeImageIndex: number) => any;
     addLabelImageDataAction: (imageData: LabelImageData[]) => any;
     addTextImageDataAction: (imageData: TextImageData[]) => any;
+    addRankImageDataAction: (imageData: RankImageData[]) => any;
     updateLabelImageDataAction: (imageData: LabelImageData[]) => any;
     updateTextImageDataAction: (imageData: TextImageData[]) => any;
+    updateRankImageDataAction: (imageData: RankImageData[]) => any;
     updateActiveLabelTypeAction: (activeLabelType: LabelType) => any;
     updateFirstLabelCreatedFlagAction: (firstLabelCreatedFlag: boolean) => any;
     updatePerClassColorationStatusAction: (updatePerClassColoration: boolean) => any;
@@ -95,12 +101,15 @@ const ImageAnnotate: React.FC<IProps> = (
         updateProjectDataAction,
         updateActiveLabelImageIndexAction,
         updateActiveTextImageIndexAction,
+        updateActiveRankImageIndexAction,
         updateLabelImageDataAction,
         updateTextImageDataAction,
+        updateRankImageDataAction,
         updateFirstLabelCreatedFlagAction, 
         updatePerClassColorationStatusAction,
         addLabelImageDataAction,
         addTextImageDataAction,
+        addRankImageDataAction,
         onClosed,
     }) => {
     const [ loading, setLoading ] = useState(true)
@@ -152,8 +161,10 @@ const ImageAnnotate: React.FC<IProps> = (
         updateProjectDataAction({type: null, subType: null, name: ''});
         updateActiveLabelImageIndexAction(null);
         updateActiveTextImageIndexAction(null);
+        updateActiveRankImageIndexAction(null);
         updateLabelImageDataAction([]);
         updateTextImageDataAction([]);
+        updateRankImageDataAction([]);
         updateFirstLabelCreatedFlagAction(false);
         updatePerClassColorationStatusAction(true)
 
@@ -169,11 +180,12 @@ const ImageAnnotate: React.FC<IProps> = (
 
         var promises2 = []
 
-        var index = 0;
+        var fileNames = [];
         Promise.all(promises).then((reponses) => {
+            var index = 0;
             reponses.forEach((response) => {
-                var imageName = imageNames[index]
-                var imageExt = imageExts[index]
+                var imageName = imageNames[index];
+                var imageExt = imageExts[index];
 
                 var data = response.data;
 
@@ -185,8 +197,10 @@ const ImageAnnotate: React.FC<IProps> = (
                     name: projectName
                 });
 
-                if(type === ProjectType.TEXT_RECOGNITION) {
-                    updateActiveTextImageIndexAction(0);
+                if(type === ProjectType.IMAGE_RANK) {
+                    addRankImageDataAction([RankImageDataUtil.createRankImageDataFromFileData(imageFile)])
+                }
+                else if(type === ProjectType.TEXT_RECOGNITION) {
                     addTextImageDataAction([TextImageDataUtil.createTextImageDataFromFileData(imageFile)]);
                 }
                 else {
@@ -202,13 +216,14 @@ const ImageAnnotate: React.FC<IProps> = (
                     var bucket = imageBuckets[index]
                     var key = imageKeys[index]
                     promises2.push(axios.get('/annotation', {params: { bucket: bucket, key: key}}))
-                    index++
                 }
+
+                index++;
             })
 
             if(type === ProjectType.OBJECT_DETECTION_RECT && subType === ProjectSubType.BATCH_LABEL && imageBuckets !== undefined && imageKeys !== undefined) {
                 Promise.all(promises2).then((reponses2) => {
-                    var index = 0;
+                    index = 0;
                     var annotationFiles = [];
                     reponses2.forEach((response) => {
                         if(response.data.data !== undefined) {
@@ -228,7 +243,12 @@ const ImageAnnotate: React.FC<IProps> = (
                 })
             }
 
-            updateActiveLabelImageIndexAction(activeIndex);
+            if(type === ProjectType.IMAGE_RANK)
+                updateActiveRankImageIndexAction(activeIndex)
+            else if(type === ProjectType.TEXT_RECOGNITION)
+                updateActiveTextImageIndexAction(activeIndex)
+            else
+                updateActiveLabelImageIndexAction(activeIndex);
             setReady(true);
         })
 
@@ -242,6 +262,27 @@ const ImageAnnotate: React.FC<IProps> = (
         updateProjectDataAction({type: null, subType: null, name: ''});
         onClosed();
     }
+
+    var fileNames = [];
+    var imageExts = imageUris.map((imageUri) => {
+        var pos = imageUri.indexOf('?');
+        var httpuri = imageUri.substring(0, pos)
+        return httpuri.substring(httpuri.lastIndexOf('.') + 1)
+    })
+
+    for(var i = 0; i < imageNames.length; i++){
+        var imageName = imageNames[i];
+        var imageExt = imageExts[i];
+        fileNames.push(`${imageName}.${imageExt}`)
+    }
+
+    var fileLabels = []
+    imageLabels.forEach((imageLabel)=> {
+        var fileLabel = imageLabel.substring(0, imageLabel.length - 1);
+        if(fileLabel !== '')
+            fileLabels.push(fileLabel)
+    })
+
 
     if(!ready)
         return (
@@ -258,12 +299,12 @@ const ImageAnnotate: React.FC<IProps> = (
                     ready && 
                     <EditorView 
                         imageColors = {imageColors} 
-                        imageLabels = {imageLabels} 
                         imageAnnotations = {imageAnnotations}
                         imageBuckets = {imageBuckets} 
                         imageKeys = {imageKeys} 
                         imageId = {imageId}
-                        imageNames = {imageNames}
+                        imageNames = {(type === ProjectType.IMAGE_RANK) ? fileNames : imageNames}
+                        imageLabels = {(type === ProjectType.IMAGE_RANK) ? fileLabels : imageLabels}
                         onLoaded = {onLoaded}
                         onClosed = {onCleanup}
                     /> 
@@ -287,12 +328,15 @@ const mapDispatchToProps = {
     updateTextsAction: updateTexts,
     updateActiveLabelImageIndexAction: updateActiveLabelImageIndex,
     updateActiveTextImageIndexAction: updateActiveTextImageIndex,
+    updateActiveRankImageIndexAction: updateActiveRankImageIndex,
     addLabelImageDataAction: addLabelImageData,
     addTextImageDataAction: addTextImageData,
+    addRankImageDataAction: addRankImageData,
     updateProjectDataAction: updateProjectData,
     updateActivePopupTypeAction: updateActivePopupType,
     updateLabelImageDataAction: updateLabelImageData,
     updateTextImageDataAction: updateTextImageData,
+    updateRankImageDataAction: updateRankImageData,
     updateActiveLabelTypeAction: updateActiveLabelType,
     updateFirstLabelCreatedFlagAction: updateFirstLabelCreatedFlag,
     updatePerClassColorationStatusAction: updatePerClassColorationStatus,

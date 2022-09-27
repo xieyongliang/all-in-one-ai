@@ -185,7 +185,8 @@
       "unsupported": "unsupported demo",
       "json_parse_error": "JSON data parse error, please check it and try again",
       "unzip_error": "Unzip files error, please check it and try again",
-      "file_size_over_6M": "Uploaded file size shold be equal or less than 6M"
+      "file_size_over_6M": "Uploaded file size shold be equal or less than 6M",
+      "image_rank": "Image rank"
     },
     "training_job": {
       "create_training_job": "Create training job",

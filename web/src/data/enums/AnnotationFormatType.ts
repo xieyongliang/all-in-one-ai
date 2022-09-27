@@ -5,7 +5,8 @@ export enum AnnotationFormatType {
     JSON = 'JSON',
     VOC = 'VOC',
     VGG = 'VGG',
-    PPOCR = 'PPOCR'
+    PPOCR = 'PPOCR',
+    RANK = 'RANK'
 }
 
 export enum ExportDataFormatType {

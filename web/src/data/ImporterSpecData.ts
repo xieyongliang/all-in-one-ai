@@ -13,5 +13,6 @@ export const ImporterSpecData: ImporterSpecDataMap = {
     [AnnotationFormatType.VGG]: undefined,
     [AnnotationFormatType.VOC]: undefined,
     [AnnotationFormatType.YOLO]: YOLOImporter,
-    [AnnotationFormatType.PPOCR]: undefined
+    [AnnotationFormatType.PPOCR]: undefined,
+    [AnnotationFormatType.RANK]: undefined
 }

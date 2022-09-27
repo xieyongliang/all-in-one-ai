@@ -32,6 +32,7 @@ import { isEqual } from 'lodash';
 import { AIActions} from '../../../logic/actions/AIActions';
 import { ProjectType } from '../../../data/enums/ProjectType';
 import { TextRect } from '../../../store/texts/types';
+import { RankEditorActions } from '../../../logic/actions/RankEditorActions';
 
 interface IProps {
     size: ISize;
@@ -127,19 +128,26 @@ class Editor extends React.Component<IProps, IState> {
 
     private loadImage = async (imageData: LabelImageData): Promise<any> => {
         if (imageData.loadStatus) {
-            if(this.props.projectType !== ProjectType.TEXT_RECOGNITION) {
-                LabelEditorActions.setActiveImage(ImageRepository.getById(imageData.id));
-                AIActions.detect(imageData.id, ImageRepository.getById(imageData.id));
+            if(this.props.projectType === ProjectType.IMAGE_RANK) {
+                RankEditorActions.setActiveImage(ImageRepository.getById(imageData.id));
+                this.updateModelAndRender()
+            }
+            else if(this.props.projectType === ProjectType.TEXT_RECOGNITION) {
+                TextEditorActions.setActiveImage(ImageRepository.getById(imageData.id));
                 this.updateModelAndRender()
             }
             else {
-                TextEditorActions.setActiveImage(ImageRepository.getById(imageData.id));
-                this.updateModelAndRender()
+                LabelEditorActions.setActiveImage(ImageRepository.getById(imageData.id));
+                AIActions.detect(imageData.id, ImageRepository.getById(imageData.id));
+                this.updateModelAndRender()            
             }
         }
         else {
             if (!EditorModel.isLoading) {
-                if(this.props.projectType !== ProjectType.TEXT_RECOGNITION)
+                if(this.props.projectType === ProjectType.IMAGE_RANK) {
+                    RankEditorActions.setLoadingStatus(true);
+                }
+                else if(this.props.projectType !== ProjectType.TEXT_RECOGNITION)
                     LabelEditorActions.setLoadingStatus(true);
                 else 
                     TextEditorActions.setLoadingStatus(true);
@@ -220,7 +228,10 @@ class Editor extends React.Component<IProps, IState> {
 
     private getOptionsPanels = () => {
         const editorData: EditorData = (this.props.projectType !== ProjectType.TEXT_RECOGNITION) ? LabelEditorActions.getEditorData() : TextEditorActions.getEditorData();
-        if(this.props.projectType === ProjectType.TEXT_RECOGNITION) {
+        if(this.props.projectType === ProjectType.IMAGE_RANK) {
+            return <div />
+        }
+        else if(this.props.projectType === ProjectType.TEXT_RECOGNITION) {
             return this.props.imageData.textRects
                 .map((textRect: TextRect) => {
                     const positionOnImage: IPoint = {x: textRect.rect.x, y: textRect.rect.y};

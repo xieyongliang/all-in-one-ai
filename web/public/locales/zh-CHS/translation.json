@@ -185,7 +185,8 @@
       "unsupported": "暂不支持的演示",
       "json_parse_error": "JSON 数据解析失败，请检查并重试",
       "unzip_error": "ZIP 文件解压缩失败，请检查并重试",
-      "file_size_over_6M": "上传文件大小应该小于等于6M"
+      "file_size_over_6M": "上传文件大小应该小于等于6M",
+      "image_rank": "图片标签"
     },
     "training_job": {
       "create_training_job": "创建训练任务",

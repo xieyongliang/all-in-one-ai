@@ -8,8 +8,8 @@ import Image from '../Image';
 import { COLORS } from '../../Data/data';
 import Pagination from '@mui/material/Pagination';  
 import '../../Utils/Image/index.scss'
-import { ProjectSubType, ProjectType } from '../../../data/enums/ProjectType';
 import { useTranslation } from "react-i18next";
+import { ProjectSubType, ProjectType } from '../../../data/enums/ProjectType';
 
 const OVERLAY_STYLE = {
     position: "fixed" as 'fixed',
@@ -32,8 +32,8 @@ interface IProps {
     labels: string[];
     projectName: string;
     pageSize?: number;
-    type: string;
-    subtype?: string;
+    type: ProjectType;
+    subType?: ProjectSubType;
     onClose: () => any;
 }  
 
@@ -41,6 +41,8 @@ const ImagePanel: FunctionComponent<IProps> = ({
     s3uri,
     labels,
     projectName,
+    type,
+    subType,
     pageSize,
     onClose
 }) => {
@@ -116,8 +118,8 @@ const ImagePanel: FunctionComponent<IProps> = ({
                 imageNames = {imageNames}
                 projectName = {projectName}
                 activeIndex = {activeIndex}
-                type = {ProjectType.OBJECT_DETECTION_RECT}
-                subType = {ProjectSubType.BATCH_LABEL}
+                type = {type}
+                subType = {subType}
                 onClosed = {onImageClose}
             />
         )

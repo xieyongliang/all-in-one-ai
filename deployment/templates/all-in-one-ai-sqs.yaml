@@ -6,12 +6,21 @@ Parameters:
     Description: ImportOpensearchHelperFunction Arn
 
 Resources: 
+  AllInOneAIDLQ: 
+    Type: AWS::SQS::Queue
+    Properties: 
+      QueueName: all_in_one_ai_dlq
+      VisibilityTimeout: 900
+  
   AllInOneAIQueue: 
     Type: AWS::SQS::Queue
     Properties: 
       QueueName: all_in_one_ai_sqs
       VisibilityTimeout: 900
-  
+      RedrivePolicy: 
+        deadLetterTargetArn: !GetAtt AllInOneAIDLQ.Arn
+        maxReceiveCount: 1000
+
   ImportOpensearchHelperFunctionEventSourceMapping:
     Type: AWS::Lambda::EventSourceMapping
     Properties:

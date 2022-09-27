@@ -6,6 +6,12 @@ import {
   updateActiveLabelNameId,
   updateLabelImageDataById,
 } from "../../store/labels/actionCreators";
+import {
+  updateActiveTextImageIndex
+} from "../../store/texts/actionCreators";
+import {
+  updateActiveRankImageIndex
+} from "../../store/ranks/actionCreators";
 import { ViewPortActions } from "./ViewPortActions";
 import { EditorModel } from "../../staticModels/EditorModel";
 import { LabelType } from "../../data/enums/LabelType";
@@ -18,29 +24,72 @@ import {
 } from "../../store/labels/types";
 import { LabelStatus } from "../../data/enums/LabelStatus";
 import { remove } from "lodash";
+import { ProjectType } from "../../data/enums/ProjectType";
+import { TextsSelector } from "../../store/selectors/TextsSelector";
+import { RanksSelector } from "../../store/selectors/RanksSelector";
 
 export class ImageActions {
   public static getPreviousImage(): void {
-    const currentImageIndex: number = LabelsSelector.getActiveImageIndex();
-    ImageActions.getImageByIndex(currentImageIndex - 1);
+    if(store.getState().general.projectData.type === ProjectType.IMAGE_RANK) {
+      const currentImageIndex: number = RanksSelector.getActiveImageIndex();
+      ImageActions.getImageByIndex(currentImageIndex - 1);
+    }
+    else if(store.getState().general.projectData.type === ProjectType.TEXT_RECOGNITION) {
+      const currentImageIndex: number = TextsSelector.getActiveImageIndex();
+      ImageActions.getImageByIndex(currentImageIndex - 1);
+    }
+    else {
+      const currentImageIndex: number = LabelsSelector.getActiveImageIndex();
+      ImageActions.getImageByIndex(currentImageIndex - 1);
+    }
   }
 
   public static getNextImage(): void {
-    const currentImageIndex: number = LabelsSelector.getActiveImageIndex();
-    ImageActions.getImageByIndex(currentImageIndex + 1);
+    if(store.getState().general.projectData.type === ProjectType.IMAGE_RANK) {
+      const currentImageIndex: number = RanksSelector.getActiveImageIndex();
+      ImageActions.getImageByIndex(currentImageIndex + 1);
+    }
+    else if(store.getState().general.projectData.type === ProjectType.TEXT_RECOGNITION) {
+      const currentImageIndex: number = TextsSelector.getActiveImageIndex();
+      ImageActions.getImageByIndex(currentImageIndex + 1);
+    }
+    else {
+      const currentImageIndex: number = LabelsSelector.getActiveImageIndex();
+      ImageActions.getImageByIndex(currentImageIndex + 1);
+    }
   }
 
   public static getImageByIndex(index: number): void {
     if (EditorModel.viewPortActionsDisabled) return;
 
-    const imageCount: number = LabelsSelector.getImagesData().length;
+    if(store.getState().general.projectData.type === ProjectType.IMAGE_RANK) {
+      const imageCount: number = RanksSelector.getImagesData().length;
 
-    if (index < 0 || index > imageCount - 1) {
-      return;
-    } else {
-      ViewPortActions.setZoom(1);
-      store.dispatch(updateActiveLabelImageIndex(index));
-      store.dispatch(updateActiveLabelId(null));
+      if (index < 0 || index > imageCount - 1) {
+        return;
+      } else {
+        store.dispatch(updateActiveRankImageIndex(index));
+      }
+    }
+    else if(store.getState().general.projectData.type === ProjectType.TEXT_RECOGNITION) {
+      const imageCount: number = TextsSelector.getImagesData().length;
+
+      if (index < 0 || index > imageCount - 1) {
+        return;
+      } else {
+        store.dispatch(updateActiveTextImageIndex(index));
+      }
+    }
+    else {
+      const imageCount: number = LabelsSelector.getImagesData().length;
+
+      if (index < 0 || index > imageCount - 1) {
+        return;
+      } else {
+        ViewPortActions.setZoom(1);
+        store.dispatch(updateActiveLabelImageIndex(index));
+        store.dispatch(updateActiveLabelId(null));
+      }
     }
   }
 

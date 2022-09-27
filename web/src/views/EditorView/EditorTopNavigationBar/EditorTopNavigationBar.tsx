@@ -29,6 +29,8 @@ import JSZip from 'jszip';
 import axios from 'axios';
 import { useTranslation } from "react-i18next";
 import { logOutput } from '../../../components/Utils/Helper';
+import { RankExporter } from '../../../logic/export/RankExporter';
+import { RankImporter } from '../../../logic/import/RankImporter';
 
 const BUTTON_SIZE: ISize = {width: 30, height: 30};
 const BUTTON_PADDING: number = 10;
@@ -161,6 +163,9 @@ const EditorTopNavigationBar: React.FC<IProps> = (
     }) => {
     const { t } = useTranslation();
 
+    if(projectType === ProjectType.IMAGE_RANK)
+        updateCrossHairVisibleStatusAction(false);
+
     const [ imageAnnotations, setImageAnnotations ] = useState([])
 
     const getClassName = () => {
@@ -186,10 +191,12 @@ const EditorTopNavigationBar: React.FC<IProps> = (
     }
 
     const exportOnClick = () => {
-        if(projectType !== ProjectType.TEXT_RECOGNITION)
-            RectLabelsExporter.export(AnnotationFormatType.YOLO)
-        else
+        if(projectType == ProjectType.IMAGE_RANK)
+            RankExporter.export(AnnotationFormatType.RANK)
+        else if(projectType == ProjectType.TEXT_RECOGNITION)
             PolygonTextsExporter.export(AnnotationFormatType.PPOCR)
+        else
+            RectLabelsExporter.export(AnnotationFormatType.YOLO)
     }
 
     const onAnnotationLoadSuccess = useCallback((imagesData: LabelImageData[], labelNames: LabelName[]) => {
@@ -213,7 +220,33 @@ const EditorTopNavigationBar: React.FC<IProps> = (
         onProcessed();
     }, [onProcessed]);
     
-    const importAnnotations = useCallback((file) => {
+    const importImageRank = useCallback((file, content) => {
+        var importer = new RankImporter();
+        if(file.name.endsWith('.txt')) {
+            importer.import(file.name, content)
+        }
+        else if(file.name.endsWith('.zip')) {
+            zip.loadAsync(file).then(function(zip) {
+                var num_total = Object.keys(zip.files).length
+                var num_completed = 0;
+                onProcessing();
+                zip.forEach(function (filename, zipEntry) {
+                    zipEntry.async('blob').then((fileData) => {
+                        fileData.text().then((data) => {
+                            importer.import(filename, data);
+                            num_completed++;
+                            if(num_completed === num_total)
+                                onProcessed();
+                        })
+                    })
+                });
+            }, function (e) {
+                logOutput('alert', t('unzip_error'), undefined, e);
+            });
+        }
+    }, [])
+
+    const importImageAnnotations = useCallback((file) => {
         var labelsFile = new File(imageLabels, 'labels.txt');
         const formatType = AnnotationFormatType.YOLO
         const labelType = LabelType.RECT
@@ -248,8 +281,14 @@ const EditorTopNavigationBar: React.FC<IProps> = (
         reader.readAsText(file, "UTF-8");
         reader.onload = function (event) {
             var content = event.target.result as string;
-            setImageAnnotations(content.split(/\r\n|\n/));
-            importAnnotations(file);
+            if(projectType === ProjectType.IMAGE_RANK) {
+                importImageRank(file, content)
+            }
+            else
+            {
+                setImageAnnotations(content.split(/\r\n|\n/));
+                importImageAnnotations(file);
+            }
         }
     }
 

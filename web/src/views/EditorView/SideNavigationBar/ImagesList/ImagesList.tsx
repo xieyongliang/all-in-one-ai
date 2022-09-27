@@ -14,12 +14,15 @@ import { EventType } from "../../../../data/enums/EventType";
 import { LabelStatus } from "../../../../data/enums/LabelStatus";
 import { TextImageData } from '../../../../store/texts/types';
 import { ProjectType } from '../../../../data/enums/ProjectType';
+import { RankImageData } from '../../../../store/ranks/types';
 
 interface IProps {
     activeLabelImageIndex: number;
     activeTextImageIndex: number;
+    activeRankImageIndex: number;
     labelImageData: LabelImageData[];
     textImageData: TextImageData[];
+    rankImageData: RankImageData[];
     activeLabelType: LabelType;
     projectType: ProjectType;
     imageNames: string[];
@@ -68,8 +71,11 @@ class ImagesList extends React.Component<IProps, IState> {
     private isImageChecked = (index:number): boolean => {
         const labelImagelData = this.props.labelImageData[index]
         const textImageData = this.props.textImageData[index]
+        const rankImageData = this.props.rankImageData[index]
 
-        if(this.props.projectType === ProjectType.TEXT_RECOGNITION)
+        if(this.props.projectType === ProjectType.IMAGE_RANK)
+            return rankImageData.rank !== ''
+        else if(this.props.projectType === ProjectType.TEXT_RECOGNITION)
             return textImageData.textRects.length > 0
         else {
             switch (this.props.activeLabelType) {
@@ -96,7 +102,20 @@ class ImagesList extends React.Component<IProps, IState> {
     };
 
     private renderImagePreview = (index: number, isScrolling: boolean, isVisible: boolean, style: React.CSSProperties) => {
-        if(this.props.projectType === ProjectType.TEXT_RECOGNITION)
+        if(this.props.projectType === ProjectType.IMAGE_RANK)
+            return (
+                <ImagePreview
+                    key={index}
+                    style={style}
+                    size={{width: 150, height: 150}}
+                    isScrolling={isScrolling}
+                    isChecked={this.isImageChecked(index)}
+                    imageData={this.props.rankImageData[index]}
+                    onClick={() => this.onClickHandler(index)}
+                    isSelected={this.props.activeRankImageIndex === index}
+                />
+            )
+        else if(this.props.projectType === ProjectType.TEXT_RECOGNITION)
             return (
                 <ImagePreview
                     key={index}
@@ -133,6 +152,17 @@ class ImagesList extends React.Component<IProps, IState> {
                 onClick={() => ContextManager.switchCtx(ContextType.LEFT_NAVBAR)}
             >
                 {
+                    this.props.projectType === ProjectType.IMAGE_RANK && 
+                    !!size && 
+                    <VirtualList
+                        size={size}
+                        childSize={{width: 150, height: 150}}
+                        childCount={this.props.rankImageData.length}
+                        childRender={this.renderImagePreview}
+                        overScanHeight={200}
+                    />
+                }
+                {
                     this.props.projectType !== ProjectType.TEXT_RECOGNITION && 
                     !!size && 
                     <VirtualList
@@ -164,8 +194,10 @@ const mapDispatchToProps = {};
 const mapStateToProps = (state: AppState) => ({
     activeLabelImageIndex: state.labels.activeImageIndex,
     activeTextImageIndex: state.texts.activeImageIndex,
+    activeRankImageIndex: state.ranks.activeImageIndex,
     labelImageData: state.labels.imagesData,
     textImageData: state.texts.imagesData,
+    rankImageData: state.ranks.imagesData,
     activeLabelType: state.labels.activeLabelType,
     projectType: state.general.projectData.type
 });

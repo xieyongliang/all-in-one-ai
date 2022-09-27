@@ -45,6 +45,7 @@ import KeyBERTDemoForm from '../Forms/Demo/Single/keybert'
 import cognitoUtils from '../../lib/cognitoUtils';
 import { useTranslation } from "react-i18next";
 import { logOutput } from '../Utils/Helper';
+import RegressionDemoForm from '../Forms/Demo/Single/regression';
 
 interface IProps {
     industrialModels : IIndustrialModel[];
@@ -183,7 +184,6 @@ const IndustrialModels: FunctionComponent<IProps> = (
         }
     ]; 
 
-
     if(algorithm === 'yolov5') {
         tabs = [
             {
@@ -271,6 +271,15 @@ const IndustrialModels: FunctionComponent<IProps> = (
                 label: t('industrial_models.demos'),
                 id: 'demo',
                 content: <Yolov5PaddleOCRDemoForm advancedMode={advancedMode} onAdvancedModeChange={onAdvancedModeChange}/>
+            }
+        ];
+    }
+    else if(algorithm === 'regression'){
+        tabs = [
+            {
+                label: t('industrial_models.demos'),
+                id: 'demo',
+                content: <RegressionDemoForm advancedMode={advancedMode} onAdvancedModeChange={onAdvancedModeChange}/>
             }
         ];
     }

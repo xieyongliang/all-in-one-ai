@@ -217,7 +217,8 @@ const SampleImageForm: FunctionComponent<IProps> = (props) => {
         var s3uri =  industrialModel.samples;
         var labels = industrialModel.labels;
         var projectName = industrialModel.name;
-        var data = JSON.stringify({s3uri: s3uri, labels: labels, projectName: projectName})
+        var subType = (props.subType === ProjectSubType.OBJECT_DETECTION) ? ProjectSubType.BATCH_LABEL : (props.subType === ProjectSubType.IMAGE_RANK_TEXT ? ProjectSubType.BATCH_RANK_TEXT : ProjectSubType.BATCH_RANK_CLASS);
+        var data = JSON.stringify({s3uri: s3uri, labels: labels, type: props.type, subType: subType, projectName: projectName})
         history.push(`/batchannotation#${data}}`)
     }
 
@@ -234,7 +235,7 @@ const SampleImageForm: FunctionComponent<IProps> = (props) => {
             <Container headingVariant='h4' title = {t('industrial_models.demo.quick_start')}>
                 <Inline>
                     {
-                        (algorithm === 'yolov5') &&
+                        ((algorithm === 'yolov5') || (algorithm === 'regression') ) &&
                         <div className='quickstartaction'>
                             <Button onClick={onStartBatchAnnotation} disabled={!trainable}>{t('industrial_models.demo.batch_annotation')}</Button>
                         </div>

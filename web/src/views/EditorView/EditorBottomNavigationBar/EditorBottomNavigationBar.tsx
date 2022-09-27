@@ -9,10 +9,11 @@ import { ISize } from "../../../interfaces/ISize";
 import { ContextType } from "../../../data/enums/ContextType";
 import classNames from "classnames";
 import { ImageActions } from "../../../logic/actions/ImageActions";
+import { RankImageData } from '../../../store/ranks/types';
 
 interface IProps {
     size: ISize;
-    imageData: LabelImageData | TextImageData;
+    imageData: LabelImageData | TextImageData | RankImageData ;
     totalImageCount: number;
     activeImageIndex: number;
     activeContext: ContextType;

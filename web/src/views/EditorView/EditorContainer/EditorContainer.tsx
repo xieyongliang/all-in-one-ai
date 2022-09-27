@@ -21,13 +21,17 @@ import { TextImageData } from '../../../store/texts/types';
 import { Box, Dialog } from '@material-ui/core';
 import { LoadingIndicator } from 'aws-northstar';
 import { useTranslation } from "react-i18next";
+import RanksToolkit from '../SideNavigationBar/RanksToolkit/RanksToolkit';
+import { RankImageData } from '../../../store/ranks/types';
 
 interface IProps {
     windowSize: ISize;
     activeLabelImageIndex: number;
     activeTextImageIndex: number;
+    activeRankImageIndex: number;
     labelImagesData: LabelImageData[];
     textImagesData: TextImageData[];
+    rankImagesData: RankImageData[];
     activeContext: ContextType;
     projectType: ProjectType;
     imageBuckets?: string[];
@@ -46,8 +50,10 @@ const EditorContainer: React.FC<IProps> = (
         windowSize,
         activeLabelImageIndex,
         activeTextImageIndex,
+        activeRankImageIndex,
         labelImagesData,
         textImagesData,
+        rankImagesData,
         activeContext,
         projectType,
         imageBuckets,
@@ -162,7 +168,13 @@ const EditorContainer: React.FC<IProps> = (
             )
         else if(projectType === ProjectType.IMAGE_RANK)
             return (
-                <div/>
+                <RanksToolkit
+                    imageNames = {imageNames}
+                    imageLabels = {imageLabels}
+                    onProcessing = {onProcessing} 
+                    onProcessed = {onProcessed}
+                    onLoaded = {onLoaded}
+                />
             )
         else
             return (
@@ -170,9 +182,9 @@ const EditorContainer: React.FC<IProps> = (
             )
     };
 
-    var imagesData = projectType === ProjectType.TEXT_RECOGNITION ? textImagesData : labelImagesData
-    var activeImageIndex = projectType === ProjectType.TEXT_RECOGNITION ? activeTextImageIndex : activeLabelImageIndex
- 
+    var imagesData = (projectType === ProjectType.IMAGE_RANK) ? rankImagesData : (projectType === ProjectType.TEXT_RECOGNITION ? textImagesData : labelImagesData)
+    var activeImageIndex = (projectType === ProjectType.IMAGE_RANK) ? activeRankImageIndex: (projectType === ProjectType.TEXT_RECOGNITION ? activeTextImageIndex : activeLabelImageIndex)
+
     const onProcessing = () => {
         setProcessing(true);
     }
@@ -202,7 +214,8 @@ const EditorContainer: React.FC<IProps> = (
                         projectType === ProjectType.OBJECT_DETECTION_RECT || 
                         projectType === ProjectType.OBJECT_DETECTION_POINT ||
                         projectType === ProjectType.OBJECT_DETECTION_LINE ||
-                        projectType === ProjectType.OBJECT_DETECTION_POLYGON
+                        projectType === ProjectType.OBJECT_DETECTION_POLYGON ||
+                        projectType === ProjectType.IMAGE_RANK
                     )   && 
                     <EditorTopNavigationBar 
                         key="editor-top-navigation-bar"
@@ -251,8 +264,10 @@ const mapStateToProps = (state: AppState) => ({
     windowSize: state.general.windowSize,
     activeLabelImageIndex: state.labels.activeImageIndex,
     activeTextImageIndex: state.texts.activeImageIndex,
+    activeRankImageIndex: state.ranks.activeImageIndex,
     labelImagesData: state.labels.imagesData,
     textImagesData: state.texts.imagesData,
+    rankImagesData: state.ranks.imagesData,
     activeContext: state.general.activeContext,
     projectType: state.general.projectData.type
 });

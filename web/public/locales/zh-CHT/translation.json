@@ -185,7 +185,8 @@
         "unsupported": "暫不支持的演示",
         "json_parse_error": "JSON 數據解析失敗，請檢查並重試",
         "unzip_error": "ZIP 文件解壓縮失敗，請檢查並重試",
-        "file_size_over_6M": "上傳文件大小應該小於等於6M"
+        "file_size_over_6M": "上傳文件大小應該小於等於6M",
+        "image_rank": "圖片標籤"
       },
       "training_job": {
         "create_training_job": "創建訓練任務",

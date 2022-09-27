@@ -4,18 +4,22 @@ import { RankImageData } from "../../../../store/ranks/types";
 import { updateRankImageDataById } from "../../../../store/ranks/actionCreators";
 import { AppState } from "../../../../store";
 import { connect } from "react-redux";
-import { ProjectType } from "../../../../data/enums/ProjectType";
+import { ProjectSubType, ProjectType } from "../../../../data/enums/ProjectType";
 import { ISize } from "../../../../interfaces/ISize";
 import { Settings } from "../../../../settings/Settings";
 import { EventType } from "../../../../data/enums/EventType";
+import { Input } from "aws-northstar";
+import { Typography } from "@material-ui/core";
+import Select from '../../../../components/Utils/Select';
+import i18n from "i18next";
 
 interface IProps {
     activeImageIndex:number,
     imagesData: RankImageData[];
     projectType: ProjectType;
-    imageBuckets?: string[];
-    imageKeys?: string[];
-    imageId?: string;
+    projectSubType: ProjectSubType;
+    imageNames?: string[];
+    imageLabels?: string[];
     updateRankImageDataById: (id: string, newImageData: RankImageData) => any;
     onProcessing: () => any;
     onProcessed: () => any;
@@ -35,6 +39,8 @@ class RanksToolkit extends React.Component<IProps, IState> {
         this.state = {
             size: null,
         };
+
+        props.onLoaded();
     }
 
     public componentDidMount(): void {
@@ -58,6 +64,16 @@ class RanksToolkit extends React.Component<IProps, IState> {
             }
         })
     };
+    
+    private onChange = (value) => {
+        const {activeImageIndex, imagesData, updateRankImageDataById} = this.props;
+
+        var imageData = imagesData[activeImageIndex];
+
+        imageData.rank = value;
+
+        updateRankImageDataById(imageData.id, imageData);
+    }
 
     private renderChildren = () => {
         const {size} = this.state;
@@ -70,8 +86,26 @@ class RanksToolkit extends React.Component<IProps, IState> {
                 className="Content"
                 style={{height: activeContentHeight}}
             >
-                <div >
-                    <input value={activeImageIndex}></input>
+                <div style={{position: "relative", overflow: "hidden", width: "100%", height: "100%", top: "20px", paddingLeft: "10px", paddingRight: "10px", color: "white"}}>
+                    <Typography variant="button" gutterBottom component="div">
+                        {i18n.t('industrial_models.demo.image_rank')}
+                    </Typography>
+                    {   
+                        (this.props.projectSubType === ProjectSubType.BATCH_RANK_TEXT ||  this.props.projectSubType === ProjectSubType.IMAGE_RANK_TEXT) &&  
+                        <Input onChange={this.onChange} value={imagesData[activeImageIndex].rank} />
+                    }
+                    {   
+                        (this.props.projectSubType === ProjectSubType.BATCH_RANK_CLASS ||  this.props.projectSubType === ProjectSubType.IMAGE_RANK_CLASS) &&  
+                        <Select 
+                            options = {this.props.imageLabels.map((item) => {
+                                return {
+                                    label: item, 
+                                    value: item
+                                }
+                            })}
+                            onChange = {this.onChange}
+                        />
+                    }
                 </div>
             </div>;
         return content;
@@ -96,7 +130,8 @@ const mapDispatchToProps = {
 const mapStateToProps = (state: AppState) => ({
     activeImageIndex: state.ranks.activeImageIndex,
     imagesData: state.ranks.imagesData,
-    projectType: state.general.projectData.type
+    projectType: state.general.projectData.type,
+    projectSubType: state.general.projectData.subType
 });
 
 export default connect(
