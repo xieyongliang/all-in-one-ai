@@ -323,14 +323,14 @@ const TransformJobForm: FunctionComponent<IProps> = (props) => {
                     <Grid item xs={2} sm={3} md={3}>
                         <FormField label={t('industrial_models.transform_job.max_invocation_retries')} description={t('industrial_models.transform_job.max_invocation_retries_description')} controlId={uuidv4()}>
                             <div style={{width: '382px'}}>
-                                <Input value = {invocationsTimeoutInSeconds} type={'number'} required={true} onChange={(event) => onChange('formFieldIdInvocationsMaxRetries', event)}/>
+                                <Input value = {invocationsMaxRetries} type={'number'} required={true} onChange={(event) => onChange('formFieldIdInvocationsMaxRetries', event)}/>
                             </div>
                         </FormField>
                     </Grid>
                     <Grid item xs={2} sm={3} md={3}>
                         <FormField label={t('industrial_models.transform_job.invocation_timeout_in_seconds')} description={t('industrial_models.transform_job.invocation_timeout_in_seconds_description')} controlId={uuidv4()}>
                             <div style={{width: '382px'}}>
-                                <Input value = {invocationsMaxRetries} type={'number'} required={true} onChange={(event) => onChange('formFieldIdInvocationsTimeoutInSeconds', event)}/>
+                                <Input value = {invocationsTimeoutInSeconds} type={'number'} required={true} onChange={(event) => onChange('formFieldIdInvocationsTimeoutInSeconds', event)}/>
                             </div>
                         </FormField>
                     </Grid>
