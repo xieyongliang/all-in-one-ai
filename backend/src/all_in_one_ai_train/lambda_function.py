@@ -47,7 +47,6 @@ def lambda_handler(event, context):
             payload = {
                 'body': {
                     'job_name': job_name,
-                    'algorithm': algorithm,
                     'industrial_model': industrial_model,
                     'entry_point': 'train.py',
                     'source_dir': '.',
@@ -87,7 +86,6 @@ def lambda_handler(event, context):
             payload = {
                 'body': {
                     'job_name': job_name,
-                    'algorithm': algorithm,
                     'industrial_model': industrial_model,
                     'entry_point': 'finetune.py',
                     'source_dir': source_dir,
@@ -125,7 +123,6 @@ def lambda_handler(event, context):
             payload = {
                 'body': {
                     'job_name': job_name,
-                    'algorithm': algorithm,
                     'industrial_model': industrial_model,
                     'entry_point': 'train.py',
                     'source_dir': source_dir,
@@ -167,7 +164,6 @@ def lambda_handler(event, context):
             payload = {
                 'body': {
                     'job_name': job_name,
-                    'algorithm': algorithm,
                     'industrial_model': industrial_model,
                     'entry_point': 'train.py',
                     'source_dir': source_dir,
@@ -209,7 +205,6 @@ def lambda_handler(event, context):
             payload = {
                 'body': {
                     'job_name': job_name,
-                    'algorithm': algorithm,
                     'industrial_model': industrial_model,
                     'entry_point': 'train.py',
                     'source_dir': source_dir,
@@ -255,7 +250,6 @@ def lambda_handler(event, context):
             payload = {
                 'body': {
                     'job_name': job_name,
-                    'algorithm': algorithm,
                     'industrial_model': industrial_model,
                     'entry_point': 'finetune.py',
                     'source_dir': source_dir,
@@ -282,7 +276,6 @@ def lambda_handler(event, context):
             payload = {
                 'body': {
                     'job_name': job_name,
-                    'algorithm': algorithm,
                     'industrial_model': industrial_model,
                     'entry_point': 'train.py',
                     'source_dir': source_dir,
@@ -303,6 +296,37 @@ def lambda_handler(event, context):
                 InvocationType = 'Event',
                 Payload=json.dumps(payload)
             )        
+        elif(algorithm == 'stylegan'):
+            image_uri = ssmh.get_parameter('/all_in_one_ai/config/meta/algorithms/{0}/training_image'.format(algorithm))
+
+            default_hyperparameters = {
+                'outdir': '/opt/ml/model',
+                'gpus': 1,
+                'kimg': 1000
+            }
+
+            for key in default_hyperparameters.keys():
+                if(key not in hyperparameters.keys()):
+                    hyperparameters[key] = default_hyperparameters[key]
+
+            payload = {
+                'body': {
+                    'job_name': job_name,
+                    'industrial_model': industrial_model,
+                    'role': role_arn,
+                    'image_uri': image_uri,
+                    'instance_type': instance_type,
+                    'instance_count': instance_count,
+                    'hyperparameters': hyperparameters,
+                    'inputs': inputs
+                }
+            }
+
+            response = lambda_client.invoke(
+                FunctionName = 'all_in_one_ai_create_train_generic',
+                InvocationType = 'Event',
+                Payload=json.dumps(payload)
+            )
         else:
             return {
                 'statusCode': 400,

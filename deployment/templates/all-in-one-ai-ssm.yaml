@@ -335,3 +335,32 @@ Resources:
       Name: /all_in_one_ai/config/meta/algorithms/keybert/artifact
       Type: String
       Value: !Sub s3://${S3Bucket}/${S3Key}algorithms/keybert/artifact/model.tar.gz
+
+  Parameter40:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /all_in_one_ai/config/meta/algorithms/stylegan/industrialmodels
+      Type: String
+      Value: !Sub s3://${S3Bucket}/${S3Key}algorithms/keybert/industrialmodels/
+
+  Parameter41:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /all_in_one_ai/config/meta/algorithms/stylegan/training_image
+      Type: String
+      Value:
+        !If
+        - Globally
+        - !Sub !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/all-in-one-ai-stylegan-training:latest
+        - !Sub !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com.cn/all-in-one-ai-stylegan-training:latest
+
+  Parameter42:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /all_in_one_ai/config/meta/algorithms/stylegan/inference_image
+      Type: String
+      Value:
+        !If
+        - Globally
+        - !Sub !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/all-in-one-ai-stylegan-inference:latest
+        - !Sub !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com.cn/all-in-one-ai-stylegan-inference:latest

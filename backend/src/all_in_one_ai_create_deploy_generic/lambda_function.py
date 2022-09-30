@@ -1,7 +1,8 @@
 import json
 import boto3
 import traceback
-from sagemaker.huggingface.model import HuggingFaceModel
+from sagemaker.model import Model
+from sagemaker.predictor import Predictor
 from utils import persist_meta
 from datetime import datetime
 
@@ -14,31 +15,24 @@ def lambda_handler(event, context):
         time = datetime.now().isoformat()
         pipeline_id = event['body']['pipeline_id'] if('pipeline_id' in event['body']) else None
         model_name = event['body']['model_name'] if('model_name' in event['body'] and event['body']['model_name'] != '') else None
+        image_uri = event['body']['image_uri']
         endpoint_name = event['body']['endpoint_name'] if('endpoint_name' in event['body'] and event['body']['endpoint_name'] != '') else None
         industrial_model = event['body']['industrial_model']
         model_data = event['body']['model_data']
-        hub = event['body']['hub']
-        entry_point = event['body']['entry_point'] if('entry_point' in event['body']) else None
+        model_environment = event['body']['model_environment']
         role = event['body']['role']
-        transformers_version = event['body']['transformers_version']
-        pytorch_version = event['body']['pytorch_version'] if ('pytorch_version' in event['body']) else None
-        tensorflow_version = event['body']['tensorflow_version'] if('tensorflow_version' in event['body']) else None
-        py_version = event['body']['py_version']
         instance_type = event['body']['instance_type']
         instance_count = event['body']['instance_count']
 
-        model = HuggingFaceModel(
+        model = Model(
             name = model_name,
-	        role = role,
             model_data = model_data,
-            entry_point = entry_point,
-            transformers_version = transformers_version,
-            tensorflow_version = tensorflow_version,
-	        pytorch_version = pytorch_version,
-	        py_version = py_version,
-	        env = hub
+            role = role,
+            image_uri = image_uri,
+            env = model_environment,
+            predictor_cls = Predictor
         )
-    
+
         predictor = model.deploy(
             endpoint_name = endpoint_name,
             instance_type = instance_type, 

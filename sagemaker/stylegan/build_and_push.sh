@@ -22,7 +22,7 @@ then
     exit 255
 fi
 
-training_image=all-in-one-ai-stylegan-train
+training_image=all-in-one-ai-stylegan-training
 training_fullname=${account}.dkr.ecr.${region}.amazonaws.com/${training_image}:latest
 
 # If the repository doesn't exist in ECR, create it.
