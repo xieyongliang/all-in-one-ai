@@ -341,7 +341,7 @@ Resources:
     Properties:
       Name: /all_in_one_ai/config/meta/algorithms/stylegan/industrialmodels
       Type: String
-      Value: !Sub s3://${S3Bucket}/${S3Key}algorithms/keybert/industrialmodels/
+      Value: !Sub s3://${S3Bucket}/${S3Key}algorithms/stylegan/industrialmodels/
 
   Parameter41:
     Type: AWS::SSM::Parameter
