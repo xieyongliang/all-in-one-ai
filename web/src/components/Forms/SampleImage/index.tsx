@@ -115,7 +115,9 @@ const SampleImageForm: FunctionComponent<IProps> = (props) => {
         if(industrialModels.length > 0) {
             var index = industrialModels.findIndex((item) => item.id === params.id)
             var s3uri = industrialModels[index].samples
-            setImageLabels(JSON.parse(industrialModels[index].extra).labels)
+            var imageLabels = JSON.parse(industrialModels[index].extra).labels
+            if(imageLabels !== undefined)
+                setImageLabels(imageLabels)
             if(s3uri !== '') {
                 setLoading(true)
                 axios.get('/s3', {params : { s3uri : s3uri, page_num: imagePage, page_size: 20, include_filter: 'jpg,jpeg,png' }})

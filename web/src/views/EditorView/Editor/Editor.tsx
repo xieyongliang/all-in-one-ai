@@ -203,11 +203,11 @@ class Editor extends React.Component<IProps, IState> {
             EditorModel.supportRenderingEngine && EditorModel.supportRenderingEngine.update(editorData);
         }
 
-        if(this.props.projectType !== ProjectType.TEXT_RECOGNITION) {
+        if(this.props.projectType === ProjectType.OBJECT_DETECTION_RECT) {
             !this.props.activePopupType && LabelEditorActions.updateMousePositionIndicator(event);
             LabelEditorActions.fullRender();
         }
-        else {
+        else if(this.props.projectType === ProjectType.TEXT_RECOGNITION) {
             !this.props.activePopupType && TextEditorActions.updateMousePositionIndicator(event);
             TextEditorActions.fullRender();
         }

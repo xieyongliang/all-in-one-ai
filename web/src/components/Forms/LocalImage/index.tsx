@@ -76,7 +76,9 @@ const LocalImageForm: FunctionComponent<IProps> = (props) => {
     }, []);
 
     useEffect(() => {
-        setImageLabels(JSON.parse(industrialModel.extra).labels)
+        var imageLabels = JSON.parse(industrialModel.extra).labels
+        if(imageLabels !== undefined)
+            setImageLabels(imageLabels)
         setCurImageItem('');
         setVisibleImagePreview(false)
     }, [params.id, industrialModel]);
