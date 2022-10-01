@@ -115,7 +115,7 @@ export class EditorContext extends BaseContext {
             action: (event: KeyboardEvent) => {
                 if(store.getState().general.projectData.type === ProjectType.TEXT_RECOGNITION)
                     TextActions.deleteActiveText();
-                else
+                else if(store.getState().general.projectData.type === ProjectType.OBJECT_DETECTION_RECT)
                     LabelActions.deleteActiveLabel();
             }
         },

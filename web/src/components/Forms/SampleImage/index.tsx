@@ -21,6 +21,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { useTranslation } from "react-i18next";
 import './index.scss'
 import { SelectOption } from 'aws-northstar/components/Select';
+import { logOutput } from '../../Utils/Helper';
 
 interface IProps {
     type: ProjectType;
@@ -114,7 +115,7 @@ const SampleImageForm: FunctionComponent<IProps> = (props) => {
         if(industrialModels.length > 0) {
             var index = industrialModels.findIndex((item) => item.id === params.id)
             var s3uri = industrialModels[index].samples
-            setImageLabels(industrialModels[index].labels)
+            setImageLabels(JSON.parse(industrialModels[index].extra).labels)
             if(s3uri !== '') {
                 setLoading(true)
                 axios.get('/s3', {params : { s3uri : s3uri, page_num: imagePage, page_size: 20, include_filter: 'jpg,jpeg,png' }})
@@ -122,7 +123,11 @@ const SampleImageForm: FunctionComponent<IProps> = (props) => {
                         setImageItems(response.data.payload);
                         setImageCount(response.data.count);
                         setLoading(false);
-                    })
+                    }, (error) => {
+                        logOutput('error', error.response.data, undefined, error);
+                        setLoading(false);
+                    }
+                );
             }
         }
     },[params.id, imagePage, industrialModels]);
@@ -215,10 +220,19 @@ const SampleImageForm: FunctionComponent<IProps> = (props) => {
 
     const onStartBatchAnnotation = () => {
         var s3uri =  industrialModel.samples;
-        var labels = industrialModel.labels;
+        var extra = industrialModel.extra
         var projectName = industrialModel.name;
-        var subType = (props.subType === ProjectSubType.OBJECT_DETECTION) ? ProjectSubType.BATCH_LABEL : (props.subType === ProjectSubType.IMAGE_RANK_TEXT ? ProjectSubType.BATCH_RANK_TEXT : ProjectSubType.BATCH_RANK_CLASS);
-        var data = JSON.stringify({s3uri: s3uri, labels: labels, type: props.type, subType: subType, projectName: projectName})
+        var subType : ProjectSubType;
+        if (props.subType === ProjectSubType.OBJECT_DETECTION)
+            subType = ProjectSubType.BATCH_LABEL 
+        else if(props.subType === ProjectSubType.IMAGE_RANK_TEXT)
+            subType = ProjectSubType.BATCH_RANK_TEXT
+        else if(props.subType === ProjectSubType.IMAGE_RANK_FLOAT)
+            subType = ProjectSubType.BATCH_RANK_FLOAT
+        else
+            subType = ProjectSubType.BATCH_RANK_CLASS
+        
+        var data = JSON.stringify({s3uri: s3uri, extra: extra, type: props.type, subType: subType, projectName: projectName})
         history.push(`/batchannotation#${data}}`)
     }
 
@@ -235,7 +249,7 @@ const SampleImageForm: FunctionComponent<IProps> = (props) => {
             <Container headingVariant='h4' title = {t('industrial_models.demo.quick_start')}>
                 <Inline>
                     {
-                        ((algorithm === 'yolov5') || (algorithm === 'regression') ) &&
+                        ((algorithm === 'yolov5') || (algorithm === 'generic') ) &&
                         <div className='quickstartaction'>
                             <Button onClick={onStartBatchAnnotation} disabled={!trainable}>{t('industrial_models.demo.batch_annotation')}</Button>
                         </div>

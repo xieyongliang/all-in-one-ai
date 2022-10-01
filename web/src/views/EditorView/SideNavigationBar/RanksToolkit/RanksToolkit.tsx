@@ -8,7 +8,6 @@ import { ProjectSubType, ProjectType } from "../../../../data/enums/ProjectType"
 import { ISize } from "../../../../interfaces/ISize";
 import { Settings } from "../../../../settings/Settings";
 import { EventType } from "../../../../data/enums/EventType";
-import { Input } from "aws-northstar";
 import { Typography } from "@material-ui/core";
 import Select from '../../../../components/Utils/Select';
 import i18n from "i18next";
@@ -37,7 +36,7 @@ class RanksToolkit extends React.Component<IProps, IState> {
         super(props);
 
         this.state = {
-            size: null,
+            size: null
         };
 
         props.onLoaded();
@@ -63,22 +62,32 @@ class RanksToolkit extends React.Component<IProps, IState> {
                 height: listBoundingBox.height
             }
         })
-    };
+    }
     
-    private onChange = (value) => {
+    private onKeyPress = (event) => {
+        const {activeImageIndex, imagesData} = this.props;
+
+        if(!/[0-9]/.test(event.key) && (event.key !== '.')) {
+            event.preventDefault();
+        }
+
+        console.log(imagesData[activeImageIndex].rank)
+        console.log(imagesData[activeImageIndex].rank.includes('.'))
+        if(imagesData[activeImageIndex].rank.includes('.') && event.key === '.') {
+            event.preventDefault();
+        }
+    }
+
+    private onChange = (event) => {
         const {activeImageIndex, imagesData, updateRankImageDataById} = this.props;
-
-        var imageData = imagesData[activeImageIndex];
-
-        imageData.rank = value;
-
-        updateRankImageDataById(imageData.id, imageData);
+        imagesData[activeImageIndex].rank = event.target.value;
+        updateRankImageDataById(imagesData[activeImageIndex].id, imagesData[activeImageIndex]);
     }
 
     private renderChildren = () => {
         const {size} = this.state;
         const {activeImageIndex, imagesData} = this.props;
-        
+
         const activeContentHeight: number = size.height - Settings.TOOLKIT_TAB_HEIGHT_PX;
         const content =
             <div
@@ -92,7 +101,11 @@ class RanksToolkit extends React.Component<IProps, IState> {
                     </Typography>
                     {   
                         (this.props.projectSubType === ProjectSubType.BATCH_RANK_TEXT ||  this.props.projectSubType === ProjectSubType.IMAGE_RANK_TEXT) &&  
-                        <Input onChange={this.onChange} value={imagesData[activeImageIndex].rank} />
+                        <input onChange={this.onChange} value={ imagesData[activeImageIndex].rank} />
+                    }
+                    {   
+                        (this.props.projectSubType === ProjectSubType.BATCH_RANK_FLOAT ||  this.props.projectSubType === ProjectSubType.IMAGE_RANK_FLOAT) &&  
+                        <input onChange={this.onChange} onKeyPress={this.onKeyPress} value={imagesData[activeImageIndex].rank} />
                     }
                     {   
                         (this.props.projectSubType === ProjectSubType.BATCH_RANK_CLASS ||  this.props.projectSubType === ProjectSubType.IMAGE_RANK_CLASS) &&  

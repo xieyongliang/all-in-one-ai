@@ -45,7 +45,7 @@ import KeyBERTDemoForm from '../Forms/Demo/Single/keybert'
 import cognitoUtils from '../../lib/cognitoUtils';
 import { useTranslation } from "react-i18next";
 import { logOutput } from '../Utils/Helper';
-import RegressionDemoForm from '../Forms/Demo/Single/regression';
+import GenericDemoForm from '../Forms/Demo/Single/generic';
 
 interface IProps {
     industrialModels : IIndustrialModel[];
@@ -274,12 +274,12 @@ const IndustrialModels: FunctionComponent<IProps> = (
             }
         ];
     }
-    else if(algorithm === 'regression'){
+    else if(algorithm === 'generic'){
         tabs = [
             {
                 label: t('industrial_models.demos'),
                 id: 'demo',
-                content: <RegressionDemoForm advancedMode={advancedMode} onAdvancedModeChange={onAdvancedModeChange}/>
+                content: <GenericDemoForm advancedMode={advancedMode} onAdvancedModeChange={onAdvancedModeChange}/>
             }
         ];
     }

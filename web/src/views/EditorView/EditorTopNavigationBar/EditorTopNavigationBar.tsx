@@ -191,9 +191,9 @@ const EditorTopNavigationBar: React.FC<IProps> = (
     }
 
     const exportOnClick = () => {
-        if(projectType == ProjectType.IMAGE_RANK)
+        if(projectType === ProjectType.IMAGE_RANK)
             RankExporter.export(AnnotationFormatType.RANK)
-        else if(projectType == ProjectType.TEXT_RECOGNITION)
+        else if(projectType === ProjectType.TEXT_RECOGNITION)
             PolygonTextsExporter.export(AnnotationFormatType.PPOCR)
         else
             RectLabelsExporter.export(AnnotationFormatType.YOLO)
@@ -244,7 +244,7 @@ const EditorTopNavigationBar: React.FC<IProps> = (
                 logOutput('alert', t('unzip_error'), undefined, e);
             });
         }
-    }, [])
+    }, [onProcessed, onProcessing, t])
 
     const importImageAnnotations = useCallback((file) => {
         var labelsFile = new File(imageLabels, 'labels.txt');

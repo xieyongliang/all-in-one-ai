@@ -21,21 +21,14 @@ interface IProps {
 }
 
 const InustrialModelProp: FunctionComponent<IProps> = (props) => {
-    var labels = '';
-
-    if(props.industrialModel.labels !== undefined) {
-        props.industrialModel.labels.forEach((label) => {
-            labels += label + '\n';
-        })
-        labels = labels.substring(0, labels.length - 1);
-    }
     const [ modelName, setModelName ] = useState(props.industrialModel.name);
     const [ modelDescription, setModelDescription ] = useState(props.industrialModel.description);
     const [ modelSamples, setModelSamples ] = useState(props.industrialModel.samples);
-    const [ modelLables, setModelLabels ] = useState(labels);
+    const [ modelExtra, setModelExtra ] = useState(props.industrialModel.extra);
     const [ iconHttpUri, setIconHttpUri ] = useState('');
     const [ fileName, setFileName ] = useState('');
     const [ processing, setProcessing ] = useState(false);
+    const [ invalidExtra, setInvalidExtra ] = useState(false);
 
     const { t } = useTranslation();
 
@@ -56,8 +49,16 @@ const InustrialModelProp: FunctionComponent<IProps> = (props) => {
             setModelName(event)
         else if(id === 'formFieldIdModelDescription')
             setModelDescription(event)
-        else if(id === 'formFieldIdModelLabels')
-            setModelLabels(event.target.value)
+        else if(id === 'formFieldIdModelExtra') {
+            try {
+                    JSON.parse(event.target.value)
+                    setModelExtra(event.target.value)
+                    setInvalidExtra(false)
+                }
+                catch(e) {
+                    setInvalidExtra(true)
+                }
+        }
         else if(id === 'formFieldIdModelSamples')
             setModelSamples(event)
     }
@@ -120,11 +121,11 @@ const InustrialModelProp: FunctionComponent<IProps> = (props) => {
 
     const renderClassDefinition = () => {
         return (
-            <FormSection header={t('industrial_models.overview.class_and_sample_settings')} >
-                <FormField label={t('industrial_models.overview.class_definition')} controlId={uuidv4()}>
-                    <Textarea value={modelLables} onChange={(event) => onChange('formFieldIdModelLabels', event)} />        
+            <FormSection header={t('industrial_models.overview.algorithm_extra_and_sample_data_settings')} >
+                <FormField label={t('industrial_models.overview.algorithm_extra')} controlId={uuidv4()}>
+                    <Textarea value={modelExtra} invalid={invalidExtra} onChange={(event) => onChange('formFieldIdModelExtra', event)} />        
                 </FormField>
-                <FormField label={t('industrial_models.overview.sample_images_s3_uri')}controlId={uuidv4()}>
+                <FormField label={t('industrial_models.overview.sample_data')}controlId={uuidv4()}>
                     <Input type="text" value={modelSamples} onChange={(event) => onChange('formFieldIdModelSamples', event)} />        
                 </FormField>
             </FormSection>
@@ -133,7 +134,7 @@ const InustrialModelProp: FunctionComponent<IProps> = (props) => {
 
     const renderModelSetting = () => {
         return (
-            <FormSection header={t('industrial_models.overview.class_and_sample_settings')} >
+            <FormSection header={t('industrial_models.overview.algorithm_extra_and_sample_data_settings')} >
                 <FormField label={t('industrial_models.overview.industrial_model_name')} controlId={uuidv4()}>
                     <Input type="text" value={modelName} onChange={(event) => onChange('formFieldIdModelName', event)}/>
                 </FormField>
@@ -174,12 +175,15 @@ const InustrialModelProp: FunctionComponent<IProps> = (props) => {
     }
 
     const onSubmit = () => {
+        if(invalidExtra)
+            return;
+        
         var buffer = {
             'model_id': props.industrialModel.id,
             'model_name': modelName,
             'model_algorithm': selectedAlgorithm.value,
             'model_description': modelDescription,
-            'model_labels': modelLables,
+            'model_extra': modelExtra,
             'model_samples': modelSamples,
             'model_icon': props.industrialModel.icon,
             'file_name': fileName
@@ -193,7 +197,7 @@ const InustrialModelProp: FunctionComponent<IProps> = (props) => {
                 props.industrialModel.icon = modelIcon
                 props.industrialModel.name = modelName
                 props.industrialModel.description = modelDescription
-                props.industrialModel.labels = modelLables.split('\n');
+                props.industrialModel.extra = modelExtra
                 props.industrialModel.samples = modelSamples
                 var copyIndustrialModels = JSON.parse(JSON.stringify(props.industrialModels))
                 var index = copyIndustrialModels.findIndex((industrialModel) =>

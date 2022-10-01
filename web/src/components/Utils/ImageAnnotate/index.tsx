@@ -180,7 +180,6 @@ const ImageAnnotate: React.FC<IProps> = (
 
         var promises2 = []
 
-        var fileNames = [];
         Promise.all(promises).then((reponses) => {
             var index = 0;
             reponses.forEach((response) => {

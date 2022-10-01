@@ -159,7 +159,7 @@ const RectTextsList: React.FC<IProps> = (
     useEffect(() => {
         if(selectedYolov5Endpoint !== undefined) {
             var industrialModel = industrialModels.find((item) => item.id === yolov5EndpointsMapping[selectedYolov5Endpoint.value]);
-            var labels = industrialModel.labels;
+            var labels = JSON.parse(industrialModel.extra).labels;
             var textFields = [];
             labels.forEach((label) => {
                 textFields.push({label: label, value: label})

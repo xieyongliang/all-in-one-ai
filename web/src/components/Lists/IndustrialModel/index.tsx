@@ -75,7 +75,7 @@ const IndustrialModelList: FunctionComponent<IProps> = (props) => {
                             icon: s3uri, 
                             httpuri: data.payload[0].httpuri, 
                             samples: item.samples, 
-                            labels: item.labels
+                            extra: item.extra
                         }
                     );
                     if(items.length === props.industrialModels.length) {

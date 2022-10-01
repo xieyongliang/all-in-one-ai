@@ -45,7 +45,7 @@ export const ALGORITHMS = [
     {label: 'PaddleNLP', value: 'paddlenlp', reference: 'https://github.com/PaddlePaddle/PaddleNLP/blob/develop/README_en.md', type: 'single', trainable: true},
     {label: 'mDeBERTa', value: 'mdeberta', reference: 'https://github.com/microsoft/DeBERTa/blob/master/README.md', type: 'single', trainable: false},
     {label: 'KeyBERT', value: 'keybert', reference: 'https://github.com/MaartenGr/KeyBERT/blob/master/README.md',  type: 'single', trainable: false},
-    {label: 'Regression', value: 'regression', reference: 'https://github.com/xieyongliang/all-in-one-ai/blob/main/docs/README.md',  type: 'single', trainable: true},
+    {label: 'Generic', value: 'generic', reference: 'https://github.com/xieyongliang/all-in-one-ai/blob/main/docs/README.md',  type: 'single', trainable: true},
     {label: 'Yolov5PaddleOCR', value: 'yolov5paddleocr', type: 'mixed'}
 ]
 

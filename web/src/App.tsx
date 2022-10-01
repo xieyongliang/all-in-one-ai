@@ -64,7 +64,7 @@ const App : FunctionComponent = () => {
                     description: item.model_description, 
                     icon : item.model_icon, 
                     samples: item.model_samples, 
-                    labels: item.model_labels
+                    extra: item.model_extra
                 }
                 industrialModels.push(industrialModel)
             })

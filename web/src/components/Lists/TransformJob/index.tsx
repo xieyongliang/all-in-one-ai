@@ -69,7 +69,7 @@ const TransformJobList: FunctionComponent<IProps> = (props) => {
     const onRefresh = useCallback(() => {
         if(industrialModels.length > 0) {
             var index = industrialModels.findIndex((item) => item.id === params.id)
-            setImageLabels(industrialModels[index].labels)
+            setImageLabels(JSON.parse(industrialModels[index].extra).labels)
             setCurImageItem('');
             setVisibleImagePreview(false);
             setVisibleReview(false);

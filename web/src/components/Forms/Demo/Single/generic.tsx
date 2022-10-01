@@ -7,14 +7,18 @@ import { PathParams } from '../../../Interfaces/PathParams';
 import { ProjectSubType, ProjectType } from '../../../../data/enums/ProjectType';
 import { v4 as uuidv4 } from 'uuid';
 import { useTranslation } from "react-i18next";
+import { connect } from 'react-redux';
+import { AppState } from '../../../../store';
 
 interface IProps {
+    industrialModels,
     advancedMode: boolean;
     onAdvancedModeChange : (checked) => any;
 }
 
-const RegressionDemoForm: FunctionComponent<IProps> = (
+const GenericDemoForm: FunctionComponent<IProps> = (
     {
+        industrialModels,
         advancedMode,
         onAdvancedModeChange
     }) => {
@@ -23,6 +27,8 @@ const RegressionDemoForm: FunctionComponent<IProps> = (
     const history = useHistory();
 
     var params : PathParams = useParams();
+
+    var industrialModel = industrialModels.find((item) => item.id === params.id)
 
     var localtion = useLocation();
     var hash = localtion.hash.substring(1);
@@ -44,6 +50,9 @@ const RegressionDemoForm: FunctionComponent<IProps> = (
         )
     }
 
+    var type = JSON.parse(industrialModel.extra).type;
+    var subtype = JSON.parse(industrialModel.extra).subtype;
+
     return (
         <Stack>
             <Container title = {t('industrial_models.demo.demo_options')}>
@@ -54,10 +63,18 @@ const RegressionDemoForm: FunctionComponent<IProps> = (
                     <Toggle label = {t('industrial_models.demo.advanced_mode')} checked={advancedMode} onChange={onAdvancedModeChange}/>
                 </FormField>
             </Container>
-            {demoOption === 'sample' && <SampleImageForm type={ProjectType.IMAGE_RANK} subType={ProjectSubType.IMAGE_RANK_TEXT}/>}
-            {demoOption === 'local' && <LocalImageForm type={ProjectType.IMAGE_RANK} subType={ProjectSubType.IMAGE_RANK_TEXT}/>}
+
+            {type === 'image_rank' && subtype === 'image_rank_float' && demoOption === 'sample' && <SampleImageForm type={ProjectType.IMAGE_RANK} subType={ProjectSubType.IMAGE_RANK_FLOAT}/>}
+            {type === 'image_rank' && subtype === 'image_rank_float' && demoOption === 'local' && <LocalImageForm type={ProjectType.IMAGE_RANK} subType={ProjectSubType.IMAGE_RANK_FLOAT}/>}
         </Stack>
     )
 }
 
-export default RegressionDemoForm;
+
+const mapStateToProps = (state: AppState) => ({
+    industrialModels : state.industrialmodel.industrialModels
+});
+
+export default connect(
+    mapStateToProps
+)(GenericDemoForm);

@@ -8,7 +8,7 @@ export interface IIndustrialModel {
     icon: string,
     samples: string,
     description: string,
-    labels: string[]
+    extra: string
 }
 
 const initialState: IndustrialModelState = {

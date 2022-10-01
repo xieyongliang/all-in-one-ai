@@ -24,10 +24,11 @@ const IndustrialModelForm: FunctionComponent<IProps> = (props) => {
     const [ modelName, setModelName ] = useState('')
     const [ modelDescription, setModelDescription ] = useState('')
     const [ modelSamples, setModelSamples ] = useState('')
-    const [ modelLables, setModelLabels ] = useState('')
+    const [ modelExtra, setModelExtra ] = useState('')
     const [ fileName, setFileName ] = useState('')
     const [ processing, setProcessing ] = useState(false)
     const [ algorithmOptions, setAlgorithmOptions ] = useState([])
+    const [ invalidExtra, setInvalidExtra ] = useState(false);
 
     const { t } = useTranslation();
 
@@ -44,8 +45,18 @@ const IndustrialModelForm: FunctionComponent<IProps> = (props) => {
             setModelName(event)
         else if(id === 'formFieldIdModelDescription')
             setModelDescription(event)
-        else if(id === 'formFieldIdModelLabels')
-            setModelLabels(event.target.value)
+        else if(id === 'formFieldIdModelExtra') {
+            try {
+                    JSON.parse(event.target.value)
+                    setModelExtra(event.target.value)
+                    setInvalidExtra(false)
+                }
+                catch(e) {
+                    setInvalidExtra(true)
+                }
+        }
+        else if(id === 'formFieldIdModelSamples')
+            setModelSamples(event)
         else if(id === 'formFieldIdModelSamples')
             setModelSamples(event)
         else
@@ -99,11 +110,11 @@ const IndustrialModelForm: FunctionComponent<IProps> = (props) => {
 
     const renderClassDefinition = () => {
         return (
-            <FormSection header={t('industrial_models.overview.class_and_sample_settings')} >
-                <FormField label={t('industrial_models.overview.class_definition')} controlId={uuidv4()}>
-                    <Textarea value={modelLables} onChange={(event) => onChange('formFieldIdModelLabels', event)} />        
+            <FormSection header={t('industrial_models.overview.algorithm_extra_and_sample_data_settings')} >
+                <FormField label={t('industrial_models.overview.algorithm_extra')} controlId={uuidv4()}>
+                    <Textarea value={modelExtra} invalid={invalidExtra} onChange={(event) => onChange('formFieldIdModelExtra', event)} />        
                 </FormField>
-                <FormField label={t('industrial_models.overview.sample_images_s3_uri')} controlId={uuidv4()}>
+                <FormField label={t('industrial_models.overview.sample_data')} controlId={uuidv4()}>
                     <Input type="text" value={modelSamples} onChange={(event) => onChange('formFieldIdModelSamples', event)} />        
                 </FormField>
             </FormSection>
@@ -112,7 +123,7 @@ const IndustrialModelForm: FunctionComponent<IProps> = (props) => {
 
     const renderModelSetting = () => {
         return (
-            <FormSection header={t('industrial_models.overview.class_and_sample_settings')} >
+            <FormSection header={t('industrial_models.overview.algorithm_extra_and_sample_data_settings')} >
                 <FormField label={t('industrial_models.overview.industrial_model_name')} controlId={uuidv4()}>
                     <Input type="text" value={modelName} onChange={(event) => onChange('formFieldIdModelName', event)}/>
                 </FormField>
@@ -159,7 +170,7 @@ const IndustrialModelForm: FunctionComponent<IProps> = (props) => {
             'model_name': modelName,
             'model_algorithm': selectedAlgorithm.value,
             'model_description': modelDescription,
-            'model_labels': modelLables,
+            'model_extra': modelExtra,
             'model_samples': modelSamples,
             'file_name': fileName
         }
@@ -168,7 +179,7 @@ const IndustrialModelForm: FunctionComponent<IProps> = (props) => {
                 var modelId = response.data.id;
                 var modelIcon = response.data.icon;
                 var industrialModels = props.industrialModels.map((x) => x)
-                industrialModels.push({id: modelId, name: modelName, algorithm : selectedAlgorithm.value, description: modelDescription, labels: modelLables.split('\n'), samples: modelSamples, icon: modelIcon})
+                industrialModels.push({id: modelId, name: modelName, algorithm : selectedAlgorithm.value, description: modelDescription, extra: modelExtra, samples: modelSamples, icon: modelIcon})
                 props.updateindustrialmodelsAction(industrialModels)
                 props.onClose();
             }).catch((error) => {

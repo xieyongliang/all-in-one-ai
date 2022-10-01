@@ -30,7 +30,7 @@ def lambda_handler(event, context):
             params = {}
             params['model_name'] = request['model_name']
             params['model_description'] = request['model_description']
-            params['model_labels'] = request['model_labels'].split('\n')
+            params['model_extra'] = request['model_extra']
             params['model_samples'] = request['model_samples']
         
             if(model_id == None):
@@ -74,7 +74,7 @@ def lambda_handler(event, context):
             if(model_algorithm == 'yolov5'):
                 industrialmodels_s3uri = ssmh.get_parameter('/all_in_one_ai/config/meta/algorithms/yolov5/industrialmodels')
                 data_yaml_output_s3uri = '{0}{1}/data/cfg/data.yaml'.format(industrialmodels_s3uri, model_id)
-                generate_data_yaml(data_yaml_output_s3uri, params['model_labels'])
+                generate_data_yaml(data_yaml_output_s3uri, json.loads(params['model_extra'])['labels'])
 
             print(request)
             response = {

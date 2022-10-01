@@ -29,7 +29,7 @@ const PAGE_SIZE = 50
 
 interface IProps {
     s3uri: string;
-    labels: string[];
+    extra: string;
     projectName: string;
     pageSize?: number;
     type: ProjectType;
@@ -39,7 +39,7 @@ interface IProps {
 
 const ImagePanel: FunctionComponent<IProps> = ({
     s3uri,
-    labels,
+    extra,
     projectName,
     type,
     subType,
@@ -86,9 +86,14 @@ const ImagePanel: FunctionComponent<IProps> = ({
 
     const renderImagePreview = () => {
         var labelsData : string[] = [];
-        labels.forEach(label => {
-            labelsData.push(label + '\n');
-        })
+        var labels : string[];
+
+        if(subType === ProjectSubType.BATCH_LABEL) {
+            labels = JSON.parse(extra).labels;
+            labels.forEach(label => {
+                labelsData.push(label + '\n');
+            })
+        }
 
         var imageNames = []
         var imageBuckets = []

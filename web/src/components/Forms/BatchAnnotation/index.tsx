@@ -12,7 +12,7 @@ const BatchAnnotationForm: FunctionComponent = () => {
     var data = JSON.parse(hash)
 
     var s3uri = data.s3uri
-    var labels = data.labels
+    var extra = data.extra
     var type = data.type
     var subType = data.subType
     var projectName = data.projectName
@@ -29,7 +29,7 @@ const BatchAnnotationForm: FunctionComponent = () => {
             type={type}
             subType={subType}
             s3uri={s3uri} 
-            labels={labels}
+            extra={extra}
             projectName={projectName} 
             onClose={onClose} 
         />

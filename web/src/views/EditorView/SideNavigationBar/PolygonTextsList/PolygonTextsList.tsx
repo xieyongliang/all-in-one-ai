@@ -231,7 +231,7 @@ const PolygonTextsList: React.FC<IProps> = (
         if(selectedYolov5Endpoint !== undefined) {
             var industrialModel = industrialModels.find((item) => item.id === yolov5EndpointsMapping[selectedYolov5Endpoint.value]);
 
-            var labels = industrialModel.labels;
+            var labels = JSON.parse(industrialModel.extra).labels;
             var textFields = [];
             labels.forEach((label) => {
                 textFields.push({label: label, value: label})
@@ -310,9 +310,9 @@ const PolygonTextsList: React.FC<IProps> = (
 
         var industrialModel = industrialModels.find((item) => item.id === params.id);
 
-        var keywords = []
-        industrialModel.labels.forEach(label => {
-            keywords.push(label)
+        var keywords = JSON.parse(industrialModel.extra).keywords
+        keywords.forEach(keyword => {
+            keywords.push(keyword)
         })
 
         var response = undefined
