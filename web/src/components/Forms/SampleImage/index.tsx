@@ -251,7 +251,7 @@ const SampleImageForm: FunctionComponent<IProps> = (props) => {
             <Container headingVariant='h4' title = {t('industrial_models.demo.quick_start')}>
                 <Inline>
                     {
-                        ((algorithm === 'yolov5') || (algorithm === 'generic') ) &&
+                        (ALGORITHMS.find((item) => item.value === algorithm).batchannotation) &&
                         <div className='quickstartaction'>
                             <Button onClick={onStartBatchAnnotation} disabled={!trainable}>{t('industrial_models.demo.batch_annotation')}</Button>
                         </div>

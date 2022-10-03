@@ -5,6 +5,7 @@ import mxnet as mx
 from mxnet.gluon import nn
 from gluoncv.model_zoo import get_model
 from gluoncv.data.transforms.presets.imagenet import transform_eval
+from mxnet import nd
 
 s3_client = boto3.client('s3')
 
@@ -27,32 +28,44 @@ def transform_fn(model: any, request_body: any, content_type: any, accept_type: 
         input_data = request_body
 
     task = os.environ['task'] if('task' in os.environ) else 'search'
-    use_layer = len(model) - 1 if(task == 'search') else len(model)
-    pred = get_embedding_advance(input_data, model, use_layer=use_layer)
+    pred = get_embedding_advance(input_data, model, task)
     result = pred.tolist()
 
-    return json.dumps({'predictions': [result]})
+    return json.dumps({'result': result})
 
-def get_embedding_advance(input_pic, seq_net, use_layer):
-    img = input_pic
-    
+def get_embedding_advance(input_pic, net, task):
+    img = input_pic        
     ctx = [mx.gpu(i) for i in range(mx.context.num_gpus())] if mx.context.num_gpus() else [mx.cpu()]
     img = transform_eval(img).copyto(ctx[0])
-    pred = None
-    for i in range(len(seq_net)):
-        img = seq_net[i](img)
-        if i == use_layer:
-            pred = img[0]
-            break
+    
+    if(task == 'search'):
+        seq_net = nn.Sequential()
+        for i in range(len(net.features)):
+            seq_net.add(net.features[i])
 
-    return pred.asnumpy()
+        use_layer = len(model) - 1
+        pred = None
+        for i in range(len(seq_net)):
+            img = seq_net[i](img)
+            if i == use_layer:
+                pred = img[0]
+                break
+
+        return pred.asnumpy()
+    else:
+        top_k = int(os.environ['top_k']) if ('top_k' in os.environ) else 5
+        pred = net(img)
+        prob = mx.nd.softmax(pred)[0].asnumpy()
+        ind = mx.nd.topk(pred, k = top_k)[0].astype('int')
+
+        return ind.asnumpy()
 
 def model_fn(model_dir):
     """
     Load the model for inference
     """
     
-    classes = int(os.environ['classes']) if ('classes' in os.environ) else 10
+    classes = int(os.environ['classes']) if ('classes' in os.environ) else 1000
     model_name = os.environ['model_name'] if('model_name' in os.environ) else 'ResNet50_v2'
 
     ctx = [mx.gpu(i) for i in range(mx.context.num_gpus())] if mx.context.num_gpus() else [mx.cpu()]
@@ -69,8 +82,5 @@ def model_fn(model_dir):
 
     net.collect_params().reset_ctx(ctx)
 
-    seq_net = nn.Sequential()
-    for i in range(len(net.features)):
-        seq_net.add(net.features[i])
+    return net
 
-    return seq_net

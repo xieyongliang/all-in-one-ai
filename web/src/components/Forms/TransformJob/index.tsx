@@ -14,6 +14,9 @@ import { logOutput } from '../../Utils/Helper';
 
 interface IProps {
     industrialModels : IIndustrialModel[];
+    header?: string;
+    s3uri?: string;
+    onClose?: ()=>any;
 }
 
 const s3DateTypeOptions : SelectOption[] = [
@@ -118,7 +121,7 @@ const TransformJobForm: FunctionComponent<IProps> = (props) => {
     const [ maxPayloadInMB, setMaxPayloadInMB ] = useState(6);    
     const [ instanceCount, setInstanceCount ] = useState(1);
     const [ maxConcurrentTransforms, setMaxConcurrentTransforms ] = useState(1);
-    const [ inputS3Uri, setInputS3Uri ] = useState('');
+    const [ inputS3Uri, setInputS3Uri ] = useState(props.s3uri !== undefined ? props.s3uri : '');
     const [ outputS3Uri, setOutputS3Uri ] = useState('');
     const [ inputFilter, setInputFilter ] = useState('');
     const [ outputFilter, setOutputFilter ] = useState('');
@@ -254,7 +257,10 @@ const TransformJobForm: FunctionComponent<IProps> = (props) => {
     }
 
     const onCancel = () => {
-        history.goBack()
+        if(props.onClose !== undefined)
+            props.onClose()
+        else
+            history.goBack()
     }
     
     const renderTransformJobConfiguration = () => {
@@ -393,7 +399,7 @@ const TransformJobForm: FunctionComponent<IProps> = (props) => {
                     </Grid>
                     <Grid item xs={2} sm={8} md={8}>
                         <FormField label={t('industrial_models.transform_job.s3_location')} controlId={uuidv4()}>
-                            <Input type='text' value={inputS3Uri} placeholder='S3Uri' required={true} onChange={(event) => onChange('formFieldIdInputS3Uri', event)}/>
+                            <Input type='text' value={inputS3Uri} readonly={props.s3uri !== undefined} placeholder='S3Uri' required={true} onChange={(event) => onChange('formFieldIdInputS3Uri', event)}/>
                         </FormField>
                     </Grid>
                 </Grid>
@@ -559,7 +565,7 @@ const TransformJobForm: FunctionComponent<IProps> = (props) => {
 
     return (
         <Form
-            header={t('industrial_models.transform_job.create_transform_job')}
+            header={props.header !== undefined ? props.header : t('industrial_models.transform_job.create_transform_job')}
             description={t('industrial_models.transform_job.create_transform_job_description')}
             actions={
                 <div>

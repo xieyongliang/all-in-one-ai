@@ -70,7 +70,7 @@ def lambda_handler(event, context):
             source_dir = ssmh.get_parameter('/all_in_one_ai/config/meta/algorithms/{0}/source'.format(algorithm))
 
             default_hyperparameters = {
-                'classes': 10, 
+                'classes': 1000, 
                 'batch_size': 8,
                 'epochs': 20, 
                 'learning_rate': 0.001,

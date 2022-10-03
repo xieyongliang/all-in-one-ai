@@ -1,6 +1,7 @@
 import { Modal } from 'aws-northstar';
 import { FunctionComponent } from 'react';
 import Image from '../Image';
+import { useTranslation } from "react-i18next";
 
 export interface ImagePreviewProps {
     src: string;
@@ -12,8 +13,10 @@ export interface ImagePreviewProps {
 }
 
 const ImagePreview: FunctionComponent<ImagePreviewProps> = (props) => {
+    const { t } = useTranslation();
+    
     return (
-        <Modal title="Image preview" visible={props.visible} onClose={props.onClose} width={"100"}>
+        <Modal title={t('industrial_models.demo.image_preview')} visible={props.visible} onClose={props.onClose} width={"100"}>
             <Image 
                 src={props.src} 
                 httpuri={props.src}

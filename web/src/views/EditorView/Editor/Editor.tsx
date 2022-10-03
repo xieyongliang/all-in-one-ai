@@ -74,9 +74,11 @@ class Editor extends React.Component<IProps, IState> {
 
         ContextManager.switchCtx(ContextType.EDITOR);
         if(this.props.projectType === ProjectType.TEXT_RECOGNITION)
-            TextEditorActions.mountRenderEnginesAndHelpers()
-        else
+            TextEditorActions.mountRenderEnginesAndHelpers();
+        else if(this.props.projectType === ProjectType.OBJECT_DETECTION_RECT)
             LabelEditorActions.mountRenderEnginesAndHelpers(activeLabelType);
+        else if(this.props.projectType === ProjectType.IMAGE_RANK)
+            RankEditorActions.mountRenderEnginesAndHelpers();
         ImageLoadManager.addAndRun(this.loadImage(imageData));
         ViewPortActions.resizeCanvas(this.props.size);
     }
@@ -90,15 +92,18 @@ class Editor extends React.Component<IProps, IState> {
 
         prevProps.imageData.id !== imageData.id && ImageLoadManager.addAndRun(this.loadImage(imageData));
 
-        if(this.props.projectType !== ProjectType.TEXT_RECOGNITION) {
+        if(this.props.projectType === ProjectType.OBJECT_DETECTION_RECT) {
             if (prevProps.activeLabelType !== activeLabelType) {
                 LabelEditorActions.swapSupportRenderingEngine(activeLabelType);
                 AIActions.detect(imageData.id, ImageRepository.getById(imageData.id));
             }
         }
-        else {
+        else if(this.props.projectType === ProjectType.TEXT_RECOGNITION) {
             TextEditorActions.swapSupportRenderingEngine();
             AIActions.detect(imageData.id, ImageRepository.getById(imageData.id));
+        }
+        else if(this.props.projectType === ProjectType.IMAGE_RANK) {
+            RankEditorActions.swapSupportRenderingEngine();
         }
 
         this.updateModelAndRender();
@@ -136,7 +141,7 @@ class Editor extends React.Component<IProps, IState> {
                 TextEditorActions.setActiveImage(ImageRepository.getById(imageData.id));
                 this.updateModelAndRender()
             }
-            else {
+            else if(this.props.projectType === ProjectType.OBJECT_DETECTION_RECT){
                 LabelEditorActions.setActiveImage(ImageRepository.getById(imageData.id));
                 AIActions.detect(imageData.id, ImageRepository.getById(imageData.id));
                 this.updateModelAndRender()            
@@ -144,12 +149,11 @@ class Editor extends React.Component<IProps, IState> {
         }
         else {
             if (!EditorModel.isLoading) {
-                if(this.props.projectType === ProjectType.IMAGE_RANK) {
+                if(this.props.projectType === ProjectType.IMAGE_RANK)
                     RankEditorActions.setLoadingStatus(true);
-                }
-                else if(this.props.projectType !== ProjectType.TEXT_RECOGNITION)
+                else if(this.props.projectType === ProjectType.OBJECT_DETECTION_RECT)
                     LabelEditorActions.setLoadingStatus(true);
-                else 
+                else if(this.props.projectType === ProjectType.TEXT_RECOGNITION)
                     TextEditorActions.setLoadingStatus(true);
                 const saveLoadedImagePartial = (image: HTMLImageElement) => this.saveLoadedImage(image, imageData);
                 FileUtil.loadImage(imageData.fileData)
@@ -164,15 +168,19 @@ class Editor extends React.Component<IProps, IState> {
         imageData.loadStatus = true;
         this.props.updateLabelImageDataById(imageData.id, imageData);
         ImageRepository.storeImage(imageData.id, image);
-        if(this.props.projectType !== ProjectType.TEXT_RECOGNITION)
+        if(this.props.projectType === ProjectType.OBJECT_DETECTION_RECT) {
             LabelEditorActions.setActiveImage(image);
-        else
-            TextEditorActions.setActiveImage(image);
-        AIActions.detect(imageData.id, image);
-        if(this.props.projectType !== ProjectType.TEXT_RECOGNITION)
             LabelEditorActions.setLoadingStatus(false);
-        else
+        }
+        else if(this.props.projectType === ProjectType.TEXT_RECOGNITION) {
+            TextEditorActions.setActiveImage(image);
             TextEditorActions.setLoadingStatus(false);
+        }
+        else if(this.props.projectType === ProjectType.IMAGE_RANK) {
+            RankEditorActions.setActiveImage(image);
+            RankEditorActions.setLoadingStatus(false);
+        }
+        AIActions.detect(imageData.id, image);
         this.updateModelAndRender()
     };
 
@@ -186,14 +194,23 @@ class Editor extends React.Component<IProps, IState> {
         ViewPortActions.updateViewPortSize();
         ViewPortActions.updateDefaultViewPortImageRect();
         ViewPortActions.resizeViewPortContent();
-        if(this.props.projectType !== ProjectType.TEXT_RECOGNITION)
+        if(this.props.projectType === ProjectType.OBJECT_DETECTION_RECT)
             LabelEditorActions.fullRender();
-        else
+        else if(this.props.projectType === ProjectType.TEXT_RECOGNITION)
             TextEditorActions.fullRender();
+        else if(this.props.projectType === ProjectType.IMAGE_RANK)
+            RankEditorActions.fullRender();
     };
 
     private update = (event: MouseEvent) => {
-        const editorData: EditorData = (this.props.projectType !== ProjectType.TEXT_RECOGNITION) ? LabelEditorActions.getEditorData(event) : TextEditorActions.getEditorData(event);
+        var editorData: EditorData;
+        if(this.props.projectType === ProjectType.OBJECT_DETECTION_RECT)
+            editorData = LabelEditorActions.getEditorData(event);
+        else if(this.props.projectType === ProjectType.TEXT_RECOGNITION)
+            editorData = TextEditorActions.getEditorData(event);
+        else if(this.props.projectType === ProjectType.IMAGE_RANK)
+            editorData = RankEditorActions.getEditorData(event);
+
         EditorModel.mousePositionOnViewPortContent = CanvasUtil.getMousePositionOnCanvasFromEvent(event, EditorModel.canvas);
         EditorModel.primaryRenderingEngine.update(editorData);
 
@@ -211,6 +228,11 @@ class Editor extends React.Component<IProps, IState> {
             !this.props.activePopupType && TextEditorActions.updateMousePositionIndicator(event);
             TextEditorActions.fullRender();
         }
+        else if(this.props.projectType === ProjectType.IMAGE_RANK) {
+            !this.props.activePopupType && LabelEditorActions.updateMousePositionIndicator(event);
+            RankEditorActions.fullRender();
+        }
+
     };
 
     private handleZoom = (event: WheelEvent) => {
@@ -227,7 +249,15 @@ class Editor extends React.Component<IProps, IState> {
     };
 
     private getOptionsPanels = () => {
-        const editorData: EditorData = (this.props.projectType !== ProjectType.TEXT_RECOGNITION) ? LabelEditorActions.getEditorData() : TextEditorActions.getEditorData();
+        var editorData: EditorData;
+
+        if(this.props.projectType === ProjectType.OBJECT_DETECTION_RECT)
+            editorData = LabelEditorActions.getEditorData()
+        else if(this.props.projectType === ProjectType.TEXT_RECOGNITION)
+            editorData = TextEditorActions.getEditorData()
+        else if(this.props.projectType === ProjectType.IMAGE_RANK)
+            editorData = RankEditorActions.getEditorData()
+
         if(this.props.projectType === ProjectType.IMAGE_RANK) {
             return <div />
         }

@@ -169,8 +169,10 @@ const EditorContainer: React.FC<IProps> = (
         else if(projectType === ProjectType.IMAGE_RANK)
             return (
                 <RanksToolkit
+                    imageBuckets = {imageBuckets}
+                    imageKeys = {imageKeys}
+                    imageId = {imageId}
                     imageNames = {imageNames}
-                    imageLabels = {imageLabels}
                     onProcessing = {onProcessing} 
                     onProcessed = {onProcessed}
                     onLoaded = {onLoaded}

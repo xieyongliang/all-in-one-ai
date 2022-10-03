@@ -16,6 +16,7 @@ import {store} from '../../index';
 import {updateZoom} from '../../store/general/actionCreators';
 import { TextEditorActions } from './TextEditorActions';
 import { ProjectType } from '../../data/enums/ProjectType';
+import { RankEditorActions } from './RankEditorActions';
 
 export class ViewPortActions {
     public static updateViewPortSize() {
@@ -133,8 +134,16 @@ export class ViewPortActions {
         EditorModel.mousePositionOnViewPortContent = PointUtil
             .add(EditorModel.mousePositionOnViewPortContent, translationVector);
         
-        var EditorActions = (store.getState().general.projectData.type === ProjectType.TEXT_RECOGNITION) ? LabelEditorActions : TextEditorActions;
-        EditorActions.fullRender();
+        var EditorActions;
+        var projectType = store.getState().general.projectData.type;
+        if(projectType === ProjectType.IMAGE_RANK)
+            EditorActions = RankEditorActions;
+        else if(projectType === ProjectType.TEXT_RECOGNITION)
+            EditorActions = TextEditorActions;
+        else if(projectType === ProjectType.OBJECT_DETECTION_RECT)
+            EditorActions = LabelEditorActions;
+        if(EditorActions !== undefined)
+            EditorActions.fullRender();
     }
 
     public static zoomIn() {
@@ -146,8 +155,17 @@ export class ViewPortActions {
         ViewPortActions.setZoom(currentZoom + ViewPointSettings.ZOOM_STEP);
         ViewPortActions.resizeViewPortContent();
         ViewPortActions.setScrollPosition(ViewPortActions.calculateAbsoluteScrollPosition(nextRelativeScrollPosition));
-        var EditorActions = (store.getState().general.projectData.type === ProjectType.TEXT_RECOGNITION) ? LabelEditorActions : TextEditorActions;
-        EditorActions.fullRender();
+
+        var EditorActions;
+        var projectType = store.getState().general.projectData.type;
+        if(projectType === ProjectType.IMAGE_RANK)
+            EditorActions = RankEditorActions;
+        else if(projectType === ProjectType.TEXT_RECOGNITION)
+            EditorActions = TextEditorActions;
+        else if(projectType === ProjectType.OBJECT_DETECTION_RECT)
+            EditorActions = LabelEditorActions;
+        if(EditorActions !== undefined)
+            EditorActions.fullRender();        
     }
 
     public static zoomOut() {
@@ -159,8 +177,17 @@ export class ViewPortActions {
         ViewPortActions.resizeViewPortContent();
         ViewPortActions.setScrollPosition(ViewPortActions
             .calculateAbsoluteScrollPosition(currentRelativeScrollPosition));
-        var EditorActions = (store.getState().general.projectData.type === ProjectType.TEXT_RECOGNITION) ? LabelEditorActions : TextEditorActions;
-        EditorActions.fullRender();
+        
+        var EditorActions;
+        var projectType = store.getState().general.projectData.type;
+        if(projectType === ProjectType.IMAGE_RANK)
+            EditorActions = RankEditorActions;
+        else if(projectType === ProjectType.TEXT_RECOGNITION)
+            EditorActions = TextEditorActions;
+        else if(projectType === ProjectType.OBJECT_DETECTION_RECT)
+            EditorActions = LabelEditorActions;
+        if(EditorActions !== undefined)
+            EditorActions.fullRender();
     }
 
     public static setDefaultZoom() {
@@ -181,8 +208,17 @@ export class ViewPortActions {
         ViewPortActions.setZoom(nextZoom);
         ViewPortActions.resizeViewPortContent();
         ViewPortActions.setScrollPosition(ViewPortActions.calculateAbsoluteScrollPosition(nextRelativeScrollPosition));
-        var EditorActions = (store.getState().general.projectData.type === ProjectType.TEXT_RECOGNITION) ? LabelEditorActions : TextEditorActions;
-        EditorActions.fullRender();
+
+        var EditorActions;
+        var projectType = store.getState().general.projectData.type;
+        if(projectType === ProjectType.IMAGE_RANK)
+            EditorActions = RankEditorActions;
+        else if(projectType === ProjectType.TEXT_RECOGNITION)
+            EditorActions = TextEditorActions;
+        else if(projectType === ProjectType.OBJECT_DETECTION_RECT)
+            EditorActions = LabelEditorActions;
+        if(EditorActions !== undefined)
+            EditorActions.fullRender();
     }
 
     public static setZoom(value: number) {

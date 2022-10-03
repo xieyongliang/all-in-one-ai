@@ -1,6 +1,6 @@
 import { FunctionComponent, useEffect, useState } from 'react';
-import { useHistory, useParams } from 'react-router-dom';
-import { Container, Link, Toggle, Select, Stack, FormField, Button, ProgressBar, LoadingIndicator, Inline } from 'aws-northstar';
+import { useHistory, useLocation, useParams } from 'react-router-dom';
+import { Container, Link, Toggle, Select, Stack, FormField, Button, ProgressBar, LoadingIndicator, Inline, RadioGroup, RadioButton } from 'aws-northstar';
 import ImageList from '@mui/material/ImageList';
 import ImageListItem from '@mui/material/ImageListItem';
 import SyntaxHighlighter from 'react-syntax-highlighter';
@@ -20,6 +20,10 @@ import { v4 as uuidv4 } from 'uuid';
 import '../index.scss'
 import { useTranslation } from "react-i18next";
 import { logOutput } from '../../../Utils/Helper';
+import TransformJobForm from '../../TransformJob'
+import ImportImage from '../../ImportImage';
+import { ProjectSubType, ProjectType } from '../../../../data/enums/ProjectType';
+import ImageAnnotate from '../../../Utils/ImageAnnotate';
 
 interface IProps {
     industrialModels: IIndustrialModel[];
@@ -35,6 +39,7 @@ const GluonCVDemoForm: FunctionComponent<IProps> = (
     }) => {
     const [ originImageItems, setOriginImageItems ] = useState([])
     const [ searchImageItems, setSearchImageItems ] = useState([])
+    const [ originImageName, setOriginImageName ] = useState('')
     const [ curOriginImageItem, setCurOriginImageItem ] = useState('')
     const [ curSearchImageItem, setCurSearchImageItem ] = useState('')
     const [ searchImage, setSearchImage ] = useState('')
@@ -51,8 +56,8 @@ const GluonCVDemoForm: FunctionComponent<IProps> = (
     const [ visibleSearchImagePreview, setVisibleSearchImagePreview ] = useState(false)
     const [ loading, setLoading ] = useState(true);
     const [ processing, setProcessing ] = useState(false);
-    const [ importing, setImporting ] = useState(false);
     const [ importedCount, setImportedCount ] = useState(0);
+    const [ visibleImportImage, setVisibleImportImage ] = useState(false)
     
     const { t } = useTranslation();
 
@@ -60,7 +65,14 @@ const GluonCVDemoForm: FunctionComponent<IProps> = (
 
     var params : PathParams = useParams();
 
-    var industrialModel = industrialModels.find((item) => item.id === params.id)
+    var industrialModel = industrialModels.find((item) => item.id === params.id);
+
+    var task = JSON.parse(industrialModel.extra).task;
+
+    var localtion = useLocation();
+    var hash = localtion.hash.substring(1);
+
+    const [ demoOption, setDemoOption ] = useState(task === 'search' ? 'import_with_realtimeinference' : (hash === 'sample' || hash === 'local' || hash === 'transformjob' ? hash : 'sample'))
 
     const getSourceCode = async (uri) => {
         const response = await axios.get('/_file/download', {params: {uri: encodeURIComponent(uri)}, responseType: 'blob'})
@@ -147,31 +159,26 @@ const GluonCVDemoForm: FunctionComponent<IProps> = (
     }
 
     const onImportSamples = () => {
-        setImporting(true)
-        axios.get('/search/import', {params : {industrial_model : params.id, endpoint_name: selectedEndpoint.value, model_samples: industrialModel.samples}})
-            .then((response) => {
-                setTimeout(() => {
-                    setImporting(false)
-                  }, 60000);
-            }, (error) => {
-                logOutput('error', error.response.data, undefined, error);
-                setImporting(false);
-            })
+        setVisibleImportImage(true)
     }
 
     useEffect(() => {
-        const interval = setInterval(() => {
-            if(imageCount === 0) return
-            axios.get('/search/import', {params : {industrial_model : industrialModel.id, model_samples: industrialModel.samples, action: 'query'}})
-            .then((response) => {
-                var current = response.data.current;
-                setImportedCount(Math.floor((current * 100) / imageCount));
-            }, (error) => {
-                logOutput('error', error.response.data, undefined, error);
-            })
-        }, 1000);
-        return () => clearInterval(interval);
-      }, [industrialModel, imageCount]);
+        if(task === 'search') {
+            const interval = setInterval(() => {
+                if(imageCount === 0) return
+                axios.get('/search/import', {params : {industrial_model : industrialModel.id, model_samples: industrialModel.samples, action: 'query'}})
+                .then((response) => {
+                    var current = response.data.current;
+                    setImportedCount(Math.floor((current * 100) / imageCount));
+                }, (error) => {
+                    logOutput('error', error.response.data, undefined, error);
+                })
+            }, 1000);
+            return () => clearInterval(interval);
+        }
+        else
+            return () => {};
+      }, [industrialModel, imageCount, task]);
       
     
     const renderOriginImageList = () => {
@@ -187,11 +194,13 @@ const GluonCVDemoForm: FunctionComponent<IProps> = (
                     headingVariant='h4'
                     title = {t('industrial_models.demo.sample_data')}
                     headerContent ={
+                        task === 'search' &&
                         <div>
                             <div style={{display: "inline-block", float: "right", marginRight: "5px", marginTop: "-32px"}}>
                             <Button 
                                 onClick={onImportSamples} 
-                                loading={importing}>{t('industrial_models.demo.import_images')}
+                            >
+                                {t('industrial_models.demo.import_images')}
                             </Button>
                             </div>
                         </div>
@@ -219,25 +228,41 @@ const GluonCVDemoForm: FunctionComponent<IProps> = (
                             <Pagination page={imagePage} onChange={(event, value) => onChange('formFieldIdPage', value)} count={Math.floor(imageCount / 20) + 1} />
                         </div>
                     </div>
-                    <ProgressBar value={importedCount} label={t('industrial_models.demo.import_progress')}/>
+                    {
+                        task === 'search' && 
+                        <ProgressBar value={importedCount} label={t('industrial_models.demo.import_progress')}/>
+                    }
                 </Container>
             )
     }
 
     const onFileChange = (file: File) => {
-        axios.post('/_image', file)
+        if(task === 'search') {
+            axios.post('/_image', file)
+                .then((response) => {
+                    var file_name : string = response.data;
+                    setSearchImage(file_name);
+                    setSearchImageItems([]);
+                    setCurSearchImageItem('');
+                    setVisibleSearchImage(false);
+                }, (error) => {
+                    if(error.response.status === 400)
+                        logOutput('error', t('industrial_models.demo.file_size_over_6M'), undefined, error);
+                    else
+                        logOutput('error', error.response.data, undefined, error);
+                });
+        }
+        else {
+            setOriginImageName(file.name)
+            axios.post('/_image', file)
             .then((response) => {
-                var file_name : string = response.data;
-                setSearchImage(file_name);
-                setSearchImageItems([])
-                setCurSearchImageItem('');
-                setVisibleSearchImage(false);
+                var filename : string = response.data;
+                setCurOriginImageItem(filename);
+                setVisibleOriginImagePreview(true);
             }, (error) => {
-                if(error.response.status === 400)
-                    logOutput('error', t('industrial_models.demo.file_size_over_6M'), undefined, error);
-                else
-                    logOutput('error', error.response.data, undefined, error);
-            });
+                logOutput('error', error.response.data, undefined, error);
+            });            
+        }
     }
 
     const onSearch = () => {
@@ -254,9 +279,76 @@ const GluonCVDemoForm: FunctionComponent<IProps> = (
     }
 
     const renderOriginImagePreview = () => {
-        return (
-            <ImagePreview src={srcImagePreview} width={"100%"} height={"100%"} visible={visibleOriginImagePreview} onClose={onOriginImageClose}/>
-        )
+        if(task === 'search')
+            return (
+                <ImagePreview src={srcImagePreview} width={"100%"} height={"100%"} visible={visibleOriginImagePreview} onClose={onOriginImageClose}/>
+            )
+        else {
+            if(task === 'search') {
+                var imageItem = originImageItems.find((item) => item.httpuri === srcImagePreview)
+                var imageBucket = imageItem.bucket
+                var imageKey = imageItem.key
+                var imageName = imageKey.substring(imageKey.lastIndexOf('/') + 1, imageKey.lastIndexOf('.'))
+    
+                return (
+                    <ImageAnnotate
+                        imageUris = {[srcImagePreview]} 
+                        imageLabels = {[]}
+                        imageColors = {[]} 
+                        imageBuckets = {[imageBucket]} 
+                        imageKeys = {[imageKey]}
+                        imageNames = {[imageName]}
+                        projectName = {industrialModel.name}
+                        type = {ProjectType.IMAGE_RANK}
+                        subType = {ProjectSubType.IMAGE_RANK_CLASS}
+                        onClosed = {() => {setVisibleOriginImagePreview(false)}}
+                        activeIndex = {0}
+                    />
+                )
+            }
+            else{
+                if(demoOption === 'sample') {
+                    imageItem = originImageItems.find((item) => item.httpuri === srcImagePreview)
+                    imageBucket = imageItem.bucket
+                    imageKey = imageItem.key
+                    imageName = imageKey.substring(imageKey.lastIndexOf('/') + 1, imageKey.lastIndexOf('.'))        
+
+                    return (
+                        <ImageAnnotate
+                            imageUris = {[srcImagePreview]} 
+                            imageLabels = {[]}
+                            imageColors = {[]} 
+                            imageBuckets = {[imageBucket]} 
+                            imageKeys = {[imageKey]}
+                            imageNames = {[imageName]}
+                            projectName = {industrialModel.name}
+                            type = {ProjectType.IMAGE_RANK}
+                            subType = {ProjectSubType.IMAGE_RANK_CLASS}
+                            onClosed = {() => {setVisibleOriginImagePreview(false)}}
+                            activeIndex = {0}
+                        />
+                    )
+                }
+                else {
+                    var imageUri = `/_image/${curOriginImageItem}`
+
+                    return (
+                        <ImageAnnotate
+                            imageUris = {[imageUri]} 
+                            imageLabels = {[]}
+                            imageColors = {[]} 
+                            imageId = {curOriginImageItem}
+                            imageNames = {[originImageName]}
+                            projectName = {industrialModel.name}
+                            type = {ProjectType.IMAGE_RANK}
+                            subType = {ProjectSubType.IMAGE_RANK_CLASS}
+                            onClosed = {() => {setVisibleOriginImagePreview(false)}}
+                            activeIndex = {0}
+                        />
+                    )
+                }
+            } 
+        }
     }
 
     const renderSearchImagePreview = () => {
@@ -266,12 +358,20 @@ const GluonCVDemoForm: FunctionComponent<IProps> = (
     }
 
     const renderUploadImage = () => {
+        if(task === 'search')
             return (
                 <Container headingVariant='h4' title={t('industrial_models.demo.image_search')}>
+                    <FormField controlId={uuidv4()} label={t('industrial_models.demo.select_endpoint')}>
+                        <Select
+                            options={endpointOptions}
+                            selectedOption={selectedEndpoint}
+                            onChange={(event) => onChange('formFieldIdEndpoint', event)}
+                        />
+                    </FormField>
                     <Inline>
                         <div className='quickstartaction'>
                             <FileUpload
-                                text={t('industrial_models.demo.image_select')}
+                                text={t('industrial_models.common.choose_file')}
                                 onChange={onFileChange}
                             />
                         </div>
@@ -282,6 +382,17 @@ const GluonCVDemoForm: FunctionComponent<IProps> = (
                             <Button variant='primary' disabled={searchImage === ''} onClick={onSearch} loading={processing}>{t('industrial_models.demo.search')}</Button>
                         </div>
                     </Inline>
+                </Container>
+            )
+        else
+            return (
+                <Container headingVariant='h4' title={t('industrial_models.demo.select_local_image')}>
+                    <div className='quickstartaction'>
+                        <FileUpload
+                            text={t('industrial_models.common.choose_file')}
+                            onChange={onFileChange}
+                        />
+                    </div>                    
                 </Container>
             )
     }
@@ -348,29 +459,60 @@ const GluonCVDemoForm: FunctionComponent<IProps> = (
         )
     }
 
-    return (
-        <Stack>
-            <Container title = {t('industrial_models.demo.demo_options')}>
-                <FormField controlId={uuidv4()} description={t('industrial_models.demo.select_endpoint')}>
-                    <Select
-                        options={endpointOptions}
-                        selectedOption={selectedEndpoint}
-                        onChange={(event) => onChange('formFieldIdEndpoint', event)}
+    const onChangeOptions = (event, value) => {
+        setDemoOption(value)
+    }
+
+    if(visibleImportImage) {
+        if(demoOption === 'import_with_realtimeinference')
+            return (
+                <ImportImage
+                    header = {t('industrial_models.demo.import_with_realtimeinference')}
+                    industrialModel = {industrialModel} 
+                    endpointOptions = {endpointOptions}
+                    onClose = {() => {setVisibleImportImage(false)}}
+                />
+            )
+        else
+            return (
+                <TransformJobForm
+                    header = {t('industrial_models.demo.import_with_batchtransform')}
+                    s3uri = {industrialModel.samples}
+                    onClose = {() => {setVisibleImportImage(false)}}
+                />
+            )
+    }
+    else {
+        return (
+            <Stack>
+                <Container title = {t('industrial_models.demo.demo_options')}>
+                    <RadioGroup onChange={onChangeOptions}
+                        items={ 
+                            (task === 'search') ?
+                            [
+                                <RadioButton value='import_with_realtimeinference' checked={demoOption === 'import_with_realtimeinference'} >{t('industrial_models.demo.import_with_realtimeinference')}</RadioButton>,
+                                <RadioButton value='import_with_batchtransform' checked={demoOption === 'import_with_batchtransform'} >{t('industrial_models.demo.import_with_batchtransform')}</RadioButton>,
+                            ] :
+                            [
+                                <RadioButton value='sample' checked={demoOption === 'sample'} >{t('industrial_models.demo.demo_option_sample')}</RadioButton>,
+                                <RadioButton value='local' checked={demoOption === 'local'} >{t('industrial_models.demo.demo_option_local')}</RadioButton>
+                            ]
+                        }
                     />
-                </FormField>
-                <FormField controlId={uuidv4()}>
-                    <Toggle label={t('industrial_models.demo.advanced_mode')} checked={advancedMode} onChange={onAdvancedModeChange}/>
-                </FormField>
-            </Container>
-            { renderOriginImagePreview() }
-            { renderSearchImagePreview() }
-            { renderOriginImageList() }
-            { renderUploadImage() }
-            { visibleSearchImage && renderSearchImageList() }
-            { renderQuickStart() }
-            { renderSampleCode() }
-        </Stack>
-    )
+                    <FormField controlId={uuidv4()}>
+                        <Toggle label={t('industrial_models.demo.advanced_mode')} checked={advancedMode} onChange={onAdvancedModeChange}/>
+                    </FormField>
+                </Container>
+                { visibleOriginImagePreview && renderOriginImagePreview() }
+                { task === 'search' && visibleSearchImagePreview && renderSearchImagePreview() }
+                { demoOption !=='local' && renderOriginImageList() }
+                { demoOption !=='sample' && renderUploadImage() }
+                { task === 'search' && visibleSearchImage && renderSearchImageList() }
+                { renderQuickStart() }
+                { renderSampleCode() }
+            </Stack>
+        )
+    }
 }
 
 const mapStateToProps = (state: AppState) => ({

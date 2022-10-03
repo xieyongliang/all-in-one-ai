@@ -46,9 +46,9 @@ const IndustrialModelForm: FunctionComponent<IProps> = (props) => {
         else if(id === 'formFieldIdModelDescription')
             setModelDescription(event)
         else if(id === 'formFieldIdModelExtra') {
+            setModelExtra(event.target.value)
             try {
                     JSON.parse(event.target.value)
-                    setModelExtra(event.target.value)
                     setInvalidExtra(false)
                 }
                 catch(e) {
@@ -165,6 +165,9 @@ const IndustrialModelForm: FunctionComponent<IProps> = (props) => {
     }
 
     const onSubmit = () => {
+        if(invalidExtra)
+            return;
+
         setProcessing(true)
         var buffer = {
             'model_name': modelName,

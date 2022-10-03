@@ -179,14 +179,15 @@
         "import_images": "導入示例圖片",
         "import_progress": "導入進展",
         "image_search": "以圖搜圖",
-        "image_select": "選擇圖片",
         "image_preview": "圖片預覽",
         "search": "搜索",
         "unsupported": "暫不支持的演示",
         "json_parse_error": "JSON 數據解析失敗，請檢查並重試",
         "unzip_error": "ZIP 文件解壓縮失敗，請檢查並重試",
         "file_size_over_6M": "上傳文件大小應該小於等於6M",
-        "image_rank": "圖片標籤"
+        "image_rank": "圖片標籤",
+        "import_with_realtimeinference": "通過實時推理導入",
+        "import_with_batchtransform": "通過批量轉換任務導入"
       },
       "training_job": {
         "create_training_job": "創建訓練任務",

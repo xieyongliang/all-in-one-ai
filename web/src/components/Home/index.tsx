@@ -1,5 +1,5 @@
-import { FunctionComponent } from 'react';
-import { Heading, Paper, Stack, Box, Card, Inline, Link, Text } from 'aws-northstar';
+import { FunctionComponent, useRef, useState } from 'react';
+import { Heading, Stack, Box, Card, Inline, Link, Text } from 'aws-northstar';
 import cognitoUtils from '../../lib/cognitoUtils';
 import { connect } from 'react-redux';
 import { AppState } from '../../store';
@@ -18,9 +18,18 @@ const Home: FunctionComponent<IProps> = (
     }) => {
     const { t } = useTranslation();
 
-    if(env['cognitoRegion'] === '' || isLogin)
+    const[ width, setWidth ] = useState(0);
+
+    const ref = useRef(null);
+
+    const onLoad = () => {
+        var offsetWidth = ref.current.parentElement.offsetWidth;
+        setWidth(offsetWidth - 2 * 40);
+    }
+
+    if(env['cognitoRegion'] === '' || isLogin) {
         return (
-            <Paper>
+            <div ref={ref} onLoad={onLoad}>
                 <Box p={1} width='100%'>
                         <Stack spacing='xs'>
                             <div style={{textAlign: "center"}}>
@@ -60,7 +69,7 @@ const Home: FunctionComponent<IProps> = (
                                 <Heading variant='h2'>{t('home.architecture')}</Heading>
                             </div>
                             <div style={{textAlign: "center", marginTop: "10px", marginBottom: "10px"}}>
-                                <img src='/architecture.png' style={{width: "900px"}} alt={t('home.architecture')}/>
+                                <img src='/architecture.png' width={width} alt={t('home.architecture')}/>
                             </div>
                             <div style={{marginTop: "10px", marginBottom: "10px"}}>
                                 <Heading variant='h4'>{t('home.architecture_components')}</Heading>
@@ -87,8 +96,9 @@ const Home: FunctionComponent<IProps> = (
                             </div>
                         </Stack>
                     </Box>
-                </Paper>
+                </div>
             )
+    }
     else {
         if(env['cognitoRegion'] !== undefined )
             cognitoUtils.getCognitoSignInUri().then(data => {

@@ -25,7 +25,7 @@ import { ImporterSpecData } from '../../../../data/ImporterSpecData';
 import { useParams } from 'react-router-dom';
 import { PathParams } from '../../../../components/Interfaces/PathParams';
 import { store } from '../../../..';
-import { Stack, Button } from 'aws-northstar';
+import { Button } from 'aws-northstar';
 import { SelectOption } from 'aws-northstar/components/Select';
 import { LabelsSelector } from '../../../../store/selectors/LabelsSelector';
 import { ProjectSubType } from '../../../../data/enums/ProjectType';
@@ -263,7 +263,7 @@ const RectLabelsList: React.FC<IProps> = (
             <Scrollbars>
                 {
                     projectSubType === ProjectSubType.OBJECT_DETECTION && 
-                    <Stack>
+                    <div>
                         <div className='Command'>
                             <div>
                                 <Typography gutterBottom component="div">
@@ -276,7 +276,7 @@ const RectLabelsList: React.FC<IProps> = (
                             />
                             <Button variant='primary' size="small" onClick={onInference}>{t('industrial_models.demo.run')}</Button>
                         </div>
-                    </Stack>
+                    </div>
                 }
                 <div
                     className="RectLabelsListContent"

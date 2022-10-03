@@ -15,11 +15,10 @@ export interface SelectProps {
 }
 
 const Select: FunctionComponent<SelectProps> = (props) => {
-    const [ selectedOption, setSelecttedOption ] = useState<SelectOption>(props.selectedOption !== undefined ? props.selectedOption : undefined)
     const [ dropdownLabel, setDropDownLabel] = useState<HTMLDivElement>();
     const [ dropdown, setDropDown] = useState<HTMLDivElement>();
     const [ isOpen, setIsOpen ] = useState(false);
-    const dropdownOptionHeight: number = 30;
+    const dropdownOptionHeight: number = 40;
     const dropdownOptionCount: number = 6;
     const dropdownMargin: number = 4;
 
@@ -43,7 +42,6 @@ const Select: FunctionComponent<SelectProps> = (props) => {
             setIsOpen(false);
             window.removeEventListener(EventType.MOUSE_DOWN, closeDropdown);
             var option = props.options.find((option) => option.value === value);
-            setSelecttedOption(option);
             props.onChange(option)
             event.stopPropagation();
         };
@@ -88,7 +86,7 @@ const Select: FunctionComponent<SelectProps> = (props) => {
                 ref= { ref => setDropDownLabel(ref)}
                 onClick={openDropdown}
             >
-                {selectedOption !== undefined ? selectedOption.label : (props.placeholder !== undefined ? props.placeholder : '')}
+                {props.selectedOption !== undefined ? props.selectedOption.label : (props.placeholder !== undefined ? props.placeholder : '')}
             </div>
             {   
                 isOpen && 

@@ -181,9 +181,9 @@ const LocalImageForm: FunctionComponent<IProps> = (props) => {
     else
         return (
             <Stack>
-                {renderImageUpload()}
+                { renderImageUpload() }
                 { renderQuickStart() }
-                {renderSampleCode()}
+                { renderSampleCode() }
             </Stack>
         )
 }

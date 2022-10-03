@@ -275,14 +275,6 @@ const ImageAnnotate: React.FC<IProps> = (
         fileNames.push(`${imageName}.${imageExt}`)
     }
 
-    var fileLabels = []
-    imageLabels.forEach((imageLabel)=> {
-        var fileLabel = imageLabel.substring(0, imageLabel.length - 1);
-        if(fileLabel !== '')
-            fileLabels.push(fileLabel)
-    })
-
-
     if(!ready)
         return (
             <Dialog open={true}>
@@ -303,7 +295,7 @@ const ImageAnnotate: React.FC<IProps> = (
                         imageKeys = {imageKeys} 
                         imageId = {imageId}
                         imageNames = {(type === ProjectType.IMAGE_RANK) ? fileNames : imageNames}
-                        imageLabels = {(type === ProjectType.IMAGE_RANK) ? fileLabels : imageLabels}
+                        imageLabels = {(type === ProjectType.IMAGE_RANK) ? [] : imageLabels}
                         onLoaded = {onLoaded}
                         onClosed = {onCleanup}
                     /> 
