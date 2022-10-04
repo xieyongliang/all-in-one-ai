@@ -16,7 +16,7 @@ import {store} from '../../index';
 import {updateZoom} from '../../store/general/actionCreators';
 import { TextEditorActions } from './TextEditorActions';
 import { ProjectType } from '../../data/enums/ProjectType';
-import { RankEditorActions } from './RankEditorActions';
+import { GenericImageEditorActions } from './GenericImageEditorActions';
 
 export class ViewPortActions {
     public static updateViewPortSize() {
@@ -136,8 +136,8 @@ export class ViewPortActions {
         
         var EditorActions;
         var projectType = store.getState().general.projectData.type;
-        if(projectType === ProjectType.IMAGE_RANK)
-            EditorActions = RankEditorActions;
+        if(projectType === ProjectType.IMAGE_GENERIC)
+            EditorActions = GenericImageEditorActions;
         else if(projectType === ProjectType.TEXT_RECOGNITION)
             EditorActions = TextEditorActions;
         else if(projectType === ProjectType.OBJECT_DETECTION_RECT)
@@ -158,8 +158,8 @@ export class ViewPortActions {
 
         var EditorActions;
         var projectType = store.getState().general.projectData.type;
-        if(projectType === ProjectType.IMAGE_RANK)
-            EditorActions = RankEditorActions;
+        if(projectType === ProjectType.IMAGE_GENERIC)
+            EditorActions = GenericImageEditorActions;
         else if(projectType === ProjectType.TEXT_RECOGNITION)
             EditorActions = TextEditorActions;
         else if(projectType === ProjectType.OBJECT_DETECTION_RECT)
@@ -180,8 +180,8 @@ export class ViewPortActions {
         
         var EditorActions;
         var projectType = store.getState().general.projectData.type;
-        if(projectType === ProjectType.IMAGE_RANK)
-            EditorActions = RankEditorActions;
+        if(projectType === ProjectType.IMAGE_GENERIC)
+            EditorActions = GenericImageEditorActions;
         else if(projectType === ProjectType.TEXT_RECOGNITION)
             EditorActions = TextEditorActions;
         else if(projectType === ProjectType.OBJECT_DETECTION_RECT)
@@ -211,8 +211,8 @@ export class ViewPortActions {
 
         var EditorActions;
         var projectType = store.getState().general.projectData.type;
-        if(projectType === ProjectType.IMAGE_RANK)
-            EditorActions = RankEditorActions;
+        if(projectType === ProjectType.IMAGE_GENERIC)
+            EditorActions = GenericImageEditorActions;
         else if(projectType === ProjectType.TEXT_RECOGNITION)
             EditorActions = TextEditorActions;
         else if(projectType === ProjectType.OBJECT_DETECTION_RECT)

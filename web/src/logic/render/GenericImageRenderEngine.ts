@@ -8,10 +8,10 @@ import { RenderEngineUtil } from '../../utils/RenderEngineUtil';
 import { store } from '../..';
 import { updateCustomCursorStyle } from '../../store/general/actionCreators';
 import { CustomCursorStyle } from '../../data/enums/CustomCursorStyle';
-import { RanksSelector } from '../../store/selectors/RanksSelector';
-import { RankImageData } from '../../store/ranks/types';
+import { GenericImageSelector } from '../../store/selectors/GenericImageSelector';
+import { GenericImageData } from '../../store/genericimages/types';
 
-export class RankRenderEngine extends BaseRenderEngine {
+export class GenericImageRenderEngine extends BaseRenderEngine {
 
     // =================================================================================================================
     // STATE
@@ -70,7 +70,7 @@ export class RankRenderEngine extends BaseRenderEngine {
     }
 
     public render(data: EditorData): void {
-        const imageData: RankImageData = RanksSelector.getActiveImageData();
+        const imageData: GenericImageData = GenericImageSelector.getActiveImageData();
         if (imageData) {
             this.updateCursorStyle(data);
         }

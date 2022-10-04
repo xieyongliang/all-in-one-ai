@@ -64,8 +64,8 @@ const GenericDemoForm: FunctionComponent<IProps> = (
                 </FormField>
             </Container>
 
-            {type === 'image_rank' && subtype === 'image_rank_float' && demoOption === 'sample' && <SampleImageForm type={ProjectType.IMAGE_RANK} subType={ProjectSubType.IMAGE_RANK_FLOAT}/>}
-            {type === 'image_rank' && subtype === 'image_rank_float' && demoOption === 'local' && <LocalImageForm type={ProjectType.IMAGE_RANK} subType={ProjectSubType.IMAGE_RANK_FLOAT}/>}
+            {type === 'image_generic' && subtype === 'image_generic_float' && demoOption === 'sample' && <SampleImageForm type={ProjectType.IMAGE_GENERIC} subType={ProjectSubType.IMAGE_FLOAT}/>}
+            {type === 'image_generic' && subtype === 'image_generic_float' && demoOption === 'local' && <LocalImageForm type={ProjectType.IMAGE_GENERIC} subType={ProjectSubType.IMAGE_FLOAT}/>}
         </Stack>
     )
 }

@@ -226,13 +226,13 @@ const SampleImageForm: FunctionComponent<IProps> = (props) => {
         var projectName = industrialModel.name;
         var subType : ProjectSubType;
         if (props.subType === ProjectSubType.OBJECT_DETECTION)
-            subType = ProjectSubType.BATCH_LABEL 
-        else if(props.subType === ProjectSubType.IMAGE_RANK_TEXT)
-            subType = ProjectSubType.BATCH_RANK_TEXT
-        else if(props.subType === ProjectSubType.IMAGE_RANK_FLOAT)
-            subType = ProjectSubType.BATCH_RANK_FLOAT
+            subType = ProjectSubType.BATCH_OBJECT_DETECTION 
+        else if(props.subType === ProjectSubType.IMAGE_TEXT)
+            subType = ProjectSubType.BATCH_IMAGE_TEXT
+        else if(props.subType === ProjectSubType.IMAGE_FLOAT)
+            subType = ProjectSubType.BATCH_IMAGE_FLOAT
         else
-            subType = ProjectSubType.BATCH_RANK_CLASS
+            subType = ProjectSubType.BATCH_IMAGE_CLASS
         
         var data = JSON.stringify({s3uri: s3uri, extra: extra, type: props.type, subType: subType, projectName: projectName})
         history.push(`/batchannotation#${data}}`)

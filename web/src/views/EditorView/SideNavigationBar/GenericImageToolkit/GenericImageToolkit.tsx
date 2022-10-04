@@ -1,7 +1,7 @@
 import React from "react";
-import './RanksToolkit.scss';
-import { RankImageData } from "../../../../store/ranks/types";
-import { updateRankImageDataById } from "../../../../store/ranks/actionCreators";
+import './GenericImageToolkit.scss';
+import { GenericImageData } from "../../../../store/genericimages/types";
+import { updateGenericImageDataById } from "../../../../store/genericimages/actionCreators";
 import { AppState } from "../../../../store";
 import { connect } from "react-redux";
 import { ProjectSubType, ProjectType } from "../../../../data/enums/ProjectType";
@@ -22,7 +22,7 @@ import { logOutput } from "../../../../components/Utils/Helper";
 
 interface IProps {
     activeImageIndex:number,
-    imagesData: RankImageData[];
+    imagesData: GenericImageData[];
     projectType: ProjectType;
     projectSubType: ProjectSubType;
     imageBuckets?: string[];
@@ -31,7 +31,7 @@ interface IProps {
     imageNames?: string[];
     imageLabels?: string[];
     industrialModels: IIndustrialModel[];
-    updateRankImageDataById: (id: string, newImageData: RankImageData) => any;
+    updateRankImageDataById: (id: string, newImageData: GenericImageData) => any;
     onProcessing: () => any;
     onProcessed: () => any;
     onLoaded: () => any;
@@ -56,15 +56,15 @@ function withRouter(Component) {
     return ComponentWithRouter
   }
 
-class RanksToolkit extends React.Component<IProps, IState> {
-    private ranksToolkitRef: HTMLDivElement;
+class GenericImageToolkit extends React.Component<IProps, IState> {
+    private genericImageToolkitRef: HTMLDivElement;
 
     constructor(props) {
         super(props);
 
         var industrialModel = this.props.industrialModels.find((item) => item.id === props.params.id);
         
-        if(this.props.projectSubType === ProjectSubType.IMAGE_RANK_CLASS) {
+        if(this.props.projectSubType === ProjectSubType.IMAGE_CLASS) {
             var classes = JSON.parse(industrialModel.extra).classes
 
             this.state = {
@@ -97,7 +97,7 @@ class RanksToolkit extends React.Component<IProps, IState> {
         this.updateToolkitSize();
         window.addEventListener(EventType.RESIZE, this.updateToolkitSize);
 
-        if(this.props.projectSubType === ProjectSubType.IMAGE_RANK_TEXT || this.props.projectSubType === ProjectSubType.IMAGE_RANK_FLOAT || this.props.projectSubType === ProjectSubType.IMAGE_RANK_CLASS  ) {
+        if(this.props.projectSubType === ProjectSubType.IMAGE_TEXT || this.props.projectSubType === ProjectSubType.IMAGE_FLOAT || this.props.projectSubType === ProjectSubType.IMAGE_CLASS  ) {
             axios.get('/endpoint', {params: { industrial_model: this.state.id}})
                 .then((response) => {
                     if(response.data.length > 0) {
@@ -125,10 +125,10 @@ class RanksToolkit extends React.Component<IProps, IState> {
     }
 
     private updateToolkitSize = () => {
-        if (!this.ranksToolkitRef)
+        if (!this.genericImageToolkitRef)
             return;
 
-        const listBoundingBox = this.ranksToolkitRef.getBoundingClientRect();
+        const listBoundingBox = this.genericImageToolkitRef.getBoundingClientRect();
         this.setState({
             size: {
                 width: listBoundingBox.width,
@@ -144,7 +144,7 @@ class RanksToolkit extends React.Component<IProps, IState> {
             event.preventDefault();
         }
 
-        if(imagesData[activeImageIndex].rank.includes('.') && event.key === '.') {
+        if(imagesData[activeImageIndex].value.includes('.') && event.key === '.') {
             event.preventDefault();
         }
     }
@@ -152,13 +152,13 @@ class RanksToolkit extends React.Component<IProps, IState> {
     private onChange = (id, event) => {
         if(id === 'class') {
             const {activeImageIndex, imagesData, updateRankImageDataById} = this.props;
-            imagesData[activeImageIndex].rank = event.value;
+            imagesData[activeImageIndex].value = event.value;
             this.setState({'selectedClassOption': event})
             updateRankImageDataById(imagesData[activeImageIndex].id, imagesData[activeImageIndex]);
         } 
         else if(id === 'id') {
             const {activeImageIndex, imagesData, updateRankImageDataById} = this.props;
-            imagesData[activeImageIndex].rank = event.target.value;
+            imagesData[activeImageIndex].value = event.target.value;
             updateRankImageDataById(imagesData[activeImageIndex].id, imagesData[activeImageIndex]);
         } 
         else if(id === 'endpoint') {
@@ -199,7 +199,7 @@ class RanksToolkit extends React.Component<IProps, IState> {
         const content =
             <Scrollbars>
                 {
-                    (this.props.projectSubType === ProjectSubType.IMAGE_RANK_TEXT || this.props.projectSubType === ProjectSubType.IMAGE_RANK_FLOAT || this.props.projectSubType === ProjectSubType.IMAGE_RANK_CLASS  )&&
+                    (this.props.projectSubType === ProjectSubType.IMAGE_TEXT || this.props.projectSubType === ProjectSubType.IMAGE_FLOAT || this.props.projectSubType === ProjectSubType.IMAGE_CLASS  )&&
                     <div>
                         <div className='Command'>
                             <div className="title">
@@ -225,18 +225,18 @@ class RanksToolkit extends React.Component<IProps, IState> {
                 >
                     <div style={{position: "relative", overflow: "hidden", width: "100%", height: "100%", top: "20px", paddingLeft: "10px", paddingRight: "10px", color: "white"}}>
                         <Typography variant="button" gutterBottom component="div">
-                            {i18n.t('industrial_models.demo.image_rank')}
+                            {i18n.t('industrial_models.demo.image_generic')}
                         </Typography>
                         {   
-                            (this.props.projectSubType === ProjectSubType.BATCH_RANK_TEXT ||  this.props.projectSubType === ProjectSubType.IMAGE_RANK_TEXT) &&  
-                            <input onChange={(event) => {this.onChange("id", event)}} value={ imagesData[activeImageIndex].rank} />
+                            (this.props.projectSubType === ProjectSubType.BATCH_IMAGE_TEXT ||  this.props.projectSubType === ProjectSubType.IMAGE_TEXT) &&  
+                            <input onChange={(event) => {this.onChange("id", event)}} value={ imagesData[activeImageIndex].value} />
                         }
                         {   
-                            (this.props.projectSubType === ProjectSubType.BATCH_RANK_FLOAT ||  this.props.projectSubType === ProjectSubType.IMAGE_RANK_FLOAT) &&  
-                            <input onChange={(event) => {this.onChange("id", event)}} onKeyPress={this.onKeyPress} value={imagesData[activeImageIndex].rank} />
+                            (this.props.projectSubType === ProjectSubType.BATCH_IMAGE_FLOAT ||  this.props.projectSubType === ProjectSubType.IMAGE_FLOAT) &&  
+                            <input onChange={(event) => {this.onChange("id", event)}} onKeyPress={this.onKeyPress} value={imagesData[activeImageIndex].value} />
                         }
                         {   
-                            (this.props.projectSubType === ProjectSubType.BATCH_RANK_CLASS ||  this.props.projectSubType === ProjectSubType.IMAGE_RANK_CLASS) &&  
+                            (this.props.projectSubType === ProjectSubType.BATCH_IMAGE_CLASS ||  this.props.projectSubType === ProjectSubType.IMAGE_CLASS) &&  
                             <Select 
                                 options = {this.state.classOptions}
                                 onChange = {(event) => {this.onChange("class", event)}}
@@ -252,30 +252,30 @@ class RanksToolkit extends React.Component<IProps, IState> {
     public render() {
         return(
             <div
-                className="RanksToolkit"
-                ref={ref => this.ranksToolkitRef = ref}
+                className="GenericImageToolkit"
+                ref={ref => this.genericImageToolkitRef = ref}
             >
-                {this.state.size && this.renderChildren()}
+                {this.state.size && this.props.projectSubType !== ProjectSubType.IMAGE_EMPTY && this.renderChildren()}
             </div>
         )
     }
 }
 
 const mapDispatchToProps = {
-    updateRankImageDataById
+    updateGenericImageDataById
 };
 
 const mapStateToProps = (state: AppState) => ({
-    activeImageIndex: state.ranks.activeImageIndex,
-    imagesData: state.ranks.imagesData,
+    activeImageIndex: state.genericimage.activeImageIndex,
+    imagesData: state.genericimage.imagesData,
     projectType: state.general.projectData.type,
     projectSubType: state.general.projectData.subType,
     industrialModels : state.industrialmodel.industrialModels
 });
 
-const HOCRanksToolkit = withRouter(RanksToolkit);
+const HOCGenericImageToolkit = withRouter(GenericImageToolkit);
 
 export default withRouter(connect(
     mapStateToProps,
     mapDispatchToProps
-)(HOCRanksToolkit));
+)(HOCGenericImageToolkit));

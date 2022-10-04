@@ -16,7 +16,7 @@ import { store } from '../../';
 import { ProjectType } from "../../data/enums/ProjectType";
 import { TextEditorActions } from "../actions/TextEditorActions";
 import { TextPolygonRenderEngine } from "../render/TextPolygonRenderEngine";
-import { RankEditorActions } from "../actions/RankEditorActions";
+import { GenericImageEditorActions } from "../actions/GenericImageEditorActions";
 
 export class EditorContext extends BaseContext {
     public static actions: HotKeyAction[] = [
@@ -35,8 +35,8 @@ export class EditorContext extends BaseContext {
                     TextEditorActions.fullRender();
                 else if(store.getState().general.projectData.type === ProjectType.OBJECT_DETECTION_RECT)
                     LabelEditorActions.fullRender();
-                else if(store.getState().general.projectData.type === ProjectType.IMAGE_RANK)
-                    RankEditorActions.fullRender();
+                else if(store.getState().general.projectData.type === ProjectType.IMAGE_GENERIC)
+                    GenericImageEditorActions.fullRender();
             }
         },
         {
@@ -59,8 +59,8 @@ export class EditorContext extends BaseContext {
                     TextEditorActions.fullRender();
                 else if(store.getState().general.projectData.type === ProjectType.OBJECT_DETECTION_RECT)
                     LabelEditorActions.fullRender();
-                else if(store.getState().general.projectData.type === ProjectType.IMAGE_RANK)
-                    RankEditorActions.fullRender();
+                else if(store.getState().general.projectData.type === ProjectType.IMAGE_GENERIC)
+                    GenericImageEditorActions.fullRender();
             }
         },
         {

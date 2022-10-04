@@ -29,8 +29,8 @@ import JSZip from 'jszip';
 import axios from 'axios';
 import { useTranslation } from "react-i18next";
 import { logOutput } from '../../../components/Utils/Helper';
-import { RankExporter } from '../../../logic/export/RankExporter';
-import { RankImporter } from '../../../logic/import/RankImporter';
+import { GenericImageExporter } from '../../../logic/export/GenericImageExporter';
+import { GenericImageImporter } from '../../../logic/import/GenericImageImporter';
 
 const BUTTON_SIZE: ISize = {width: 30, height: 30};
 const BUTTON_PADDING: number = 10;
@@ -163,7 +163,7 @@ const EditorTopNavigationBar: React.FC<IProps> = (
     }) => {
     const { t } = useTranslation();
 
-    if(projectType === ProjectType.IMAGE_RANK)
+    if(projectType === ProjectType.IMAGE_GENERIC)
         updateCrossHairVisibleStatusAction(false);
 
     const [ imageAnnotations, setImageAnnotations ] = useState([])
@@ -191,8 +191,8 @@ const EditorTopNavigationBar: React.FC<IProps> = (
     }
 
     const exportOnClick = () => {
-        if(projectType === ProjectType.IMAGE_RANK)
-            RankExporter.export(AnnotationFormatType.RANK)
+        if(projectType === ProjectType.IMAGE_GENERIC)
+            GenericImageExporter.export(AnnotationFormatType.RANK)
         else if(projectType === ProjectType.TEXT_RECOGNITION)
             PolygonTextsExporter.export(AnnotationFormatType.PPOCR)
         else
@@ -221,7 +221,7 @@ const EditorTopNavigationBar: React.FC<IProps> = (
     }, [onProcessed]);
     
     const importImageRank = useCallback((file, content) => {
-        var importer = new RankImporter();
+        var importer = new GenericImageImporter();
         if(file.name.endsWith('.txt')) {
             importer.import(file.name, content)
         }
@@ -281,7 +281,7 @@ const EditorTopNavigationBar: React.FC<IProps> = (
         reader.readAsText(file, "UTF-8");
         reader.onload = function (event) {
             var content = event.target.result as string;
-            if(projectType === ProjectType.IMAGE_RANK) {
+            if(projectType === ProjectType.IMAGE_GENERIC) {
                 importImageRank(file, content)
             }
             else
@@ -430,7 +430,7 @@ const EditorTopNavigationBar: React.FC<IProps> = (
                     </div>
             }
             {
-                projectType === ProjectType.OBJECT_DETECTION_RECT && projectSubType === ProjectSubType.BATCH_LABEL && imageBuckets !== undefined && imageKeys !== undefined &&
+                projectType === ProjectType.OBJECT_DETECTION_RECT && projectSubType === ProjectSubType.BATCH_OBJECT_DETECTION && imageBuckets !== undefined && imageKeys !== undefined &&
                 <div className='ButtonWrapper'>
                     <ButtonWithTooltip
                         key = 'upload'

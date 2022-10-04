@@ -32,7 +32,7 @@ import { isEqual } from 'lodash';
 import { AIActions} from '../../../logic/actions/AIActions';
 import { ProjectType } from '../../../data/enums/ProjectType';
 import { TextRect } from '../../../store/texts/types';
-import { RankEditorActions } from '../../../logic/actions/RankEditorActions';
+import { GenericImageEditorActions } from '../../../logic/actions/GenericImageEditorActions';
 
 interface IProps {
     size: ISize;
@@ -77,8 +77,8 @@ class Editor extends React.Component<IProps, IState> {
             TextEditorActions.mountRenderEnginesAndHelpers();
         else if(this.props.projectType === ProjectType.OBJECT_DETECTION_RECT)
             LabelEditorActions.mountRenderEnginesAndHelpers(activeLabelType);
-        else if(this.props.projectType === ProjectType.IMAGE_RANK)
-            RankEditorActions.mountRenderEnginesAndHelpers();
+        else if(this.props.projectType === ProjectType.IMAGE_GENERIC)
+            GenericImageEditorActions.mountRenderEnginesAndHelpers();
         ImageLoadManager.addAndRun(this.loadImage(imageData));
         ViewPortActions.resizeCanvas(this.props.size);
     }
@@ -102,8 +102,8 @@ class Editor extends React.Component<IProps, IState> {
             TextEditorActions.swapSupportRenderingEngine();
             AIActions.detect(imageData.id, ImageRepository.getById(imageData.id));
         }
-        else if(this.props.projectType === ProjectType.IMAGE_RANK) {
-            RankEditorActions.swapSupportRenderingEngine();
+        else if(this.props.projectType === ProjectType.IMAGE_GENERIC) {
+            GenericImageEditorActions.swapSupportRenderingEngine();
         }
 
         this.updateModelAndRender();
@@ -133,8 +133,8 @@ class Editor extends React.Component<IProps, IState> {
 
     private loadImage = async (imageData: LabelImageData): Promise<any> => {
         if (imageData.loadStatus) {
-            if(this.props.projectType === ProjectType.IMAGE_RANK) {
-                RankEditorActions.setActiveImage(ImageRepository.getById(imageData.id));
+            if(this.props.projectType === ProjectType.IMAGE_GENERIC) {
+                GenericImageEditorActions.setActiveImage(ImageRepository.getById(imageData.id));
                 this.updateModelAndRender()
             }
             else if(this.props.projectType === ProjectType.TEXT_RECOGNITION) {
@@ -149,8 +149,8 @@ class Editor extends React.Component<IProps, IState> {
         }
         else {
             if (!EditorModel.isLoading) {
-                if(this.props.projectType === ProjectType.IMAGE_RANK)
-                    RankEditorActions.setLoadingStatus(true);
+                if(this.props.projectType === ProjectType.IMAGE_GENERIC)
+                    GenericImageEditorActions.setLoadingStatus(true);
                 else if(this.props.projectType === ProjectType.OBJECT_DETECTION_RECT)
                     LabelEditorActions.setLoadingStatus(true);
                 else if(this.props.projectType === ProjectType.TEXT_RECOGNITION)
@@ -176,9 +176,9 @@ class Editor extends React.Component<IProps, IState> {
             TextEditorActions.setActiveImage(image);
             TextEditorActions.setLoadingStatus(false);
         }
-        else if(this.props.projectType === ProjectType.IMAGE_RANK) {
-            RankEditorActions.setActiveImage(image);
-            RankEditorActions.setLoadingStatus(false);
+        else if(this.props.projectType === ProjectType.IMAGE_GENERIC) {
+            GenericImageEditorActions.setActiveImage(image);
+            GenericImageEditorActions.setLoadingStatus(false);
         }
         AIActions.detect(imageData.id, image);
         this.updateModelAndRender()
@@ -198,8 +198,8 @@ class Editor extends React.Component<IProps, IState> {
             LabelEditorActions.fullRender();
         else if(this.props.projectType === ProjectType.TEXT_RECOGNITION)
             TextEditorActions.fullRender();
-        else if(this.props.projectType === ProjectType.IMAGE_RANK)
-            RankEditorActions.fullRender();
+        else if(this.props.projectType === ProjectType.IMAGE_GENERIC)
+            GenericImageEditorActions.fullRender();
     };
 
     private update = (event: MouseEvent) => {
@@ -208,8 +208,8 @@ class Editor extends React.Component<IProps, IState> {
             editorData = LabelEditorActions.getEditorData(event);
         else if(this.props.projectType === ProjectType.TEXT_RECOGNITION)
             editorData = TextEditorActions.getEditorData(event);
-        else if(this.props.projectType === ProjectType.IMAGE_RANK)
-            editorData = RankEditorActions.getEditorData(event);
+        else if(this.props.projectType === ProjectType.IMAGE_GENERIC)
+            editorData = GenericImageEditorActions.getEditorData(event);
 
         EditorModel.mousePositionOnViewPortContent = CanvasUtil.getMousePositionOnCanvasFromEvent(event, EditorModel.canvas);
         EditorModel.primaryRenderingEngine.update(editorData);
@@ -228,9 +228,9 @@ class Editor extends React.Component<IProps, IState> {
             !this.props.activePopupType && TextEditorActions.updateMousePositionIndicator(event);
             TextEditorActions.fullRender();
         }
-        else if(this.props.projectType === ProjectType.IMAGE_RANK) {
+        else if(this.props.projectType === ProjectType.IMAGE_GENERIC) {
             !this.props.activePopupType && LabelEditorActions.updateMousePositionIndicator(event);
-            RankEditorActions.fullRender();
+            GenericImageEditorActions.fullRender();
         }
 
     };
@@ -255,10 +255,10 @@ class Editor extends React.Component<IProps, IState> {
             editorData = LabelEditorActions.getEditorData()
         else if(this.props.projectType === ProjectType.TEXT_RECOGNITION)
             editorData = TextEditorActions.getEditorData()
-        else if(this.props.projectType === ProjectType.IMAGE_RANK)
-            editorData = RankEditorActions.getEditorData()
+        else if(this.props.projectType === ProjectType.IMAGE_GENERIC)
+            editorData = GenericImageEditorActions.getEditorData()
 
-        if(this.props.projectType === ProjectType.IMAGE_RANK) {
+        if(this.props.projectType === ProjectType.IMAGE_GENERIC) {
             return <div />
         }
         else if(this.props.projectType === ProjectType.TEXT_RECOGNITION) {

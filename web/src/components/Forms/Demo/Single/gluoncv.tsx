@@ -15,7 +15,6 @@ import { connect } from 'react-redux';
 import { IIndustrialModel } from '../../../../store/industrialmodels/reducer';
 import { SelectOption } from 'aws-northstar/components/Select';
 import FileUpload from '../../../Utils/FileUpload';
-import ImagePreview from '../../../Utils/ImagePreview';
 import { v4 as uuidv4 } from 'uuid';
 import '../index.scss'
 import { useTranslation } from "react-i18next";
@@ -49,11 +48,13 @@ const GluonCVDemoForm: FunctionComponent<IProps> = (
     const [ sampleConsole, setSampleConsole ] = useState('')
     const [ imagePage, setImagePage ] = useState(1)
     const [ imageCount, setImageCount ] = useState(0)
-    const [ srcImagePreview, setSrcImagePreview ] = useState('')
+    const [ imagePreviewSrc, setImagePreviewSrc ] = useState('')
+    const [ imageSearchResultSrc, setImageSearchResultSrc ] = useState('')
     const [ visibleSampleCode, setVisibleSampleCode ] = useState(false)
     const [ visibleSearchImage, setVisibleSearchImage ] = useState(false)
     const [ visibleOriginImagePreview, setVisibleOriginImagePreview ] = useState(false)
     const [ visibleSearchImagePreview, setVisibleSearchImagePreview ] = useState(false)
+    const [ visibleSearchResultPreview, setVisibileSearchResultPreview ] = useState(false)
     const [ loading, setLoading ] = useState(true);
     const [ processing, setProcessing ] = useState(false);
     const [ importedCount, setImportedCount ] = useState(0);
@@ -78,6 +79,15 @@ const GluonCVDemoForm: FunctionComponent<IProps> = (
         const response = await axios.get('/_file/download', {params: {uri: encodeURIComponent(uri)}, responseType: 'blob'})
         return response.data
     }
+
+    if(task === 'search') {
+        if(demoOption !== 'import_with_realtimeinference' && demoOption !== 'import_with_batchtransform')
+            setDemoOption('import_with_realtimeinference')
+    }
+    else {
+        if(demoOption !== 'sample' && demoOption !== 'local')
+            setDemoOption('sample')
+    }   
 
     useEffect(() => {
         var cancel = false
@@ -108,6 +118,7 @@ const GluonCVDemoForm: FunctionComponent<IProps> = (
             if(s3uri !== ''){
                 axios.get('/s3', {params : { s3uri : s3uri, page_num: imagePage, page_size: 20, include_filter : 'jpg,jpeg,png' }})
                     .then((response) => {
+                        console.log(response.data.payload)
                         setOriginImageItems(response.data.payload);
                         setImageCount(response.data.count);
                         setLoading(false);
@@ -116,39 +127,34 @@ const GluonCVDemoForm: FunctionComponent<IProps> = (
             }
             else
                 setLoading(false);
-            axios.get('/endpoint', {params: { industrial_model: industrialModel.id}})
-                .then((response) => {
-                    var items = []
-                    response.data.forEach((item) => {
-                        items.push({label: item.EndpointName, value: item.EndpointName})
-                        if(items.length === response.data.length) {
-                            setEndpointOptions(items)
-                            setSelectedEndpoint(items[0])
-                        }
-                    })
-                }
-            )
         }
     },[imagePage, industrialModel]);
 
+    useEffect(() => {
+        axios.get('/endpoint', {params: { industrial_model: industrialModel.id}})
+            .then((response) => {
+                var items = []
+                response.data.forEach((item) => {
+                    items.push({label: item.EndpointName, value: item.EndpointName})
+                    if(items.length === response.data.length) {
+                        setEndpointOptions(items)
+                        setSelectedEndpoint(items[0])
+                    }
+                })
+            }
+        )
+    },[industrialModel.id]);
+
+
+
     const onOriginImageClick = (src) => {
-        setSrcImagePreview(src)
+        setImagePreviewSrc(src)
         setVisibleOriginImagePreview(true)
     }
 
-    const onSearchImageClick = () => {
-        setSrcImagePreview(`/_image/${searchImage}`)
-        setVisibleSearchImagePreview(true)
-    }
-    
-    const onOriginImageClose = () => {
-        setVisibleOriginImagePreview(false);
-        setSrcImagePreview('')
-    }
-
-    const onSearchImageClose = () => {
-        setVisibleSearchImagePreview(false);
-        setSrcImagePreview('')
+    const onSearchImageClick = (src) => {
+        setImageSearchResultSrc(src)
+        setVisibileSearchResultPreview(true)
     }
 
     const onChange = (id, event) => {
@@ -245,6 +251,7 @@ const GluonCVDemoForm: FunctionComponent<IProps> = (
                     setSearchImageItems([]);
                     setCurSearchImageItem('');
                     setVisibleSearchImage(false);
+                    setVisibleSearchImagePreview(true)
                 }, (error) => {
                     if(error.response.status === 400)
                         logOutput('error', t('industrial_models.demo.file_size_over_6M'), undefined, error);
@@ -279,28 +286,49 @@ const GluonCVDemoForm: FunctionComponent<IProps> = (
     }
 
     const renderOriginImagePreview = () => {
-        if(task === 'search')
-            return (
-                <ImagePreview src={srcImagePreview} width={"100%"} height={"100%"} visible={visibleOriginImagePreview} onClose={onOriginImageClose}/>
+        if(task === 'search') {
+            var imageItem = originImageItems.find((item) => {
+                    return item.httpuri.substring(0, item.httpuri.indexOf('?')) === imagePreviewSrc.substring(0, imagePreviewSrc.indexOf('?'))
+                }
             )
+            var imageBucket = imageItem.bucket
+            var imageKey = imageItem.key
+            var imageName = imageKey.substring(imageKey.lastIndexOf('/') + 1, imageKey.lastIndexOf('.'))
+
+            return (
+                <ImageAnnotate
+                    imageUris = {[imagePreviewSrc]} 
+                    imageLabels = {[]}
+                    imageColors = {[]} 
+                    imageBuckets = {[imageBucket]} 
+                    imageKeys = {[imageKey]}
+                    imageNames = {[imageName]}
+                    projectName = {industrialModel.name}
+                    type = {ProjectType.IMAGE_GENERIC}
+                    subType = {ProjectSubType.IMAGE_EMPTY}
+                    onClosed = {() => {setVisibleOriginImagePreview(false)}}
+                    activeIndex = {0}
+                />
+            )
+        }
         else {
             if(task === 'search') {
-                var imageItem = originImageItems.find((item) => item.httpuri === srcImagePreview)
-                var imageBucket = imageItem.bucket
-                var imageKey = imageItem.key
-                var imageName = imageKey.substring(imageKey.lastIndexOf('/') + 1, imageKey.lastIndexOf('.'))
+                imageItem = originImageItems.find((item) => item.httpuri === imagePreviewSrc)
+                imageBucket = imageItem.bucket
+                imageKey = imageItem.key
+                imageName = imageKey.substring(imageKey.lastIndexOf('/') + 1, imageKey.lastIndexOf('.'))
     
                 return (
                     <ImageAnnotate
-                        imageUris = {[srcImagePreview]} 
+                        imageUris = {[imagePreviewSrc]} 
                         imageLabels = {[]}
                         imageColors = {[]} 
                         imageBuckets = {[imageBucket]} 
                         imageKeys = {[imageKey]}
                         imageNames = {[imageName]}
                         projectName = {industrialModel.name}
-                        type = {ProjectType.IMAGE_RANK}
-                        subType = {ProjectSubType.IMAGE_RANK_CLASS}
+                        type = {ProjectType.IMAGE_GENERIC}
+                        subType = {ProjectSubType.IMAGE_CLASS}
                         onClosed = {() => {setVisibleOriginImagePreview(false)}}
                         activeIndex = {0}
                     />
@@ -308,22 +336,22 @@ const GluonCVDemoForm: FunctionComponent<IProps> = (
             }
             else{
                 if(demoOption === 'sample') {
-                    imageItem = originImageItems.find((item) => item.httpuri === srcImagePreview)
+                    imageItem = originImageItems.find((item) => item.httpuri === imagePreviewSrc)
                     imageBucket = imageItem.bucket
                     imageKey = imageItem.key
                     imageName = imageKey.substring(imageKey.lastIndexOf('/') + 1, imageKey.lastIndexOf('.'))        
 
                     return (
                         <ImageAnnotate
-                            imageUris = {[srcImagePreview]} 
+                            imageUris = {[imagePreviewSrc]} 
                             imageLabels = {[]}
                             imageColors = {[]} 
                             imageBuckets = {[imageBucket]} 
                             imageKeys = {[imageKey]}
                             imageNames = {[imageName]}
                             projectName = {industrialModel.name}
-                            type = {ProjectType.IMAGE_RANK}
-                            subType = {ProjectSubType.IMAGE_RANK_CLASS}
+                            type = {ProjectType.IMAGE_GENERIC}
+                            subType = {ProjectSubType.IMAGE_CLASS}
                             onClosed = {() => {setVisibleOriginImagePreview(false)}}
                             activeIndex = {0}
                         />
@@ -340,8 +368,8 @@ const GluonCVDemoForm: FunctionComponent<IProps> = (
                             imageId = {curOriginImageItem}
                             imageNames = {[originImageName]}
                             projectName = {industrialModel.name}
-                            type = {ProjectType.IMAGE_RANK}
-                            subType = {ProjectSubType.IMAGE_RANK_CLASS}
+                            type = {ProjectType.IMAGE_GENERIC}
+                            subType = {ProjectSubType.IMAGE_CLASS}
                             onClosed = {() => {setVisibleOriginImagePreview(false)}}
                             activeIndex = {0}
                         />
@@ -352,9 +380,48 @@ const GluonCVDemoForm: FunctionComponent<IProps> = (
     }
 
     const renderSearchImagePreview = () => {
+        var imageUri = `/_image/${searchImage}`
+
         return (
-            <ImagePreview src={srcImagePreview} width={"100%"} height={"100%"} visible={visibleSearchImagePreview} onClose={onSearchImageClose}/>
+            <ImageAnnotate
+                imageUris = {[imageUri]} 
+                imageLabels = {[]}
+                imageColors = {[]} 
+                imageId = {curOriginImageItem}
+                imageNames = {[searchImage]}
+                projectName = {industrialModel.name}
+                type = {ProjectType.IMAGE_GENERIC}
+                subType = {ProjectSubType.IMAGE_EMPTY}
+                onClosed = {() => {setVisibleSearchImagePreview(false)}}
+                activeIndex = {0}
+            />
         )
+    }
+
+    const renderSearchResultPreview = () => {
+        var src = imageSearchResultSrc
+
+        src = src.substring(0, src.indexOf('?'))
+
+        var imageBucket = src.substring(8).substring(0, src.substring(8).indexOf('.s3'))
+        var imageKey = src.substring(8).substring(src.substring(8).indexOf('/') + 1)
+        var imageName = src.substring(src.lastIndexOf('/') + 1)
+
+        return (
+            <ImageAnnotate
+                imageUris = {[imageSearchResultSrc]} 
+                imageLabels = {[]}
+                imageColors = {[]} 
+                imageBuckets = {[imageBucket]} 
+                imageKeys = {[imageKey]}
+                imageNames = {[imageName]}
+                projectName = {industrialModel.name}
+                type = {ProjectType.IMAGE_GENERIC}
+                subType = {ProjectSubType.IMAGE_EMPTY}
+                onClosed = {() => {setVisibileSearchResultPreview(false)}}
+                activeIndex = {0}
+            />
+        )        
     }
 
     const renderUploadImage = () => {
@@ -374,9 +441,6 @@ const GluonCVDemoForm: FunctionComponent<IProps> = (
                                 text={t('industrial_models.common.choose_file')}
                                 onChange={onFileChange}
                             />
-                        </div>
-                        <div className='quickstartaction'>
-                            <Button disabled={searchImage === ''} onClick={onSearchImageClick}>{t('industrial_models.demo.image_preview')}</Button>
                         </div>
                         <div className='quickstartaction'>
                             <Button variant='primary' disabled={searchImage === ''} onClick={onSearch} loading={processing}>{t('industrial_models.demo.search')}</Button>
@@ -411,7 +475,7 @@ const GluonCVDemoForm: FunctionComponent<IProps> = (
                                     width={128}
                                     height={128}
                                     current={curSearchImageItem}
-                                    onClick={(src) => {setCurSearchImageItem(src);onOriginImageClick(src)}}
+                                    onClick={(src) => {setCurSearchImageItem(src);onSearchImageClick(src)}}
                                 />
                             </ImageListItem>
                         ))
@@ -505,6 +569,7 @@ const GluonCVDemoForm: FunctionComponent<IProps> = (
                 </Container>
                 { visibleOriginImagePreview && renderOriginImagePreview() }
                 { task === 'search' && visibleSearchImagePreview && renderSearchImagePreview() }
+                { task === 'search' && visibleSearchResultPreview && renderSearchResultPreview() }
                 { demoOption !=='local' && renderOriginImageList() }
                 { demoOption !=='sample' && renderUploadImage() }
                 { task === 'search' && visibleSearchImage && renderSearchImageList() }

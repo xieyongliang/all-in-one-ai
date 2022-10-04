@@ -1,17 +1,17 @@
 import { store } from "../..";
 import { Action } from "../../store/Actions";
-import { updateRankImageDataById } from "../../store/ranks/actionCreators";
-import { RanksSelector } from "../../store/selectors/RanksSelector";
+import { updateGenericImageDataById } from "../../store/genericimages/actionCreators";
+import { GenericImageSelector } from "../../store/selectors/GenericImageSelector";
 
-export class RankImporter {
+export class GenericImageImporter {
     public import(fileName, content) {
-        var imageData = RanksSelector.getImagesData().find((item) => {
+        var imageData = GenericImageSelector.getImagesData().find((item) => {
             var name1 = item.fileData.name.substring(0, item.fileData.name.lastIndexOf('.'))
             var name2 = fileName.substring(0, fileName.lastIndexOf('.'))
             return name1 === name2
         })
         if(imageData !== undefined)
-            imageData.rank = content;
+            imageData.value = content;
 
         store.dispatch(
             { 
@@ -22,6 +22,6 @@ export class RankImporter {
                 }
             }
         )    
-        updateRankImageDataById(imageData.id, imageData);
+        updateGenericImageDataById(imageData.id, imageData);
     }
 }

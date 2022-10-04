@@ -23,9 +23,9 @@ import { AnnotationFormatType } from '../../../data/enums/AnnotationFormatType';
 import { ImporterSpecData } from '../../../data/ImporterSpecData';
 import { useTranslation } from "react-i18next";
 import { logOutput } from '../Helper';
-import { RankImageData } from '../../../store/ranks/types';
-import { addRankImageData, updateActiveRankImageIndex, updateRankImageData } from '../../../store/ranks/actionCreators';
-import { RankImageDataUtil } from '../../../utils/RankImageDataUtil';
+import { GenericImageData } from '../../../store/genericimages/types';
+import { addGenericImageData, updateActiveRankImageIndex, updateGenericImageData } from '../../../store/genericimages/actionCreators';
+import { GenericImageDataUtil } from '../../../utils/GenericImageDataUtil';
 
 const OVERLAY_STYLE = {
     position: "fixed" as 'fixed',
@@ -52,10 +52,10 @@ interface IProps {
     updateActiveRankImageIndexAction: (activeImageIndex: number) => any;
     addLabelImageDataAction: (imageData: LabelImageData[]) => any;
     addTextImageDataAction: (imageData: TextImageData[]) => any;
-    addRankImageDataAction: (imageData: RankImageData[]) => any;
+    addGenericImageDataAction: (imageData: GenericImageData[]) => any;
     updateLabelImageDataAction: (imageData: LabelImageData[]) => any;
     updateTextImageDataAction: (imageData: TextImageData[]) => any;
-    updateRankImageDataAction: (imageData: RankImageData[]) => any;
+    updateGenericImageDataAction: (imageData: GenericImageData[]) => any;
     updateActiveLabelTypeAction: (activeLabelType: LabelType) => any;
     updateFirstLabelCreatedFlagAction: (firstLabelCreatedFlag: boolean) => any;
     updatePerClassColorationStatusAction: (updatePerClassColoration: boolean) => any;
@@ -104,12 +104,12 @@ const ImageAnnotate: React.FC<IProps> = (
         updateActiveRankImageIndexAction,
         updateLabelImageDataAction,
         updateTextImageDataAction,
-        updateRankImageDataAction,
+        updateGenericImageDataAction,
         updateFirstLabelCreatedFlagAction, 
         updatePerClassColorationStatusAction,
         addLabelImageDataAction,
         addTextImageDataAction,
-        addRankImageDataAction,
+        addGenericImageDataAction,
         onClosed,
     }) => {
     const [ loading, setLoading ] = useState(true)
@@ -164,7 +164,7 @@ const ImageAnnotate: React.FC<IProps> = (
         updateActiveRankImageIndexAction(null);
         updateLabelImageDataAction([]);
         updateTextImageDataAction([]);
-        updateRankImageDataAction([]);
+        updateGenericImageDataAction([]);
         updateFirstLabelCreatedFlagAction(false);
         updatePerClassColorationStatusAction(true)
 
@@ -196,8 +196,8 @@ const ImageAnnotate: React.FC<IProps> = (
                     name: projectName
                 });
 
-                if(type === ProjectType.IMAGE_RANK) {
-                    addRankImageDataAction([RankImageDataUtil.createRankImageDataFromFileData(imageFile)])
+                if(type === ProjectType.IMAGE_GENERIC) {
+                    addGenericImageDataAction([GenericImageDataUtil.createGenericImageDataFromFileData(imageFile)])
                 }
                 else if(type === ProjectType.TEXT_RECOGNITION) {
                     addTextImageDataAction([TextImageDataUtil.createTextImageDataFromFileData(imageFile)]);
@@ -211,7 +211,7 @@ const ImageAnnotate: React.FC<IProps> = (
                     addLabelImageDataAction([LabelImageDataUtil.createLabelImageDataFromFileData(imageFile)]);
                 }
 
-                if(type === ProjectType.OBJECT_DETECTION_RECT && subType === ProjectSubType.BATCH_LABEL && imageBuckets !== undefined && imageKeys !== undefined) {
+                if(type === ProjectType.OBJECT_DETECTION_RECT && subType === ProjectSubType.BATCH_OBJECT_DETECTION && imageBuckets !== undefined && imageKeys !== undefined) {
                     var bucket = imageBuckets[index]
                     var key = imageKeys[index]
                     promises2.push(axios.get('/annotation', {params: { bucket: bucket, key: key}}))
@@ -220,7 +220,7 @@ const ImageAnnotate: React.FC<IProps> = (
                 index++;
             })
 
-            if(type === ProjectType.OBJECT_DETECTION_RECT && subType === ProjectSubType.BATCH_LABEL && imageBuckets !== undefined && imageKeys !== undefined) {
+            if(type === ProjectType.OBJECT_DETECTION_RECT && subType === ProjectSubType.BATCH_OBJECT_DETECTION && imageBuckets !== undefined && imageKeys !== undefined) {
                 Promise.all(promises2).then((reponses2) => {
                     index = 0;
                     var annotationFiles = [];
@@ -242,7 +242,7 @@ const ImageAnnotate: React.FC<IProps> = (
                 })
             }
 
-            if(type === ProjectType.IMAGE_RANK)
+            if(type === ProjectType.IMAGE_GENERIC)
                 updateActiveRankImageIndexAction(activeIndex)
             else if(type === ProjectType.TEXT_RECOGNITION)
                 updateActiveTextImageIndexAction(activeIndex)
@@ -294,8 +294,8 @@ const ImageAnnotate: React.FC<IProps> = (
                         imageBuckets = {imageBuckets} 
                         imageKeys = {imageKeys} 
                         imageId = {imageId}
-                        imageNames = {(type === ProjectType.IMAGE_RANK) ? fileNames : imageNames}
-                        imageLabels = {(type === ProjectType.IMAGE_RANK) ? [] : imageLabels}
+                        imageNames = {(type === ProjectType.IMAGE_GENERIC) ? fileNames : imageNames}
+                        imageLabels = {(type === ProjectType.IMAGE_GENERIC) ? [] : imageLabels}
                         onLoaded = {onLoaded}
                         onClosed = {onCleanup}
                     /> 
@@ -322,12 +322,12 @@ const mapDispatchToProps = {
     updateActiveRankImageIndexAction: updateActiveRankImageIndex,
     addLabelImageDataAction: addLabelImageData,
     addTextImageDataAction: addTextImageData,
-    addRankImageDataAction: addRankImageData,
+    addGenericImageDataAction: addGenericImageData,
     updateProjectDataAction: updateProjectData,
     updateActivePopupTypeAction: updateActivePopupType,
     updateLabelImageDataAction: updateLabelImageData,
     updateTextImageDataAction: updateTextImageData,
-    updateRankImageDataAction: updateRankImageData,
+    updateGenericImageDataAction: updateGenericImageData,
     updateActiveLabelTypeAction: updateActiveLabelType,
     updateFirstLabelCreatedFlagAction: updateFirstLabelCreatedFlag,
     updatePerClassColorationStatusAction: updatePerClassColorationStatus,

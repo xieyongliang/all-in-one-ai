@@ -11,7 +11,7 @@ import {
 } from "../../store/texts/actionCreators";
 import {
   updateActiveRankImageIndex
-} from "../../store/ranks/actionCreators";
+} from "../../store/genericimages/actionCreators";
 import { ViewPortActions } from "./ViewPortActions";
 import { EditorModel } from "../../staticModels/EditorModel";
 import { LabelType } from "../../data/enums/LabelType";
@@ -26,12 +26,12 @@ import { LabelStatus } from "../../data/enums/LabelStatus";
 import { remove } from "lodash";
 import { ProjectType } from "../../data/enums/ProjectType";
 import { TextsSelector } from "../../store/selectors/TextsSelector";
-import { RanksSelector } from "../../store/selectors/RanksSelector";
+import { GenericImageSelector } from "../../store/selectors/GenericImageSelector";
 
 export class ImageActions {
   public static getPreviousImage(): void {
-    if(store.getState().general.projectData.type === ProjectType.IMAGE_RANK) {
-      const currentImageIndex: number = RanksSelector.getActiveImageIndex();
+    if(store.getState().general.projectData.type === ProjectType.IMAGE_GENERIC) {
+      const currentImageIndex: number = GenericImageSelector.getActiveImageIndex();
       ImageActions.getImageByIndex(currentImageIndex - 1);
     }
     else if(store.getState().general.projectData.type === ProjectType.TEXT_RECOGNITION) {
@@ -45,8 +45,8 @@ export class ImageActions {
   }
 
   public static getNextImage(): void {
-    if(store.getState().general.projectData.type === ProjectType.IMAGE_RANK) {
-      const currentImageIndex: number = RanksSelector.getActiveImageIndex();
+    if(store.getState().general.projectData.type === ProjectType.IMAGE_GENERIC) {
+      const currentImageIndex: number = GenericImageSelector.getActiveImageIndex();
       ImageActions.getImageByIndex(currentImageIndex + 1);
     }
     else if(store.getState().general.projectData.type === ProjectType.TEXT_RECOGNITION) {
@@ -62,8 +62,8 @@ export class ImageActions {
   public static getImageByIndex(index: number): void {
     if (EditorModel.viewPortActionsDisabled) return;
 
-    if(store.getState().general.projectData.type === ProjectType.IMAGE_RANK) {
-      const imageCount: number = RanksSelector.getImagesData().length;
+    if(store.getState().general.projectData.type === ProjectType.IMAGE_GENERIC) {
+      const imageCount: number = GenericImageSelector.getImagesData().length;
 
       if (index < 0 || index > imageCount - 1) {
         return;

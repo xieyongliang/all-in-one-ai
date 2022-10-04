@@ -6,14 +6,14 @@ import { notificationsReducer } from './notifications/reducer';
 import { pipelineReducer } from './pipelines/reducer';
 import { industrialModelReducer } from './industrialmodels/reducer';
 import { textsReducer } from './texts/reducer';
-import { ranksReducer } from './ranks/reducer';
+import { genericImageReducer } from './genericimages/reducer';
 import sessionReduer  from './session/reducer'
 
 export const rootReducer = combineReducers({
     general: generalReducer,
     labels: labelsReducer,
     texts: textsReducer,
-    ranks: ranksReducer,
+    genericimage: genericImageReducer,
     ai: aiReducer,
     notifications: notificationsReducer,
     pipeline: pipelineReducer,

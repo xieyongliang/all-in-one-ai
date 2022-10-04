@@ -1,15 +1,15 @@
-import {RanksActionTypes, RanksState, RankImageData} from './types';
-import {Action} from '../Actions';
+import { GenericsActionTypes, GenericImageState, GenericImageData } from './types';
+import { Action } from '../Actions';
 
-const initialState: RanksState = {
+const initialState: GenericImageState = {
     activeImageIndex: null,
     imagesData: []
 };
 
-export function ranksReducer(
+export function genericImageReducer(
     state = initialState,
-    action: RanksActionTypes
-): RanksState {
+    action: GenericsActionTypes
+): GenericImageState {
     switch (action.type) {
         case Action.UPDATE_RANK_ACTIVE_IMAGE_INDEX: {
             return {
@@ -20,7 +20,7 @@ export function ranksReducer(
         case Action.UPDATE_RANK_IMAGE_DATA_BY_ID: {
             return {
                 ...state,
-                imagesData: state.imagesData.map((imageData: RankImageData) =>
+                imagesData: state.imagesData.map((imageData: GenericImageData) =>
                     imageData.id === action.payload.id ? action.payload.newImageData : imageData
                 )
             }

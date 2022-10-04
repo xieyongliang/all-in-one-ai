@@ -88,7 +88,7 @@ const ImagePanel: FunctionComponent<IProps> = ({
         var labelsData : string[] = [];
         var labels : string[];
 
-        if(subType === ProjectSubType.BATCH_LABEL) {
+        if(subType === ProjectSubType.BATCH_OBJECT_DETECTION) {
             labels = JSON.parse(extra).labels;
             labels.forEach(label => {
                 labelsData.push(label + '\n');

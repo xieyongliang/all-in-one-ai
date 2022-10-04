@@ -1,7 +1,7 @@
-import {RanksActionTypes, RankImageData } from './types';
-import {Action} from '../Actions';
+import { GenericsActionTypes, GenericImageData } from './types';
+import { Action } from '../Actions';
 
-export function updateActiveRankImageIndex(activeImageIndex: number): RanksActionTypes {
+export function updateActiveRankImageIndex(activeImageIndex: number): GenericsActionTypes {
     return {
         type: Action.UPDATE_RANK_ACTIVE_IMAGE_INDEX,
         payload: {
@@ -10,7 +10,7 @@ export function updateActiveRankImageIndex(activeImageIndex: number): RanksActio
     };
 }
 
-export function updateRankImageDataById(id: string, newImageData: RankImageData): RanksActionTypes {
+export function updateGenericImageDataById(id: string, newImageData: GenericImageData): GenericsActionTypes {
     return {
         type: Action.UPDATE_RANK_IMAGE_DATA_BY_ID,
         payload: {
@@ -20,7 +20,7 @@ export function updateRankImageDataById(id: string, newImageData: RankImageData)
     };
 }
 
-export function addRankImageData(imageData: RankImageData[]): RanksActionTypes {
+export function addGenericImageData(imageData: GenericImageData[]): GenericsActionTypes {
     return {
         type: Action.ADD_RANK_IMAGES_DATA,
         payload: {
@@ -29,7 +29,7 @@ export function addRankImageData(imageData: RankImageData[]): RanksActionTypes {
     };
 }
 
-export function updateRankImageData(imagesData: RankImageData[]): RanksActionTypes {
+export function updateGenericImageData(imagesData: GenericImageData[]): GenericsActionTypes {
     return {
         type: Action.UPDATE_RANK_IMAGES_DATA,
         payload: {

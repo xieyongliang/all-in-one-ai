@@ -1,16 +1,16 @@
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 import {AnnotationFormatType} from "../../data/enums/AnnotationFormatType";
-import { RankImageData } from '../../store/ranks/types';
-import { RanksSelector } from '../../store/selectors/RanksSelector';
+import { GenericImageData } from '../../store/genericimages/types';
+import { GenericImageSelector } from '../../store/selectors/GenericImageSelector';
 import { ExporterUtil } from '../../utils/ExporterUtil';
 
-export class RankExporter {
+export class GenericImageExporter {
     public static export(exportFormatType: AnnotationFormatType): void {
         const zip = new JSZip();
-        RanksSelector.getImagesData()
-            .forEach((imageData: RankImageData) => {
-                const fileContent: string = imageData.rank;
+        GenericImageSelector.getImagesData()
+            .forEach((imageData: GenericImageData) => {
+                const fileContent: string = imageData.value;
                 if (fileContent) {
                     const fileName : string = imageData.fileData.name.replace(/\.[^/.]+$/, '.txt');
                     try {

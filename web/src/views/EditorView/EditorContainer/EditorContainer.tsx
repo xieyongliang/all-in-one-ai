@@ -21,17 +21,17 @@ import { TextImageData } from '../../../store/texts/types';
 import { Box, Dialog } from '@material-ui/core';
 import { LoadingIndicator } from 'aws-northstar';
 import { useTranslation } from "react-i18next";
-import RanksToolkit from '../SideNavigationBar/RanksToolkit/RanksToolkit';
-import { RankImageData } from '../../../store/ranks/types';
+import GenericImageToolkit from '../SideNavigationBar/GenericImageToolkit/GenericImageToolkit';
+import { GenericImageData } from '../../../store/genericimages/types';
 
 interface IProps {
     windowSize: ISize;
     activeLabelImageIndex: number;
     activeTextImageIndex: number;
-    activeRankImageIndex: number;
+    activeGenericImageIndex: number;
     labelImagesData: LabelImageData[];
     textImagesData: TextImageData[];
-    rankImagesData: RankImageData[];
+    genericImagesData: GenericImageData[];
     activeContext: ContextType;
     projectType: ProjectType;
     imageBuckets?: string[];
@@ -50,10 +50,10 @@ const EditorContainer: React.FC<IProps> = (
         windowSize,
         activeLabelImageIndex,
         activeTextImageIndex,
-        activeRankImageIndex,
+        activeGenericImageIndex,
         labelImagesData,
         textImagesData,
-        rankImagesData,
+        genericImagesData,
         activeContext,
         projectType,
         imageBuckets,
@@ -166,9 +166,9 @@ const EditorContainer: React.FC<IProps> = (
                     onLoaded = {onLoaded}
                 />
             )
-        else if(projectType === ProjectType.IMAGE_RANK)
+        else if(projectType === ProjectType.IMAGE_GENERIC)
             return (
-                <RanksToolkit
+                <GenericImageToolkit
                     imageBuckets = {imageBuckets}
                     imageKeys = {imageKeys}
                     imageId = {imageId}
@@ -184,8 +184,8 @@ const EditorContainer: React.FC<IProps> = (
             )
     };
 
-    var imagesData = (projectType === ProjectType.IMAGE_RANK) ? rankImagesData : (projectType === ProjectType.TEXT_RECOGNITION ? textImagesData : labelImagesData)
-    var activeImageIndex = (projectType === ProjectType.IMAGE_RANK) ? activeRankImageIndex: (projectType === ProjectType.TEXT_RECOGNITION ? activeTextImageIndex : activeLabelImageIndex)
+    var imagesData = (projectType === ProjectType.IMAGE_GENERIC) ? genericImagesData : (projectType === ProjectType.TEXT_RECOGNITION ? textImagesData : labelImagesData)
+    var activeImageIndex = (projectType === ProjectType.IMAGE_GENERIC) ? activeGenericImageIndex: (projectType === ProjectType.TEXT_RECOGNITION ? activeTextImageIndex : activeLabelImageIndex)
 
     const onProcessing = () => {
         setProcessing(true);
@@ -217,7 +217,7 @@ const EditorContainer: React.FC<IProps> = (
                         projectType === ProjectType.OBJECT_DETECTION_POINT ||
                         projectType === ProjectType.OBJECT_DETECTION_LINE ||
                         projectType === ProjectType.OBJECT_DETECTION_POLYGON ||
-                        projectType === ProjectType.IMAGE_RANK
+                        projectType === ProjectType.IMAGE_GENERIC
                     )   && 
                     <EditorTopNavigationBar 
                         key="editor-top-navigation-bar"
@@ -266,10 +266,10 @@ const mapStateToProps = (state: AppState) => ({
     windowSize: state.general.windowSize,
     activeLabelImageIndex: state.labels.activeImageIndex,
     activeTextImageIndex: state.texts.activeImageIndex,
-    activeRankImageIndex: state.ranks.activeImageIndex,
+    activeGenericImageIndex: state.genericimage.activeImageIndex,
     labelImagesData: state.labels.imagesData,
     textImagesData: state.texts.imagesData,
-    rankImagesData: state.ranks.imagesData,
+    genericImagesData: state.genericimage.imagesData,
     activeContext: state.general.activeContext,
     projectType: state.general.projectData.type
 });

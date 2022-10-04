@@ -15,26 +15,26 @@ import {ImageUtil} from "../../utils/ImageUtil";
 import {GeneralSelector} from "../../store/selectors/GeneralSelector";
 import {ViewPortHelper} from "../helpers/ViewPortHelper";
 import {CustomCursorStyle} from "../../data/enums/CustomCursorStyle";
-import { RankRenderEngine } from "../render/RankRenderEngine";
+import { GenericImageRenderEngine } from "../render/GenericImageRenderEngine";
 
-export class RankEditorActions {
+export class GenericImageEditorActions {
 
     // =================================================================================================================
     // RENDER ENGINES
     // =================================================================================================================
 
     public static mountRankSupportRenderingEngine() {
-        EditorModel.supportRenderingEngine = new RankRenderEngine(EditorModel.canvas);
+        EditorModel.supportRenderingEngine = new GenericImageRenderEngine(EditorModel.canvas);
     };
 
     public static swapSupportRenderingEngine() {
-        EditorModel.supportRenderingEngine = new RankRenderEngine(EditorModel.canvas);
+        EditorModel.supportRenderingEngine = new GenericImageRenderEngine(EditorModel.canvas);
     };
 
     public static mountRenderEnginesAndHelpers() {
         EditorModel.viewPortHelper = new ViewPortHelper();
         EditorModel.primaryRenderingEngine = new PrimaryEditorRenderEngine(EditorModel.canvas);
-        RankEditorActions.mountRankSupportRenderingEngine();
+        GenericImageEditorActions.mountRankSupportRenderingEngine();
     }
 
     // =================================================================================================================
@@ -43,8 +43,8 @@ export class RankEditorActions {
 
     public static fullRender() {
         DrawUtil.clearCanvas(EditorModel.canvas);
-        EditorModel.primaryRenderingEngine.render(RankEditorActions.getEditorData());
-        EditorModel.supportRenderingEngine && EditorModel.supportRenderingEngine.render(RankEditorActions.getEditorData());
+        EditorModel.primaryRenderingEngine.render(GenericImageEditorActions.getEditorData());
+        EditorModel.supportRenderingEngine && EditorModel.supportRenderingEngine.render(GenericImageEditorActions.getEditorData());
     }
 
     // =================================================================================================================

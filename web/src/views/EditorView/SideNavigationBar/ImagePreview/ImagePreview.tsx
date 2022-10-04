@@ -9,10 +9,10 @@ import { ImageRepository } from "../../../../logic/imageRepository/ImageReposito
 import { AppState } from "../../../../store";
 import { updateLabelImageDataById } from "../../../../store/labels/actionCreators";
 import { updateTextImageDataById } from "../../../../store/texts/actionCreators";
-import { updateRankImageDataById } from "../../../../store/ranks/actionCreators";
+import { updateGenericImageDataById } from "../../../../store/genericimages/actionCreators";
 import { LabelImageData } from "../../../../store/labels/types";
 import { TextImageData } from "../../../../store/texts/types";
-import { RankImageData } from "../../../../store/ranks/types";
+import { GenericImageData } from "../../../../store/genericimages/types";
 import { FileUtil } from "../../../../utils/FileUtil";
 import { RectUtil } from "../../../../utils/RectUtil";
 import './ImagePreview.scss';
@@ -20,7 +20,7 @@ import { CSSHelper } from "../../../../logic/helpers/CSSHelper";
 import { ProjectType } from "../../../../data/enums/ProjectType";
 
 interface IProps {
-    imageData: LabelImageData | TextImageData | RankImageData ;
+    imageData: LabelImageData | TextImageData | GenericImageData ;
     projectType: ProjectType;
     style: React.CSSProperties;
     size: ISize;
@@ -29,7 +29,7 @@ interface IProps {
     onClick?: () => any;
     updateLabelImageDataById: () => any;
     updateTextImageDataById: () => any;
-    updateRankImageDataById: () => any;
+    updateGenericImageDataById: () => any;
     isSelected?: boolean;
 }
 
@@ -76,7 +76,7 @@ class ImagePreview extends React.Component<IProps, IState> {
         )
     }
 
-    private loadImage = async (imageData: LabelImageData | TextImageData | RankImageData, isScrolling: boolean) => {
+    private loadImage = async (imageData: LabelImageData | TextImageData | GenericImageData, isScrolling: boolean) => {
         if (imageData.loadStatus) {
             const image = ImageRepository.getById(imageData.id);
             if (this.state.image !== image) {
@@ -94,8 +94,8 @@ class ImagePreview extends React.Component<IProps, IState> {
 
     private saveLoadedImage = (image: HTMLImageElement, imageData: any) => {
         imageData.loadStatus = true;
-        if(this.props.projectType === ProjectType.IMAGE_RANK)
-            updateRankImageDataById(imageData.id, imageData);
+        if(this.props.projectType === ProjectType.IMAGE_GENERIC)
+            updateGenericImageDataById(imageData.id, imageData);
         else if(this.props.projectType === ProjectType.TEXT_RECOGNITION)
             updateTextImageDataById(imageData.id, imageData);
         else
@@ -198,7 +198,7 @@ class ImagePreview extends React.Component<IProps, IState> {
 const mapDispatchToProps = {
     updateLabelImageDataById,
     updateTextImageDataById,
-    updateRankImageDataById
+    updateGenericImageDataById
 };
 
 const mapStateToProps = (state: AppState) => ({
