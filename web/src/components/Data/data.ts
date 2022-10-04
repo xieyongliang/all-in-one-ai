@@ -257,3 +257,59 @@ export const TRAININGOPTIONS : SelectOption[]= [
         ]
     }
 ];
+
+export const GenericAlgorithm = `
+
+## About generic algorithm
+
+-   Generic algorithm is used to be a placeholder for under-development algorithm. 
+-   Current there are various kinds of generic algorithms supported: image with text annotaion, image with number annotation, image with classification, and image with empty.
+
+## Image with text annotation
+
+-   This is used to be placeholder for under-development algorithm which requires text as image annotation.
+-   The algorithm-specific extra info will be provided with following information
+
+\`\`\`jsx
+        {
+            "type": "image_generic", 
+            "subtype": "image_generic_text"
+        }
+\`\`\`
+
+## Image with number annotation
+    
+-   This is used to be placeholder for under-development algorithm which requires number as image annotation, which is very similar to image with text annotation except there is constrains with number annotation.
+-   The algorithm-specific extra info will be provided with following information
+
+\`\`\`jsx
+        {
+            "type": "image_generic", 
+            "subtype": "image_generic_float"
+        }
+\`\`\`
+
+## Image with class annotation
+
+-   This is used to be placeholder for under-development algorithm which requires class as image annotation and mainly used for image classification, which is very similar to image with text annotation except there is constrains with one class annotation from pre-defined classes.
+-   The algorithm-specific extra info will be provided with following information
+
+\`\`\`jsx
+        {
+            "type": "image_generic", 
+            "subtype": "image_generic_class"
+        }
+\`\`\`
+
+## Image with empty
+    
+-   This is used internally for image preview.
+-   The algorithm-specific extra info will be provided with following information
+
+\`\`\`jsx
+        {
+            "type": "image_generic", 
+            "subtype": "image_generic_empty"
+        }
+\`\`\`                     
+`
