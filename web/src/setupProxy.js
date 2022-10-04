@@ -262,15 +262,19 @@ module.exports = function(app) {
                     body['file_content'] = buffer;
                 }
 
-                options = {headers: {'content-type': 'application/json'}};
+                options = {
+                    headers: {'content-type': 'application/json'}, 
+                    maxBodyLength: Infinity,
+                    maxContentLength: Infinity
+                };
                 if(model_id === undefined) {
                     axios.post(ApiURL + '/industrialmodel', body, options)
                         .then((response) => {
                             res.send(response.data);
                         }, (error) => {
+                                console.log(error);
                                 res.status(error.response.status);
                                 res.send(error.response.data);
-                                console.log(error);
                             }
                         )
                 }

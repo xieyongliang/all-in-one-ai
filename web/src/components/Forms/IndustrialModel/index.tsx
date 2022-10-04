@@ -69,7 +69,10 @@ const IndustrialModelForm: FunctionComponent<IProps> = (props) => {
             var filename : string = response.data;
             setFileName(filename);
         }, (error) => {
-            logOutput('error', error.response.data, undefined, error);
+            if(error.response.status === 400)
+                logOutput('error', t('industrial_models.demo.file_size_over_6M'), undefined, error);
+            else
+                logOutput('error', error.response.data, undefined, error);
         });
     }
 

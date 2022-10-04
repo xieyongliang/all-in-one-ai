@@ -36,17 +36,18 @@ export const APIS = {
 }
 
 export const ALGORITHMS = [
-    {label: 'Yolov5', value: 'yolov5', reference: 'https://github.com/ultralytics/yolov5/blob/master/README.md', type: 'single', trainable: true, batchannotation: true}, 
-    {label: 'GluonCV', value:'gluoncv', reference: 'https://github.com/dmlc/gluon-cv/blob/master/README.md', type: 'single', trainable: true, batchannotation: false}, 
-    {label: 'GluonTS', value:'gluonts', reference: 'https://github.com/awslabs/gluonts/blob/dev/README.md', type: 'single', trainable: true, batchannotation: false},
-    {label: 'PaddleOCR', value: 'paddleocr', reference: 'https://github.com/PaddlePaddle/PaddleOCR/blob/release/2.6/README.md',type: 'single', trainable: true, batchannotation: false}, 
-    {label: 'CPT', value: 'cpt', reference:'https://github.com/fastnlp/CPT/blob/master/README.md', type: 'single', trainable: true, batchannotation: false}, 
-    {label: 'GABSA', value: 'gabsa', reference: 'https://github.com/IsakZhang/Generative-ABSA/blob/main/readme.md', type: 'single', trainable: true, batchannotation: false},
-    {label: 'PaddleNLP', value: 'paddlenlp', reference: 'https://github.com/PaddlePaddle/PaddleNLP/blob/develop/README_en.md', type: 'single', trainable: true, batchannotation: false},
-    {label: 'mDeBERTa', value: 'mdeberta', reference: 'https://github.com/microsoft/DeBERTa/blob/master/README.md', type: 'single', trainable: false, batchannotation: false},
-    {label: 'KeyBERT', value: 'keybert', reference: 'https://github.com/MaartenGr/KeyBERT/blob/master/README.md',  type: 'single', trainable: false, batchannotation: false},
-    {label: 'Generic', value: 'generic', reference: 'https://github.com/xieyongliang/all-in-one-ai/blob/main/docs/README.md',  type: 'single', trainable: true, batchannotation: true},
-    {label: 'Yolov5PaddleOCR', value: 'yolov5paddleocr', type: 'mixed'}
+    {label: 'Yolov5', value: 'yolov5', reference: 'https://github.com/ultralytics/yolov5/blob/master/README.md', type: 'single', trainable: true, inferable: true, batchannotation: true}, 
+    {label: 'GluonCV', value:'gluoncv', reference: 'https://github.com/dmlc/gluon-cv/blob/master/README.md', type: 'single', trainable: true, inferable: true, batchannotation: false}, 
+    {label: 'GluonTS', value:'gluonts', reference: 'https://github.com/awslabs/gluonts/blob/dev/README.md', type: 'single', trainable: true, inferable: true, batchannotation: false},
+    {label: 'PaddleOCR', value: 'paddleocr', reference: 'https://github.com/PaddlePaddle/PaddleOCR/blob/release/2.6/README.md',type: 'single', trainable: true, inferable: true, batchannotation: false}, 
+    {label: 'CPT', value: 'cpt', reference:'https://github.com/fastnlp/CPT/blob/master/README.md', type: 'single', trainable: true, inferable: true, batchannotation: false}, 
+    {label: 'GABSA', value: 'gabsa', reference: 'https://github.com/IsakZhang/Generative-ABSA/blob/main/readme.md', type: 'single', trainable: true, inferable: true, batchannotation: false},
+    {label: 'PaddleNLP', value: 'paddlenlp', reference: 'https://github.com/PaddlePaddle/PaddleNLP/blob/develop/README_en.md', type: 'single', trainable: true, inferable: true, batchannotation: false},
+    {label: 'mDeBERTa', value: 'mdeberta', reference: 'https://github.com/microsoft/DeBERTa/blob/master/README.md', type: 'single', trainable: false, inferable: true, batchannotation: false},
+    {label: 'KeyBERT', value: 'keybert', reference: 'https://github.com/MaartenGr/KeyBERT/blob/master/README.md',  type: 'single', trainable: false, inferable: true, batchannotation: false},
+    {label: 'StyleGAN2', value: 'stylegan', reference: 'https://github.com/NVlabs/stylegan2-ada-pytorch/blob/main/README.md',  type: 'single', trainable: true, inferable: true, batchannotation: false},
+    {label: 'Generic', value: 'generic', type: 'single', trainable: false, inferable: false, batchannotation: true},
+    {label: 'Yolov5PaddleOCR', value: 'yolov5paddleocr', type: 'mixed', trainable: false, inferable: false, batchannotation: false}
 ]
 
 export const TRAININGINPUTDATA = {
@@ -312,4 +313,16 @@ export const GenericAlgorithm = `
             "subtype": "image_generic_empty"
         }
 \`\`\`                     
+`
+
+export const Yolov5PaddleOCRAlgorithm = `
+
+## About Yolov5PaddleOCR
+
+- This is a combination of Yolov5 and PaddleOCR. You could use Yolov5 to detect objects in image and then recoginize the text with the specified text class.
+- The algorithm-specific extra info will be provided with following information
+
+\`\`\`jsx
+        {}
+\`\`\` 
 `

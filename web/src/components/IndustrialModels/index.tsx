@@ -46,6 +46,7 @@ import cognitoUtils from '../../lib/cognitoUtils';
 import { useTranslation } from "react-i18next";
 import { logOutput } from '../Utils/Helper';
 import GenericDemoForm from '../Forms/Demo/Single/generic';
+import StyleGAN2DemoForm from '../Forms/Demo/Single/stylegan';
 
 interface IProps {
     industrialModels : IIndustrialModel[];
@@ -282,6 +283,15 @@ const IndustrialModels: FunctionComponent<IProps> = (
                 content: <GenericDemoForm advancedMode={advancedMode} onAdvancedModeChange={onAdvancedModeChange}/>
             }
         ];
+    }
+    else if(algorithm === 'stylegan'){
+        tabs = [
+            {
+                label: t('industrial_models.demos'),
+                id: 'demo',
+                content: <StyleGAN2DemoForm advancedMode={advancedMode} onAdvancedModeChange={onAdvancedModeChange}/>
+            }
+        ]     
     }
     else{
         tabs = [

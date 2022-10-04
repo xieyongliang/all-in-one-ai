@@ -80,7 +80,8 @@ const SampleImageForm: FunctionComponent<IProps> = (props) => {
     var industrialModels = props.industrialModels
     var industrialModel = industrialModels.find((item) => item.id === params.id);
     var algorithm = industrialModel.algorithm;
-    var trainable = ALGORITHMS.find((item) => item.value === algorithm)
+    var trainable = ALGORITHMS.find((item) => item.value === algorithm).trainable
+    var inferable = ALGORITHMS.find((item) => item.value === algorithm).inferable
 
     const getSourceCode = async (uri) => {
         const response = await axios.get('/_file/download', {params: {uri: encodeURIComponent(uri)}, responseType: 'blob'})
@@ -253,14 +254,14 @@ const SampleImageForm: FunctionComponent<IProps> = (props) => {
                     {
                         (ALGORITHMS.find((item) => item.value === algorithm).batchannotation) &&
                         <div className='quickstartaction'>
-                            <Button onClick={onStartBatchAnnotation} disabled={!trainable}>{t('industrial_models.demo.batch_annotation')}</Button>
+                            <Button onClick={onStartBatchAnnotation}>{t('industrial_models.demo.batch_annotation')}</Button>
                         </div>
                     }
                     <div className='quickstartaction'>
                         <Button onClick={onStartTrain} disabled={!trainable}>{t('industrial_models.demo.train')}</Button>
                     </div>
                     <div className='quickstartaction'>
-                        <Button onClick={onStartDeploy}>{t('industrial_models.demo.deploy')}</Button>
+                        <Button onClick={onStartDeploy} disabled={!inferable}>{t('industrial_models.demo.deploy')}</Button>
                     </div>
                 </Inline>
             </Container>

@@ -46,7 +46,10 @@ const LocalImageForm: FunctionComponent<IProps> = (props) => {
     
     var params : PathParams = useParams();
 
-    var industrialModel = props.industrialModels.find((item) => item.id === params.id)
+    var industrialModel = props.industrialModels.find((item) => item.id === params.id);
+    var algorithm = industrialModel.algorithm;
+    var trainable = ALGORITHMS.find((item) => item.value === algorithm).trainable;
+    var inferable = ALGORITHMS.find((item) => item.value === algorithm).inferable;
 
     const getSourceCode = async (uri) => {
         const response = await axios.get('/_file/download', {params: {uri: encodeURIComponent(uri)}, responseType: 'blob'})
@@ -148,10 +151,10 @@ const LocalImageForm: FunctionComponent<IProps> = (props) => {
             <Container headingVariant='h4' title = {t('industrial_models.demo.quick_start')}>
                 <Inline>
                     <div className='quickstartaction'>
-                        <Button onClick={onStartTrain} disabled={!ALGORITHMS.find(algorithm => algorithm.value === industrialModel.algorithm).trainable}>{t('industrial_models.demo.train')}</Button>
+                        <Button onClick={onStartTrain} disabled={!trainable}>{t('industrial_models.demo.train')}</Button>
                     </div>
                     <div className='quickstartaction'>
-                        <Button onClick={onStartDeploy}>{t('industrial_models.demo.deploy')}</Button>
+                        <Button onClick={onStartDeploy} disabled={!inferable}>{t('industrial_models.demo.deploy')}</Button>
                     </div>
                 </Inline>
             </Container>

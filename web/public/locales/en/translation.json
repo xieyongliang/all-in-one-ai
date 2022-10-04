@@ -184,7 +184,7 @@
       "unsupported": "unsupported demo",
       "json_parse_error": "JSON data parse error, please check it and try again",
       "unzip_error": "Unzip files error, please check it and try again",
-      "file_size_over_6M": "Uploaded file size shold be equal or less than 6M",
+      "file_size_over_6M": "Uploaded file size shold be not more than 6M",
       "image_generic": "Image rank",
       "import_with_realtimeinference": "Import with realtime inference",
       "import_with_batchtransform": "Imoport with batch transform job"
