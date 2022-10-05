@@ -289,21 +289,14 @@ const SampleImageForm: FunctionComponent<IProps> = (props) => {
         )
     }
 
-    if(visibleImagePreview)
-        return (
-            <Stack>
-                { renderImagePreview() }
-                { renderQuickStart() }
-            </Stack>
-        )
-    else
-        return (
-            <Stack>
-                { renderImageList() }
-                { renderQuickStart() }
-                { renderSampleCode() }
-            </Stack>
-        )
+    return (
+        <Stack>
+            { visibleImagePreview && renderImagePreview() }
+            { renderImageList() }
+            { renderQuickStart() }
+            { renderSampleCode() }
+        </Stack>
+    )
 }
 
 const mapStateToProps = (state: AppState) => ({

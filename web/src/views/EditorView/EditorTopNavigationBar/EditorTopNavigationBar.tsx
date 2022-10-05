@@ -382,26 +382,32 @@ const EditorTopNavigationBar: React.FC<IProps> = (
                     href = {undefined}
                     onClick = {crossHairOnClick}
                 />
-                <ButtonWithTooltip
-                    key = 'export-annotations'
-                    tooltipMessage = {t('industrial_models.demo.export_annotation')}
-                    imageSrc = '/ico/export-labels.png'
-                    imageAlt = {t('industrial_models.demo.export_annotation')}
-                    isActive = {false}
-                    fileMode = {false}
-                    href = {undefined}
-                    onClick = {exportOnClick}
-                />
-                <ButtonWithTooltip
-                    key = 'import-annotations'
-                    tooltipMessage = {t('industrial_models.demo.import_annotation')}
-                    imageSrc = '/ico/import-labels.png'
-                    imageAlt = {t('industrial_models.demo.import_annotation')}
-                    isActive = {false}
-                    fileMode = {true}
-                    href = {undefined}
-                    onFileSelect = {onFileSelect}
-                />
+                {
+                    projectSubType !== ProjectSubType.IMAGE_PREVIEW && 
+                    <ButtonWithTooltip
+                        key = 'export-annotations'
+                        tooltipMessage = {t('industrial_models.demo.export_annotation')}
+                        imageSrc = '/ico/export-labels.png'
+                        imageAlt = {t('industrial_models.demo.export_annotation')}
+                        isActive = {false}
+                        fileMode = {false}
+                        href = {undefined}
+                        onClick = {exportOnClick}
+                    />
+                }
+                {
+                    projectSubType !== ProjectSubType.IMAGE_PREVIEW && 
+                    <ButtonWithTooltip
+                        key = 'import-annotations'
+                        tooltipMessage = {t('industrial_models.demo.import_annotation')}
+                        imageSrc = '/ico/import-labels.png'
+                        imageAlt = {t('industrial_models.demo.import_annotation')}
+                        isActive = {false}
+                        fileMode = {true}
+                        href = {undefined}
+                        onFileSelect = {onFileSelect}
+                    />
+                }
             </div>
             {
                 ((activeLabelType === LabelType.RECT && AISelector.isAIObjectDetectorModelLoaded()) ||

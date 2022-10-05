@@ -2,8 +2,8 @@ import { Container, FormField, RadioButton, RadioGroup, Stack, Toggle } from 'aw
 import { FunctionComponent } from 'react';
 import { useHistory, useLocation, useParams } from 'react-router-dom';
 import { PathParams } from '../../../Interfaces/PathParams';
-import SampleTextForm from '../../SampleText'
-import LocalTextOutputJsonForm from '../../LocalText/json';
+import SampleDataForm from '../../SampleData'
+import LocalImageDataForm from '../../LocalData/image';
 import { v4 as uuidv4 } from 'uuid';
 import { connect } from 'react-redux';
 import { AppState } from '../../../../store';
@@ -58,8 +58,8 @@ const StyleGANDemoForm: FunctionComponent<IProps> = (
                     <Toggle label = {t('industrial_models.demo.advanced_mode')} checked={advancedMode} onChange={onAdvancedModeChange}/>
                 </FormField>
             </Container>
-            {demoOption === 'sample' && <SampleTextForm prompt_learning={true} input_format='json' output_format='json' header={industrialModels.find((item) => item.id === params.id).name} train_framework='huggingface' deploy_framework='huggingface'/>}
-            {demoOption === 'local' && <LocalTextOutputJsonForm prompts={[]} header={industrialModels.find((item) => item.id === params.id).name} train_framework='huggingface' deploy_framework='huggingface'/>}
+            {demoOption === 'sample' && <SampleDataForm type='json' header={industrialModels.find((item) => item.id === params.id).name} train_framework='generic' deploy_framework='generic'/>}
+            {demoOption === 'local' && <LocalImageDataForm data='{}' header={industrialModels.find((item) => item.id === params.id).name} train_framework='generic' deploy_framework='generic'/>}
         </Stack>
     )
 }

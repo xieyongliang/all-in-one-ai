@@ -3,7 +3,7 @@ import { FunctionComponent } from 'react';
 import { useHistory, useLocation, useParams } from 'react-router-dom';
 import { PathParams } from '../../../Interfaces/PathParams';
 import SampleDataForm from '../../SampleData'
-import LocalDataForm from '../../LocalData';
+import LocaChartlDataForm from '../../LocalData/chart';
 import { v4 as uuidv4 } from 'uuid';
 import { connect } from 'react-redux';
 import { AppState } from '../../../../store';
@@ -58,8 +58,8 @@ const GluonTSDemoForm: FunctionComponent<IProps> = (
                     <Toggle label = {t('industrial_models.demo.advanced_mode')} checked={advancedMode} onChange={onAdvancedModeChange}/>
                 </FormField>
             </Container>
-            {demoOption === 'sample' && <SampleDataForm header={industrialModels.find((item) => item.id === params.id).name} train_framework='pytorch' deploy_framework='pytorch'/>}
-            {demoOption === 'local' && <LocalDataForm header={industrialModels.find((item) => item.id === params.id).name} data='{}' train_framework='pytorch' deploy_framework='pytorch'/>}
+            {demoOption === 'sample' && <SampleDataForm type='chart' header={industrialModels.find((item) => item.id === params.id).name} train_framework='pytorch' deploy_framework='pytorch'/>}
+            {demoOption === 'local' && <LocaChartlDataForm header={industrialModels.find((item) => item.id === params.id).name} data='{}' train_framework='pytorch' deploy_framework='pytorch'/>}
         </Stack>
     )
 }

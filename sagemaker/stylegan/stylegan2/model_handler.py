@@ -12,6 +12,7 @@ import logging
 from botocore.exceptions import ClientError
 import shutil
 import json
+import sagemaker
 
 #----------------------------------------------------------------------------
 
@@ -173,7 +174,11 @@ class ModelHandler(object):
         data = json.loads(data[0]['body'].decode())
         payload = data['inputs']
 
-        output_s3uri = payload['output_s3uri']
+        sagemaker_session = sagemaker.Session()
+        bucket = sagemaker_session.default_bucket()
+        default_output_s3uri = 's3://{0}/{1}/inference/output'.format(bucket, 'stylegan')
+        output_s3uri = payload['output_s3uri'] if 'output_s3uri' in payload else default_output_s3uri
+
         outdir = '/tmp/{0}'.format(str(uuid.uuid4()))
 
         style = payload['style'] if('style' in payload) else 'single'

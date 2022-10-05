@@ -28,6 +28,7 @@ RUN pip3 --no-cache-dir install mxnet \
                                 multi-model-server \
                                 sagemaker-inference \
                                 retrying \
+                                sagemaker \
                                 smdebug
 
 ENV PATH="/opt/ml/code:${PATH}"

@@ -12,10 +12,12 @@ import { AppState } from '../../../store';
 import { connect } from 'react-redux';
 import { IIndustrialModel } from '../../../store/industrialmodels/reducer';
 import { Box, Dialog } from '@material-ui/core';
-import LocalDataForm from '../LocalData';
+import LocaChartlDataForm from '../LocalData/chart';
+import LocalImageDataForm from '../LocalData/image';
 import { useTranslation } from "react-i18next";
 
 interface IProps {
+    type: string;
     industrialModels: IIndustrialModel[];
     header: string;
     train_framework: string;
@@ -26,6 +28,7 @@ const PAGE_SIZE = 20;
 
 const SampleDataForm: FunctionComponent<IProps>  = (
     {
+        type,
         industrialModels,
         header,
     }) => {
@@ -124,7 +127,8 @@ const SampleDataForm: FunctionComponent<IProps>  = (
     return (
         <Stack>
             { renderImageList() }
-            <LocalDataForm header={header} data={data} train_framework='mxnet' deploy_framework='mxnet'/>
+            { type === 'chart' && <LocaChartlDataForm header={header} data={data} train_framework='mxnet' deploy_framework='mxnet'/> }
+            { type === 'json' && <LocalImageDataForm header={header} data={data} train_framework='mxnet' deploy_framework='mxnet'/> }
         </Stack>
     )
 }

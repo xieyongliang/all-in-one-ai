@@ -255,7 +255,7 @@ class GenericImageToolkit extends React.Component<IProps, IState> {
                 className="GenericImageToolkit"
                 ref={ref => this.genericImageToolkitRef = ref}
             >
-                {this.state.size && this.props.projectSubType !== ProjectSubType.IMAGE_EMPTY && this.renderChildren()}
+                {this.state.size && this.props.projectSubType !== ProjectSubType.IMAGE_PREVIEW && this.renderChildren()}
             </div>
         )
     }

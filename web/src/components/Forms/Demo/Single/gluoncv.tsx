@@ -305,7 +305,7 @@ const GluonCVDemoForm: FunctionComponent<IProps> = (
                     imageNames = {[imageName]}
                     projectName = {industrialModel.name}
                     type = {ProjectType.IMAGE_GENERIC}
-                    subType = {ProjectSubType.IMAGE_EMPTY}
+                    subType = {ProjectSubType.IMAGE_PREVIEW}
                     onClosed = {() => {setVisibleOriginImagePreview(false)}}
                     activeIndex = {0}
                 />
@@ -391,7 +391,7 @@ const GluonCVDemoForm: FunctionComponent<IProps> = (
                 imageNames = {[searchImage]}
                 projectName = {industrialModel.name}
                 type = {ProjectType.IMAGE_GENERIC}
-                subType = {ProjectSubType.IMAGE_EMPTY}
+                subType = {ProjectSubType.IMAGE_PREVIEW}
                 onClosed = {() => {setVisibleSearchImagePreview(false)}}
                 activeIndex = {0}
             />
@@ -417,7 +417,7 @@ const GluonCVDemoForm: FunctionComponent<IProps> = (
                 imageNames = {[imageName]}
                 projectName = {industrialModel.name}
                 type = {ProjectType.IMAGE_GENERIC}
-                subType = {ProjectSubType.IMAGE_EMPTY}
+                subType = {ProjectSubType.IMAGE_PREVIEW}
                 onClosed = {() => {setVisibileSearchResultPreview(false)}}
                 activeIndex = {0}
             />
@@ -463,7 +463,7 @@ const GluonCVDemoForm: FunctionComponent<IProps> = (
 
     const renderSearchImageList = () => {
         return (
-            <Container headingVariant='h4' title = 'Browse result from search by image'>
+            <Container headingVariant='h4' title = {t('industrial_models.demo.output')}>
                 <ImageList cols={10} rowHeight={64} gap={10} variant={'quilted'}>
                     {
                         searchImageItems.map((item) => (
@@ -481,7 +481,11 @@ const GluonCVDemoForm: FunctionComponent<IProps> = (
                         ))
                     }
                 </ImageList>
-                <Pagination page={imagePage} onChange={(event, value) => onChange('formFieldIdPage', value)} count={Math.floor(searchImageItems.length / 20) + 1} />
+                <div style={{textAlign: "center"}}>
+                    <div style={{display: "inline-block", margin: "auto"}}>
+                        <Pagination page={imagePage} onChange={(event, value) => onChange('formFieldIdPage', value)} count={Math.floor(searchImageItems.length / 20) + 1} />
+                    </div>
+                </div>                    
             </Container>
         )
     }
@@ -567,14 +571,14 @@ const GluonCVDemoForm: FunctionComponent<IProps> = (
                         <Toggle label={t('industrial_models.demo.advanced_mode')} checked={advancedMode} onChange={onAdvancedModeChange}/>
                     </FormField>
                 </Container>
-                { visibleOriginImagePreview && renderOriginImagePreview() }
-                { task === 'search' && visibleSearchImagePreview && renderSearchImagePreview() }
-                { task === 'search' && visibleSearchResultPreview && renderSearchResultPreview() }
                 { demoOption !=='local' && renderOriginImageList() }
                 { demoOption !=='sample' && renderUploadImage() }
                 { task === 'search' && visibleSearchImage && renderSearchImageList() }
                 { renderQuickStart() }
                 { renderSampleCode() }
+                { visibleOriginImagePreview && renderOriginImagePreview() }
+                { task === 'search' && visibleSearchImagePreview && renderSearchImagePreview() }
+                { task === 'search' && visibleSearchResultPreview && renderSearchResultPreview() }
             </Stack>
         )
     }

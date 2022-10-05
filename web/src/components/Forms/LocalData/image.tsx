@@ -1,6 +1,5 @@
 import { FunctionComponent, useEffect, useState } from 'react';
-import { Toggle, Link, FormField, FormSection, Textarea, Container, Stack, Inline, Button } from 'aws-northstar';
-import LineChart, { Line, NORTHSTAR_COLORS, YAxis, XAxis, Tooltip, CartesianGrid, Legend } from 'aws-northstar/charts/LineChart';
+import { Toggle, Link, FormField, FormSection, Textarea, Container, Stack, Inline, Button, LoadingIndicator } from 'aws-northstar';
 import axios from 'axios';
 import Select, { SelectOption } from 'aws-northstar/components/Select';
 import { PathParams } from '../../Interfaces/PathParams';
@@ -12,10 +11,15 @@ import { AppState } from '../../../store';
 import { connect } from 'react-redux';
 import { IIndustrialModel } from '../../../store/industrialmodels/reducer';
 import { v4 as uuidv4 } from 'uuid';
-import ReactJson from 'react-json-view';
 import { ALGORITHMS } from '../../Data/data';
 import { useTranslation } from "react-i18next";
 import { logOutput } from '../../Utils/Helper';
+import { Pagination } from '@mui/material';
+import ImageList from '@mui/material/ImageList';
+import ImageListItem from '@mui/material/ImageListItem';
+import Image from '../../Utils/Image';
+import ImageAnnotate from '../../Utils/ImageAnnotate';
+import { ProjectSubType, ProjectType } from '../../../data/enums/ProjectType';
 
 interface IProps {
     industrialModels: IIndustrialModel[];
@@ -25,7 +29,7 @@ interface IProps {
     deploy_framework: string;
 }
 
-const LocalDataForm: FunctionComponent<IProps> = (
+const LocalImageDataForm: FunctionComponent<IProps> = (
     {
         industrialModels,
         header,
@@ -34,7 +38,6 @@ const LocalDataForm: FunctionComponent<IProps> = (
         deploy_framework
     }) => {
     const [ input, setInput ] = useState('{}')
-    const [ output, setOutput ] = useState([])
     const [ invalidInput, setInvalidInput ] = useState(false)
     const [ endpointOptions, setEndpointOptions ] = useState([])
     const [ selectedEndpoint, setSelectedEndpoint ] = useState<SelectOption>({})
@@ -43,6 +46,11 @@ const LocalDataForm: FunctionComponent<IProps> = (
     const [ visibleSampleCode, setVisibleSampleCode ] = useState(false)
     const [ selectedSampleFunction, setSelectedSampleFunction ] = useState<SelectOption>({})
     const [ processing, setProcessing ] = useState(false);
+    const [ imageItems, setImageItems ] = useState([])
+    const [ curImageItem, setCurImageItem ] = useState('')
+    const [ imagePage, setImagePage ] = useState(1)
+    const [ imageCount, setImageCount ] = useState(0)    
+    const [ visibleImagePreview, setVisibleImagePreview ] = useState(false)
 
     const sampleFunctionOptions = [
         {
@@ -101,11 +109,12 @@ const LocalDataForm: FunctionComponent<IProps> = (
                 setInvalidInput(true)
             }
         }
+        if(id === 'formFieldIdPage')
+            setImagePage(event)
     }
 
     useEffect(() => {
         setInput(data)
-        setOutput([])
     }, [data])
 
     useEffect(() => {
@@ -150,20 +159,30 @@ const LocalDataForm: FunctionComponent<IProps> = (
     },[industrialModel]);
 
     const onRun = () => {
+        setProcessing(true)
         var options = {headers: {'content-type': 'application/json'}, params : {endpoint_name: selectedEndpoint.value}} ;
         try {
             var jsonData = JSON.parse(input);
-            var prediction_length = jsonData.prediction_length;
-            if(prediction_length === undefined)
-                prediction_length = 24
-            var jsonData0 = JSON.parse(JSON.stringify(jsonData))
-            jsonData0.target = jsonData0.target.slice(0, jsonData0.target.length - prediction_length)
-            var buffer = {inputs: [jsonData0, jsonData]};
+            var buffer = {inputs: jsonData};
             setProcessing(true);
             axios.post('/inference', buffer, options)
                 .then((response) => {
-                    setOutput(response.data.result);
-                    setProcessing(false);
+                    var imageCount = response.data.length
+                    var imageItems = []
+                    response.data.forEach((s3uri) => {
+                        axios.get('/s3', {params : { s3uri : s3uri }})
+                        .then((response) => {
+                            console.log(response.data.payload[0])
+                            imageItems.push(response.data.payload[0])
+                            if(imageItems.length === imageCount) {
+                                setImageCount(imageCount);
+                                setImageItems(imageItems)
+                                setProcessing(false);
+                            }
+                        }, (error) => {
+                            console.log(error)
+                        })
+                    })
                 }, (error) => {
                         logOutput('error', error.response.data, undefined, error);
                         setProcessing(false);
@@ -172,163 +191,6 @@ const LocalDataForm: FunctionComponent<IProps> = (
         } catch(e) {
             logOutput('error', t('industrial_models.demo.json_parse_error'), undefined, e);
         }
-    }
-
-    const renderChart = () => {
-        if(input === '{}') 
-            return (
-                <div/>
-            )
-        try {
-            var jsonData = JSON.parse(input);
-        } catch(e) {
-            return (
-                <div/>
-            )
-        }
-
-        var start = new Date(jsonData.start);
-        var target = jsonData.target;
-        var item_id = jsonData.item_id;
-        var freq = jsonData.freq;
-        var prediction_length = jsonData.prediction_length
-        if(freq === undefined)
-            freq = '1M';
-
-        prediction_length = output.length === 0 ? 0 : (prediction_length !== undefined ? prediction_length : 24);
-        
-        var freqUnit = freq.substring(freq.length - 1)
-
-        if(freqUnit !== 'Y' && freqUnit !== 'M' && freqUnit !== 'D' && freqUnit !== 'H' && freqUnit !== 'M' && freqUnit !== 'S')
-            return (
-                <div/>
-            );
-
-        var freqNum = freq.length > 1 ? parseInt(freq.substring(0, freq.length - 1)) : 1
-
-        const chartData = [];
-
-        var target_length = target.length;
-
-        for(let i = 0; i < target_length + prediction_length; i++) {
-            var name : string;
-
-            if(freqUnit === 'Y') {
-                start.setFullYear(start.getFullYear() + freqNum)
-                name = start.toLocaleDateString([], {
-                    year: 'numeric'
-                  }
-                )
-            }
-            else if(freqUnit === 'M') {
-                start.setMonth(start.getMonth() + freqNum)
-                name = start.toLocaleDateString([], {
-                    year: 'numeric',
-                    month: '2-digit'
-                  }
-                )
-            }
-            else if(freqUnit === 'D') {
-                start.setDate(start.getDate() + freqNum)
-                name = start.toLocaleDateString([], {
-                    year: 'numeric',
-                    month: '2-digit',
-                    day: '2-digit'
-                  }
-                )
-            }
-            else if(freqUnit === 'H') {
-                start.setHours(start.getHours() + freqNum)
-                name = start.toLocaleDateString([], {
-                    year: 'numeric',
-                    month: '2-digit',
-                    day: '2-digit',
-                    hour: '2-digit'
-                  }
-                )
-            }
-            else if((freqUnit === 'M')) {
-                start.setMinutes(start.getMinutes() + freqNum)
-                name = start.toLocaleDateString([], {
-                    year: 'numeric',
-                    month: '2-digit',
-                    day: '2-digit',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                  }
-                )
-            }
-            else {
-                start.setSeconds(start.getSeconds() + freqNum)
-                name = start.toLocaleDateString([], {
-                    year: 'numeric',
-                    month: '2-digit',
-                    day: '2-digit',
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    second: '2-digit'
-                  }
-                )
-            }
-             
-            if(i >= target_length)
-                chartData.push(
-                    {
-                        name: `   ${name}   `, 
-                        prediction: output[1][i - target_length]
-                    }
-                )
-            else if(i >= target_length - prediction_length)
-                chartData.push(
-                    {
-                        name: `   ${name}   `, 
-                        data: target[i],
-                        prediction: output[0][i - target_length + prediction_length]
-                    }
-                )
-            else
-                chartData.push(
-                    {
-                        name: `   ${name}   `, 
-                        data: target[i]
-                    }
-                )
-        };
-
-        return (
-            <div>
-                <LineChart title={item_id} width={1000} height={500} data={chartData}>
-                    <CartesianGrid strokeDasharray="1 1" />
-                    <Line dataKey='data' name={t('industrial_models.demo.original_data')} stroke={NORTHSTAR_COLORS.ORANGE} fill={NORTHSTAR_COLORS.ORANGE} />
-                    <Line dataKey='prediction' name={t('industrial_models.demo.prediction_data')} stroke={NORTHSTAR_COLORS.BLUE} fill={NORTHSTAR_COLORS.BLUE} />
-                    <XAxis dataKey="name"/>
-                    <YAxis />
-                    <Tooltip />
-                    <Legend />
-                </LineChart>
-            </div>
-        )
-    }
-
-    const renderJSON = () => {
-        if(input === '{}')
-            return (
-                <div />
-            )
-
-        try {
-            var json = JSON.parse(input);
-        } catch(e) {
-            return (
-                <div />
-            )
-        }
-
-        return (
-            <FormField controlId={uuidv4()} description={t('industrial_models.demo.data')}>
-                <ReactJson src={json} collapsed={false} theme='google' />
-            </FormField>
-        )
     }
 
     const renderInference = () => {
@@ -344,13 +206,58 @@ const LocalDataForm: FunctionComponent<IProps> = (
                 <FormField controlId={uuidv4()} description={t('industrial_models.demo.input')}>
                     <Textarea onChange={(event) => onChange('formFieldIdInput', event)} value={input} invalid={invalidInput}/>
                 </FormField>
-                { renderJSON() }
+                {
+                    imageCount > 0 &&
+                    <FormField controlId={uuidv4()} description={t('industrial_models.demo.output')}>
+                        { renderImageList() }
+                    </FormField>
+                }
                 <div className='run'>
                     <Button onClick={onRun} loading={processing}>{t('industrial_models.demo.run')}</Button>
                 </div>
-                { renderChart() }
             </FormSection>
         )
+    }
+
+    const onImageClick = (httpuri) => {
+        setCurImageItem(httpuri)
+        setVisibleImagePreview(true)
+    }
+
+    const renderImageList = () => {
+        if(processing)
+            return (
+                    <LoadingIndicator label={t('industrial_models.demo.loading')}/>
+            )
+        else {
+            return (
+                <Stack>
+                    <ImageList cols={10} rowHeight={64} gap={10} variant={'quilted'}>
+                        {
+                            imageItems.length > 0 && 
+                            imageItems.map((item) => (
+                                <ImageListItem key={item.httpuri} rows={2}>
+                                    <Image
+                                        src={item.httpuri}
+                                        httpuri={item.httprui}
+                                        tooltip={`bucket=${item.bucket}\r\nkey=${item.key}`}
+                                        width={128}
+                                        height={128}
+                                        current={curImageItem}
+                                        onClick={() => onImageClick(item.httpuri)}
+                                    />
+                                </ImageListItem>
+                            ))
+                        }
+                    </ImageList>
+                    <div style={{textAlign: "center"}}>
+                        <div style={{display: "inline-block", margin: "auto"}}>
+                            <Pagination page={imagePage} onChange={(event, value) => onChange('formFieldIdPage', value)} count={Math.ceil(imageCount / 20)} />
+                        </div>
+                    </div>
+                </Stack>
+            )
+        }
     }
 
     const onStartTrain = () => {
@@ -398,11 +305,38 @@ const LocalDataForm: FunctionComponent<IProps> = (
             </Container>
         )
     }    
+
+    const renderImagePreview = () => {        
+        var imageItem = imageItems.find((item) => item.httpuri === curImageItem)
+    
+        var imageBucket = imageItem.bucket
+        var imageKey = imageItem.key
+        
+        var imageName = imageKey.substring(imageKey.lastIndexOf('/') + 1, imageKey.lastIndexOf('.'))
+    
+        return (
+            <ImageAnnotate 
+                imageUris = {[curImageItem]} 
+                imageLabels = {[]}
+                imageColors = {[]} 
+                imageBuckets = {[imageBucket]} 
+                imageKeys = {[imageKey]}
+                imageNames = {[imageName]}
+                projectName = {industrialModel.name}
+                type = {ProjectType.IMAGE_GENERIC}
+                subType = {ProjectSubType.IMAGE_PREVIEW}
+                onClosed = {() => {setVisibleImagePreview(false)}}
+                activeIndex = {0}
+            />
+            )  
+    }
+
     return (
         <Stack>
             { renderInference() }
             { renderQuickStart() }
             { renderSampleCode() }
+            { visibleImagePreview && renderImagePreview() }
         </Stack>
     )
 }
@@ -413,4 +347,4 @@ const mapStateToProps = (state: AppState) => ({
 
 export default connect(
     mapStateToProps
-)(LocalDataForm);
+)(LocalImageDataForm);

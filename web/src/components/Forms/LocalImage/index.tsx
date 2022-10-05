@@ -174,21 +174,14 @@ const LocalImageForm: FunctionComponent<IProps> = (props) => {
         )
     }
 
-    if(visibleImagePreview)
-        return (
-            <Stack>
-                { renderImagePreview() }
-                { renderQuickStart() }
-            </Stack>
-        )
-    else
-        return (
-            <Stack>
-                { renderImageUpload() }
-                { renderQuickStart() }
-                { renderSampleCode() }
-            </Stack>
-        )
+    return (
+        <Stack>
+            { renderImageUpload() }
+            { renderQuickStart() }
+            { renderSampleCode() }
+            { visibleImagePreview && renderImagePreview() }
+        </Stack>
+    )
 }
 
 const mapStateToProps = (state: AppState) => ({
