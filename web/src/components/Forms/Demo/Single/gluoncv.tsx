@@ -1,4 +1,4 @@
-import { FunctionComponent, useEffect, useState } from 'react';
+import { FunctionComponent, useCallback, useEffect, useState } from 'react';
 import { useHistory, useLocation, useParams } from 'react-router-dom';
 import { Container, Link, Toggle, Select, Stack, FormField, Button, ProgressBar, LoadingIndicator, Inline, RadioGroup, RadioButton } from 'aws-northstar';
 import ImageList from '@mui/material/ImageList';
@@ -55,7 +55,8 @@ const GluonCVDemoForm: FunctionComponent<IProps> = (
     const [ visibleOriginImagePreview, setVisibleOriginImagePreview ] = useState(false)
     const [ visibleSearchImagePreview, setVisibleSearchImagePreview ] = useState(false)
     const [ visibleSearchResultPreview, setVisibileSearchResultPreview ] = useState(false)
-    const [ loading, setLoading ] = useState(true);
+    const [ loadingImages, setLoadingImages ] = useState(true);
+    const [ loadingEndpoints, setLoadingEndpoints ] = useState(true);
     const [ processing, setProcessing ] = useState(false);
     const [ importedCount, setImportedCount ] = useState(0);
     const [ visibleImportImage, setVisibleImportImage ] = useState(false)
@@ -113,39 +114,47 @@ const GluonCVDemoForm: FunctionComponent<IProps> = (
 
     useEffect(() => {
         if(industrialModel !== undefined) {
-            setLoading(true)
+            setLoadingImages(true)
             var s3uri = industrialModel.samples
             if(s3uri !== ''){
                 axios.get('/s3', {params : { s3uri : s3uri, page_num: imagePage, page_size: 20, include_filter : 'jpg,jpeg,png' }})
                     .then((response) => {
-                        console.log(response.data.payload)
                         setOriginImageItems(response.data.payload);
                         setImageCount(response.data.count);
-                        setLoading(false);
+                        setLoadingImages(false);
                     }
                 )
             }
             else
-                setLoading(false);
+                setLoadingImages(false);
         }
     },[imagePage, industrialModel]);
 
+    const onRefresh = useCallback(() => {
+        if(industrialModel !== undefined) {
+            setLoadingEndpoints(true)
+            axios.get('/endpoint', {params: { industrial_model: industrialModel.id}})
+                .then((response) => {
+                    var items = []
+                    response.data.forEach((item) => {
+                        items.push({label: item.EndpointName, value: item.EndpointName})
+                        if(items.length === response.data.length) {
+                            setEndpointOptions(items);
+                            setSelectedEndpoint(items[0]);
+                            setLoadingEndpoints(false);
+                        }
+                    })
+                }, (error) => {
+                    logOutput('error', error.response.data, undefined, error);
+                    setLoadingEndpoints(false);
+                }
+            )
+        }
+    },[industrialModel])
+
     useEffect(() => {
-        axios.get('/endpoint', {params: { industrial_model: industrialModel.id}})
-            .then((response) => {
-                var items = []
-                response.data.forEach((item) => {
-                    items.push({label: item.EndpointName, value: item.EndpointName})
-                    if(items.length === response.data.length) {
-                        setEndpointOptions(items)
-                        setSelectedEndpoint(items[0])
-                    }
-                })
-            }
-        )
-    },[industrialModel.id]);
-
-
+        onRefresh()
+    },[onRefresh])
 
     const onOriginImageClick = (src) => {
         setImagePreviewSrc(src)
@@ -188,7 +197,7 @@ const GluonCVDemoForm: FunctionComponent<IProps> = (
       
     
     const renderOriginImageList = () => {
-        if(loading)
+        if(loadingImages)
             return (
                 <Container headingVariant='h4' title = {t('industrial_models.demo.sample_data')}>
                     <LoadingIndicator label={t('industrial_models.demo.loading')}/>
@@ -429,11 +438,14 @@ const GluonCVDemoForm: FunctionComponent<IProps> = (
             return (
                 <Container headingVariant='h4' title={t('industrial_models.demo.image_search')}>
                     <FormField controlId={uuidv4()} label={t('industrial_models.demo.select_endpoint')}>
-                        <Select
-                            options={endpointOptions}
-                            selectedOption={selectedEndpoint}
-                            onChange={(event) => onChange('formFieldIdEndpoint', event)}
-                        />
+                        <Inline>
+                            <Select
+                                options={endpointOptions}
+                                selectedOption={selectedEndpoint}
+                                onChange={(event) => onChange('formFieldIdEndpoint', event)}
+                            />
+                            <Button icon={'refresh'} loading={loadingEndpoints} onClick={onRefresh}>{t('industrial_models.common.refresh')}</Button>
+                        </Inline>
                     </FormField>
                     <Inline>
                         <div className='quickstartaction'>

@@ -1,4 +1,4 @@
-import { FunctionComponent, useEffect, useState } from 'react';
+import { FunctionComponent, useCallback, useEffect, useState } from 'react';
 import { Toggle, Link, FormField, FormSection, Textarea, Container, Stack, Inline, Button, LoadingIndicator } from 'aws-northstar';
 import axios from 'axios';
 import Select, { SelectOption } from 'aws-northstar/components/Select';
@@ -37,20 +37,21 @@ const LocalImageDataForm: FunctionComponent<IProps> = (
         train_framework,
         deploy_framework
     }) => {
-    const [ input, setInput ] = useState('{}')
-    const [ invalidInput, setInvalidInput ] = useState(false)
-    const [ endpointOptions, setEndpointOptions ] = useState([])
-    const [ selectedEndpoint, setSelectedEndpoint ] = useState<SelectOption>({})
-    const [ sampleCode, setSampleCode ] = useState('')
-    const [ sampleConsole, setSampleConsole ] = useState('')
-    const [ visibleSampleCode, setVisibleSampleCode ] = useState(false)
-    const [ selectedSampleFunction, setSelectedSampleFunction ] = useState<SelectOption>({})
+    const [ input, setInput ] = useState('{}');
+    const [ invalidInput, setInvalidInput ] = useState(false);
+    const [ endpointOptions, setEndpointOptions ] = useState([]);
+    const [ selectedEndpoint, setSelectedEndpoint ] = useState<SelectOption>({});
+    const [ sampleCode, setSampleCode ] = useState('');
+    const [ sampleConsole, setSampleConsole ] = useState('');
+    const [ visibleSampleCode, setVisibleSampleCode ] = useState(false);
+    const [ selectedSampleFunction, setSelectedSampleFunction ] = useState<SelectOption>({});
     const [ processing, setProcessing ] = useState(false);
-    const [ imageItems, setImageItems ] = useState([])
-    const [ curImageItem, setCurImageItem ] = useState('')
-    const [ imagePage, setImagePage ] = useState(1)
-    const [ imageCount, setImageCount ] = useState(0)    
-    const [ visibleImagePreview, setVisibleImagePreview ] = useState(false)
+    const [ imageItems, setImageItems ] = useState([]);
+    const [ curImageItem, setCurImageItem ] = useState('');
+    const [ imagePage, setImagePage ] = useState(1);
+    const [ imageCount, setImageCount ] = useState(0);
+    const [ visibleImagePreview, setVisibleImagePreview ] = useState(false);
+    const [ loading, setLoading ] = useState(false);
 
     const sampleFunctionOptions = [
         {
@@ -141,22 +142,32 @@ const LocalImageDataForm: FunctionComponent<IProps> = (
         }
     }, [selectedSampleFunction]);    
 
-    useEffect(() => {
+
+    const onRefresh = useCallback(() => {
         if(industrialModel !== undefined) {
+            setLoading(true)
             axios.get('/endpoint', {params: { industrial_model: industrialModel.id}})
                 .then((response) => {
                     var items = []
                     response.data.forEach((item) => {
                         items.push({label: item.EndpointName, value: item.EndpointName})
                         if(items.length === response.data.length) {
-                            setEndpointOptions(items)
-                            setSelectedEndpoint(items[0])
+                            setEndpointOptions(items);
+                            setSelectedEndpoint(items[0]);
+                            setLoading(false);
                         }
                     })
+                }, (error) => {
+                    logOutput('error', error.response.data, undefined, error);
+                    setProcessing(false);
                 }
             )
         }
-    },[industrialModel]);
+    },[industrialModel])
+
+    useEffect(() => {
+        onRefresh()
+    },[onRefresh])
 
     const onRun = () => {
         setProcessing(true)
@@ -197,13 +208,16 @@ const LocalImageDataForm: FunctionComponent<IProps> = (
         return (
             <FormSection header={header}>
                 <FormField controlId={uuidv4()} description={t('industrial_models.demo.select_endpoint')}>
-                    <Select
-                        options={endpointOptions}
-                        selectedOption={selectedEndpoint}
-                        onChange={(event) => onChange('formFieldIdEndpoint', event)}
-                    />
+                    <Inline>
+                        <Select
+                            options={endpointOptions}
+                            selectedOption={selectedEndpoint}
+                            onChange={(event) => onChange('formFieldIdEndpoint', event)}
+                        />
+                        <Button icon={'refresh'} loading={loading} onClick={onRefresh}>{t('industrial_models.common.refresh')}</Button>
+                    </Inline>
                 </FormField>
-                <FormField controlId={uuidv4()} description={t('industrial_models.demo.input')}>
+                 <FormField controlId={uuidv4()} description={t('industrial_models.demo.input')}>
                     <Textarea onChange={(event) => onChange('formFieldIdInput', event)} value={input} invalid={invalidInput}/>
                 </FormField>
                 {

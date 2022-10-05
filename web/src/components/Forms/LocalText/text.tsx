@@ -1,4 +1,4 @@
-import { FunctionComponent, useEffect, useState } from 'react';
+import { FunctionComponent, useCallback, useEffect, useState } from 'react';
 import { Toggle, Link, FormField, FormSection, Textarea, Container, Stack, Inline, Button } from 'aws-northstar';
 import axios from 'axios';
 import Select, { SelectOption } from 'aws-northstar/components/Select';
@@ -40,6 +40,7 @@ const LocalTextOutputTextForm: FunctionComponent<IProps> = (
     const [ visibleSampleCode, setVisibleSampleCode ] = useState(false)
     const [ selectedSampleFunction, setSelectedSampleFunction ] = useState<SelectOption>({})
     const [ processing, setProcessing ] = useState(false);
+    const [ loading, setLoading ] = useState(false);
 
     const sampleFunctionOptions = [
         {
@@ -122,22 +123,31 @@ const LocalTextOutputTextForm: FunctionComponent<IProps> = (
         }
     }, [selectedSampleFunction]);    
 
-    useEffect(() => {
+    const onRefresh = useCallback(() => {
         if(industrialModel !== undefined) {
+            setLoading(true)
             axios.get('/endpoint', {params: { industrial_model: industrialModel.id}})
                 .then((response) => {
                     var items = []
                     response.data.forEach((item) => {
                         items.push({label: item.EndpointName, value: item.EndpointName})
                         if(items.length === response.data.length) {
-                            setEndpointOptions(items)
-                            setSelectedEndpoint(items[0])
+                            setEndpointOptions(items);
+                            setSelectedEndpoint(items[0]);
+                            setLoading(false);
                         }
                     })
+                }, (error) => {
+                    logOutput('error', error.response.data, undefined, error);
+                    setProcessing(false);
                 }
             )
         }
-    },[industrialModel]);
+    },[industrialModel])
+
+    useEffect(() => {
+        onRefresh()
+    },[onRefresh])
 
     const onRun = () => {
         var options = {headers: {'content-type': 'application/json'}, params : {endpoint_name: selectedEndpoint.value}};
@@ -158,11 +168,14 @@ const LocalTextOutputTextForm: FunctionComponent<IProps> = (
         return (
             <FormSection header={header}>
                 <FormField controlId={uuidv4()} description={t('industrial_models.demo.select_endpoint')}>
-                    <Select
-                        options={endpointOptions}
-                        selectedOption={selectedEndpoint}
-                        onChange={(event) => onChange('formFieldIdEndpoint', event)}
-                    />
+                    <Inline>
+                        <Select
+                            options={endpointOptions}
+                            selectedOption={selectedEndpoint}
+                            onChange={(event) => onChange('formFieldIdEndpoint', event)}
+                        />
+                        <Button icon={'refresh'} loading={loading} onClick={onRefresh}>{t('industrial_models.common.refresh')}</Button>
+                    </Inline>
                 </FormField>
                 <FormField controlId={uuidv4()} description={t('industrial_models.demo.input')}>
                     <Textarea onChange={(event) => onChange('formFieldIdInput', event)} value={input}/>
