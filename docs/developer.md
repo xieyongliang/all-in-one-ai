@@ -85,6 +85,8 @@
 
     ![Create industrial model based GluonCV](./assets/images/industrial_model_gluoncv_2.png)
 
+    ![Create industrial model based GluonCV](./assets/images/industrial_model_gluoncv_3.png)
+
 2. Quickstart - train
 
     ![Quickstart train - GluonCV](./assets/images/quickstart_train_gluoncv.png)
@@ -114,12 +116,14 @@
 
     ![Quickstart deploy - GluonCV](./assets/images/quickstart_deploy_gluoncv.png)
 
+    ![Quickstart deploy - GluonCV](./assets/images/quickstart_deploy_gluoncv_2.png)
+
     **Environment variables**
 
     | Environment variable | Default value | Comment |
     |---|---|---|
     | task | search	| Indicate if the task is search or classification
-    | classes | 10 | Number of classes |
+    | classes | 1000 | Number of classes |
     | model_name | ResNet50_v2 | Pretrained model name |
 
 4. Quickstart - inference

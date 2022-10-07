@@ -116,6 +116,12 @@ export const TRAININGINPUTDATA = {
             key: 'dataset',
             value: ''
         }
+    ],
+    'stylegan': [
+        {
+            key: 'dataset',
+            value: ''
+        }
     ]
 }
 

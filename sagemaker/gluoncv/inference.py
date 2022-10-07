@@ -43,7 +43,7 @@ def get_embedding_advance(input_pic, net, task):
         for i in range(len(net.features)):
             seq_net.add(net.features[i])
 
-        use_layer = len(model) - 1
+        use_layer = len(seq_net) - 1
         pred = None
         for i in range(len(seq_net)):
             img = seq_net[i](img)

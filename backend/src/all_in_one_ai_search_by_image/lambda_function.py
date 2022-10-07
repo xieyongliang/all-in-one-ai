@@ -54,7 +54,7 @@ def lambda_handler(event, context):
             statusCode = payload['statusCode']
             if(statusCode == 200):
                 payload = json.loads(payload['body'])
-                prediction = payload['predictions'][0]
+                prediction = payload['result']
                 print(prediction)
                 response = es.search(
                     request_timeout=30, index=index,

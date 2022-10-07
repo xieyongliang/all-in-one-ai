@@ -149,14 +149,18 @@ const LocalImageDataForm: FunctionComponent<IProps> = (
             axios.get('/endpoint', {params: { industrial_model: industrialModel.id}})
                 .then((response) => {
                     var items = []
-                    response.data.forEach((item) => {
-                        items.push({label: item.EndpointName, value: item.EndpointName})
-                        if(items.length === response.data.length) {
-                            setEndpointOptions(items);
-                            setSelectedEndpoint(items[0]);
-                            setLoading(false);
-                        }
-                    })
+                    if(response.data.length > 0) {
+                        response.data.forEach((item) => {
+                            items.push({label: item.EndpointName, value: item.EndpointName})
+                            if(items.length === response.data.length) {
+                                setEndpointOptions(items);
+                                setSelectedEndpoint(items[0]);
+                                setLoading(false);
+                            }
+                        })
+                    }
+                    else
+                        setLoading(false);
                 }, (error) => {
                     logOutput('error', error.response.data, undefined, error);
                     setProcessing(false);
@@ -183,7 +187,6 @@ const LocalImageDataForm: FunctionComponent<IProps> = (
                     response.data.forEach((s3uri) => {
                         axios.get('/s3', {params : { s3uri : s3uri }})
                         .then((response) => {
-                            console.log(response.data.payload[0])
                             imageItems.push(response.data.payload[0])
                             if(imageItems.length === imageCount) {
                                 setImageCount(imageCount);

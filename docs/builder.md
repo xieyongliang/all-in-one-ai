@@ -280,107 +280,165 @@ aws s3 cp ${project_dir}/backend/build/codes ${s3uri}/codes --recursive
 
 ##	Add a new algorithm – BYOC
 ###	SageMaker
--	Add a fold under sagemaker
--	Create your Dockerfile
+-	Add a folder under sagemaker
+-	Create your Dockerfile for training
 
-        ARG BASE_IMG=pytorch/pytorch:1.8.1-cuda11.1-cudnn8-devel
+        FROM nvcr.io/nvidia/pytorch:20.12-py3
 
-        FROM ${BASE_IMG} 
+        ENV PYTHONDONTWRITEBYTECODE 1
+        ENV PYTHONUNBUFFERED 1
+
+        RUN pip install imageio-ffmpeg==0.4.3 pyspng==0.1.0
+
+        # Install sagemaker-training toolkit that contains the common functionality necessary to create a container compatible with SageMaker and the Python SDK.
+        RUN pip3 install sagemaker-training
 
         ENV PATH="/opt/ml/code:${PATH}"
 
-        RUN rm /etc/apt/sources.list.d/cuda.list
-        RUN rm /etc/apt/sources.list.d/nvidia-ml.list
+        # /opt/ml and all subdirectories are utilized by SageMaker, we use the /code subdirectory to store our user code.
+        COPY stylegan2/ /opt/ml/code/
 
-        RUN apt-get update \
-        && apt-get install -y --no-install-recommends --allow-unauthenticated \
-            jq
+        # this environment variable is used by the SageMaker PyTorch container to determine our user code directory.
+        ENV SAGEMAKER_SUBMIT_DIRECTORY /opt/ml/code
 
-        RUN ldconfig -v
-        RUN pip install tensorboard torch torchvision --upgrade
+        # this environment variable is used by the SageMaker PyTorch container to determine our program entry point
+        # for training and serving.
+        # For more information: https://github.com/aws/sagemaker-pytorch-container
+        ENV SAGEMAKER_PROGRAM train.py
 
-        RUN apt-get install -y git
-        RUN cd /opt && git clone https://github.com/ultralytics/yolov5
-        RUN pip install -r /opt/yolov5/requirements.txt
+-	Create your Dockerfile for inference
 
-        RUN apt-get install ffmpeg libsm6 libxext6 -y
+        FROM nvcr.io/nvidia/pytorch:20.12-py3
 
-        ### Install nginx notebook
-        RUN apt-get install -y --no-install-recommends \
-                wget \
-                nginx \
-                ca-certificates \
-            && rm -rf /var/lib/apt/lists/*
+        # Set a docker label to advertise multi-model support on the container
+        LABEL com.amazonaws.sagemaker.capabilities.multi-models=true
+        # Set a docker label to enable container to use SAGEMAKER_BIND_TO_PORT environment variable if present
+        LABEL com.amazonaws.sagemaker.capabilities.accept-bind-to-port=true
 
-        # forward request and error logs to docker log collector
-        RUN ln -sf /dev/stdout /var/log/nginx/access.log
-        RUN ln -sf /dev/stderr /var/log/nginx/error.log
+        ENV PYTHONDONTWRITEBYTECODE 1
+        ENV PYTHONUNBUFFERED 1
 
-        RUN pip install flask gevent gunicorn boto3
+        RUN pip install imageio-ffmpeg==0.4.3 pyspng==0.1.0
 
-        ENV PATH="/opt/yolov5:${PATH}"
-        WORKDIR /opt/ml/code
-        COPY train /opt/ml/code
-        COPY predict /opt/ml/code
-        COPY serve /opt/ml/code
-        COPY wsgi.py /opt/ml/code
-        COPY predictor.py /opt/ml/code
-        COPY nginx.conf /opt/ml/code
+
+        # Upgrade installed packages
+        RUN apt-get update && apt-get upgrade -y && apt-get clean
+
+        # Install necessary dependencies for MMS and SageMaker Inference Toolkit
+        RUN apt-get -y install --no-install-recommends \
+            build-essential \
+            ca-certificates \
+            openjdk-8-jdk-headless \
+            curl \
+            vim \
+            && rm -rf /var/lib/apt/lists/
+
+        # Install MXNet, MMS, and SageMaker Inference Toolkit to set up MMS
+        RUN pip3 --no-cache-dir install mxnet \
+                                        multi-model-server \
+                                        sagemaker-inference \
+                                        retrying \
+                                        sagemaker \
+                                        smdebug
+
+        ENV PATH="/opt/ml/code:${PATH}"
+
+        RUN mkdir -p /opt/ml/code
+
+        # /opt/ml and all subdirectories are utilized by SageMaker, we use the /code subdirectory to store our user code.
+        COPY stylegan2/ /opt/ml/code/
+
+        # Copy entrypoint script to the image
+        COPY dockerd-entrypoint.py /usr/local/bin/dockerd-entrypoint.py
+        RUN chmod +x /usr/local/bin/dockerd-entrypoint.py
+
+        # Define an entrypoint script for the docker image
+        ENTRYPOINT ["python", "/usr/local/bin/dockerd-entrypoint.py"]
+
+        # Define command to be passed to the entrypoint
+        CMD ["serve"]
 
 -	Create your build_and_push.sh and change the image default name
 
         #!/bin/bash
         set -v
         set -e
+
         # This script shows how to build the Docker image and push it to ECR to be ready for use
         # by SageMaker.
 
-        # The argument to this script is the image name. This will be used as the image on the local
-        # machine and combined with the account and region to form the repository name for ECR.
+        # The argument to this script is the region name. 
+
         if [ "$#" -ne 1 ]; then
             echo "usage: $0 [region-name]"
             exit 1
         fi
 
-        image="all-in-one-ai-yolov5"
+        region=$1
 
         # Get the account number associated with the current IAM credentials
         account=$(aws sts get-caller-identity --query Account --output text)
 
-        # Get the region defined in the current configuration
-        region=$1
-
-        if [[ $region =~ ^cn.* ]]
+        if [ $? -ne 0 ]
         then
-            fullname="${account}.dkr.ecr.${region}.amazonaws.com.cn/${image}:latest"
-            aws_endpoint="amazonaws.com.cn"
-        else
-            fullname="${account}.dkr.ecr.${region}.amazonaws.com/${image}:latest"
-            aws_endpoint="amazonaws.com"
+            exit 255
         fi
 
-        echo ${fullname}
+        training_image=all-in-one-ai-stylegan-training
+        training_fullname=${account}.dkr.ecr.${region}.amazonaws.com/${training_image}:latest
 
         # If the repository doesn't exist in ECR, create it.
-        aws ecr describe-repositories --repository-names "${image}" --region ${region} || aws ecr create-repository --repository-name "${image}" --region ${region}
+        aws ecr describe-repositories --repository-names "${training_image}" --region ${region} || aws ecr create-repository --repository-name "${training_image}" --region ${region}
 
         if [ $? -ne 0 ]
         then
-            aws ecr create-repository --repository-name "${image}" --region ${region}
+            aws ecr create-repository --repository-name "${training_image}" --region ${region}
         fi
 
-        aws ecr get-login-password --region ${region} | docker login --username AWS --password-stdin ${account}.dkr.ecr.${region}.${aws_endpoint}
+        # Get the login command from ECR and execute it directly
+        aws ecr get-login-password --region $region | docker login --username AWS --password-stdin $account.dkr.ecr.$region.amazonaws.com
 
         aws ecr set-repository-policy \
-            --repository-name "${image}" \
+            --repository-name "${training_image}" \
             --policy-text "file://ecr-policy.json" \
             --region ${region}
 
-        # Build the docker image, tag with full name and then push it to ECR
-        docker build -t ${image} -f Dockerfile .
+        # Build the docker image locally with the image name and then push it to ECR
+        # with the full name.
 
-        docker tag ${image} ${fullname}
-        docker push ${fullname}
+        docker build -t ${training_image} -f Dockerfile.training .
+
+        docker tag ${training_image} ${training_fullname}
+
+        docker push ${training_fullname}
+
+        inference_image=all-in-one-ai-stylegan-inference
+        inference_fullname=${account}.dkr.ecr.${region}.amazonaws.com/${inference_image}:latest
+
+        # If the repository doesn't exist in ECR, create it.
+        aws ecr describe-repositories --repository-names "${inference_image}" --region ${region} || aws ecr create-repository --repository-name "${inference_image}" --region ${region}
+
+        if [ $? -ne 0 ]
+        then
+            aws ecr create-repository --repository-name "${inference_image}" --region ${region}
+        fi
+
+        # Get the login command from ECR and execute it directly
+        aws ecr get-login-password --region $region | docker login --username AWS --password-stdin $account.dkr.ecr.$region.amazonaws.com
+
+        aws ecr set-repository-policy \
+            --repository-name "${inference_image}" \
+            --policy-text "file://ecr-policy.json" \
+            --region ${region}
+
+        # Build the docker image locally with the image name and then push it to ECR
+        # with the full name.
+
+        docker build -t ${inference_image} -f Dockerfile.inference . 
+
+        docker tag ${inference_image} ${inference_fullname}
+
+        docker push ${inference_fullname}
 
 ###	Backend
 -	Please refer to backend/src/all_in_one_ai_training_job/lambda_function.py. No changes needed as long as the default training_image was put in SSM parameter store.
@@ -390,6 +448,7 @@ aws s3 cp ${project_dir}/backend/build/codes ${s3uri}/codes --recursive
 	            training_image = ssmh.get_parameter('/all_in_one_ai/config/meta/algorithms/{0}/training_image'.format(algorithm))
 	        except Exception as e:
 	            print(e)
+
 
 -	Please refer to backend/src/all_in_one_ai_model/lambda_function. No changes needed as long as the default infernece_image and artifact was put in SSM parameter store.
 
@@ -407,31 +466,190 @@ aws s3 cp ${project_dir}/backend/build/codes ${s3uri}/codes --recursive
 
     default model_data_url is only valid for the model which doesn’t need to download the model data.
 
--   Please refer to backend/src/all_in_one_ai_create_pipeline/lambda_function.py
-No changes needed as long as the default training_image and inference_image and artifact were put in SSM parameter store. 
+-	Revise backend/src/all_in_one_ai_train/lambda_function.py and add an entry for new algorithm training and choose corresponding machine learning framework. 
 
-            try: 
-                training_image = ssmh.get_parameter('/all_in_one_ai/config/meta/algorithms/{0}/training_image'.format(algorithm))
-            except Exception as e:
-                print(e)  
+        elif(algorithm == 'stylegan'):
+            image_uri = ssmh.get_parameter('/all_in_one_ai/config/meta/algorithms/{0}/training_image'.format(algorithm))
 
+            default_hyperparameters = {
+                'outdir': '/opt/ml/model',
+                'gpus': 1,
+                'kimg': 1000
+            }
 
-            if(inference_image == ''):
-                try: 
-                    inference_image = ssmh.get_parameter('/all_in_one_ai/config/meta/algorithms/{0}/inference_image'.format(algorithm))
-                except Exception as e:
-                    print(e)
+            for key in default_hyperparameters.keys():
+                if(key not in hyperparameters.keys()):
+                    hyperparameters[key] = default_hyperparameters[key]
+
+            payload = {
+                'body': {
+                    'job_name': job_name,
+                    'industrial_model': industrial_model,
+                    'role': role_arn,
+                    'image_uri': image_uri,
+                    'instance_type': instance_type,
+                    'instance_count': instance_count,
+                    'hyperparameters': hyperparameters,
+                    'inputs': inputs
+                }
+            }
+
+            response = lambda_client.invoke(
+                FunctionName = 'all_in_one_ai_create_train_generic',
+                InvocationType = 'Event',
+                Payload=json.dumps(payload)
+            )
+
+-	Revise backend/src/all_in_one_ai_deploy/lambda_function.py and add an entry for new algorithm training and choose corresponding machine learning framework. 
+
+        elif(algorithm == 'stylegan'):
+            image_uri = ssmh.get_parameter('/all_in_one_ai/config/meta/algorithms/{0}/inference_image'.format(algorithm))
             
-            if(model_data_url == ''):
-                try: 
-                    model_data_url = ssmh.get_parameter('/all_in_one_ai/config/meta/algorithms/{0}/artifact'.format(algorithm))
-                except Exception as e:
-                    print(e)
+            payload = {
+                'body': {
+                    'industrial_model': industrial_model,
+                    'role': role_arn,
+                    'model_name': model_name,
+                    'image_uri': image_uri,
+                    'model_data': model_data_url,
+                    'model_environment': model_environment,
+                    'endpoint_name': endpoint_name,
+                    'instance_type': instance_type,
+                    'instance_count': instance_count,
+                }
+            }
 
-    Note: default model_data_url is only valid for the model which doesn’t need to download the model data.
+            response = lambda_client.invoke(
+                FunctionName = 'all_in_one_ai_create_deploy_generic',
+                InvocationType = 'Event',
+                Payload = json.dumps(payload)
+            )
+
+-	Revise backend/src/all_in_one_ai_create_pipeline/lambda_function.py and add an entry for new algorithm training and choose corresponding machine learning framework. 
+
+        elif(model_algorithm == 'stylegan'):
+            image_uri = ssmh.get_parameter('/all_in_one_ai/config/meta/algorithms/{0}/training_image'.format(model_algorithm))
+
+            default_hyperparameters = {
+                'outdir': '/opt/ml/model',
+                'gpus': 1,
+                'kimg': 1000
+            }
+
+            for key in default_hyperparameters.keys():
+                if(key not in training_job_hyperparameters.keys()):
+                    training_job_hyperparameters[key] = default_hyperparameters[key]
+
+            estimator = Estimator(
+                role = role,
+                instance_count = training_job_instance_count,
+                instance_type = training_job_instance_type,
+                image_uri = image_uri,
+                hyperparameters=training_job_hyperparameters
+            )
 
 ###	Web
--	Same as BYOS. Please refer to add a new algorithm BYOS – web.
+-	Create a tsx file under web/src/components/Form/Demo/Single for demostration of new algorithm.
+-	Revise web/src/components/Data/data.ts to add a new entry in ALGORITHMS.
+
+        export const ALGORITHMS = [
+            {label: 'Yolov5', value: 'yolov5', reference: 'https://github.com/ultralytics/yolov5/blob/master/README.md', type: 'single', trainable: true, inferable: true, batchannotation: true}, 
+            {label: 'GluonCV', value:'gluoncv', reference: 'https://github.com/dmlc/gluon-cv/blob/master/README.md', type: 'single', trainable: true, inferable: true, batchannotation: false}, 
+            {label: 'GluonTS', value:'gluonts', reference: 'https://github.com/awslabs/gluonts/blob/dev/README.md', type: 'single', trainable: true, inferable: true, batchannotation: false},
+            {label: 'PaddleOCR', value: 'paddleocr', reference: 'https://github.com/PaddlePaddle/PaddleOCR/blob/release/2.6/README.md',type: 'single', trainable: true, inferable: true, batchannotation: false}, 
+            {label: 'CPT', value: 'cpt', reference:'https://github.com/fastnlp/CPT/blob/master/README.md', type: 'single', trainable: true, inferable: true, batchannotation: false}, 
+            {label: 'GABSA', value: 'gabsa', reference: 'https://github.com/IsakZhang/Generative-ABSA/blob/main/readme.md', type: 'single', trainable: true, inferable: true, batchannotation: false},
+            {label: 'PaddleNLP', value: 'paddlenlp', reference: 'https://github.com/PaddlePaddle/PaddleNLP/blob/develop/README_en.md', type: 'single', trainable: true, inferable: true, batchannotation: false},
+            {label: 'mDeBERTa', value: 'mdeberta', reference: 'https://github.com/microsoft/DeBERTa/blob/master/README.md', type: 'single', trainable: false, inferable: true, batchannotation: false},
+            {label: 'KeyBERT', value: 'keybert', reference: 'https://github.com/MaartenGr/KeyBERT/blob/master/README.md',  type: 'single', trainable: false, inferable: true, batchannotation: false},
+            {label: 'StyleGAN2', value: 'stylegan', reference: 'https://github.com/NVlabs/stylegan2-ada-pytorch/blob/main/README.md',  type: 'single', trainable: true, inferable: true, batchannotation: false},
+            {label: 'Generic', value: 'generic', type: 'single', trainable: false, inferable: false, batchannotation: true},
+            {label: 'Yolov5PaddleOCR', value: 'yolov5paddleocr', type: 'mixed', trainable: false, inferable: false, batchannotation: false}
+
+-	Revise web/src/components/Data/data.ts to add a new entry in TRAININGINPUTDATA.
+
+        export const TRAININGINPUTDATA = {
+            'yolov5': [
+                {
+                    key: 'images',
+                    value: ''
+                },
+                {
+                    key: 'labels',
+                    value: ''
+                },
+                {
+                    key: 'cfg',
+                    value: ''
+                },
+                {
+                    key: 'weights',
+                    value: ''
+                }
+            ],
+            'gluoncv': [
+                {
+                    key: 'train',
+                    value: ''
+                },
+                {
+                    key: 'val',
+                    value: ''
+                },
+                {
+                    key: 'test',
+                    value: ''
+                }
+            ],
+            'cpt': [
+                {
+                    key: 'dataset',
+                    value: ''
+                }
+            ],
+            'gabsa': [
+                {
+                    key: 'dataset',
+                    value: ''
+                }
+            ],
+            'paddlenlp': [
+                {
+                    key: 'dataset',
+                    value: ''
+                }
+            ],
+            'paddleocr': [
+                {
+                    key: 'dataset',
+                    value: ''
+                },
+                {
+                    key: 'pretrained_models',
+                    value: ''
+                }
+            ],
+            'gluonts': [
+                {
+                    key: 'dataset',
+                    value: ''
+                }
+            ],
+            'stylegan': [
+                {
+                    key: 'data',
+                    value: ''
+                },
+                {
+                    key: 'gpus',
+                    value: ''
+                },
+                {
+                    key: 'kimg',
+                    value: ''
+                }
+            ]
+        }
 
 ###	Deployment
 -	It will be done automatically as long as it is put under sagemaker subdirectory with Dockerfile and build_and_push.sh
@@ -468,14 +686,29 @@ No changes needed as long as the default training_image and inference_image and 
 
         Parameter40:
             Type: AWS::SSM::Parameter
-    	    Properties:
-    	      Name: /all_in_one_ai/config/meta/algorithms/yolov7/training_image
-    	      Type: String
-    	      Value: 034068151705.dkr.ecr.ap-northeast-1.amazonaws.com/all-in-one-ai-yolov7:latest
-    
-    	Parameter41:
-    	    Type: AWS::SSM::Parameter
-    	    Properties:
-    	      Name: /all_in_one_ai/config/meta/algorithms/yolov7/inference_image
-    	      Type: String
-    	      Value: 034068151705.dkr.ecr.ap-northeast-1.amazonaws.com/all-in-one-ai-yolov7:latest
+            Properties:
+            Name: /all_in_one_ai/config/meta/algorithms/stylegan/industrialmodels
+            Type: String
+            Value: !Sub s3://${S3Bucket}/${S3Key}algorithms/stylegan/industrialmodels/
+
+        Parameter41:
+            Type: AWS::SSM::Parameter
+            Properties:
+            Name: /all_in_one_ai/config/meta/algorithms/stylegan/training_image
+            Type: String
+            Value:
+                !If
+                - Globally
+                - !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/all-in-one-ai-stylegan-training:latest
+                - !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com.cn/all-in-one-ai-stylegan-training:latest
+
+        Parameter42:
+            Type: AWS::SSM::Parameter
+            Properties:
+            Name: /all_in_one_ai/config/meta/algorithms/stylegan/inference_image
+            Type: String
+            Value:
+                !If
+                - Globally
+                - !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/all-in-one-ai-stylegan-inference:latest
+                - !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com.cn/all-in-one-ai-stylegan-inference:latest

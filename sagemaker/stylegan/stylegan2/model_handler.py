@@ -62,7 +62,7 @@ def get_bucket_and_key(s3uri):
 
 def generate_style_single(G, outdir, device_name, payload):
     seeds = num_range(payload['seeds']) if ('seeds' in payload) else None
-    truncation_psi = float(payload['trunc'])
+    truncation_psi = float(payload['trunc']) if('trunc' in payload) else 1
     noise_mode = payload['noise-mode'] if('noise-mode' in payload) else 'const'
     class_idx = int(payload['class']) if('class' in payload) else None
     projected_w = payload['projected-w'] if('projected-w' in payload) else None

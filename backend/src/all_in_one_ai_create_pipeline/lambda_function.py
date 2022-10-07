@@ -134,7 +134,6 @@ def lambda_handler(event, context):
                 'batch': 16, 
                 'epochs': 10
             }
-            training_job_hyperparameters = training_job_hyperparameters
             for key in default_hyperparameters.keys():
                 if(key not in training_job_hyperparameters.keys()):
                     training_job_hyperparameters[key] = default_hyperparameters[key]
@@ -170,7 +169,6 @@ def lambda_handler(event, context):
                 "num_workers": 8,
                 "model_name": "ResNet50_v2"
             }
-            training_job_hyperparameters = training_job_hyperparameters
             for key in default_hyperparameters.keys():
                 if(key not in training_job_hyperparameters.keys()):
                     training_job_hyperparameters[key] = default_hyperparameters[key]
@@ -204,7 +202,6 @@ def lambda_handler(event, context):
                 'val_max_target_length': 80,
                 'path': 'json'
             }
-            training_job_hyperparameters = training_job_hyperparameters
             for key in default_hyperparameters.keys():
                 if(key not in training_job_hyperparameters.keys()):
                     training_job_hyperparameters[key] = default_hyperparameters[key]
@@ -238,7 +235,6 @@ def lambda_handler(event, context):
                 "num_train_epochs":"1",
                 "n_gpu": "1"
             }
-            training_job_hyperparameters = training_job_hyperparameters
             for key in default_hyperparameters.keys():
                 if(key not in training_job_hyperparameters.keys()):
                     training_job_hyperparameters[key] = default_hyperparameters[key]
@@ -276,7 +272,6 @@ def lambda_handler(event, context):
                 'device': 'gpu',
                 'model': 'uie-base'
             }
-            training_job_hyperparameters = training_job_hyperparameters
             for key in default_hyperparameters.keys():
                 if(key not in training_job_hyperparameters.keys()):
                     training_job_hyperparameters[key] = default_hyperparameters[key]
@@ -328,7 +323,6 @@ def lambda_handler(event, context):
                 'batch-size': 2048  , 
                 'num-batches-per-epoch': 2
             }
-            training_job_hyperparameters = training_job_hyperparameters
             for key in default_hyperparameters.keys():
                 if(key not in training_job_hyperparameters.keys()):
                     training_job_hyperparameters[key] = default_hyperparameters[key]
@@ -345,6 +339,26 @@ def lambda_handler(event, context):
                 py_version = py_version,
                 instance_type = training_job_instance_type,
                 instance_count = training_job_instance_count
+            )
+        elif(model_algorithm == 'stylegan'):
+            image_uri = ssmh.get_parameter('/all_in_one_ai/config/meta/algorithms/{0}/training_image'.format(model_algorithm))
+
+            default_hyperparameters = {
+                'outdir': '/opt/ml/model',
+                'gpus': 1,
+                'kimg': 1000
+            }
+
+            for key in default_hyperparameters.keys():
+                if(key not in training_job_hyperparameters.keys()):
+                    training_job_hyperparameters[key] = default_hyperparameters[key]
+
+            estimator = Estimator(
+                role = role,
+                instance_count = training_job_instance_count,
+                instance_type = training_job_instance_type,
+                image_uri = image_uri,
+                hyperparameters=training_job_hyperparameters
             )
         else:
             return {

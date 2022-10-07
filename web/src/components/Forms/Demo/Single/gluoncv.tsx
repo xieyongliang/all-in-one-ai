@@ -136,14 +136,18 @@ const GluonCVDemoForm: FunctionComponent<IProps> = (
             axios.get('/endpoint', {params: { industrial_model: industrialModel.id}})
                 .then((response) => {
                     var items = []
-                    response.data.forEach((item) => {
-                        items.push({label: item.EndpointName, value: item.EndpointName})
-                        if(items.length === response.data.length) {
-                            setEndpointOptions(items);
-                            setSelectedEndpoint(items[0]);
-                            setLoadingEndpoints(false);
-                        }
-                    })
+                    if(response.data.length > 0) {
+                        response.data.forEach((item) => {
+                            items.push({label: item.EndpointName, value: item.EndpointName})
+                            if(items.length === response.data.length) {
+                                setEndpointOptions(items);
+                                setSelectedEndpoint(items[0]);
+                                setLoadingEndpoints(false);
+                            }
+                        })
+                    }
+                    else
+                        setLoadingEndpoints(false);
                 }, (error) => {
                     logOutput('error', error.response.data, undefined, error);
                     setLoadingEndpoints(false);
@@ -474,6 +478,7 @@ const GluonCVDemoForm: FunctionComponent<IProps> = (
     }
 
     const renderSearchImageList = () => {
+        console.log(searchImageItems)
         return (
             <Container headingVariant='h4' title = {t('industrial_models.demo.output')}>
                 <ImageList cols={10} rowHeight={64} gap={10} variant={'quilted'}>

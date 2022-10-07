@@ -139,14 +139,18 @@ const LocaChartlDataForm: FunctionComponent<IProps> = (
             axios.get('/endpoint', {params: { industrial_model: industrialModel.id}})
                 .then((response) => {
                     var items = []
-                    response.data.forEach((item) => {
-                        items.push({label: item.EndpointName, value: item.EndpointName})
-                        if(items.length === response.data.length) {
-                            setEndpointOptions(items);
-                            setSelectedEndpoint(items[0]);
-                            setLoading(false);
-                        }
-                    })
+                    if(response.data.length > 0) {
+                        response.data.forEach((item) => {
+                            items.push({label: item.EndpointName, value: item.EndpointName})
+                            if(items.length === response.data.length) {
+                                setEndpointOptions(items);
+                                setSelectedEndpoint(items[0]);
+                                setLoading(false);
+                            }
+                        })
+                    }
+                    else
+                        setLoading(false);
                 }, (error) => {
                     logOutput('error', error.response.data, undefined, error);
                     setProcessing(false);
