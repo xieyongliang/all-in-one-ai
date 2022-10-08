@@ -9,6 +9,15 @@
 
     ![Create industrial model based Yolov5](./assets/images/industrial_model_yolov5_2.png)
 
+    **Model extra information**
+
+    {
+        "labels": [
+            "license-plate", 
+            "vehicle"
+        ]
+    }
+
 2. Quickstart - train
 
     ![Quickstart train - Yolov5](./assets/images/quickstart_train_yolov5.png)
@@ -87,6 +96,23 @@
 
     ![Create industrial model based GluonCV](./assets/images/industrial_model_gluoncv_3.png)
 
+    **Model extra information**
+
+    **Image search**
+    {
+        "task": "search"
+    }
+
+    **Image classification**
+    {
+        "task": "classification",
+        "classes": [
+            "tench",
+            "goldfish",
+            ...
+        ]
+    }
+
 2. Quickstart - train
 
     ![Quickstart train - GluonCV](./assets/images/quickstart_train_gluoncv.png)
@@ -114,7 +140,11 @@
 
 3. Quickstart - deploy
 
+    **Image search**
+
     ![Quickstart deploy - GluonCV](./assets/images/quickstart_deploy_gluoncv.png)
+
+    **Image classification**
 
     ![Quickstart deploy - GluonCV](./assets/images/quickstart_deploy_gluoncv_2.png)
 
@@ -142,7 +172,7 @@
     **HTTP response**
 
     -   If task is search, return 2048 dimension embedding vector.
-    -   Otherwise, return probability vector
+    -   If task is classification, return top-k matched class id array.
 
 ### PaddleOCR
 1. Create industrial model
@@ -150,6 +180,10 @@
     ![Create industrial model based PaddleOCR](./assets/images/industrial_model_paddleocr.png)
 
     ![Create industrial model based PaddleOCR](./assets/images/industrial_model_paddleocr_2.png)
+
+    **Model extra information**
+
+    {}
 
 2. Quickstart - train
 
@@ -284,6 +318,10 @@
 
     ![Create industrial model based CPT](./assets/images/industrial_model_cpt_2.png)
 
+    **Model extra information**
+
+    {}
+
 2. Quickstart - train
 
     ![Quickstart train - CPT](./assets/images/quickstart_train_cpt.png)
@@ -354,6 +392,10 @@
     ![Create industrial model based GABSA](./assets/images/industrial_model_gabsa.png)
 
     ![Create industrial model based GABSA](./assets/images/industrial_model_gabsa_2.png)
+
+    **Model extra information**
+
+    {}
 
 2. Quickstart - train
 
@@ -432,6 +474,10 @@
     ![Create industrial model based PaddleNLP](./assets/images/industrial_model_gabsa.png)
 
     ![Create industrial model based PaddleNLP](./assets/images/industrial_model_gabsa_2.png)
+
+    **Model extra information**
+
+    {}
 
 2. Quickstart - train
 
@@ -546,6 +592,10 @@
 
     ![Create industrial model based DeBERTa](./assets/images/industrial_model_deberta_2.png)
 
+    **Model extra information**
+
+    {}
+
 2. Quickstart - deploy
 
     ![Quickstart deploy - DeBERTa](./assets/images/quickstart_deploy_deberta.png)
@@ -630,6 +680,10 @@
 
     ![Create industrial model based KeyBert](./assets/images/industrial_model_keybert_2.png)
 
+    **Model extra information**
+
+    {}
+
 2. Quickstart - deploy
 
     ![Quickstart deploy - KeyBert](./assets/images/quickstart_deploy_keybert.png)
@@ -701,6 +755,10 @@
     ![Create industrial model based GluonTS](./assets/images/industrial_model_gluonts.png)
 
     ![Create industrial model based GluonTS](./assets/images/industrial_model_gluonts_2.png)
+
+    **Model extra information**
+
+    {}
 
 2. Quickstart - train
 
@@ -848,3 +906,101 @@
                     ]
                 ]
         }
+
+### StyleGAN
+1. Create industrial model
+
+    ![Create industrial model based StyleGAN](./assets/images/industrial_model_stylegan.png)
+
+    ![Create industrial model based StyleGAN](./assets/images/industrial_model_stylegan_2.png)
+
+    **Model extra information**
+
+    {}
+
+2. Quickstart - train
+
+    ![Quickstart train - StyleGAN](./assets/images/quickstart_train_stylegan.png)
+
+    **Hyperparameters**
+
+    | Hyperparameter | Default value | Comment |
+    |---|---|---|
+    |gpus|1|Num of GPUS|
+    |snap|50|Number of GPUs to use [default: 1]|
+    |metrics|fid50k_full|Comma-separated list or "none" [default: fid50k_full]|
+    |seed|0|Random seed|
+    |data||Training data (directory or zip)|
+    |cond|false|Train conditional model based on dataset labels [default: false]|
+    |subset|all|'Train with only N images|
+    |mirror|false|Enable dataset x-flips|
+    |config|auto|Base config, one of 'auto', 'stylegan2', 'paper256', 'paper512', 'paper1024', 'cifar'|
+    |gamma||Override R1 gamma|
+    |kimg||Override training duration|
+    |batch||Override batch size|
+    |aug|ada|Augmentation mode, one of 'noaug', 'ada', 'fixed'|
+    |p||Augmentation probability for --aug=fixed|
+    |target||ADA target value for --aug=ada|
+    |augpipe|bgc|Augmentation pipeline|
+    |resume|noresume|Resume training|
+    |freezed|0|Freezed layers|
+    |fp32||Disable mixed-precision training|
+    |nhwc||Use NHWC memory format with FP16|
+    |nobench||Disable cuDNN benchmarking|
+    |allow-tf32||Allow PyTorch to use TF32 internally|
+    |workers||Override number of DataLoader workers|
+
+    **Input data configuration**
+
+    | Channel name | Mandatory | Comment |
+    |---|---|---|
+    | dataset | Yes | S3 URI of train data |
+
+3. Quickstart - deploy
+
+    ![Quickstart deploy - StyleGAN](./assets/images/quickstart_deploy_stylegan.png)
+
+    **Environment variables**
+
+    | Environment variable | Default value | Comment |
+    |---|---|---|
+    |network||Pre-trianed network URL|
+
+4. Quickstart - inference
+
+    ![Quickstart inference - StyleGAN](./assets/images/quickstart_inference_stylegan.png)
+
+    ![Quickstart inference - StyleGAN](./assets/images/quickstart_inference_stylegan_2.png)
+
+    **HTTP request**
+
+    {
+        "inputs": {
+            "trunc": "0.7325021066422363", 
+            "seeds": "9,206,870,370"
+        }
+    }
+
+    **HTTP response**
+
+    [
+        "s3://sagemaker-ap-east-1-034068151705/stylegan/inference/outputseed0370.png",
+        "s3://sagemaker-ap-east-1-034068151705/stylegan/inference/outputseed0009.png",
+        "s3://sagemaker-ap-east-1-034068151705/stylegan/inference/outputseed0870.png",
+        "s3://sagemaker-ap-east-1-034068151705/stylegan/inference/outputseed0206.png"
+    ]
+
+### Yolov5PaddleOCR
+1. Create industrial model
+
+    ![Create industrial model based Yolov5PaddleOCR](./assets/images/industrial_model_yolov5paddleocr.png)
+
+    ![Create industrial model based Yolov5PaddleOCR](./assets/images/industrial_model_yolov5paddleocr_2.png)
+
+    **Model extra information**
+
+    {}
+
+2. Quickstart - inference
+
+    ![Quickstart inference - Yolov5PaddleOCR](./assets/images/quickstart_inference_yolov5paddleocr.png)

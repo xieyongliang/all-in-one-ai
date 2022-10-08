@@ -311,9 +311,10 @@ const PolygonTextsList: React.FC<IProps> = (
         var industrialModel = industrialModels.find((item) => item.id === params.id);
 
         var keywords = JSON.parse(industrialModel.extra).keywords
-        keywords.forEach(keyword => {
-            keywords.push(keyword)
-        })
+        if(keywords !== undefined)
+            keywords.forEach(keyword => {
+                keywords.push(keyword)
+            })
 
         var response = undefined
         if(imageBucket !== undefined && imageKey!== undefined)  {
@@ -393,6 +394,7 @@ const PolygonTextsList: React.FC<IProps> = (
                     setKeyValues(data.outputs)
                 handleProcessed();
             }, (error) => {
+                console.log(error)
                 logOutput('alert', error.response.data, undefined, error);
                 handleProcessed();
             });
