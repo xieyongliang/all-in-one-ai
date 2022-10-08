@@ -35,6 +35,8 @@ const EndpointList: FunctionComponent = () => {
     const [ pageIndex, setPageIndex ] = useState(0);
     const [ endpointCurItems, setEndpointCurItems ] = useState([]);
     const [ endpointAllItems, setEndpointAllItems ] = useState([]);
+    const [ items, setItems ] = useState([]);
+    const [ lastOrderBy, setLastOrderBy ] = useState({});
 
     const { t } = useTranslation();
 
@@ -120,6 +122,7 @@ const EndpointList: FunctionComponent = () => {
                     )
                     if(endpointCurItems.length === response.data.length) {
                         setEndpointCurItems(endpointCurItems);
+                        setItems(endpointCurItems);
                         loadedCurItems = true;
                         if(loadedAllItems) {               
                             setLoading(false);
@@ -342,7 +345,21 @@ const EndpointList: FunctionComponent = () => {
     }
 
     const onFetchData = (options: FetchDataOptions) => {
-        setPageIndex(options.pageIndex);
+        if(options.sortBy && options.sortBy.length > 0) {
+            var sortBy = options.sortBy[0];
+
+            if(sortBy['id'] !== lastOrderBy['id'] || sortBy['desc'] !== lastOrderBy['desc']) {
+                var items = showAll ? endpointAllItems : endpointCurItems
+                items.sort((a, b)=>{
+                    var result = (a[sortBy.id] > b[sortBy.id] ? 1 : (a[sortBy.id] === b[sortBy.id] ?  0: -1)) * (sortBy.desc ? -1 : 1);
+                    return result;
+                })
+
+                setItems(JSON.parse(JSON.stringify(items)));
+                setPageIndex(options.pageIndex);      
+                setLastOrderBy(sortBy);
+            }
+        }
     }
 
     const renderEndpointList = () => {
@@ -352,7 +369,7 @@ const EndpointList: FunctionComponent = () => {
                 tableTitle={t('industrial_models.endpoints')}
                 multiSelect={false}
                 columnDefinitions={columnDefinitions}
-                items={showAll ? endpointAllItems : endpointCurItems}
+                items={items}
                 loading={loading}
                 onSelectionChange={onSelectionChange}
                 getRowId={getRowId}

@@ -34,7 +34,9 @@ const TrainingJobList: FunctionComponent = () => {
     const [ pageIndex, setPageIndex ] = useState(0);
     const [ trainingJobCurItems, setTrainingJobCurItems ] = useState([])
     const [ trainingJobAllItems, setTrainingJobAllItems ] = useState([])
-    
+    const [ items, setItems ] = useState([]);
+    const [ lastOrderBy, setLastOrderBy ] = useState({});
+
     const { t } = useTranslation();
 
     const history = useHistory();
@@ -103,6 +105,7 @@ const TrainingJobList: FunctionComponent = () => {
                     )
                     if(trainingJobCurItems.length === response.data.length) {
                         setTrainingJobCurItems(trainingJobCurItems);
+                        setItems(trainingJobCurItems);
                         loadedCurItems = true;
                         if(loadedAllItems) {               
                             setLoading(false);
@@ -337,7 +340,21 @@ const TrainingJobList: FunctionComponent = () => {
     }
     
     const onFetchData = (options: FetchDataOptions) => {
-        setPageIndex(options.pageIndex);
+        if(options.sortBy && options.sortBy.length > 0) {
+            var sortBy = options.sortBy[0];
+
+            if(sortBy['id'] !== lastOrderBy['id'] || sortBy['desc'] !== lastOrderBy['desc']) {
+                var items = showAll ? trainingJobAllItems : trainingJobAllItems
+                items.sort((a, b)=>{
+                    var result = (a[sortBy.id] > b[sortBy.id] ? 1 : (a[sortBy.id] === b[sortBy.id] ?  0: -1)) * (sortBy.desc ? -1 : 1);
+                    return result;
+                })
+
+                setItems(JSON.parse(JSON.stringify(items)));
+                setPageIndex(options.pageIndex);      
+                setLastOrderBy(sortBy);
+            }
+        }
     }
 
     const renderTrainingJobList = () => {
@@ -347,7 +364,7 @@ const TrainingJobList: FunctionComponent = () => {
                 tableTitle={t('industrial_models.training_jobs')}
                 multiSelect={false}
                 columnDefinitions={columnDefinitions}
-                items={showAll ? trainingJobAllItems : trainingJobCurItems}
+                items={items}
                 loading={loading}
                 onSelectionChange={onSelectionChange}
                 getRowId={getRowId}
