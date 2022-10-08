@@ -81,6 +81,7 @@ lambda_foldes="
 all_in_one_ai_annotation
 all_in_one_ai_api
 all_in_one_ai_create_api
+all_in_one_ai_create_deploy_generic
 all_in_one_ai_create_deploy_huggingface
 all_in_one_ai_create_deploy_pytorch
 all_in_one_ai_create_deploy_mxnet
@@ -89,6 +90,7 @@ all_in_one_ai_create_endpoint
 all_in_one_ai_create_model
 all_in_one_ai_create_pipeline
 all_in_one_ai_create_pipeline_helper
+all_in_one_ai_create_train_generic
 all_in_one_ai_create_train_huggingface
 all_in_one_ai_create_train_pytorch
 all_in_one_ai_create_train_mxnet
