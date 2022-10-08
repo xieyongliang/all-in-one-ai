@@ -89,10 +89,10 @@ const AppLayout: FunctionComponent<IProps> = ( {
         var type = data.status === 1 ? "success" : (data.status === 0 ? "info" : "error");       
         var description = t(`app_layout.${data.type}_task_${type}`);
         var content = `${description}`;
-        if(type !== 'sucess') {
+        if(type !== 'success')
             content += ` - ${data.message}`;
-            logOutput(type, content, time);
-        }
+        
+        logOutput(type, content, time);
     }
 
     if(getWebSocket() !== null)
