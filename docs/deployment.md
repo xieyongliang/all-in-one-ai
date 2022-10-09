@@ -88,15 +88,12 @@ Make sure the following resources not existed. In case they are existed, please 
 -   ACM SSL certificate of web portal (Optional) - Needed only when connections protocol to web portal is HTTPS
 
 ### Toolkits the be prepared prior to deployment
-
-    Please make sure you have already installed the following toolkits.
-
-    -   git
-    -   awscli
-    -   docker
-    -   python3
-    -   pip3
-    -   docker
+-   git
+-   awscli
+-   docker
+-   python3
+-   pip3
+-   docker
 
 ### Service quotas and limits
 -   Amazon VPC – 1
