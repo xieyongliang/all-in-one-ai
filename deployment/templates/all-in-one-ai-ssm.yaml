@@ -377,4 +377,4 @@ Resources:
     Properties:
       Name: /all_in_one_ai/config/meta/source_data_s3_bucket_for_transform_job
       Type: String
-      Value: ""
+      Value: "None"
