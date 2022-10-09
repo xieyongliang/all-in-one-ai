@@ -76,14 +76,6 @@ def lambda_handler(event, context):
                 'body': response['Payload'].read().decode('utf-8')
             }
 
-        else:  # Event Notification
-            total_file_count = get_s3_bucket_file_count(
-                retrieve_bucket_and_prefix(get_source_data_s3_bucket_for_transform_job()))
-            print(f"Total File Count is {total_file_count}")
-
-            # # Insert to SSM
-            set_or_get_source_file_count_for_transform_job(total_file_count)
-
     except Exception as e:
         traceback.print_exc()
         return {
@@ -139,30 +131,6 @@ def set_or_get_source_file_count_for_transform_job(current_file_count, action=No
             )
         except Exception as ee:
             print(f"Error occurred. {ee}")
-
-
-def retrieve_bucket_and_prefix(target_s3_bucket_and_prefix):
-    """
-    Split TARGET_S3_Bucket_and_Prefix to BUCKET & KEY
-    """
-    _l = (target_s3_bucket_and_prefix if target_s3_bucket_and_prefix.find(":") == -1 else target_s3_bucket_and_prefix[5:]).split("/")
-
-    return _l[0], "/".join(_l[1:])
-
-
-def get_s3_bucket_file_count(bucket_name_and_prefix):
-    """
-        Reason for not using "s3.list_object_v2" is the api
-        only returns 1000 objects.
-    """
-    # get the bucket
-    bucket = s3_client.Bucket(bucket_name_and_prefix[0])
-
-    # minus FOLDER(-1)
-    count_obj = sum(1 for _ in bucket.objects.filter(Prefix=bucket_name_and_prefix[1])) - 1
-    print(f"Total count of Target Bucket/Prefix : {count_obj}")
-
-    return count_obj
 
 
 def get_source_data_s3_bucket_for_transform_job():

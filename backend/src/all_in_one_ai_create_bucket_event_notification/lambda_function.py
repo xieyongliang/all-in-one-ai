@@ -10,6 +10,7 @@ session = boto3.session.Session()
 sts_client = boto3.client('sts')
 S3_OBJECT_EVENT = "s3:ObjectCreated:*"
 STATEMENT_ID = "s3-lambda-permission-statement"
+s3_client = boto3.resource('s3')
 
 
 def create_replace_bucket_notification(notification_id, source_data_s3_bucket, handler_lambda_function_arn,
@@ -87,11 +88,78 @@ def set_source_data_s3_bucket_for_transform_job(uri, action=None):
             print(f"Error occurred. {ee}")
 
 
+def get_s3_bucket_file_count(target_s3_bucket_and_prefix):
+    """
+        Reason for not using "s3.list_object_v2" is the api
+        only returns 1000 objects.
+    """
+
+    print(f"bucket_name_and_prefix : {target_s3_bucket_and_prefix}")
+
+    if target_s3_bucket_and_prefix.find(":") != -1:  # With scheme S3://
+        target_s3_bucket_and_prefix = target_s3_bucket_and_prefix[5:]
+
+    if target_s3_bucket_and_prefix.find("/") == -1:  # without Prefix
+        bucket = target_s3_bucket_and_prefix
+        prefix = ""
+    else:
+        _l = target_s3_bucket_and_prefix.split("/")
+        bucket = _l[0]
+        prefix = "/".join(_l[1:])
+
+    # get the bucket
+    bucket = s3_client.Bucket(bucket)
+
+    count_obj = sum(1 for _ in bucket.objects.filter(Prefix=prefix))
+    print(f"Total count of Target Bucket/Prefix : {count_obj}")
+
+    return count_obj
+
+
+def get_source_data_s3_bucket_for_transform_job():
+    ssm_client = boto3.client('ssm')
+
+    _param_name = "/all_in_one_ai/config/meta/source_data_s3_bucket_for_transform_job"
+
+    try:
+        return ssm_client.get_parameter(
+            Name=_param_name,
+        )['Parameter']['Value']
+    except Exception as ee:
+        print(f"Error occurred. {ee}")
+        return ""
+
+
+def set_or_get_source_file_count_for_transform_job(current_file_count, action=None):
+    ssm_client = boto3.client('ssm')
+
+    _param_name = "/all_in_one_ai/config/meta/source_file_count_for_transform_job"
+
+    if action:
+        return ssm_client.get_parameter(
+            Name=_param_name,
+        )['Parameter']['Value']
+    else:
+        # Update or Create parameter
+        try:
+            # update
+            ssm_client.put_parameter(
+                Name=_param_name,
+                Value=str(current_file_count),
+                Type='String',
+                Overwrite=True
+            )
+        except Exception as ee:
+            print(f"Error occurred. {ee}")
+
+
 def lambda_handler(event, context):
     print(f"Event received : {event}")
 
     source_data_s3_bucket_and_prefix_src = event['queryStringParameters']['source_data_s3_bucket_and_prefix']
-    source_data_s3_bucket_and_prefix_src = source_data_s3_bucket_and_prefix_src[5:]
+    event_notification_s3_bucket_and_prefix_src = event['queryStringParameters'][
+        'event_notification_s3_bucket_and_prefix']
+    event_notification_s3_bucket_and_prefix_src = event_notification_s3_bucket_and_prefix_src[5:]
     industrial_model = event['queryStringParameters']['industrial_model']
 
     # Insert/Update SSM
@@ -102,13 +170,13 @@ def lambda_handler(event, context):
         print(e0)
 
     # source_data_s3_bucket_and_prefix = the DESTINATION LOCAL where TRANSFORM job saves output to, map to "targetS3BucketAndPrefix" from FrontEnd
-    source_data_s3_bucket_and_prefix = source_data_s3_bucket_and_prefix_src.split("/")
-    source_data_s3_bucket = source_data_s3_bucket_and_prefix[0]
-    source_data_s3_prefix = "" if len(source_data_s3_bucket_and_prefix) == 1 else "/".join(
-        source_data_s3_bucket_and_prefix[1:])
+    event_notification_s3_bucket_and_prefix = event_notification_s3_bucket_and_prefix_src.split("/")
+    event_notification_s3_bucket = event_notification_s3_bucket_and_prefix[0]
+    event_notification_s3_prefix = "" if len(event_notification_s3_bucket_and_prefix) == 1 else "/".join(
+        event_notification_s3_bucket_and_prefix[1:])
 
-    print(f"{source_data_s3_bucket}")
-    print(f"{source_data_s3_prefix}")
+    print(f"{event_notification_s3_bucket}")
+    print(f"{event_notification_s3_prefix}")
 
     # Add ENV when provisioning lambda function
     handler_lambda_function_arn = os.environ['HANDLER_LAMBDA_FUNCTION_ARN']
@@ -121,14 +189,15 @@ def lambda_handler(event, context):
     expect_bucket_owner = sts_client.get_caller_identity().get('Account')
 
     try:
-        lambda_client.update_function_configuration(
-            FunctionName=handler_lambda_function_name,
+        response = lambda_client.update_function_configuration(
+            FunctionName=handler_lambda_function_arn,
             Environment={
                 'Variables': {
                     'ES_INDEX': industrial_model
                 }
             }
         )
+        print(response)
         print(f"Successfully set ES_INDEX to {industrial_model}")
     except Exception as ee0:
         pass
@@ -148,21 +217,31 @@ def lambda_handler(event, context):
         FunctionName=handler_lambda_function_name,
         Principal='s3.amazonaws.com',
         SourceAccount=expect_bucket_owner,
-        SourceArn=f'arn:aws:s3:::{source_data_s3_bucket}',
+        SourceArn=f'arn:aws:s3:::{event_notification_s3_bucket}',
         StatementId=STATEMENT_ID,
     )
 
     print(f"Response of Adding permission - {response}")
 
+    # Update FILE_COUNT of SOURCE_DIR to SSM
+    source_data_path = get_source_data_s3_bucket_for_transform_job()
+    print(f"source_data_path: {source_data_path}")
+
+    total_file_count = get_s3_bucket_file_count(source_data_path)
+    print(f"Total File Count is {total_file_count}")
+
+    # # Insert to SSM
+    set_or_get_source_file_count_for_transform_job(total_file_count)
+
     try:
         response = create_replace_bucket_notification(STATEMENT_ID,
-                                                      source_data_s3_bucket,
+                                                      event_notification_s3_bucket,
                                                       handler_lambda_function_arn,
-                                                      source_data_s3_prefix,
+                                                      event_notification_s3_prefix,
                                                       expect_bucket_owner)
 
         print(response)
-        print(f"Bucket Notification for prefix [{source_data_s3_prefix}] created.")
+        print(f"Bucket Notification for prefix [{event_notification_s3_prefix}] created.")
 
         return {
             "isBase64Encoded": True,

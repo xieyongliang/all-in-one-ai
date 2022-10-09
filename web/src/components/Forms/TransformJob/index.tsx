@@ -248,7 +248,11 @@ const TransformJobForm: FunctionComponent<IProps> = (props) => {
 
         setProcessing(true)
 
-        axios.get('/bucket_event_notification', {params: {source_data_s3_bucket_and_prefix: outputS3Uri, industrial_model: params.id}}).then(
+        axios.get('/bucket_event_notification', {params: {
+                event_notification_target_bucket_uri: outputS3Uri,
+                industrial_model: params.id,
+                source_data_s3_bucket_and_prefix: inputS3Uri,
+        }}).then(
             (response) => {
                 if (response.data.statusCode === 200) {
                     logOutput('info', "Successfully established Event Notification.", undefined, undefined);
