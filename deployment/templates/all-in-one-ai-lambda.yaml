@@ -6232,6 +6232,8 @@ Resources:
           - !Ref PrivateSubnet2
         SecurityGroupIds:
           - !Ref SecurityGroup
+      Layers:
+        - !Ref HelperLayer
       Environment:
         Variables:
           ES_ENDPOINT: !Sub https://${OpensearchEndpoint}

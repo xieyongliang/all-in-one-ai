@@ -39,6 +39,8 @@ def lambda_handler(event, context):
                 }
             else:  # via Event Notification
                 _total_file_count = int(set_or_get_source_file_count_for_transform_job(-1, 'GET'))
+                _total_file_count = 1 if _total_file_count == 0 else _total_file_count
+
                 return {
                     'statusCode': 200,
                     'body': json.dumps(
@@ -124,7 +126,7 @@ def set_or_get_source_file_count_for_transform_job(current_file_count, action=No
     if action:
         return ssm_client.get_parameter(
             Name=_param_name,
-        )
+        )['Parameter']['Value']
     else:
         # Update or Create parameter
         try:
@@ -171,7 +173,7 @@ def get_source_data_s3_bucket_for_transform_job():
     try:
         return ssm_client.get_parameter(
             Name=_param_name,
-        )
+        )['Parameter']['Value']
     except Exception as ee:
         print(f"Error occurred. {ee}")
         return ""
