@@ -364,3 +364,17 @@ Resources:
         - Globally
         - !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/all-in-one-ai-stylegan-inference:latest
         - !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com.cn/all-in-one-ai-stylegan-inference:latest
+
+  Parameter43:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /all_in_one_ai/config/meta/source_file_count_for_transform_job
+      Type: String
+      Value: 0
+
+  Parameter44:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /all_in_one_ai/config/meta/source_data_s3_bucket_for_transform_job
+      Type: String
+      Value: ""

@@ -184,14 +184,27 @@ const GluonCVDemoForm: FunctionComponent<IProps> = (
     useEffect(() => {
         if(task === 'search') {
             const interval = setInterval(() => {
-                if(imageCount === 0) return
-                axios.get('/search/import', {params : {industrial_model : industrialModel.id, model_samples: industrialModel.samples, action: 'query'}})
-                .then((response) => {
-                    var current = response.data.current;
-                    setImportedCount(Math.floor((current * 100) / imageCount));
-                }, (error) => {
-                    logOutput('error', error.response.data, undefined, error);
-                })
+                if(imageCount === 0 && demoOption === 'import_with_realtimeinference' ) return
+
+                if(demoOption === 'import_with_realtimeinference'){
+                    // Endpoint
+                    axios.get('/search/import', {params : {industrial_model : industrialModel.id, model_samples: industrialModel.samples, action: 'query'}})
+                    .then((response) => {
+                        var current = response.data.current;
+                        setImportedCount(Math.floor((current * 100) / imageCount));
+                    }, (error) => {
+                        logOutput('error', error.response.data, undefined, error);
+                    })
+                }else{
+                    // Event Notification
+                    axios.get('/search/import', {params : {industrial_model : industrialModel.id, action: 'query'}})
+                    .then((response) => {
+                        setImportedCount(response.data.progress);
+                    }, (error) => {
+                        logOutput('error', error.response.data, undefined, error);
+                    })
+                }
+
             }, 1000);
             return () => clearInterval(interval);
         }

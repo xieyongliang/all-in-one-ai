@@ -81,6 +81,7 @@ lambda_foldes="
 all_in_one_ai_annotation
 all_in_one_ai_api
 all_in_one_ai_create_api
+all_in_one_ai_create_bucket_event_notification
 all_in_one_ai_create_deploy_generic
 all_in_one_ai_create_deploy_huggingface
 all_in_one_ai_create_deploy_pytorch
@@ -136,6 +137,7 @@ all_in_one_ai_stop_transform_job
 all_in_one_ai_train
 all_in_one_ai_training_job
 all_in_one_ai_transform_job
+all_in_one_ai_transform_job_helper
 all_in_one_ai_transform_job_review
 all_in_one_ai_websocket_connect
 all_in_one_ai_websocket_disconnect

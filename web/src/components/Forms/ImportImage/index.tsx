@@ -59,7 +59,7 @@ const ImportImage: FunctionComponent<ImagePreviewProps> = (props) => {
                     onChange={(event) => onChange('formFieldIdEndpoint', event)}
                 />
             </FormField>
-            <FormField controlId={uuidv4()} label={t('industrial_models.demo.select_endpoint')}>
+            <FormField controlId={uuidv4()} label={t('industrial_models.demo.select_endpoint_sample_data_uri')}>
                 <Input value={props.industrialModel.samples} readonly={true} />
             </FormField>
         </Form>
