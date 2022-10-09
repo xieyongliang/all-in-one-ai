@@ -189,12 +189,14 @@ def lambda_handler(event, context):
     expect_bucket_owner = sts_client.get_caller_identity().get('Account')
 
     try:
+        _new_var = {'ES_INDEX': industrial_model}
+
+        existing_env_config = lambda_client.get_function_configuration(FunctionName=handler_lambda_function_arn)['Environment']['Variables']
+
         response = lambda_client.update_function_configuration(
             FunctionName=handler_lambda_function_arn,
             Environment={
-                'Variables': {
-                    'ES_INDEX': industrial_model
-                }
+                'Variables': {**existing_env_config, **_new_var}
             }
         )
         print(response)
