@@ -90,7 +90,7 @@ Make sure the following resources not existed. In case they are existed, please 
 ### Toolkits to be prepared prior to deployment
 -   git
 -   awscli
--   docker
+-   zip
 -   python3
 -   pip3
 -   docker
