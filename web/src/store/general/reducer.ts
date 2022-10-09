@@ -20,7 +20,8 @@ const initialState: GeneralState = {
     },
     zoom: ViewPointSettings.MIN_ZOOM,
     env: {},
-    messages: []
+    messages: [],
+    href: '/'
 };
 
 export function generalReducer(
@@ -109,7 +110,13 @@ export function generalReducer(
                 ...state,
                 messages: copyMessages
             }
-        }             
+        }
+        case Action.UPDATE_HREF: {
+            return {
+                ...state,
+                href: action.payload.href
+            }
+        }         
         default:
             return state;
     }

@@ -2,6 +2,7 @@ import { Component } from 'react'
 import { Redirect } from 'react-router-dom'
 import { connect } from 'react-redux'
 import { initSessionFromCallbackURI } from '../../../store/session/actions'
+import { store } from '../../../'
 
 function mapStateToProps (state) {
     return { session: state.session }
@@ -25,7 +26,7 @@ class Callback extends Component {
     render () {
         // If there's no auth code in the URL or we're now logged into, redirect to the root page
         if (this.props.session.isLogin) {
-           return <Redirect to="/" />
+           return <Redirect to={store.getState().general.href} />
         }
         return <div />
     }
