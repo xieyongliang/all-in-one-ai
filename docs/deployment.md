@@ -87,7 +87,7 @@ Make sure the following resources not existed. In case they are existed, please 
 -   Domain Name of web portal (Optional) - Needed only when connections protocol to web portal is HTTPS.
 -   ACM SSL certificate of web portal (Optional) - Needed only when connections protocol to web portal is HTTPS
 
-### Toolkits the be prepared prior to deployment
+### Toolkits to be prepared prior to deployment
 -   git
 -   awscli
 -   docker
