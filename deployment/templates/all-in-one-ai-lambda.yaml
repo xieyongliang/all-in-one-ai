@@ -2756,6 +2756,10 @@ Resources:
           - Globally                                                  
           - 'arn:aws:iam::aws:policy/service-role/AWSLambdaRole'
           - 'arn:aws-cn:iam::aws:policy/service-role/AWSLambdaRole'
+        - !If
+          - Globally
+          - 'arn:aws:iam::aws:policy/AmazonSSMFullAccess'
+          - 'arn:aws-cn:iam::aws:policy/AmazonSSMFullAccess'
   
   AllInOneAIImportOpensearchFunctionAdditionalPermission:
     Type: 'AWS::IAM::Policy'

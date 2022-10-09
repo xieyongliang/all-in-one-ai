@@ -90,7 +90,7 @@ def set_source_data_s3_bucket_for_transform_job(uri, action=None):
 def lambda_handler(event, context):
     print(f"Event received : {event}")
 
-    source_data_s3_bucket_and_prefix_src = event['queryStringParameters']['source_data_s3_bucket_and_prefix']
+    source_data_s3_bucket_and_prefix_src = event['queryStringParameters']['source_data_s3_bucket_and_prefix'] # + S3:// process
     industrial_model = event['queryStringParameters']['industrial_model']
 
     # Insert/Update SSM
