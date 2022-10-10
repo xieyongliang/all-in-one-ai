@@ -3,6 +3,7 @@ import json
 import boto3
 import os
 import traceback
+from elasticsearch import Elasticsearch
 
 lambda_client = boto3.client('lambda')
 s3 = boto3.client('s3')
@@ -65,29 +66,6 @@ def create_replace_bucket_notification(notification_id, source_data_s3_bucket, h
     )
 
 
-# def set_source_data_s3_bucket_for_transform_job(uri, action=None):
-#     ssm_client = boto3.client('ssm')
-#
-#     _param_name = "/all_in_one_ai/config/meta/source_data_s3_bucket_for_transform_job"
-#
-#     if action:
-#         return ssm_client.get_parameter(
-#             Name=_param_name,
-#         )['Parameter']['Value']
-#     else:
-#         # Update or Create parameter
-#         try:
-#             # update
-#             ssm_client.put_parameter(
-#                 Name=_param_name,
-#                 Value=uri,
-#                 Type='String',
-#                 Overwrite=True
-#             )
-#         except Exception as ee:
-#             print(f"Error occurred. {ee}")
-
-
 def create_empty_es_index_items(es_endpoint,
                                 index,
                                 source_data_s3_bucket_and_prefix_src,
@@ -96,9 +74,6 @@ def create_empty_es_index_items(es_endpoint,
         Reason for not using "s3.list_object_v2" is the api
         only returns 1000 objects.
     """
-    # Create or update index
-    create_index(es_endpoint, index)
-
     print(f"bucket_name_and_prefix : {source_data_s3_bucket_and_prefix_src}")
 
     if source_data_s3_bucket_and_prefix_src.find(":") != -1:  # With scheme S3://
@@ -134,72 +109,6 @@ def create_empty_es_index_items(es_endpoint,
     print(f"Total count of Target Bucket/Prefix : {_file_count}")
 
 
-def create_index(es, index):
-    if es.indices.exists(index=index):
-        es.indices.delete(index=index)
-
-    knn_index = {
-        "settings": {
-            "index.knn": True
-        },
-        "mappings": {
-            "properties": {
-                "img_vector": {
-                    "type": "knn_vector",
-                    "dimension": 2048
-                },
-                "img_s3uri": {
-                    "type": "keyword",
-                    "index": "true"
-                },
-                "index_key": {
-                    "type": "string"
-                }
-            }
-        }
-    }
-
-    es.indices.create(index=index, body=knn_index, ignore=400)
-    print(es.indices.get(index=index))
-
-
-# def get_source_data_s3_bucket_for_transform_job():
-#     ssm_client = boto3.client('ssm')
-#
-#     _param_name = "/all_in_one_ai/config/meta/source_data_s3_bucket_for_transform_job"
-#
-#     try:
-#         return ssm_client.get_parameter(
-#             Name=_param_name,
-#         )['Parameter']['Value']
-#     except Exception as ee:
-#         print(f"Error occurred. {ee}")
-#         return ""
-
-
-# def set_or_get_source_file_count_for_transform_job(current_file_count, action=None):
-#     ssm_client = boto3.client('ssm')
-#
-#     _param_name = "/all_in_one_ai/config/meta/source_file_count_for_transform_job"
-#
-#     if action:
-#         return ssm_client.get_parameter(
-#             Name=_param_name,
-#         )['Parameter']['Value']
-#     else:
-#         # Update or Create parameter
-#         try:
-#             # update
-#             ssm_client.put_parameter(
-#                 Name=_param_name,
-#                 Value=str(current_file_count),
-#                 Type='String',
-#                 Overwrite=True
-#             )
-#         except Exception as ee:
-#             print(f"Error occurred. {ee}")
-
-
 def lambda_handler(event, context):
     print(f"Event received : {event}")
 
@@ -209,14 +118,7 @@ def lambda_handler(event, context):
         'event_notification_s3_bucket_and_prefix']  # output URI
     event_notification_s3_bucket_and_prefix_src = event_notification_s3_bucket_and_prefix_src[5:]
     industrial_model = event['queryStringParameters']['industrial_model']
-    es_endpoint = os.environ['ES_ENDPOINT']
-
-    # Insert/Update SSM
-    # try:
-    #     set_source_data_s3_bucket_for_transform_job(source_data_s3_bucket_and_prefix_src)
-    # except Exception as e0:
-    #     print(f'Unable to save source_data_s3_bucket_and_prefix[{source_data_s3_bucket_and_prefix_src}] to SSM.')
-    #     print(e0)
+    es_endpoint = Elasticsearch(os.environ['ES_ENDPOINT'])
 
     # source_data_s3_bucket_and_prefix = the DESTINATION LOCAL where TRANSFORM job saves output to, map to "targetS3BucketAndPrefix" from FrontEnd
     event_notification_s3_bucket_and_prefix = event_notification_s3_bucket_and_prefix_src.split("/")
@@ -253,7 +155,6 @@ def lambda_handler(event, context):
         print(response)
         print(f"Successfully set ES_INDEX to {industrial_model}")
     except Exception as ee0:
-        pass
         print(f"Unable to set ES_INDEX to {industrial_model}")
 
     try:
@@ -277,16 +178,25 @@ def lambda_handler(event, context):
     print(f"Response of Adding permission - {response}")
 
     try:
+        # Create Index
+        request = {
+            'industrial_model': industrial_model,
+        }
+
+        lambda_client.invoke(
+            FunctionName='all_in_one_ai_import_opensearch',
+            InvocationType='Event',
+            Payload=json.dumps({'body': request})
+        )
+
+        # Create empty docs
         create_empty_es_index_items(
             es_endpoint=es_endpoint,
             index=industrial_model,
             source_data_s3_bucket_and_prefix_src=source_data_s3_bucket_and_prefix_src,
             output_data_s3_bucket_and_prefix_src=event_notification_s3_bucket_and_prefix_src
         )
-    except Exception as e1:
-        print(f"Error occurs: {e1}")
 
-    try:
         response = create_replace_bucket_notification(STATEMENT_ID,
                                                       event_notification_s3_bucket,
                                                       handler_lambda_function_arn,

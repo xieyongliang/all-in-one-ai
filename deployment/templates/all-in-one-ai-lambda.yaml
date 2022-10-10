@@ -6247,7 +6247,7 @@ Resources:
 ########################################################################
 #   Lambda function for creating event_notification with custom bucket/prefix
 
-  AllInOneAICreateBucketEventNotificationFunctionRole:
+  AllInOneAIEventNotificationFunctionRole:
     Type: 'AWS::IAM::Role'
     Properties:
       AssumeRolePolicyDocument:
@@ -6266,25 +6266,21 @@ Resources:
           - 'arn:aws-cn:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
         - !If
           - Globally
+          - 'arn:aws:iam::aws:policy/service-role/AWSLambdaRole'
+          - 'arn:aws-cn:iam::aws:policy/service-role/AWSLambdaRole'
+        - !If
+          - Globally
           - 'arn:aws:iam::aws:policy/AmazonS3FullAccess'
           - 'arn:aws-cn:iam::aws:policy/AmazonS3FullAccess'
         - !If
           - Globally
           - 'arn:aws:iam::aws:policy/AmazonSSMFullAccess'
           - 'arn:aws-cn:iam::aws:policy/AmazonSSMFullAccess'
-        - !If
-          - Globally
-          - 'arn:aws:iam::aws:policy/service-role/AWSLambdaRole'
-          - 'arn:aws-cn:iam::aws:policy/service-role/AWSLambdaRole'
-        - !If
-          - Globally
-          - 'arn:aws:iam::aws:policy/AWSLambda_FullAccess'
-          - 'arn:aws-cn:iam::aws:policy/AWSLambda_FullAccess'
 
-  AllInOneAICreateBucketEventNotificationFunctionAdditionalPermission:
+  AllInOneAIEventNotificationFunctionAdditionalPermission:
     Type: 'AWS::IAM::Policy'
     Properties:
-      PolicyName: all_in_one_ai_create_bucket_event_notification
+      PolicyName: all_in_one_ai_event_notification
       PolicyDocument:
         Version: 2012-10-17
         Statement:
@@ -6295,20 +6291,20 @@ Resources:
             Resource: '*'
             Effect: Allow
       Roles:
-        - !Ref AllInOneAICreateBucketEventNotificationFunctionRole
+        - !Ref AllInOneAIEventNotificationFunctionRole
 
-  AllInOneAICreateBucketEventNotificationFunction:
+  AllInOneAIEventNotificationFunction:
     Type: AWS::Lambda::Function
     Properties:
       Code:
         S3Bucket: !Ref S3Bucket
         S3Key: !Sub ${S3Key}codes/all_in_one_ai_create_bucket_event_notification.zip
-      FunctionName: all_in_one_ai_create_bucket_event_notification
+      FunctionName: all_in_one_ai_create_event_notification
       Tags:
         - Value: Name
           Key: 'AllInOneAIApi'
       Handler: lambda_function.lambda_handler
-      Role: !GetAtt AllInOneAICreateBucketEventNotificationFunctionRole.Arn
+      Role: !GetAtt AllInOneAIEventNotificationFunctionRole.Arn
       Timeout: 900
       Runtime: python3.9
       VpcConfig:
@@ -6321,6 +6317,104 @@ Resources:
         Variables:
           HANDLER_LAMBDA_FUNCTION_ARN: !GetAtt AllInOneAITransformJobHelperFunction.Arn
           ES_ENDPOINT: !Sub https://${OpensearchEndpoint}
+      Layers:
+        - !Ref HelperLayer
+
+  AllInOneAIEventNotificationFunctionCatchAllPermissionProd1:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: 'lambda:InvokeFunction'
+      Principal: apigateway.amazonaws.com
+      FunctionName: !Ref AllInOneAIEventNotificationFunction
+      SourceArn:
+        !If
+        - Globally
+        - !Sub
+          - >-
+            arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/GET/bucket_event_notification
+          - __Stage__: '*'
+            __ApiId__: !Ref ApiGatewayRestApi
+        - !Sub
+          - >-
+            arn:aws-cn:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/GET/bucket_event_notification
+          - __Stage__: '*'
+            __ApiId__: !Ref ApiGatewayRestApi
+
+
+# .----------------------------
+
+#  AllInOneAICreateBucketEventNotificationFunctionRole:
+#    Type: 'AWS::IAM::Role'
+#    Properties:
+#      AssumeRolePolicyDocument:
+#        Version: 2012-10-17
+#        Statement:
+#          - Action:
+#              - 'sts:AssumeRole'
+#            Effect: Allow
+#            Principal:
+#              Service:
+#                - lambda.amazonaws.com
+#      ManagedPolicyArns:
+#        - !If
+#          - Globally
+#          - 'arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
+#          - 'arn:aws-cn:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
+#        - !If
+#          - Globally
+#          - 'arn:aws:iam::aws:policy/AmazonS3FullAccess'
+#          - 'arn:aws-cn:iam::aws:policy/AmazonS3FullAccess'
+#        - !If
+#          - Globally
+#          - 'arn:aws:iam::aws:policy/service-role/AWSLambdaRole'
+#          - 'arn:aws-cn:iam::aws:policy/service-role/AWSLambdaRole'
+#        - !If
+#          - Globally
+#          - 'arn:aws:iam::aws:policy/AWSLambda_FullAccess'
+#          - 'arn:aws-cn:iam::aws:policy/AWSLambda_FullAccess'
+#
+#  AllInOneAICreateBucketEventNotificationFunctionAdditionalPermission:
+#    Type: 'AWS::IAM::Policy'
+#    Properties:
+#      PolicyName: all_in_one_ai_create_bucket_event_notification
+#      PolicyDocument:
+#        Version: 2012-10-17
+#        Statement:
+#          - Action:
+#              - 'logs:*'
+#              - 'lambda:*'
+#              - 'cloudwatch:*'
+#            Resource: '*'
+#            Effect: Allow
+#      Roles:
+#        - !Ref AllInOneAICreateBucketEventNotificationFunctionRole
+#
+#  AllInOneAICreateBucketEventNotificationFunction:
+#    Type: AWS::Lambda::Function
+#    Properties:
+#      Code:
+#        S3Bucket: !Ref S3Bucket
+#        S3Key: !Sub ${S3Key}codes/all_in_one_ai_create_bucket_event_notification.zip
+#      FunctionName: all_in_one_ai_create_bucket_event_notification
+#      Tags:
+#        - Value: Name
+#          Key: 'AllInOneAIApi'
+#      Handler: lambda_function.lambda_handler
+#      Role: !GetAtt AllInOneAICreateBucketEventNotificationFunctionRole.Arn
+#      Timeout: 900
+#      Runtime: python3.9
+#      VpcConfig:
+#        SubnetIds:
+#          - !Ref PrivateSubnet1
+#          - !Ref PrivateSubnet2
+#        SecurityGroupIds:
+#          - !Ref SecurityGroup
+#      Environment:
+#        Variables:
+#          HANDLER_LAMBDA_FUNCTION_ARN: !GetAtt AllInOneAITransformJobHelperFunction.Arn
+#          ES_ENDPOINT: !Sub https://${OpensearchEndpoint}
+#      Layers:
+#        - !Ref HelperLayer
 
 ########################################################################
 
@@ -6345,30 +6439,30 @@ Resources:
         Uri:
           !If
           - Globally
-          - !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAICreateBucketEventNotificationFunction.Arn}/invocations'
-          - !Sub 'arn:aws-cn:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAICreateBucketEventNotificationFunction.Arn}/invocations'
+          - !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIEventNotificationFunction.Arn}/invocations'
+          - !Sub 'arn:aws-cn:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIEventNotificationFunction.Arn}/invocations'
       ResourceId: !Ref ApiGatewayResourceBucketEventNotification
       RestApiId: !Ref ApiGatewayRestApi
 
-  AllInOneAIBucketEventNotificationPermissionProd1:
-    Type: 'AWS::Lambda::Permission'
-    Properties:
-      Action: 'lambda:InvokeFunction'
-      Principal: apigateway.amazonaws.com
-      FunctionName: !Ref AllInOneAICreateBucketEventNotificationFunction
-      SourceArn:
-        !If
-        - Globally
-        - !Sub
-          - >-
-            arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/GET/bucket_event_notification
-          - __Stage__: '*'
-            __ApiId__: !Ref ApiGatewayRestApi
-        - !Sub
-          - >-
-            arn:aws-cn:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/GET/bucket_event_notification
-          - __Stage__: '*'
-            __ApiId__: !Ref ApiGatewayRestApi
+#  AllInOneAIBucketEventNotificationPermissionProd1:
+#    Type: 'AWS::Lambda::Permission'
+#    Properties:
+#      Action: 'lambda:InvokeFunction'
+#      Principal: apigateway.amazonaws.com
+#      FunctionName: !Ref AllInOneAIEventNotificationFunction
+#      SourceArn:
+#        !If
+#        - Globally
+#        - !Sub
+#          - >-
+#            arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/GET/bucket_event_notification
+#          - __Stage__: '*'
+#            __ApiId__: !Ref ApiGatewayRestApi
+#        - !Sub
+#          - >-
+#            arn:aws-cn:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/GET/bucket_event_notification
+#          - __Stage__: '*'
+#            __ApiId__: !Ref ApiGatewayRestApi
 
 #########################################################################
 

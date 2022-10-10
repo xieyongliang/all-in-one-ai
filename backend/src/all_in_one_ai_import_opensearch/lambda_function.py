@@ -64,11 +64,10 @@ def lambda_handler(event, context):
                         )
                     }
 
+        # For Index management (Create, Import)
+        create_index(es, index)
+
         if _ENDPOINT_INFERENCE:  # via SQS
-
-            # For Index management (Create, Import)
-            create_index(es, index)
-
             # for src/components/Forms/ImportImage/index.tsx (call Endpoint for inference)
             endpoint_name = event['queryStringParameters']['endpoint_name']
             model_samples = event['queryStringParameters']['model_samples']
@@ -115,6 +114,9 @@ def create_index(es, index):
                 "img_s3uri": {
                     "type": "keyword",
                     "index": "true"
+                },
+                "index_key": {
+                    "type": "string"
                 }
             }
         }
@@ -122,3 +124,4 @@ def create_index(es, index):
 
     es.indices.create(index=index, body=knn_index, ignore=400)
     print(es.indices.get(index=index))
+    print(f"Create Index[{index}] successfully")
