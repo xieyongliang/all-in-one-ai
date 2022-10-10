@@ -6,7 +6,6 @@ import DeleteConfirmationDialog from '../../Utils/DeleteConfirmationDialog';
 import axios from 'axios';
 import { PathParams } from '../../Interfaces/PathParams';
 import { getLocaleDate, logOutput } from '../../Utils/Helper';
-import { FetchDataOptions } from 'aws-northstar/components/Table';
 import './index.scss'
 import { useTranslation } from "react-i18next";
 
@@ -28,11 +27,8 @@ const ModelList: FunctionComponent = () => {
     const [ visibleDetachConfirmation, setVisibleDetachConfirmation ] = useState(false);
     const [ processingDetach, setProcessingDetach ] = useState(false);
     const [ disabledDetach, setDisabledDetach ] = useState(true);
-    const [ pageIndex, setPageIndex ] = useState(0);
     const [ modelCurItems, setModelCurItems ] = useState([]);
     const [ modelAllItems, setModelAllItems ] = useState([]);
-    const [ items, setItems ] = useState([]);
-    const [ lastOrderBy, setLastOrderBy ] = useState({});
 
     const { t } = useTranslation();
 
@@ -88,7 +84,6 @@ const ModelList: FunctionComponent = () => {
                     modelCurItems.push({modelName: item.ModelName, creationTime: item.CreationTime})
                     if(modelCurItems.length === response.data.length) {
                         setModelCurItems(modelCurItems);
-                        setItems(modelCurItems);
                         loadedCurItems = true;
                         if(loadedAllItems) {               
                             setLoading(false);
@@ -287,24 +282,6 @@ const ModelList: FunctionComponent = () => {
         }
     }
 
-    const onFetchData = (options: FetchDataOptions) => {
-        if(options.sortBy && options.sortBy.length > 0) {
-            var sortBy = options.sortBy[0];
-
-            if(sortBy['id'] !== lastOrderBy['id'] || sortBy['desc'] !== lastOrderBy['desc']) {
-                var items = showAll ? modelAllItems : modelCurItems
-                items.sort((a, b)=>{
-                    var result = (a[sortBy.id] > b[sortBy.id] ? 1 : (a[sortBy.id] === b[sortBy.id] ?  0: -1)) * (sortBy.desc ? -1 : 1);
-                    return result;
-                })
-
-                setItems(JSON.parse(JSON.stringify(items)));
-                setPageIndex(options.pageIndex);      
-                setLastOrderBy(sortBy);
-            }
-        }
-    }
-
     const renderModelList = () => {
         return (
             <Table
@@ -312,13 +289,11 @@ const ModelList: FunctionComponent = () => {
                 tableTitle={t('industrial_models.models')}
                 multiSelect={false}
                 columnDefinitions={columnDefinitions}
-                items={items}
+                items={showAll ? modelAllItems : modelCurItems}
                 loading={loading}
                 onSelectionChange={onSelectionChange}
                 getRowId={getRowId}
                 selectedRowIds={selectedModel !== undefined ? [selectedModel.modelName] : []}
-                onFetchData={onFetchData}
-                defaultPageIndex={pageIndex}
             />
         )
     }

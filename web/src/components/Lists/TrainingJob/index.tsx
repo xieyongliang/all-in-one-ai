@@ -7,7 +7,6 @@ import DeleteConfirmationDialog from '../../Utils/DeleteConfirmationDialog';
 import axios from 'axios';
 import { PathParams } from '../../Interfaces/PathParams';
 import { getDurationBySeconds, getLocaleDate, logOutput } from '../../Utils/Helper/index';
-import { FetchDataOptions } from 'aws-northstar/components/Table';
 import './index.scss'
 import { useTranslation } from "react-i18next";
 
@@ -31,11 +30,8 @@ const TrainingJobList: FunctionComponent = () => {
     const [ visibleDetachConfirmation, setVisibleDetachConfirmation ] = useState(false)
     const [ processingDetach, setProcessingDetach ] = useState(false);
     const [ disabledDetach, setDisabledDetach ] = useState(true)    
-    const [ pageIndex, setPageIndex ] = useState(0);
     const [ trainingJobCurItems, setTrainingJobCurItems ] = useState([])
     const [ trainingJobAllItems, setTrainingJobAllItems ] = useState([])
-    const [ items, setItems ] = useState([]);
-    const [ lastOrderBy, setLastOrderBy ] = useState({});
 
     const { t } = useTranslation();
 
@@ -105,7 +101,6 @@ const TrainingJobList: FunctionComponent = () => {
                     )
                     if(trainingJobCurItems.length === response.data.length) {
                         setTrainingJobCurItems(trainingJobCurItems);
-                        setItems(trainingJobCurItems);
                         loadedCurItems = true;
                         if(loadedAllItems) {               
                             setLoading(false);
@@ -338,24 +333,6 @@ const TrainingJobList: FunctionComponent = () => {
             }
         }
     }
-    
-    const onFetchData = (options: FetchDataOptions) => {
-        if(options.sortBy && options.sortBy.length > 0) {
-            var sortBy = options.sortBy[0];
-
-            if(sortBy['id'] !== lastOrderBy['id'] || sortBy['desc'] !== lastOrderBy['desc']) {
-                var items = showAll ? trainingJobAllItems : trainingJobAllItems
-                items.sort((a, b)=>{
-                    var result = (a[sortBy.id] > b[sortBy.id] ? 1 : (a[sortBy.id] === b[sortBy.id] ?  0: -1)) * (sortBy.desc ? -1 : 1);
-                    return result;
-                })
-
-                setItems(JSON.parse(JSON.stringify(items)));
-                setPageIndex(options.pageIndex);      
-                setLastOrderBy(sortBy);
-            }
-        }
-    }
 
     const renderTrainingJobList = () => {
         return (
@@ -364,13 +341,11 @@ const TrainingJobList: FunctionComponent = () => {
                 tableTitle={t('industrial_models.training_jobs')}
                 multiSelect={false}
                 columnDefinitions={columnDefinitions}
-                items={items}
+                items={showAll ? trainingJobAllItems : trainingJobCurItems}
                 loading={loading}
                 onSelectionChange={onSelectionChange}
                 getRowId={getRowId}
                 selectedRowIds={selectedTrainingJob !== undefined ? [selectedTrainingJob.trainingJobName] : []}
-                onFetchData={onFetchData}
-                defaultPageIndex={pageIndex}
             />
         )    
     }

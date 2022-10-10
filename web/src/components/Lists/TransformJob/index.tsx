@@ -17,7 +17,6 @@ import { AppState } from '../../../store';
 import { connect } from 'react-redux';
 import { IIndustrialModel } from '../../../store/industrialmodels/reducer';
 import { ProjectSubType, ProjectType } from '../../../data/enums/ProjectType';
-import { FetchDataOptions } from 'aws-northstar/components/Table';
 import './index.scss'
 import { useTranslation } from "react-i18next";
 
@@ -54,11 +53,8 @@ const TransformJobList: FunctionComponent<IProps> = (props) => {
     const [ visibleDetachConfirmation, setVisibleDetachConfirmation ] = useState(false);
     const [ processingDetach, setProcessingDetach ] = useState(false);
     const [ disabledDetach, setDisabledDetach ] = useState(true);
-    const [ pageIndex, setPageIndex ] = useState(0);
     const [ transformJobCurItems, setTransformJobCurItems ] = useState([]);
     const [ transformJobAllItems, setTransformJobAllItems ] = useState([]);
-    const [ items, setItems ] = useState([]);
-    const [ lastOrderBy, setLastOrderBy ] = useState({});
 
     const { t } = useTranslation();
 
@@ -137,7 +133,6 @@ const TransformJobList: FunctionComponent<IProps> = (props) => {
                         )
                         if(transformJobCurItems.length === response.data.length) {
                             setTransformJobCurItems(transformJobCurItems);
-                            setItems(transformJobCurItems);
                             loadedCurItems = true;
                             if(loadedAllItems) {               
                                 setLoadingTable(false);
@@ -476,24 +471,6 @@ const TransformJobList: FunctionComponent<IProps> = (props) => {
             )
     }
 
-    const onFetchData = (options: FetchDataOptions) => {
-        if(options.sortBy && options.sortBy.length > 0) {
-            var sortBy = options.sortBy[0];
-
-            if(sortBy['id'] !== lastOrderBy['id'] || sortBy['desc'] !== lastOrderBy['desc']) {
-                var items = showAll ? transformJobAllItems : transformJobCurItems
-                items.sort((a, b)=>{
-                    var result = (a[sortBy.id] > b[sortBy.id] ? 1 : (a[sortBy.id] === b[sortBy.id] ?  0: -1)) * (sortBy.desc ? -1 : 1);
-                    return result;
-                })
-
-                setItems(JSON.parse(JSON.stringify(items)));
-                setPageIndex(options.pageIndex);      
-                setLastOrderBy(sortBy);
-            }
-        }
-    }
-        
     const renderTransformJobList = () => {
         return (
             <Table
@@ -501,13 +478,11 @@ const TransformJobList: FunctionComponent<IProps> = (props) => {
                 tableTitle={t('industrial_models.transform_jobs')}
                 multiSelect={false}
                 columnDefinitions={columnDefinitions}
-                items={items}
+                items={showAll ? transformJobAllItems : transformJobCurItems}
                 loading={loadingTable}
                 onSelectionChange={onSelectionChange}
                 getRowId={getRowId}
                 selectedRowIds={selectedTransformJob !== undefined ? [selectedTransformJob.transformJobName] : []}
-                onFetchData={onFetchData}
-                defaultPageIndex={pageIndex}
             />
         )    
     }
