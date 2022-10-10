@@ -25,14 +25,33 @@ def lambda_handler(event, context):
         print(f"predictions : {prediction}")
 
         # Save result to OpenSearch specific Index
-        # Insert into ES
-        response = es.index(
+        # Update document in ES by referring "img_s3uri" with removing last segment of .
+        # for example:
+        #   output file = s3://test/output/1.jpg.out, index_key = s3://test/output/1.jpg
+
+        matched_doc_id = es.search(index=index,
+                                   query={"match": {
+                                       "index_key": {
+                                           "query": f"s3://{bucket}/{key[key.rfind('.')]}"
+                                       }
+                                   }})['hits']['hits'][0]["_source"]["_id"]
+
+        response = es.update(
             index=index,
+            id=matched_doc_id,
             body={
                 "img_vector": prediction,
                 "img_s3uri": f"s3://{bucket}/{key}"
             }
         )
+
+        # response = es.index(
+        #     index=index,
+        #     body={
+        #         "img_vector": prediction,
+        #         "img_s3uri": f"s3://{bucket}/{key}"
+        #     }
+        # )
 
         print(f"Vector inserted into ES: {response}")
 

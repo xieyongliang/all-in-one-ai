@@ -23,12 +23,12 @@ def lambda_handler(event, context):
         if 'action' in event['queryStringParameters']:
             action = event['queryStringParameters']['action']
         if action == 'query':
-            if es.indices.exists(index=index):
-                count = es.count(index=index, )['count']
-            else:
-                count = 0
+            if _ENDPOINT_INFERENCE:  # via SQS
+                if es.indices.exists(index=index):
+                    count = es.count(index=index, )['count']
+                else:
+                    count = 0
 
-            if _ENDPOINT_INFERENCE:  # via SQS + Endpoint
                 return {
                     'statusCode': 200,
                     'body': json.dumps(
@@ -37,24 +37,38 @@ def lambda_handler(event, context):
                         }
                     )
                 }
-            else:  # via Event Notification
-                _total_file_count = int(set_or_get_source_file_count_for_transform_job(-1, 'GET'))
-                _total_file_count = 1 if _total_file_count == 0 else _total_file_count
+            else:
+                # count if document has nothing in "_source"
+                if es.indices.exists(index=index):
+                    total_count = es.count(index=index, )['count']
 
-                return {
-                    'statusCode': 200,
-                    'body': json.dumps(
-                        {
-                            'current': count,
-                            'progress': round(count / _total_file_count) * 100
-                        }
-                    )
-                }
+                    missing_count = es.search(index=index,
+                                              track_total_hits="true",
+                                              query={
+                                                  "bool": {
+                                                      "must_not": {
+                                                          "exists": {
+                                                              "field": "img_vector"
+                                                          }
+                                                      }
+                                                  }
+                                              })["hits"]["total"]["value"]
 
-        # For Index management (Create, Import)
-        create_index(es, index)
+                    return {
+                        'statusCode': 200,
+                        'body': json.dumps(
+                            {
+                                'current': total_count,
+                                'progress': (1 - round(missing_count / total_count)) * 100
+                            }
+                        )
+                    }
 
         if _ENDPOINT_INFERENCE:  # via SQS
+
+            # For Index management (Create, Import)
+            create_index(es, index)
+
             # for src/components/Forms/ImportImage/index.tsx (call Endpoint for inference)
             endpoint_name = event['queryStringParameters']['endpoint_name']
             model_samples = event['queryStringParameters']['model_samples']
@@ -108,40 +122,3 @@ def create_index(es, index):
 
     es.indices.create(index=index, body=knn_index, ignore=400)
     print(es.indices.get(index=index))
-
-
-def set_or_get_source_file_count_for_transform_job(current_file_count, action=None):
-    ssm_client = boto3.client('ssm')
-
-    _param_name = "/all_in_one_ai/config/meta/source_file_count_for_transform_job"
-
-    if action:
-        return ssm_client.get_parameter(
-            Name=_param_name,
-        )['Parameter']['Value']
-    else:
-        # Update or Create parameter
-        try:
-            # update
-            ssm_client.put_parameter(
-                Name=_param_name,
-                Value=str(current_file_count),
-                Type='String',
-                Overwrite=True
-            )
-        except Exception as ee:
-            print(f"Error occurred. {ee}")
-
-
-def get_source_data_s3_bucket_for_transform_job():
-    ssm_client = boto3.client('ssm')
-
-    _param_name = "/all_in_one_ai/config/meta/source_data_s3_bucket_for_transform_job"
-
-    try:
-        return ssm_client.get_parameter(
-            Name=_param_name,
-        )['Parameter']['Value']
-    except Exception as ee:
-        print(f"Error occurred. {ee}")
-        return ""

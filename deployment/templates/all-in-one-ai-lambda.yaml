@@ -6320,6 +6320,8 @@ Resources:
       Environment:
         Variables:
           HANDLER_LAMBDA_FUNCTION_ARN: !GetAtt AllInOneAITransformJobHelperFunction.Arn
+          ES_ENDPOINT: !Sub https://${OpensearchEndpoint}
+
 ########################################################################
 
 ########################################################################
