@@ -40,29 +40,34 @@ def lambda_handler(event, context):
                     }
                 else:
                     # count if document has nothing in "_source"
+
+                    progress = 0
+
                     if es.indices.exists(index=index):
                         total_count = es.count(index=index, )['count']
 
-                        missing_count = es.search(index=index,
-                                                  track_total_hits="true",
-                                                  body={
-                                                      "query": {
-                                                          "bool": {
-                                                              "must_not": {
-                                                                  "exists": {
-                                                                      "field": "img_vector"
+                        if total_count != 0 :
+                            missing_count = es.search(index=index,
+                                                      track_total_hits="true",
+                                                      body={
+                                                          "query": {
+                                                              "bool": {
+                                                                  "must_not": {
+                                                                      "exists": {
+                                                                          "field": "img_vector"
+                                                                      }
                                                                   }
                                                               }
                                                           }
-                                                      }
-                                                  })["hits"]["total"]["value"]
+                                                      })["hits"]["total"]["value"]
+                            progress = (1 - round(missing_count / total_count)) * 100
 
                         return {
                             'statusCode': 200,
                             'body': json.dumps(
                                 {
                                     'current': total_count,
-                                    'progress': (1 - round(missing_count / total_count)) * 100
+                                    'progress': progress
                                 }
                             )
                         }
