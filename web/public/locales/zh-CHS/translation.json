@@ -40,7 +40,7 @@
     "train_task_success": "训练任务启动成功",
     "train_task_info": "训练任务信息",
     "train_task_error": "训练任务启动失败",
-    "deploy_task_success": "部署任务启成功",
+    "deploy_task_success": "部署任务启动成功",
     "deploy_task_info": "部署任务信息",
     "deploy_task_error": "部署任务启动失败",
     "pipeline_task_success": "流水线任务启动成功",
