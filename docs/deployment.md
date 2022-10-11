@@ -6,7 +6,7 @@
 Make sure the following resouces existed. In case they are not existed, please create them manually prior to deployment.
 
 1. Service-linked role
-    -   AWSServiceRoleForAmazonElasticsearchService
+    -   AmazonOpenSearchServiceRolePolicy
 
 ### Resources to be deleted prior to deployment.
 
@@ -87,6 +87,14 @@ Make sure the following resources not existed. In case they are existed, please 
 -   Domain Name of web portal (Optional) - Needed only when connections protocol to web portal is HTTPS.
 -   ACM SSL certificate of web portal (Optional) - Needed only when connections protocol to web portal is HTTPS
 
+### Toolkits to be prepared prior to deployment
+-   git
+-   awscli
+-   zip
+-   python3
+-   pip3
+-   docker
+
 ### Service quotas and limits
 -   Amazon VPC – 1
 -   Amazon VPC subnet – 4
@@ -114,6 +122,7 @@ Make sure the following resources not existed. In case they are existed, please 
 -   Amazon ACM public certificate - 1
 
 ##  Quick Deployment
+
 ###  Get source code
 
     git clone https://github.com/xieyongliang/all-in-one-ai -t [path-to-all-in-one-ai]

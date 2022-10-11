@@ -8,7 +8,6 @@ import Inline from 'aws-northstar/layouts/Inline';
 import axios from 'axios';
 import { PathParams } from '../../Interfaces/PathParams';
 import { getLocaleDate, logOutput } from '../../Utils/Helper/index';
-import { FetchDataOptions } from 'aws-northstar/components/Table';
 import './index.scss'
 import { useTranslation } from "react-i18next";
 
@@ -32,11 +31,8 @@ const EndpointList: FunctionComponent = () => {
     const [ visibleDetachConfirmation, setVisibleDetachConfirmation ] = useState(false);
     const [ processingDetach, setProcessingDetach ] = useState(false);
     const [ disabledDetach, setDisabledDetach ] = useState(true);
-    const [ pageIndex, setPageIndex ] = useState(0);
     const [ endpointCurItems, setEndpointCurItems ] = useState([]);
     const [ endpointAllItems, setEndpointAllItems ] = useState([]);
-    const [ items, setItems ] = useState([]);
-    const [ lastOrderBy, setLastOrderBy ] = useState({});
 
     const { t } = useTranslation();
 
@@ -122,7 +118,6 @@ const EndpointList: FunctionComponent = () => {
                     )
                     if(endpointCurItems.length === response.data.length) {
                         setEndpointCurItems(endpointCurItems);
-                        setItems(endpointCurItems);
                         loadedCurItems = true;
                         if(loadedAllItems) {               
                             setLoading(false);
@@ -344,24 +339,6 @@ const EndpointList: FunctionComponent = () => {
         }
     }
 
-    const onFetchData = (options: FetchDataOptions) => {
-        if(options.sortBy && options.sortBy.length > 0) {
-            var sortBy = options.sortBy[0];
-
-            if(sortBy['id'] !== lastOrderBy['id'] || sortBy['desc'] !== lastOrderBy['desc']) {
-                var items = showAll ? endpointAllItems : endpointCurItems
-                items.sort((a, b)=>{
-                    var result = (a[sortBy.id] > b[sortBy.id] ? 1 : (a[sortBy.id] === b[sortBy.id] ?  0: -1)) * (sortBy.desc ? -1 : 1);
-                    return result;
-                })
-
-                setItems(JSON.parse(JSON.stringify(items)));
-                setPageIndex(options.pageIndex);      
-                setLastOrderBy(sortBy);
-            }
-        }
-    }
-
     const renderEndpointList = () => {
         return (
             <Table
@@ -369,13 +346,11 @@ const EndpointList: FunctionComponent = () => {
                 tableTitle={t('industrial_models.endpoints')}
                 multiSelect={false}
                 columnDefinitions={columnDefinitions}
-                items={items}
+                items={showAll ? endpointAllItems : endpointCurItems}
                 loading={loading}
                 onSelectionChange={onSelectionChange}
                 getRowId={getRowId}
                 selectedRowIds={selectedEndpoint !== undefined ? [selectedEndpoint.endpointName] : []}
-                onFetchData={onFetchData}
-                defaultPageIndex={pageIndex}
             />
         )
     }

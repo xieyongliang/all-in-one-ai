@@ -25,6 +25,7 @@ export type GeneralState = {
     zoom: number;
     env: Object;
     messages: Object[];
+    href: string;
 }
 
 interface UpdateProjectData {
@@ -118,6 +119,12 @@ interface AddPopupMesssage {
     }
 }
 
+interface UpdateHREF {
+    type: typeof Action.UPDATE_HREF,
+    payload: {
+        href: string;
+    }
+}
 
 export type GeneralActionTypes = UpdateProjectData
     | UpdateWindowSize
@@ -132,3 +139,4 @@ export type GeneralActionTypes = UpdateProjectData
     | UpdatePerClassColoration
     | UpdateENV
     | AddPopupMesssage
+    | UpdateHREF

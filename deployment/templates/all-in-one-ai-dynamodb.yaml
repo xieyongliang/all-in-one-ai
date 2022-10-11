@@ -155,3 +155,19 @@ Resources:
         ReadCapacityUnits: "1"
         WriteCapacityUnits: "1"
       TableName: "all_in_one_ai_pipeline"
+
+  WebSocketConnectionDBTable: 
+    Type: AWS::DynamoDB::Table
+    Properties: 
+      AttributeDefinitions: 
+        - 
+          AttributeName: "connection_id"
+          AttributeType: "S"
+      KeySchema: 
+        - 
+          AttributeName: "connection_id"
+          KeyType: "HASH"
+      ProvisionedThroughput: 
+        ReadCapacityUnits: "1"
+        WriteCapacityUnits: "1"
+      TableName: "all_in_one_ai_websocket_connection"

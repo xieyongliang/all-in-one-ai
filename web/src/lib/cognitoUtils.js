@@ -1,6 +1,8 @@
 import { CognitoAuth } from 'amazon-cognito-auth-js/dist/amazon-cognito-auth'
 import { CognitoUserPool } from 'amazon-cognito-identity-js'
 import { config as AWSConfig } from 'aws-sdk'
+import { store } from '../'
+import { Action } from '../store/Actions'
 
 import axios from 'axios'
 
@@ -92,6 +94,7 @@ const createCognitoUserPool = () => {
 const getCognitoSignInUri = () => {
 	return new Promise((resolve, reject) => {
 		const HEADERS = {'Content-Type': 'application/json'};
+		store.dispatch({ type: Action.UPDATE_HREF, payload: {href : window.location.href}})
 		axios({ method: 'GET', url: '/env' , headers: HEADERS}).then(response => {
 			if (response.status === 200) {
 				let appConfig = {

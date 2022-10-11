@@ -364,3 +364,10 @@ Resources:
         - Globally
         - !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/all-in-one-ai-stylegan-inference:latest
         - !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com.cn/all-in-one-ai-stylegan-inference:latest
+
+  Parameter43:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /all_in_one_ai/config/meta/algorithms/generic/industrialmodels
+      Type: String
+      Value: !Sub s3://${S3Bucket}/${S3Key}algorithms/generic/industrialmodels/
