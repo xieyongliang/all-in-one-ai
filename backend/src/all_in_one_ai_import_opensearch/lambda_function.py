@@ -45,11 +45,13 @@ def lambda_handler(event, context):
 
                         missing_count = es.search(index=index,
                                                   track_total_hits="true",
-                                                  query={
-                                                      "bool": {
-                                                          "must_not": {
-                                                              "exists": {
-                                                                  "field": "img_vector"
+                                                  body={
+                                                      "query": {
+                                                          "bool": {
+                                                              "must_not": {
+                                                                  "exists": {
+                                                                      "field": "img_vector"
+                                                                  }
                                                               }
                                                           }
                                                       }
