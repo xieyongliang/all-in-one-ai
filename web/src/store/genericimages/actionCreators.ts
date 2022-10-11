@@ -1,7 +1,7 @@
 import { GenericsActionTypes, GenericImageData } from './types';
 import { Action } from '../Actions';
 
-export function updateActiveRankImageIndex(activeImageIndex: number): GenericsActionTypes {
+export function updateActiveGenericImageIndex(activeImageIndex: number): GenericsActionTypes {
     return {
         type: Action.UPDATE_RANK_ACTIVE_IMAGE_INDEX,
         payload: {

@@ -10,7 +10,7 @@ import {
   updateActiveTextImageIndex
 } from "../../store/texts/actionCreators";
 import {
-  updateActiveRankImageIndex
+  updateActiveGenericImageIndex
 } from "../../store/genericimages/actionCreators";
 import { ViewPortActions } from "./ViewPortActions";
 import { EditorModel } from "../../staticModels/EditorModel";
@@ -68,7 +68,7 @@ export class ImageActions {
       if (index < 0 || index > imageCount - 1) {
         return;
       } else {
-        store.dispatch(updateActiveRankImageIndex(index));
+        store.dispatch(updateActiveGenericImageIndex(index));
       }
     }
     else if(store.getState().general.projectData.type === ProjectType.TEXT_RECOGNITION) {

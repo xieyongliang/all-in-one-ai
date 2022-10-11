@@ -24,7 +24,7 @@ import { ImporterSpecData } from '../../../data/ImporterSpecData';
 import { useTranslation } from "react-i18next";
 import { logOutput } from '../Helper';
 import { GenericImageData } from '../../../store/genericimages/types';
-import { addGenericImageData, updateActiveRankImageIndex, updateGenericImageData } from '../../../store/genericimages/actionCreators';
+import { addGenericImageData, updateActiveGenericImageIndex, updateGenericImageData } from '../../../store/genericimages/actionCreators';
 import { GenericImageDataUtil } from '../../../utils/GenericImageDataUtil';
 
 const OVERLAY_STYLE = {
@@ -49,7 +49,7 @@ interface IProps {
     updateProjectDataAction: (projectData: ProjectData) => any;
     updateActiveLabelImageIndexAction: (activeImageIndex: number) => any;
     updateActiveTextImageIndexAction: (activeImageIndex: number) => any;
-    updateActiveRankImageIndexAction: (activeImageIndex: number) => any;
+    updateActiveGenericImageIndexAction: (activeImageIndex: number) => any;
     addLabelImageDataAction: (imageData: LabelImageData[]) => any;
     addTextImageDataAction: (imageData: TextImageData[]) => any;
     addGenericImageDataAction: (imageData: GenericImageData[]) => any;
@@ -101,7 +101,7 @@ const ImageAnnotate: React.FC<IProps> = (
         updateProjectDataAction,
         updateActiveLabelImageIndexAction,
         updateActiveTextImageIndexAction,
-        updateActiveRankImageIndexAction,
+        updateActiveGenericImageIndexAction,
         updateLabelImageDataAction,
         updateTextImageDataAction,
         updateGenericImageDataAction,
@@ -161,7 +161,7 @@ const ImageAnnotate: React.FC<IProps> = (
         updateProjectDataAction({type: null, subType: null, name: ''});
         updateActiveLabelImageIndexAction(null);
         updateActiveTextImageIndexAction(null);
-        updateActiveRankImageIndexAction(null);
+        updateActiveGenericImageIndexAction(null);
         updateLabelImageDataAction([]);
         updateTextImageDataAction([]);
         updateGenericImageDataAction([]);
@@ -243,7 +243,7 @@ const ImageAnnotate: React.FC<IProps> = (
             }
 
             if(type === ProjectType.IMAGE_GENERIC)
-                updateActiveRankImageIndexAction(activeIndex)
+                updateActiveGenericImageIndexAction(activeIndex)
             else if(type === ProjectType.TEXT_RECOGNITION)
                 updateActiveTextImageIndexAction(activeIndex)
             else
@@ -319,7 +319,7 @@ const mapDispatchToProps = {
     updateTextsAction: updateTexts,
     updateActiveLabelImageIndexAction: updateActiveLabelImageIndex,
     updateActiveTextImageIndexAction: updateActiveTextImageIndex,
-    updateActiveRankImageIndexAction: updateActiveRankImageIndex,
+    updateActiveGenericImageIndexAction: updateActiveGenericImageIndex,
     addLabelImageDataAction: addLabelImageData,
     addTextImageDataAction: addTextImageData,
     addGenericImageDataAction: addGenericImageData,

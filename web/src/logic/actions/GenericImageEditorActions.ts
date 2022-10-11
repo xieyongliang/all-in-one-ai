@@ -23,7 +23,7 @@ export class GenericImageEditorActions {
     // RENDER ENGINES
     // =================================================================================================================
 
-    public static mountRankSupportRenderingEngine() {
+    public static mountGenericSupportRenderingEngine() {
         EditorModel.supportRenderingEngine = new GenericImageRenderEngine(EditorModel.canvas);
     };
 
@@ -34,7 +34,7 @@ export class GenericImageEditorActions {
     public static mountRenderEnginesAndHelpers() {
         EditorModel.viewPortHelper = new ViewPortHelper();
         EditorModel.primaryRenderingEngine = new PrimaryEditorRenderEngine(EditorModel.canvas);
-        GenericImageEditorActions.mountRankSupportRenderingEngine();
+        GenericImageEditorActions.mountGenericSupportRenderingEngine();
     }
 
     // =================================================================================================================

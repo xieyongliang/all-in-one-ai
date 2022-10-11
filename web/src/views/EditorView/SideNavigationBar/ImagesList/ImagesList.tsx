@@ -19,7 +19,7 @@ import { GenericImageData } from '../../../../store/genericimages/types';
 interface IProps {
     activeLabelImageIndex: number;
     activeTextImageIndex: number;
-    activeRankImageIndex: number;
+    activeGenericImageIndex: number;
     labelImageData: LabelImageData[];
     textImageData: TextImageData[];
     genericImageData: GenericImageData[];
@@ -112,7 +112,7 @@ class ImagesList extends React.Component<IProps, IState> {
                     isChecked={this.isImageChecked(index)}
                     imageData={this.props.genericImageData[index]}
                     onClick={() => this.onClickHandler(index)}
-                    isSelected={this.props.activeRankImageIndex === index}
+                    isSelected={this.props.activeGenericImageIndex === index}
                 />
             )
         else if(this.props.projectType === ProjectType.TEXT_RECOGNITION)
@@ -194,7 +194,7 @@ const mapDispatchToProps = {};
 const mapStateToProps = (state: AppState) => ({
     activeLabelImageIndex: state.labels.activeImageIndex,
     activeTextImageIndex: state.texts.activeImageIndex,
-    activeRankImageIndex: state.genericimage.activeImageIndex,
+    activeGenericImageIndex: state.genericimage.activeImageIndex,
     labelImageData: state.labels.imagesData,
     textImageData: state.texts.imagesData,
     genericImageData: state.genericimage.imagesData,

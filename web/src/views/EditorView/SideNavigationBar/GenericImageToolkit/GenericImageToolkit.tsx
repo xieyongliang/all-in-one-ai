@@ -31,7 +31,7 @@ interface IProps {
     imageNames?: string[];
     imageLabels?: string[];
     industrialModels: IIndustrialModel[];
-    updateRankImageDataById: (id: string, newImageData: GenericImageData) => any;
+    updateGenericImageDataById: (id: string, newImageData: GenericImageData) => any;
     onProcessing: () => any;
     onProcessed: () => any;
     onLoaded: () => any;
@@ -151,15 +151,15 @@ class GenericImageToolkit extends React.Component<IProps, IState> {
 
     private onChange = (id, event) => {
         if(id === 'class') {
-            const {activeImageIndex, imagesData, updateRankImageDataById} = this.props;
+            const {activeImageIndex, imagesData, updateGenericImageDataById} = this.props;
             imagesData[activeImageIndex].value = event.value;
             this.setState({'selectedClassOption': event})
-            updateRankImageDataById(imagesData[activeImageIndex].id, imagesData[activeImageIndex]);
+            updateGenericImageDataById(imagesData[activeImageIndex].id, imagesData[activeImageIndex]);
         } 
         else if(id === 'id') {
-            const {activeImageIndex, imagesData, updateRankImageDataById} = this.props;
+            const {activeImageIndex, imagesData, updateGenericImageDataById} = this.props;
             imagesData[activeImageIndex].value = event.target.value;
-            updateRankImageDataById(imagesData[activeImageIndex].id, imagesData[activeImageIndex]);
+            updateGenericImageDataById(imagesData[activeImageIndex].id, imagesData[activeImageIndex]);
         } 
         else if(id === 'endpoint') {
             this.setState({'selectedEndpointOption': event})

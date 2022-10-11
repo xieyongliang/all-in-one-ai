@@ -220,7 +220,7 @@ const EditorTopNavigationBar: React.FC<IProps> = (
         onProcessed();
     }, [onProcessed]);
     
-    const importImageRank = useCallback((file, content) => {
+    const importGenericImageAnnotation = useCallback((file, content) => {
         var importer = new GenericImageImporter();
         if(file.name.endsWith('.txt')) {
             importer.import(file.name, content)
@@ -282,7 +282,7 @@ const EditorTopNavigationBar: React.FC<IProps> = (
         reader.onload = function (event) {
             var content = event.target.result as string;
             if(projectType === ProjectType.IMAGE_GENERIC) {
-                importImageRank(file, content)
+                importGenericImageAnnotation(file, content)
             }
             else
             {
