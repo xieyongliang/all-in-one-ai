@@ -77,7 +77,7 @@ def create_empty_es_index_items(es_endpoint,
     print(f"bucket_name_and_prefix : {source_data_s3_bucket_and_prefix_src}")
 
     if source_data_s3_bucket_and_prefix_src.find(":") != -1:  # With scheme S3://
-        source_data_s3_bucket_and_prefix = source_data_s3_bucket_and_prefix_src[5:]
+        source_data_s3_bucket_and_prefix_src = source_data_s3_bucket_and_prefix_src[5:]
 
     if source_data_s3_bucket_and_prefix_src.find("/") == -1:  # without Prefix
         bucket = source_data_s3_bucket_and_prefix_src
@@ -98,7 +98,7 @@ def create_empty_es_index_items(es_endpoint,
             es_endpoint.index(
                 index=index,
                 body={
-                    "index_key": f"{output_data_s3_bucket_and_prefix_src}/{_file_name}"
+                    "index_key": f"{output_data_s3_bucket_and_prefix_src}/{_file_name}",
                 }
             )
             _file_count += 1
@@ -180,7 +180,7 @@ def lambda_handler(event, context):
     try:
         # Create Index
         request = {
-            'industrial_model': industrial_model,
+            'industrial_model': industrial_model
         }
 
         lambda_client.invoke(

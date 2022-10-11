@@ -30,18 +30,24 @@ def lambda_handler(event, context):
         #   output file = s3://test/output/1.jpg.out, index_key = s3://test/output/1.jpg
 
         matched_doc_id = es.search(index=index,
-                                   query={"match": {
-                                       "index_key": {
-                                           "query": f"s3://{bucket}/{key[key.rfind('.')]}"
-                                       }
-                                   }})['hits']['hits'][0]["_source"]["_id"]
+                                   body={
+                                       "query": {
+                                           "match": {
+                                               "index_key": {
+                                                   "query": f"s3://{bucket}/{key[key.rfind('.')]}"
+                                               }
+                                           }
+                                       }})['hits']['hits'][0]["_id"]
 
         response = es.update(
             index=index,
             id=matched_doc_id,
             body={
-                "img_vector": prediction,
-                "img_s3uri": f"s3://{bucket}/{key}"
+                "doc": {
+                    "index_key": matched_doc_id,
+                    "img_vector": json.loads(prediction)['result'],
+                    "img_s3uri": f"s3://{bucket}/{key}"
+                }
             }
         )
 
