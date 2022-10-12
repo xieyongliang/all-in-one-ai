@@ -55,8 +55,11 @@ const ImagePanel: FunctionComponent<IProps> = ({
 
     const { t } = useTranslation();
 
-    if(pageSize === undefined)
-        pageSize = PAGE_SIZE;
+    if(pageSize === undefined) {
+        pageSize = JSON.parse(extra).batch_annotation_page_size;
+        if(pageSize === undefined)
+            pageSize = PAGE_SIZE;
+    }
     
     useEffect(() => {
         if(s3uri !== '') {
