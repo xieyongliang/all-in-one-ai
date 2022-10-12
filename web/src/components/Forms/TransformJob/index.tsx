@@ -123,8 +123,8 @@ const TransformJobForm: FunctionComponent<IProps> = (props) => {
     const [ maxConcurrentTransforms, setMaxConcurrentTransforms ] = useState(1);
     const [ inputS3Uri, setInputS3Uri ] = useState(props.s3uri !== undefined ? props.s3uri : '');
     const [ outputS3Uri, setOutputS3Uri ] = useState('');
-    const [ inputFilter, setInputFilter ] = useState('');
-    const [ outputFilter, setOutputFilter ] = useState('');
+    const [ inputFilter, setInputFilter ] = useState('$');
+    const [ outputFilter, setOutputFilter ] = useState('$');
     const [ accept, setAccept ] = useState('')
     const [ tags, setTags ] = useState([{key:'', value:''}])
     const [ environments, setEnvironments ] = useState([])

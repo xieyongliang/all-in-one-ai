@@ -45,6 +45,7 @@ interface IState {
     selectedEndpointOption: SelectOption;
     classOptions?: SelectOption[];
     selectedClassOption?: SelectOption;
+    lastValue: any;
 }
 
 function withRouter(Component) {
@@ -79,7 +80,8 @@ class GenericImageToolkit extends React.Component<IProps, IState> {
                         value: item
                     }
                 }),
-                selectedClassOption: undefined
+                selectedClassOption: undefined,
+                lastValue: ''
             };
         }
         else {
@@ -88,7 +90,8 @@ class GenericImageToolkit extends React.Component<IProps, IState> {
                 t: props.translation.t,
                 size: null,
                 endpointOptions: [],
-                selectedEndpointOption: undefined
+                selectedEndpointOption: undefined,
+                lastValue: ''
             };
         }
     }
@@ -112,7 +115,6 @@ class GenericImageToolkit extends React.Component<IProps, IState> {
                     }
                     else
                         this.props.onLoaded()
-
                 }
             )
         }
@@ -136,18 +138,6 @@ class GenericImageToolkit extends React.Component<IProps, IState> {
             }
         })
     }
-    
-    private onKeyPress = (event) => {
-        const {activeImageIndex, imagesData} = this.props;
-
-        if(!/[0-9]/.test(event.key) && (event.key !== '.')) {
-            event.preventDefault();
-        }
-
-        if(imagesData[activeImageIndex].value.includes('.') && event.key === '.') {
-            event.preventDefault();
-        }
-    }
 
     private onChange = (id, event) => {
         if(id === 'class') {
@@ -158,8 +148,21 @@ class GenericImageToolkit extends React.Component<IProps, IState> {
         } 
         else if(id === 'id') {
             const {activeImageIndex, imagesData, updateGenericImageDataById} = this.props;
-            imagesData[activeImageIndex].value = event.target.value;
-            updateGenericImageDataById(imagesData[activeImageIndex].id, imagesData[activeImageIndex]);
+            if(this.props.projectSubType === ProjectSubType.BATCH_IMAGE_FLOAT || this.props.projectSubType === ProjectSubType.IMAGE_FLOAT) {
+                if(/^[-+]?[0-9]*\.?[0-9]*([eE][-+]?[0-9]+)?$/.test(event.target.value)) {
+                    imagesData[activeImageIndex].value = event.target.value;
+                    updateGenericImageDataById(imagesData[activeImageIndex].id, imagesData[activeImageIndex]);
+                    this.setState({lastValue : event.target.value });
+                }
+                else {
+                    imagesData[activeImageIndex].value = this.state.lastValue;
+                }
+            }
+            else {
+                imagesData[activeImageIndex].value = event.target.value;
+                updateGenericImageDataById(imagesData[activeImageIndex].id, imagesData[activeImageIndex]);
+                this.setState({lastValue : event.target.value });
+            }
         } 
         else if(id === 'endpoint') {
             this.setState({'selectedEndpointOption': event})
@@ -233,7 +236,7 @@ class GenericImageToolkit extends React.Component<IProps, IState> {
                         }
                         {   
                             (this.props.projectSubType === ProjectSubType.BATCH_IMAGE_FLOAT ||  this.props.projectSubType === ProjectSubType.IMAGE_FLOAT) &&  
-                            <input onChange={(event) => {this.onChange("id", event)}} onKeyPress={this.onKeyPress} value={imagesData[activeImageIndex].value} />
+                            <input onChange={(event) => {this.onChange("id", event)}} value={imagesData[activeImageIndex].value} />
                         }
                         {   
                             (this.props.projectSubType === ProjectSubType.BATCH_IMAGE_CLASS ||  this.props.projectSubType === ProjectSubType.IMAGE_CLASS) &&  
