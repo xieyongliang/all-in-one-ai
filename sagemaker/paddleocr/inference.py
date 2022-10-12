@@ -82,8 +82,7 @@ def input_fn(request_body, request_content_type):
         image = Image.open(io.BytesIO(bytes)).convert('RGB')
         return asarray(image)
     elif request_content_type == 'application/json':
-        data = request_body.decode('utf-8')
-        data = json.loads(data)
+        data = json.loads(request_body)
         bucket = data['bucket']
         image_uri = data['image_uri']
         s3_object = s3_client.get_object(Bucket = bucket, Key = image_uri) 
