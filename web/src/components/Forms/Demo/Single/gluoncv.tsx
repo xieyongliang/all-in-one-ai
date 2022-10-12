@@ -199,7 +199,8 @@ const GluonCVDemoForm: FunctionComponent<IProps> = (
                     // Event Notification
                     axios.get('/search/import', {params : {industrial_model : industrialModel.id, action: 'query'}})
                     .then((response) => {
-                        setImportedCount(response.data.progress);
+                        var current = response.data.current;
+                        setImportedCount(Math.floor((current * 100) / imageCount));
                     }, (error) => {
                         logOutput('error', error.response.data, undefined, error);
                     })

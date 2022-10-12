@@ -29,35 +29,25 @@ def lambda_handler(event, context):
         # for example:
         #   output file = s3://test/output/1.jpg.out, index_key = s3://test/output/1.jpg
 
-        matched_doc_id = es.search(index=index,
-                                   body={
-                                       "query": {
-                                           "match": {
-                                               "index_key": {
-                                                   "query": f"s3://{bucket}/{key[key.rfind('.')]}"
-                                               }
-                                           }
-                                       }})['hits']['hits'][0]["_id"]
+        # matched_doc_id = es.search(index=index,
+        #                            body={
+        #                                "query": {
+        #                                    "match": {
+        #                                        "index_key": {
+        #                                            "query": f"s3://{bucket}/{key[key.rfind('.')]}"
+        #                                        }
+        #                                    }
+        #                                }})['hits']['hits'][0]["_id"]
 
-        response = es.update(
+        response = es.index(
             index=index,
-            id=matched_doc_id,
             body={
                 "doc": {
-                    "index_key": matched_doc_id,
                     "img_vector": json.loads(prediction)['result'],
                     "img_s3uri": f"s3://{bucket}/{key}"
                 }
             }
         )
-
-        # response = es.index(
-        #     index=index,
-        #     body={
-        #         "img_vector": prediction,
-        #         "img_s3uri": f"s3://{bucket}/{key}"
-        #     }
-        # )
 
         print(f"Vector inserted into ES: {response}")
 

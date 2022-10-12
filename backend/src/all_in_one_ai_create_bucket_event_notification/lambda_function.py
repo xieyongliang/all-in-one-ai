@@ -11,7 +11,7 @@ session = boto3.session.Session()
 sts_client = boto3.client('sts')
 S3_OBJECT_EVENT = "s3:ObjectCreated:*"
 STATEMENT_ID = "s3-lambda-permission-statement"
-s3_client = boto3.resource('s3')
+# s3_client = boto3.resource('s3')
 
 
 def create_replace_bucket_notification(notification_id, source_data_s3_bucket, handler_lambda_function_arn,
@@ -66,56 +66,59 @@ def create_replace_bucket_notification(notification_id, source_data_s3_bucket, h
     )
 
 
-def create_empty_es_index_items(es_endpoint,
-                                index,
-                                source_data_s3_bucket_and_prefix_src,
-                                output_data_s3_bucket_and_prefix_src):
-    """
-        Reason for not using "s3.list_object_v2" is the api
-        only returns 1000 objects.
-    """
-    print(f"bucket_name_and_prefix : {source_data_s3_bucket_and_prefix_src}")
-
-    if source_data_s3_bucket_and_prefix_src.find(":") != -1:  # With scheme S3://
-        source_data_s3_bucket_and_prefix_src = source_data_s3_bucket_and_prefix_src[5:]
-
-    if source_data_s3_bucket_and_prefix_src.find("/") == -1:  # without Prefix
-        bucket = source_data_s3_bucket_and_prefix_src
-        prefix = ""
-    else:
-        _l = source_data_s3_bucket_and_prefix_src.split("/")
-        bucket = _l[0]
-        prefix = "/".join(_l[1:])
-
-    # get the bucket
-    bucket = s3_client.Bucket(bucket)
-    _file_count = 0
-
-    # Iteratively insert EMPTY document into Index
-    for obj in bucket.objects.filter(Prefix=prefix):
-        try:
-            _file_name = obj.key.split("/")[-1]
-            es_endpoint.index(
-                index=index,
-                body={
-                    "index_key": f"{output_data_s3_bucket_and_prefix_src}/{_file_name}",
-                }
-            )
-            _file_count += 1
-
-        except Exception as es_err:
-            print(f"Error occurs - {es_err}")
-
-    print(f"Total count of Target Bucket/Prefix : {_file_count}")
+# def create_empty_es_index_items(es_endpoint,
+#                                 index,
+#                                 source_data_s3_bucket_and_prefix_src,
+#                                 output_data_s3_bucket_and_prefix_src):
+#     """
+#         Reason for not using "s3.list_object_v2" is the api
+#         only returns 1000 objects.
+#     """
+#     print(f"bucket_name_and_prefix : {source_data_s3_bucket_and_prefix_src}")
+#
+#     if source_data_s3_bucket_and_prefix_src.find(":") != -1:  # With scheme S3://
+#         source_data_s3_bucket_and_prefix_src = source_data_s3_bucket_and_prefix_src[5:]
+#
+#     if source_data_s3_bucket_and_prefix_src.find("/") == -1:  # without Prefix
+#         bucket = source_data_s3_bucket_and_prefix_src
+#         prefix = ""
+#     else:
+#         _l = source_data_s3_bucket_and_prefix_src.split("/")
+#         bucket = _l[0]
+#         prefix = "/".join(_l[1:])
+#
+#     # file count
+#     _file_count = 0
+#     _page_count = 0
+#     _page_size = 200
+#
+#     # Iteratively insert EMPTY document into Index
+#     paginator = s3.get_paginator('list_objects')
+#     operation_parameters = {'Bucket': bucket,
+#                             'Prefix': prefix}
+#
+#     page_iterator = paginator.paginate(**operation_parameters, PaginationConfig={
+#         'PageSize': _page_size
+#     })
+#     for page in page_iterator:
+#         for item in page['Contents']:
+#             es_endpoint.index(
+#                 index=index,
+#                 body={
+#                     "index_key": f"{output_data_s3_bucket_and_prefix_src}/{item['Key']}",
+#                 }
+#             )
+#         _page_count += 1
+#
+#     _file_count = _page_count * _page_size
+#     print(f"Total count of Target Bucket/Prefix : {_file_count}")
 
 
 def lambda_handler(event, context):
     print(f"Event received : {event}")
 
-    source_data_s3_bucket_and_prefix_src = event['queryStringParameters'][
-        'source_data_s3_bucket_and_prefix']  # input URI
-    event_notification_s3_bucket_and_prefix_src = event['queryStringParameters'][
-        'event_notification_s3_bucket_and_prefix']  # output URI
+    source_data_s3_bucket_and_prefix_src = event['queryStringParameters']['source_data_s3_bucket_and_prefix']  # input URI
+    event_notification_s3_bucket_and_prefix_src = event['queryStringParameters']['event_notification_s3_bucket_and_prefix']  # output URI
     event_notification_s3_bucket_and_prefix_src = event_notification_s3_bucket_and_prefix_src[5:]
     industrial_model = event['queryStringParameters']['industrial_model']
     es_endpoint = Elasticsearch(os.environ['ES_ENDPOINT'])
@@ -189,13 +192,13 @@ def lambda_handler(event, context):
             Payload=json.dumps({'body': request})
         )
 
-        # Create empty docs
-        create_empty_es_index_items(
-            es_endpoint=es_endpoint,
-            index=industrial_model,
-            source_data_s3_bucket_and_prefix_src=source_data_s3_bucket_and_prefix_src,
-            output_data_s3_bucket_and_prefix_src=event_notification_s3_bucket_and_prefix_src
-        )
+        # # Create empty docs
+        # create_empty_es_index_items(
+        #     es_endpoint=es_endpoint,
+        #     index=industrial_model,
+        #     source_data_s3_bucket_and_prefix_src=source_data_s3_bucket_and_prefix_src,
+        #     output_data_s3_bucket_and_prefix_src=event_notification_s3_bucket_and_prefix_src
+        # )
 
         response = create_replace_bucket_notification(STATEMENT_ID,
                                                       event_notification_s3_bucket,

@@ -24,53 +24,53 @@ def lambda_handler(event, context):
             if 'action' in event['queryStringParameters']:
                 action = event['queryStringParameters']['action']
             if action == 'query':
-                if _ENDPOINT_INFERENCE:  # via SQS
-                    if es.indices.exists(index=index):
-                        count = es.count(index=index, )['count']
-                    else:
-                        count = 0
-
-                    return {
-                        'statusCode': 200,
-                        'body': json.dumps(
-                            {
-                                'current': count
-                            }
-                        )
-                    }
+                # if _ENDPOINT_INFERENCE:  # via SQS
+                if es.indices.exists(index=index):
+                    count = es.count(index=index, )['count']
                 else:
-                    # count if document has nothing in "_source"
+                    count = 0
 
-                    progress = 0
-
-                    if es.indices.exists(index=index):
-                        total_count = es.count(index=index, )['count']
-
-                        if total_count != 0 :
-                            missing_count = es.search(index=index,
-                                                      track_total_hits="true",
-                                                      body={
-                                                          "query": {
-                                                              "bool": {
-                                                                  "must_not": {
-                                                                      "exists": {
-                                                                          "field": "img_vector"
-                                                                      }
-                                                                  }
-                                                              }
-                                                          }
-                                                      })["hits"]["total"]["value"]
-                            progress = (1 - round(missing_count / total_count)) * 100
-
-                        return {
-                            'statusCode': 200,
-                            'body': json.dumps(
-                                {
-                                    'current': total_count,
-                                    'progress': progress
-                                }
-                            )
+                return {
+                    'statusCode': 200,
+                    'body': json.dumps(
+                        {
+                            'current': count
                         }
+                    )
+                }
+                # else:
+                #     # count if document has nothing in "_source"
+                #
+                #     progress = 0
+                #
+                #     if es.indices.exists(index=index):
+                #         total_count = es.count(index=index, )['count']
+                #
+                #         if total_count != 0 :
+                #             missing_count = es.search(index=index,
+                #                                       track_total_hits="true",
+                #                                       body={
+                #                                           "query": {
+                #                                               "bool": {
+                #                                                   "must_not": {
+                #                                                       "exists": {
+                #                                                           "field": "img_vector"
+                #                                                       }
+                #                                                   }
+                #                                               }
+                #                                           }
+                #                                       })["hits"]["total"]["value"]
+                #             progress = (1 - round(missing_count / total_count)) * 100
+                #
+                #         return {
+                #             'statusCode': 200,
+                #             'body': json.dumps(
+                #                 {
+                #                     'current': total_count,
+                #                     'progress': progress
+                #                 }
+                #             )
+                #         }
 
             # For Index management (Create, Import)
             create_index(es, index)
@@ -130,9 +130,6 @@ def create_index(es, index):
                 "img_s3uri": {
                     "type": "keyword",
                     "index": "true"
-                },
-                "index_key": {
-                    "type": "text"
                 }
             }
         }
