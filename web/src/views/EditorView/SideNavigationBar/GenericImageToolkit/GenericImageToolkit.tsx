@@ -45,7 +45,6 @@ interface IState {
     selectedEndpointOption: SelectOption;
     classOptions?: SelectOption[];
     selectedClassOption?: SelectOption;
-    lastValue: any;
 }
 
 function withRouter(Component) {
@@ -81,7 +80,6 @@ class GenericImageToolkit extends React.Component<IProps, IState> {
                     }
                 }),
                 selectedClassOption: undefined,
-                lastValue: ''
             };
         }
         else {
@@ -91,7 +89,6 @@ class GenericImageToolkit extends React.Component<IProps, IState> {
                 size: null,
                 endpointOptions: [],
                 selectedEndpointOption: undefined,
-                lastValue: ''
             };
         }
     }
@@ -152,16 +149,11 @@ class GenericImageToolkit extends React.Component<IProps, IState> {
                 if(/^[-+]?[0-9]*\.?[0-9]*([eE][-+]?[0-9]+)?$/.test(event.target.value)) {
                     imagesData[activeImageIndex].value = event.target.value;
                     updateGenericImageDataById(imagesData[activeImageIndex].id, imagesData[activeImageIndex]);
-                    this.setState({lastValue : event.target.value });
-                }
-                else {
-                    imagesData[activeImageIndex].value = this.state.lastValue;
                 }
             }
             else {
                 imagesData[activeImageIndex].value = event.target.value;
                 updateGenericImageDataById(imagesData[activeImageIndex].id, imagesData[activeImageIndex]);
-                this.setState({lastValue : event.target.value });
             }
         } 
         else if(id === 'endpoint') {

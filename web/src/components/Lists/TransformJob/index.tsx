@@ -33,6 +33,7 @@ interface IProps {
 
 const TransformJobList: FunctionComponent<IProps> = (props) => {
     const [ disabledReview, setDisabledReview ] = useState(true);
+    const [ loadedAll, setLoadedAll ] = useState(false);
     const [ loadingTable, setLoadingTable ] = useState(true);
     const [ visibleReview, setVisibleReview ] = useState(false);
     const [ processingReview, setProcessingReview ] = useState(true);
@@ -64,63 +65,22 @@ const TransformJobList: FunctionComponent<IProps> = (props) => {
 
     var industrialModels = props.industrialModels
 
-    const onRefresh = useCallback(() => {
+    const onRefreshCurItems = useCallback(() => {
         if(industrialModels.length > 0) {
-            var index = industrialModels.findIndex((item) => item.id === params.id)
-            setImageLabels(JSON.parse(industrialModels[index].extra).labels)
+            var industrialModel = industrialModels.find((item) => item.id === params.id)
+            setImageLabels(JSON.parse(industrialModel.extra).labels)
             setCurImageItem('');
             setVisibleImagePreview(false);
             setVisibleReview(false);
 
-            setLoadingTable(true)
-
-            var loadedAllItems = false;
-            var loadedCurItems = false;
-            var transformJobAllItems = [];
             var transformJobCurItems = [];
-            
-            axios.get('/transformjob', {params : {'action': 'list'}})
-                .then((response) => {
-                    if(response.data.length === 0) {
-                        loadedAllItems = true;
-                        setTransformJobAllItems(transformJobAllItems);
-                        if(loadedCurItems) {
-                            setLoadingTable(false);
-                            setSelectedTransformJob(undefined);
-                        }
-                    }
-                    for(let item of response.data) {
-                        transformJobAllItems.push(
-                            {
-                                transformJobName: item.TransformJobName, 
-                                transformJobStatus: item.TransformJobStatus, 
-                                creationTime: item.CreationTime, 
-                                duration: getDurationByDates(item.TransformStartTime, item.TransformEndTime)
-                            }
-                        )
-                        if(transformJobAllItems.length === response.data.length) {
-                            loadedAllItems = true;
-                            setTransformJobAllItems(transformJobAllItems);
-                            if(loadedCurItems) {
-                                setLoadingTable(false);
-                                setSelectedTransformJob(undefined);
-                            }
-                        }
-                    }
-                }, (error) => {
-                    logOutput('error', error.response.data, undefined, error);
-                    setLoadingTable(false);
-                }
-            );
+            setLoadingTable(true)
             axios.get('/transformjob', {params : {'industrial_model': params.id}})
                 .then((response) => {
                     if(response.data.length === 0) {
                         setTransformJobCurItems(transformJobCurItems);
-                        loadedCurItems = true;
-                        if(loadedAllItems) {
-                            setLoadingTable(false);
-                            setSelectedTransformJob(undefined);
-                        }
+                        setLoadingTable(false);
+                        setSelectedTransformJob(undefined);
                     }
                     for(let item of response.data) {
                         transformJobCurItems.push(
@@ -133,11 +93,8 @@ const TransformJobList: FunctionComponent<IProps> = (props) => {
                         )
                         if(transformJobCurItems.length === response.data.length) {
                             setTransformJobCurItems(transformJobCurItems);
-                            loadedCurItems = true;
-                            if(loadedAllItems) {               
-                                setLoadingTable(false);
-                                setSelectedTransformJob(undefined);
-                            }
+                            setLoadingTable(false);
+                            setSelectedTransformJob(undefined);
                         }
                     }
                 }, (error) => {
@@ -150,9 +107,50 @@ const TransformJobList: FunctionComponent<IProps> = (props) => {
         }
     }, [params.id, industrialModels])
 
+    const onRefreshAllItems = useCallback(() => {
+        if(!loadedAll && industrialModels.length > 0) {
+            var industrialModel = industrialModels.find((item) => item.id === params.id)
+            setImageLabels(JSON.parse(industrialModel.extra).labels)
+            setCurImageItem('');
+            setVisibleImagePreview(false);
+            setVisibleReview(false);
+
+            var transformJobAllItems = [];        
+            setLoadingTable(true);
+            axios.get('/transformjob', {params : {'action': 'list'}})
+                .then((response) => {
+                    if(response.data.length === 0) {
+                        setTransformJobAllItems(transformJobAllItems);
+                        setLoadingTable(false);
+                        setSelectedTransformJob(undefined);
+                    }
+                    for(let item of response.data) {
+                        transformJobAllItems.push(
+                            {
+                                transformJobName: item.TransformJobName, 
+                                transformJobStatus: item.TransformJobStatus, 
+                                creationTime: item.CreationTime, 
+                                duration: getDurationByDates(item.TransformStartTime, item.TransformEndTime)
+                            }
+                        )
+                        if(transformJobAllItems.length === response.data.length) {
+                            setTransformJobAllItems(transformJobAllItems);
+                            setLoadingTable(false);
+                            setSelectedTransformJob(undefined);
+                        }
+                    }
+                }, (error) => {
+                    logOutput('error', error.response.data, undefined, error);
+                    setLoadingTable(false);
+                }
+            );
+            setLoadedAll(true);
+        }
+    }, [loadedAll, params.id, industrialModels])
+
     useEffect(() => {
-        onRefresh()
-    }, [onRefresh]);
+        onRefreshCurItems()
+    }, [onRefreshCurItems]);
 
     const onImageClose = () => {
         setVisibleImagePreview(false);
@@ -280,7 +278,10 @@ const TransformJobList: FunctionComponent<IProps> = (props) => {
         setProcessingStop(true)
         axios.get(`/transformjob/${selectedTransformJob.transformJobName}`, {params : {industrial_model: params.id, action: 'stop'}})
             .then((response) => {
-                onRefresh();
+                onRefreshCurItems();
+                if(showAll)
+                    onRefreshAllItems();
+                
                 setVisibleStopConfirmation(false);
                 setProcessingStop(false);
             }, (error) => {
@@ -311,7 +312,10 @@ const TransformJobList: FunctionComponent<IProps> = (props) => {
         setProcessingAttach(true)
         axios.get(`/transformjob/${selectedTransformJob.transformJobName}`, {params : {industrial_model: params.id, transform_job_name: selectedTransformJob.transformJobName, action: 'attach'}})
             .then((response) => {
-                onRefresh();
+                onRefreshCurItems();
+                if(showAll)
+                    onRefreshAllItems();
+                
                 setVisibleAttachConfirmation(false);
                 setProcessingAttach(false);
             }, (error) => {
@@ -342,7 +346,10 @@ const TransformJobList: FunctionComponent<IProps> = (props) => {
         setProcessingDetach(true)
         axios.get(`/transformjob/${selectedTransformJob.transformJobName}`, {params : {industrial_model: params.id, transform_job_name: selectedTransformJob.transformJobName, action: 'detach'}})
             .then((response) => {
-                onRefresh();
+                onRefreshCurItems();
+                if(showAll)
+                    onRefreshAllItems();
+
                 setVisibleDetachConfirmation(false);
                 setProcessingDetach(false);
             }, (error) => {
@@ -413,6 +420,9 @@ const TransformJobList: FunctionComponent<IProps> = (props) => {
 
     const onChangeShowAll = (checked) => {
         setShowAll(checked);
+        if(checked)
+            onRefreshAllItems();
+        
         if(!checked && selectedTransformJob !==undefined && transformJobCurItems.findIndex((item) => item.transformJobName === selectedTransformJob.transformJobName) < 0)
             setSelectedTransformJob(undefined);
     }
@@ -423,7 +433,7 @@ const TransformJobList: FunctionComponent<IProps> = (props) => {
                 <Toggle label={t('industrial_models.common.show_all')} checked={showAll} onChange={onChangeShowAll}/>
             </div>
             <div className='tableaction'>        
-                <Button icon="refresh" onClick={onRefresh} loading={loadingTable}>{t('industrial_models.common.refresh')}</Button>
+                <Button icon="refresh" onClick={() => {onRefreshCurItems(); setLoadedAll(false)}} loading={loadingTable}>{t('industrial_models.common.refresh')}</Button>
             </div>
             <div className='tableaction'>        
                 <ButtonDropdown

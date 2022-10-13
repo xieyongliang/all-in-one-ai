@@ -20,6 +20,7 @@ interface EndpointItem {
 
 const EndpointList: FunctionComponent = () => {
     const [ loading, setLoading ] = useState(true);
+    const [ loadedAll, setLoadedAll ] = useState(false);
     const [ selectedEndpoint, setSelectedEndpoint ] = useState<EndpointItem>();
     const [ showAll, setShowAll ] = useState(false);
     const [ visibleDeleteConfirmation, setVisibleDeleteConfirmation ] = useState(false);
@@ -56,56 +57,15 @@ const EndpointList: FunctionComponent = () => {
         setVisibleDetachConfirmation(true)
     }
 
-    const onRefresh = useCallback(() => {
+    const onRefreshCurItems = useCallback(() => {
         setLoading(true)
-
-        var loadedAllItems = false;
-        var loadedCurItems = false;
-        var endpointAllItems = [];
-        var endpointCurItems = [];
-        
-        axios.get('/endpoint', {params : {'action': 'list'}})
-            .then((response) => {
-                if(response.data.length === 0) {
-                    loadedAllItems = true;
-                    setEndpointAllItems(endpointAllItems);
-                    if(loadedCurItems) {
-                        setLoading(false);
-                        setSelectedEndpoint(undefined);
-                    }
-                }
-                for(let item of response.data) {
-                    endpointAllItems.push(
-                        {
-                            endpointName: item.EndpointName, 
-                            endpointStatus: item.EndpointStatus, 
-                            creationTime: item.CreationTime, 
-                            lastModifiedTime: item.LastModifiedTime
-                        }
-                    )
-                    if(endpointAllItems.length === response.data.length) {
-                        loadedAllItems = true;
-                        setEndpointAllItems(endpointAllItems);
-                        if(loadedCurItems) {
-                            setLoading(false);
-                            setSelectedEndpoint(undefined);
-                        }
-                    }
-                }
-            }, (error) => {
-                logOutput('error', error.response.data, undefined, error);
-                setLoading(false);
-            }
-        );
+        var endpointCurItems = [];        
         axios.get('/endpoint', {params : {'industrial_model': params.id}})
             .then((response) => {
                 if(response.data.length === 0) {
                     setEndpointCurItems(endpointCurItems);
-                    loadedCurItems = true;
-                    if(loadedAllItems) {
-                        setLoading(false);
-                        setSelectedEndpoint(undefined);
-                    }
+                    setLoading(false);
+                    setSelectedEndpoint(undefined);
                 }
                 for(let item of response.data) {
                     endpointCurItems.push(
@@ -118,11 +78,8 @@ const EndpointList: FunctionComponent = () => {
                     )
                     if(endpointCurItems.length === response.data.length) {
                         setEndpointCurItems(endpointCurItems);
-                        loadedCurItems = true;
-                        if(loadedAllItems) {               
-                            setLoading(false);
-                            setSelectedEndpoint(undefined);
-                        }
+                        setLoading(false);
+                        setSelectedEndpoint(undefined);
                     }
                 }
             }, (error) => {
@@ -132,9 +89,44 @@ const EndpointList: FunctionComponent = () => {
         );
     }, [params.id])
 
+    const onRefreshAllItems = useCallback(() => {
+        if(!loadedAll) {        
+            var endpointAllItems = [];    
+            setLoading(true);
+            axios.get('/endpoint', {params : {'action': 'list'}})
+                .then((response) => {
+                    if(response.data.length === 0) {
+                        setEndpointAllItems(endpointAllItems);
+                        setLoading(false);
+                        setSelectedEndpoint(undefined);
+                    }
+                    for(let item of response.data) {
+                        endpointAllItems.push(
+                            {
+                                endpointName: item.EndpointName, 
+                                endpointStatus: item.EndpointStatus, 
+                                creationTime: item.CreationTime, 
+                                lastModifiedTime: item.LastModifiedTime
+                            }
+                        )
+                        if(endpointAllItems.length === response.data.length) {
+                            setEndpointAllItems(endpointAllItems);
+                            setLoading(false);
+                            setSelectedEndpoint(undefined);
+                        }
+                    }
+                }, (error) => {
+                    logOutput('error', error.response.data, undefined, error);
+                    setLoading(false);
+                }
+            );
+            setLoadedAll(true);
+        }
+    }, [loadedAll])
+
     useEffect(() => {
-        onRefresh()
-    }, [onRefresh]);
+        onRefreshCurItems()
+    }, [onRefreshCurItems]);
 
     const getRowId = useCallback(data => data.endpointName, []);
 
@@ -207,6 +199,9 @@ const EndpointList: FunctionComponent = () => {
 
     const onChangeShowAll = (checked) => {
         setShowAll(checked);
+        if(checked)
+            onRefreshAllItems();
+        
         if(!checked && selectedEndpoint !==undefined && endpointCurItems.findIndex((item) => item.endpointName === selectedEndpoint.endpointName) < 0)
             setSelectedEndpoint(undefined);
     }
@@ -217,7 +212,7 @@ const EndpointList: FunctionComponent = () => {
                 <Toggle label={t('industrial_models.common.show_all')} checked={showAll} onChange={onChangeShowAll}/>
             </div>
             <div className='tableaction'>
-                <Button icon="refresh" onClick={onRefresh} loading={loading}>{t('industrial_models.common.refresh')}</Button>
+                <Button icon="refresh" onClick={() => {onRefreshCurItems(); setLoadedAll(false)}} loading={loading}>{t('industrial_models.common.refresh')}</Button>
             </div>
             <div className='tableaction'>
                 <ButtonDropdown
@@ -251,7 +246,10 @@ const EndpointList: FunctionComponent = () => {
     const deleteEndpoint = () => {
         setProcessingDelete(true)
         axios.delete(`/endpoint/${selectedEndpoint.endpointName}`, {params: {industrial_model: params.id}}).then((data) => {
-            onRefresh();
+            onRefreshCurItems();
+            if(showAll)
+                onRefreshAllItems();
+            
             setVisibleDeleteConfirmation(false);
             setProcessingDelete(false);
         }, (error) => {
@@ -281,7 +279,10 @@ const EndpointList: FunctionComponent = () => {
     const attachEndpoint = () => {
         setProcessingAttach(true)
         axios.get(`/endpoint/${selectedEndpoint.endpointName}`, {params: {industrial_model: params.id, action: 'attach'}}).then((data) => {
-            onRefresh();
+            onRefreshCurItems();
+            if(showAll)
+                onRefreshAllItems();
+            
             setVisibleAttachConfirmation(false);
             setProcessingAttach(false);
         }, (error) => {
@@ -311,7 +312,10 @@ const EndpointList: FunctionComponent = () => {
     const detachEndpoint = () => {
         setProcessingDetach(true)
         axios.get(`/endpoint/${selectedEndpoint.endpointName}`, {params: {industrial_model: params.id, action: 'detach'}}).then((data) => {
-            onRefresh();
+            onRefreshCurItems();
+            if(showAll)
+                onRefreshAllItems();
+            
             setVisibleDetachConfirmation(false);
             setProcessingDetach(false);
         }, (error) => {

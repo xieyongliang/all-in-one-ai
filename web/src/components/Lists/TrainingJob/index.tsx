@@ -19,6 +19,7 @@ interface TrainingJobItem {
 
 const TrainingJobList: FunctionComponent = () => {
     const [ loading, setLoading ] = useState(true);
+    const [ loadedAll, setLoadedAll ] = useState(false);
     const [ selectedTrainingJob, setSelectedTrainingJob ] = useState<TrainingJobItem>()
     const [ showAll, setShowAll ] = useState(false)
     const [ visibleStopConfirmation, setVisibleStopConfirmation ] = useState(false);
@@ -39,56 +40,15 @@ const TrainingJobList: FunctionComponent = () => {
 
     var params : PathParams = useParams();
 
-    const onRefresh = useCallback(() => {
+    const onRefreshCurItems = useCallback(() => {
         setLoading(true)
-
-        var loadedAllItems = false;
-        var loadedCurItems = false;
-        var trainingJobAllItems = [];
         var trainingJobCurItems = [];
-        
-        axios.get('/trainingjob', {params : {'action': 'list'}})
-            .then((response) => {
-                if(response.data.length === 0) {
-                    loadedAllItems = true;
-                    setTrainingJobAllItems(trainingJobAllItems);
-                    if(loadedCurItems) {
-                        setLoading(false);
-                        setSelectedTrainingJob(undefined);
-                    }
-                }
-                for(let item of response.data) {
-                    trainingJobAllItems.push(
-                        {
-                            trainingJobName: item.TrainingJobName, 
-                            trainingJobStatus : item.TrainingJobStatus, 
-                            duration: getDurationBySeconds(parseInt(item.TrainingTimeInSeconds)), 
-                            creationTime: item.CreationTime
-                        }
-                    )
-                    if(trainingJobAllItems.length === response.data.length) {
-                        loadedAllItems = true;
-                        setTrainingJobAllItems(trainingJobAllItems);
-                        if(loadedCurItems) {
-                            setLoading(false);
-                            setSelectedTrainingJob(undefined);
-                        }
-                    }
-                }
-            }, (error) => {
-                logOutput('error', error.response.data, undefined, error);
-                setLoading(false);
-            }
-        );
         axios.get('/trainingjob', {params : {'industrial_model': params.id}})
             .then((response) => {
                 if(response.data.length === 0) {
                     setTrainingJobCurItems(trainingJobCurItems);
-                    loadedCurItems = true;
-                    if(loadedAllItems) {
-                        setLoading(false);
-                        setSelectedTrainingJob(undefined);
-                    }
+                    setLoading(false);
+                    setSelectedTrainingJob(undefined);
                 }
                 for(let item of response.data) {
                     trainingJobCurItems.push(
@@ -101,11 +61,8 @@ const TrainingJobList: FunctionComponent = () => {
                     )
                     if(trainingJobCurItems.length === response.data.length) {
                         setTrainingJobCurItems(trainingJobCurItems);
-                        loadedCurItems = true;
-                        if(loadedAllItems) {               
-                            setLoading(false);
-                            setSelectedTrainingJob(undefined);
-                        }
+                        setLoading(false);
+                        setSelectedTrainingJob(undefined);
                     }
                 }
             }, (error) => {
@@ -115,9 +72,44 @@ const TrainingJobList: FunctionComponent = () => {
         );
     }, [params.id])
 
+    const onRefreshAllItems = useCallback(() => {
+        if(!loadedAll) {
+            var trainingJobAllItems = [];
+            setLoading(true);
+            axios.get('/trainingjob', {params : {'action': 'list'}})
+                .then((response) => {
+                    if(response.data.length === 0) {
+                        setTrainingJobAllItems(trainingJobAllItems);
+                        setLoading(false);
+                        setSelectedTrainingJob(undefined);
+                    }
+                    for(let item of response.data) {
+                        trainingJobAllItems.push(
+                            {
+                                trainingJobName: item.TrainingJobName, 
+                                trainingJobStatus : item.TrainingJobStatus, 
+                                duration: getDurationBySeconds(parseInt(item.TrainingTimeInSeconds)), 
+                                creationTime: item.CreationTime
+                            }
+                        )
+                        if(trainingJobAllItems.length === response.data.length) {
+                            setTrainingJobAllItems(trainingJobAllItems);
+                            setLoading(false);
+                            setSelectedTrainingJob(undefined);
+                        }
+                    }
+                }, (error) => {
+                    logOutput('error', error.response.data, undefined, error);
+                    setLoading(false);
+                }
+            );
+            setLoadedAll(true);
+        }
+    }, [loadedAll])
+
     useEffect(() => {
-        onRefresh()
-    }, [onRefresh]);
+        onRefreshCurItems()
+    }, [onRefreshCurItems]);
 
 
     const onCreate = () => {
@@ -156,7 +148,10 @@ const TrainingJobList: FunctionComponent = () => {
     const stopTrainingJob = () => {
         axios.get('/trainingjob', {params : {industrial_model: params.id, training_job_name: selectedTrainingJob, action: 'stop'}})
             .then((response) => {
-                onRefresh();
+                onRefreshCurItems();
+                if(showAll)
+                    onRefreshAllItems();
+                
                 setVisibleStopConfirmation(false);
                 setProcessingStop(false);
             }, (error) => {
@@ -187,7 +182,10 @@ const TrainingJobList: FunctionComponent = () => {
         setProcessingAttach(true)
         axios.get(`/trainingjob/${selectedTrainingJob.trainingJobName}`, {params: {industrial_model: params.id, action: 'attach'}})
             .then((data) => {
-                onRefresh();
+                onRefreshCurItems();
+                if(showAll)
+                    onRefreshAllItems();
+                
                 setVisibleAttachConfirmation(false);
                 setProcessingAttach(false);
             }, (error) => {
@@ -218,7 +216,10 @@ const TrainingJobList: FunctionComponent = () => {
         setProcessingDetach(true)
         axios.get(`/trainingjob/${selectedTrainingJob.trainingJobName}`, {params: {industrial_model: params.id, action: 'detach'}})
             .then((data) => {
-                onRefresh();
+                onRefreshCurItems();
+                if(showAll)
+                    onRefreshAllItems();
+
                 setVisibleDetachConfirmation(false);
                 setProcessingDetach(false);
             }, (error) => {
@@ -290,6 +291,9 @@ const TrainingJobList: FunctionComponent = () => {
 
     const onChangeShowAll = (checked) => {
         setShowAll(checked);
+        if(checked)
+            onRefreshAllItems();
+        
         if(!checked && selectedTrainingJob !==undefined && trainingJobCurItems.findIndex((item) => item.trainingJobName === selectedTrainingJob.trainingJobName) < 0)
             setSelectedTrainingJob(undefined);
     }
@@ -300,7 +304,7 @@ const TrainingJobList: FunctionComponent = () => {
                 <Toggle label={t('industrial_models.common.show_all')} checked={showAll} onChange={onChangeShowAll}/>
             </div>
             <div className='tableaction'>
-                <Button icon='refresh' onClick={onRefresh} loading={loading}>{t('industrial_models.common.refresh')}</Button>
+                <Button icon='refresh' onClick={() => {onRefreshCurItems(); setLoadedAll(false)}} loading={loading}>{t('industrial_models.common.refresh')}</Button>
             </div>
             <div className='tableaction'>
                 <ButtonDropdown
