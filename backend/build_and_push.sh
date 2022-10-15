@@ -73,6 +73,33 @@ echo "--------------------------------------------------------------------------
 cp ${source_dir}/all_in_one_ai_tools/all_in_one_ai_tools.zip $build_dist_dir/all_in_one_ai_tools.zip
 
 echo "------------------------------------------------------------------------------"
+echo "[Rebuild] other all_in_one_ai_list_* lambda functions"
+echo "------------------------------------------------------------------------------"
+
+lambda_foldes="
+all_in_one_ai_list_endpoints
+all_in_one_ai_list_models
+all_in_one_ai_list_training_jobs
+all_in_one_ai_list_transform_jobs
+"
+
+for lambda_folder in $lambda_foldes; do
+    # build and copy console distribution files
+    echo ${source_dir}
+    cd ${source_dir}/${lambda_folder}
+    echo ${build_dir}
+    rm -r ${build_dir}
+
+    mkdir -p ${build_dir}/
+    cp -R * ${build_dir}/
+    pip3 install cachetools -t ${build_dir}/
+    cd ${build_dir}
+    zip -r9 ${lambda_folder}.zip .
+    cp ${build_dir}/${lambda_folder}.zip $build_dist_dir/${lambda_folder}.zip
+    rm ${build_dir}/${lambda_folder}.zip
+done
+
+echo "------------------------------------------------------------------------------"
 echo "[Rebuild] other all_in_one_ai_* lambda functions"
 echo "------------------------------------------------------------------------------"
 
@@ -121,10 +148,6 @@ all_in_one_ai_industrial_model
 all_in_one_ai_inference
 all_in_one_ai_inference_post_process
 all_in_one_ai_invoke_endpoint
-all_in_one_ai_list_endpoints
-all_in_one_ai_list_models
-all_in_one_ai_list_training_jobs
-all_in_one_ai_list_transform_jobs
 all_in_one_ai_model
 all_in_one_ai_model_package
 all_in_one_ai_model_package_group

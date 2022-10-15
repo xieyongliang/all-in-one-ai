@@ -57,7 +57,7 @@ def lambda_handler(event, context):
                     'hyperparameters': hyperparameters,
                     'inputs': inputs,
                     'py_version': 'py38',
-                    'framework_version': '1.10.2'
+                    'framework_version': '1.12'
                 }
             }
 

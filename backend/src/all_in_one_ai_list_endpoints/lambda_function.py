@@ -3,16 +3,13 @@ import boto3
 import traceback
 from decimal import Decimal
 from datetime import date, datetime
+from cachetools import cached, TTLCache
 
 sagemaker_client = boto3.client('sagemaker')
 
 def lambda_handler(event, context):
     try:
-        result = [];
-        paginator = sagemaker_client.get_paginator("list_endpoints")
-        pages = paginator.paginate()
-        for page in pages:
-            result += page['Endpoints']
+        result = list_endpoints()
         
         return {
             'statusCode': 200,
@@ -25,6 +22,15 @@ def lambda_handler(event, context):
             'statusCode': 400,
             'body': str(e)
         }
+
+@cached(cache=TTLCache(maxsize=1, ttl=1))
+def list_endpoints():
+    result = []
+    paginator = sagemaker_client.get_paginator("list_endpoints")
+    pages = paginator.paginate()
+    for page in pages:
+        result += page['Endpoints']
+    return result
 
 def defaultencode(o):
     if isinstance(o, Decimal):

@@ -11,49 +11,38 @@
   justify-content: flex-start;
   align-items: center;
   align-content: flex-start;
-
+  
   .Content {
-    align-self: stretch;
-    box-sizing: border-box;
-    height: 0;
-    transition: height 0.3s ease-in-out;
-    overflow: hidden;
-
     display: flex;
     flex-direction: column;
     flex-wrap: nowrap;
     justify-content: center;
     align-items: center;
     align-content: center;
+    width: 280px;
+    color: white;
+
+    Button {
+      margin-top: 6px;
+      margin-bottom: 3px;
+      width: 280px;
+    }
+  
+    .title {
+      margin-left: 10px;
+      margin-top: 10px;
+      margin-bottom: 3px;
+    }  
+    
+    .endpoint {
+      margin-top: 10px;
+      margin-bottom: 3px;
+    }  
 
     input {
       margin-top: 6px;
       margin-bottom: 3px;
-      width: 280px;
       height: 30px;
     }
   }
-}
-
-.Command {
-  color: white;
-
-  Button {
-    margin-top: 6px;
-    margin-left: 10px;
-    margin-bottom: 3px;
-    margin-right: 20px;
-    width: 280px;
-  }
-
-  .title {
-    margin-left: 10px;
-    margin-top: 10px;
-    margin-bottom: 3px;
-  }  
-
-  .endpoint {
-    margin-top: 10px;
-    margin-bottom: 3px;
-  }  
 }

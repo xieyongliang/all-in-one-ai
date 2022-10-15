@@ -10,23 +10,23 @@ from pathlib import Path
 import mxnet as mx
 from gluonts.dataset.common import ListDataset
 from gluonts.dataset.field_names import FieldName
-from gluonts.model.canonical import CanonicalRNNEstimator
-from gluonts.model.deep_factor import DeepFactorEstimator
-from gluonts.model.deepar import DeepAREstimator
-from gluonts.model.deepstate import DeepStateEstimator
-from gluonts.model.deepvar import DeepVAREstimator
-from gluonts.model.gp_forecaster import GaussianProcessEstimator
-from gluonts.model.gpvar import GPVAREstimator
-from gluonts.model.lstnet import LSTNetEstimator
-from gluonts.model.n_beats import NBEATSEstimator
-from gluonts.model.renewal import DeepRenewalProcessEstimator
+from gluonts.mx.model.canonical import CanonicalRNNEstimator
+from gluonts.mx.model.deep_factor import DeepFactorEstimator
+from gluonts.mx.model.deepar import DeepAREstimator
+from gluonts.mx.model.deepstate import DeepStateEstimator
+from gluonts.mx.model.deepvar import DeepVAREstimator
+from gluonts.mx.model.gp_forecaster import GaussianProcessEstimator
+from gluonts.mx.model.gpvar import GPVAREstimator
+from gluonts.mx.model.lstnet import LSTNetEstimator
+from gluonts.mx.model.n_beats import NBEATSEstimator
+from gluonts.mx.model.renewal import DeepRenewalProcessEstimator
 from gluonts.model.rotbaum import TreePredictor
-from gluonts.model.san import SelfAttentionEstimator
-from gluonts.model.seq2seq import MQCNNEstimator, MQRNNEstimator, Seq2SeqEstimator
-from gluonts.model.simple_feedforward import SimpleFeedForwardEstimator
-from gluonts.model.tft import TemporalFusionTransformerEstimator
-from gluonts.model.transformer import TransformerEstimator
-from gluonts.model.wavenet import WaveNetEstimator
+from gluonts.mx.model.san import SelfAttentionEstimator
+from gluonts.mx.model.seq2seq import MQCNNEstimator, MQRNNEstimator, Seq2SeqEstimator
+from gluonts.mx.model.simple_feedforward import SimpleFeedForwardEstimator
+from gluonts.mx.model.tft import TemporalFusionTransformerEstimator
+from gluonts.mx.model.transformer import TransformerEstimator
+from gluonts.mx.model.wavenet import WaveNetEstimator
 from gluonts.mx.trainer import Trainer
 from gluonts.mx.block.encoder import *
 from gluonts.model.naive_2 import Naive2Predictor
@@ -138,9 +138,6 @@ def train(args):
                     epochs=args.epochs, 
                     num_batches_per_epoch=args.num_batches_per_epoch,
                     learning_rate=args.learning_rate, 
-                    learning_rate_decay_factor=args.learning_rate_decay_factor,
-                    patience=args.patience,
-                    minimum_learning_rate=args.minimum_learning_rate,
                     clip_gradient=args.clip_gradient,
                     weight_decay=args.weight_decay,
                     init=args.init.replace('"', ''),
@@ -592,9 +589,6 @@ def parse_args():
     parser.add_argument('--epochs', type=int, default=200)
     parser.add_argument('--num-batches-per-epoch', type=int, default=100)
     parser.add_argument('--learning-rate', type=float, default=0.001)
-    parser.add_argument('--learning-rate-decay-factor', type=float, default=0.5)
-    parser.add_argument('--patience', type=int, default=10)
-    parser.add_argument('--minimum-learning-rate', type=float, default=5e-5)
     parser.add_argument('--clip-gradient', type=int, default=10)
     parser.add_argument('--weight-decay', type=float, default=1e-8)
     parser.add_argument('--init', type=str, default='xavier')

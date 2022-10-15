@@ -63,11 +63,11 @@ const PolygonTextsList: React.FC<IProps> = (
         onLoaded
     }) => {
     const [ yolov5EndpointOptions, setYolov5EndpointOptions ] = useState([]);
+    const [ selectedYolov5EndpointOption, setSelectedYolov5EndpointOption ] = useState<SelectOption>();
     const [ extractKeyValues, setExtractKeyValues ] = useState(false);
     const [ keyValues, setKeyValues ] = useState([])
-    const [ selectedYolov5Endpoint, setSelectedYolov5Endpoint ] = useState<SelectOption>();
     const [ paddleocrEndpointOptions, setPaddleOCREndpointOptions ] = useState([]);
-    const [ selectedPaddleOCREndpoint, setSelectedPaddleOCREndpoint ] = useState<SelectOption>();
+    const [ selectedPaddleOCREndpointOption, setSelectedPaddleOCREndpointOption ] = useState<SelectOption>();
     const [ textFieldOptions, setTextFieldOptions ] = useState([]);
     const [ selectedTextField, setSelectedTextField ] = useState<SelectOption>();
     const [ yolov5EndpointsMapping, setYolov5EndpointsMapping ] = useState({});
@@ -172,6 +172,7 @@ const PolygonTextsList: React.FC<IProps> = (
                         endpointItems.push({label : item.EndpointName, value: item.EndpointName})
                         if(endpointItems.length === response.data.length) {
                             setPaddleOCREndpointOptions(endpointItems);
+                            setSelectedPaddleOCREndpointOption(endpointItems[0])
                             setLoadingPaddleOCR(false);
                             handleLoaded();
                         }
@@ -228,8 +229,8 @@ const PolygonTextsList: React.FC<IProps> = (
     }, [industrialModels, projectSubType, handleLoaded]);
 
     useEffect(() => {
-        if(selectedYolov5Endpoint !== undefined) {
-            var industrialModel = industrialModels.find((item) => item.id === yolov5EndpointsMapping[selectedYolov5Endpoint.value]);
+        if(selectedYolov5EndpointOption !== undefined) {
+            var industrialModel = industrialModels.find((item) => item.id === yolov5EndpointsMapping[selectedYolov5EndpointOption.value]);
 
             var labels = JSON.parse(industrialModel.extra).labels;
             var textFields = [];
@@ -239,7 +240,7 @@ const PolygonTextsList: React.FC<IProps> = (
             setTextFieldOptions(textFields);
             setSelectedTextField(textFields[0]);
         }
-    }, [selectedYolov5Endpoint, yolov5EndpointsMapping, industrialModels]);
+    }, [selectedYolov5EndpointOption, yolov5EndpointsMapping, industrialModels]);
 
     const deletePolygonTextById = (textPolygonId: string) => {
         TextActions.deletePolygonTextById(imageData.id, textPolygonId)
@@ -283,9 +284,9 @@ const PolygonTextsList: React.FC<IProps> = (
 
     const onChange = (id, option) => {
         if(id === 'PaddleOCR')
-            setSelectedPaddleOCREndpoint(option)
+            setSelectedPaddleOCREndpointOption(option)
         if(id === 'Yolov5')
-            setSelectedYolov5Endpoint(option)
+            setSelectedYolov5EndpointOption(option)
         if(id === 'TextField')
             setSelectedTextField(option)
     }
@@ -295,9 +296,9 @@ const PolygonTextsList: React.FC<IProps> = (
     
         var response = undefined
         if(imageBucket !== undefined && imageKey!== undefined)
-            response = await axios.get('/_inference/sample', { params : { endpoint_name: selectedYolov5Endpoint.value, bucket: imageBucket, key: imageKey } })
+            response = await axios.get('/_inference/sample', { params : { endpoint_name: selectedYolov5EndpointOption.value, bucket: imageBucket, key: imageKey } })
         else if(imageId !== undefined)
-            response = await axios.get(`/_inference/image/${imageId}`, { params : { endpoint_name: selectedYolov5Endpoint.value, bucket: imageBucket, key: imageKey } })
+            response = await axios.get(`/_inference/image/${imageId}`, { params : { endpoint_name: selectedYolov5EndpointOption.value, bucket: imageBucket, key: imageKey } })
     
         if(response === undefined)
             return response
@@ -319,15 +320,15 @@ const PolygonTextsList: React.FC<IProps> = (
         var response = undefined
         if(imageBucket !== undefined && imageKey!== undefined)  {
             if(extractKeyValues)
-                response = await axios.get('/_inference/sample', { params : { endpoint_name: selectedPaddleOCREndpoint.value, bucket: imageBucket, key: imageKey, crop: bbox, post_process: 'ocr_key_value_extraction', keywords: JSON.stringify(keywords) } })
+                response = await axios.get('/_inference/sample', { params : { endpoint_name: selectedPaddleOCREndpointOption.value, bucket: imageBucket, key: imageKey, crop: bbox, post_process: 'ocr_key_value_extraction', keywords: JSON.stringify(keywords) } })
             else
-                response = await axios.get('/_inference/sample', { params : { endpoint_name: selectedPaddleOCREndpoint.value, bucket: imageBucket, key: imageKey, crop: bbox } })
+                response = await axios.get('/_inference/sample', { params : { endpoint_name: selectedPaddleOCREndpointOption.value, bucket: imageBucket, key: imageKey, crop: bbox } })
         }
         else if(imageId !== undefined) {
             if(extractKeyValues)
-                response = await axios.get(`/_inference/image/${imageId}`, { params : { endpoint_name: selectedPaddleOCREndpoint.value, bucket: imageBucket, key: imageKey, crop: JSON.stringify(bbox), post_process: 'ocr_key_value_extraction', keywords: JSON.stringify(keywords) } })
+                response = await axios.get(`/_inference/image/${imageId}`, { params : { endpoint_name: selectedPaddleOCREndpointOption.value, bucket: imageBucket, key: imageKey, crop: JSON.stringify(bbox), post_process: 'ocr_key_value_extraction', keywords: JSON.stringify(keywords) } })
             else
-                response = await axios.get(`/_inference/image/${imageId}`, { params : { endpoint_name: selectedPaddleOCREndpoint.value, bucket: imageBucket, key: imageKey, crop: JSON.stringify(bbox) } })
+                response = await axios.get(`/_inference/image/${imageId}`, { params : { endpoint_name: selectedPaddleOCREndpointOption.value, bucket: imageBucket, key: imageKey, crop: JSON.stringify(bbox) } })
         }
         if(response === undefined)
             return response
@@ -420,7 +421,7 @@ const PolygonTextsList: React.FC<IProps> = (
                             {
                                 (projectSubType === ProjectSubType.OBJECT_DETECTION) && 
                                 <Select
-                                    selectedOption={selectedYolov5Endpoint}
+                                    selectedOption={selectedYolov5EndpointOption}
                                     onChange={(event) => onChange('Yolov5', event)}
                                     options={yolov5EndpointOptions}
                                 />
@@ -433,7 +434,7 @@ const PolygonTextsList: React.FC<IProps> = (
                         </div>
                         <div>
                             <Select
-                                selectedOption={selectedPaddleOCREndpoint}
+                                selectedOption={selectedPaddleOCREndpointOption}
                                 onChange={(event) => onChange('PaddleOCR', event)}
                                 options={paddleocrEndpointOptions}
                             />

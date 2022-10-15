@@ -82,8 +82,8 @@ const RectLabelsList: React.FC<IProps> = (
     onProcessing,
     onProcessed
 }) => {
-    const [ yolov5Endpoints, setYolov5Endpoints ] = useState([]);
-    const [ selectedYolov5Endpoint, setSelectedYolov5Endpoint ] = useState<SelectOption>();
+    const [ yolov5EndpointOptions, setYolov5EndpointOptions ] = useState([]);
+    const [ selectedYolov5EndpointOption, setSelectedYolov5EndpointOption ] = useState<SelectOption>();
     const [ computedAnnotations ] = useState<string[]>(imageAnnotations !== undefined ? imageAnnotations :[]);
     
     const { t } = useTranslation();
@@ -108,8 +108,8 @@ const RectLabelsList: React.FC<IProps> = (
                     response.data.forEach((item) => {
                         items.push({label: item.EndpointName, value: item.EndpointName})
                         if(items.length === response.data.length) {
-                            setYolov5Endpoints(items);
-                            setSelectedYolov5Endpoint(items[0]);
+                            setYolov5EndpointOptions(items);
+                            setSelectedYolov5EndpointOption(items[0]);
                             onLoaded()
                         }
                     })
@@ -174,9 +174,9 @@ const RectLabelsList: React.FC<IProps> = (
 
         var response = undefined
         if(imageBuckets !== undefined && imageKeys !== undefined && imageBuckets[activeImageIndex] !== undefined && imageKeys[activeImageIndex]!== undefined)
-            response = await axios.get('/_inference/sample', { params : { endpoint_name: selectedYolov5Endpoint.value, bucket: imageBuckets[activeImageIndex], key: imageKeys[activeImageIndex] } })
+            response = await axios.get('/_inference/sample', { params : { endpoint_name: selectedYolov5EndpointOption.value, bucket: imageBuckets[activeImageIndex], key: imageKeys[activeImageIndex] } })
         else if(imageId !== undefined)
-            response = await axios.get(`/_inference/image/${imageId}`, { params : { endpoint_name: selectedYolov5Endpoint.value } })
+            response = await axios.get(`/_inference/image/${imageId}`, { params : { endpoint_name: selectedYolov5EndpointOption.value } })
 
         if(response === undefined)
             return response
@@ -251,7 +251,7 @@ const RectLabelsList: React.FC<IProps> = (
     }
 
     const onChange = (option: SelectOption) => {
-        setSelectedYolov5Endpoint(option)
+        setSelectedYolov5EndpointOption(option)
     }
 
     return (
@@ -271,7 +271,8 @@ const RectLabelsList: React.FC<IProps> = (
                                 </Typography>    
                             </div>
                             <Select 
-                                options = {yolov5Endpoints}
+                                options = {yolov5EndpointOptions}
+                                selectedOption = {selectedYolov5EndpointOption}
                                 onChange = {onChange}
                             />
                             <Button variant='primary' size="small" onClick={onInference}>{t('industrial_models.demo.run')}</Button>

@@ -10,7 +10,6 @@ from sagemaker.estimator import Estimator
 from sagemaker.lambda_helper import Lambda
 from sagemaker.workflow.steps import TrainingStep
 from sagemaker.workflow.step_collections import RegisterModel
-from sagemaker.workflow.lambda_step import LambdaStep
 from sagemaker.workflow.lambda_step import (
     LambdaStep,
     LambdaOutput,
@@ -577,9 +576,7 @@ def lambda_handler(event, context):
         pipeline.upsert(role_arn=role)
 
         response = pipeline.start()
-
-        traceback.print_exc()
-
+    
         payload = {
             'body': {
                 'time': time,

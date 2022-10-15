@@ -1,6 +1,6 @@
 @import '../../../../settings/Settings';
 
-.RectLabelsList {
+.GenericImageList {
   display: flex;
   flex-direction: column;
   flex-wrap: nowrap;
@@ -8,7 +8,7 @@
   align-items: center;
   align-content: center;
 
-  .RectLabelsListContent {
+  .GenericImageListContent {
     display: flex;
     flex-direction: column;
     flex-wrap: nowrap;
@@ -30,5 +30,11 @@
   div {
     margin-top: 3px;
     margin-bottom: 3px;
+  }
+
+  input {
+    margin-top: 6px;
+    margin-bottom: 3px;
+    width: 280px;
   }
 }
