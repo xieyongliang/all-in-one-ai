@@ -105,6 +105,7 @@ echo "--------------------------------------------------------------------------
 
 
 lambda_foldes="
+all_in_one_ai_add_permission
 all_in_one_ai_annotation
 all_in_one_ai_api
 all_in_one_ai_create_api
@@ -117,6 +118,7 @@ all_in_one_ai_create_endpoint
 all_in_one_ai_create_model
 all_in_one_ai_create_pipeline
 all_in_one_ai_create_pipeline_helper
+all_in_one_ai_create_s3_event_notification
 all_in_one_ai_create_train_generic
 all_in_one_ai_create_train_huggingface
 all_in_one_ai_create_train_pytorch
@@ -126,6 +128,7 @@ all_in_one_ai_create_training_job
 all_in_one_ai_create_transform_job
 all_in_one_ai_delete_endpoint
 all_in_one_ai_delete_model
+all_in_one_ai_delete_s3_event_notification
 all_in_one_ai_deploy
 all_in_one_ai_describe_endpoint
 all_in_one_ai_describe_model
@@ -142,8 +145,10 @@ all_in_one_ai_greengrass_create_deployment
 all_in_one_ai_greengrass_deployment
 all_in_one_ai_greengrass_thing_groups
 all_in_one_ai_import_opensearch
-all_in_one_ai_import_opensearch_helper
-all_in_one_ai_import_opensearch_handler
+all_in_one_ai_import_opensearch_async
+all_in_one_ai_import_opensearch_sync
+all_in_one_ai_import_opensearch_async_helper
+all_in_one_ai_import_opensearch_sync_helper
 all_in_one_ai_industrial_model
 all_in_one_ai_inference
 all_in_one_ai_inference_post_process
@@ -152,6 +157,7 @@ all_in_one_ai_model
 all_in_one_ai_model_package
 all_in_one_ai_model_package_group
 all_in_one_ai_pipeline
+all_in_one_ai_remove_permission
 all_in_one_ai_s3
 all_in_one_ai_search_by_image
 all_in_one_ai_stop_training_job

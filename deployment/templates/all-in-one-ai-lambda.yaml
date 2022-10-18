@@ -2718,12 +2718,29 @@ Resources:
       PathPart: 'import'
       RestApiId: !Ref ApiGatewayRestApi
 
-  ApiGatewayMethodSearchImport:
+  ApiGatewayMethodSearchImportGet:
     Type: AWS::ApiGateway::Method
     Properties:
       ApiKeyRequired: false
       AuthorizationType: NONE
       HttpMethod: GET
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: 
+          !If
+          - Globally
+          - !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIImportOpensearchFunction.Arn}/invocations'
+          - !Sub 'arn:aws-cn:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIImportOpensearchFunction.Arn}/invocations'
+      ResourceId: !Ref ApiGatewayResourceSearchImport
+      RestApiId: !Ref ApiGatewayRestApi   
+
+  ApiGatewayMethodSearchImportPost:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      ApiKeyRequired: false
+      AuthorizationType: NONE
+      HttpMethod: POST
       Integration:
         Type: AWS_PROXY
         IntegrationHttpMethod: POST
@@ -2816,6 +2833,26 @@ Resources:
         - !Sub
           - >-
             arn:aws-cn:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/GET/search/import
+          - __Stage__: '*'
+            __ApiId__: !Ref ApiGatewayRestApi
+
+  AllInOneAIImportOpensearchFunctionCatchAllPermissionProd2:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: 'lambda:InvokeFunction'
+      Principal: apigateway.amazonaws.com      
+      FunctionName: !Ref AllInOneAIImportOpensearchFunction
+      SourceArn: 
+        !If
+        - Globally
+        - !Sub
+          - >-
+            arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/POST/search/import
+          - __Stage__: '*'
+            __ApiId__: !Ref ApiGatewayRestApi
+        - !Sub
+          - >-
+            arn:aws-cn:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/POST/search/import
           - __Stage__: '*'
             __ApiId__: !Ref ApiGatewayRestApi
 
@@ -5569,7 +5606,76 @@ Resources:
         SecurityGroupIds: 
           - !Ref SecurityGroup
 
-  AllInOneAIImportOpensearchHandlerFunctionRole:
+  AllInOneAIImportOpensearchAsyncFunctionRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'sts:AssumeRole'
+            Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+      ManagedPolicyArns:
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
+          - 'arn:aws-cn:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/AmazonSSMFullAccess'
+          - 'arn:aws-cn:iam::aws:policy/AmazonSSMFullAccess'
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/AmazonS3FullAccess'
+          - 'arn:aws-cn:iam::aws:policy/AmazonS3FullAccess'
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/AmazonSageMakerFullAccess'
+          - 'arn:aws-cn:iam::aws:policy/AmazonSageMakerFullAccess'
+  
+  AllInOneAIImportOpensearchAsyncFunctionAdditionalPermission:
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName: all_in_one_ai_import_opensearch_async
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'logs:*'
+              - 'lambda:*'
+              - 'cloudwatch:*'
+            Resource: '*'
+            Effect: Allow
+      Roles:
+        - !Ref AllInOneAIImportOpensearchAsyncFunctionRole
+
+  AllInOneAIImportOpensearchAsyncFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket: !Ref S3Bucket
+        S3Key: !Sub ${S3Key}codes/all_in_one_ai_import_opensearch_async.zip
+      FunctionName: all_in_one_ai_import_opensearch_async
+      Tags:
+        - Value: Name
+          Key: 'AllInOneAIApi'
+      Handler: lambda_function.lambda_handler
+      Role: !GetAtt AllInOneAIImportOpensearchAsyncFunctionRole.Arn
+      Timeout: 900
+      Runtime: python3.9
+      VpcConfig:
+        SubnetIds: 
+          - !Ref PrivateSubnet1
+          - !Ref PrivateSubnet2
+        SecurityGroupIds: 
+          - !Ref SecurityGroup
+      Layers:
+        - !Ref HelperLayer
+
+  AllInOneAIImportOpensearchSyncFunctionRole:
     Type: 'AWS::IAM::Role'
     Properties:
       AssumeRolePolicyDocument:
@@ -5595,10 +5701,10 @@ Resources:
           - 'arn:aws:iam::aws:policy/AmazonS3FullAccess'
           - 'arn:aws-cn:iam::aws:policy/AmazonS3FullAccess'
   
-  AllInOneAIImportOpensearchHandlerFunctionAdditionalPermission:
+  AllInOneAIImportOpensearchSyncFunctionAdditionalPermission:
     Type: 'AWS::IAM::Policy'
     Properties:
-      PolicyName: all_in_one_ai_import_opensearch_handler
+      PolicyName: all_in_one_ai_import_opensearch_sync
       PolicyDocument:
         Version: 2012-10-17
         Statement:
@@ -5609,20 +5715,20 @@ Resources:
             Resource: '*'
             Effect: Allow
       Roles:
-        - !Ref AllInOneAIImportOpensearchHandlerFunctionRole
+        - !Ref AllInOneAIImportOpensearchSyncFunctionRole
 
-  AllInOneAIImportOpensearchHandlerFunction:
+  AllInOneAIImportOpensearchSyncFunction:
     Type: AWS::Lambda::Function
     Properties:
       Code:
         S3Bucket: !Ref S3Bucket
-        S3Key: !Sub ${S3Key}codes/all_in_one_ai_import_opensearch_handler.zip
-      FunctionName: all_in_one_ai_import_opensearch_handler
+        S3Key: !Sub ${S3Key}codes/all_in_one_ai_import_opensearch_sync.zip
+      FunctionName: all_in_one_ai_import_opensearch_sync
       Tags:
         - Value: Name
           Key: 'AllInOneAIApi'
       Handler: lambda_function.lambda_handler
-      Role: !GetAtt AllInOneAIImportOpensearchHandlerFunctionRole.Arn
+      Role: !GetAtt AllInOneAIImportOpensearchSyncFunctionRole.Arn
       Timeout: 900
       Runtime: python3.9
       VpcConfig:
@@ -5634,7 +5740,72 @@ Resources:
       Layers:
         - !Ref HelperLayer
 
-  AllInOneAIImportOpensearchHelperFunctionRole:
+AllInOneAIImportOpensearchAsyncHelperFunctionRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'sts:AssumeRole'
+            Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+      ManagedPolicyArns:
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
+          - 'arn:aws-cn:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/AmazonS3FullAccess'
+          - 'arn:aws-cn:iam::aws:policy/AmazonS3FullAccess'
+  
+  AllInOneAIImportOpensearchAsyncHelperFunctionAdditionalPermission:
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName: all_in_one_ai_import_opensearch_async_helper
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'logs:*'
+              - 'lambda:*'
+              - 'cloudwatch:*'
+            Resource: '*'
+            Effect: Allow
+      Roles:
+        - !Ref AllInOneAIImportOpensearchAsyncHelperFunctionRole
+
+  AllInOneAIImportOpensearchAsyncHelperFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket: !Ref S3Bucket
+        S3Key: !Sub ${S3Key}codes/all_in_one_ai_import_opensearch_helper.zip
+      FunctionName: all_in_one_ai_import_opensearch_async_helper
+      Tags:
+        - Value: Name
+          Key: 'AllInOneAIApi'
+      Handler: lambda_function.lambda_handler
+      Role: !GetAtt AllInOneAIImportOpensearchAsyncHelperFunctionRole.Arn
+      Timeout: 900
+      MemorySize: 2048
+      Runtime: python3.9
+      VpcConfig:
+        SubnetIds: 
+          - !Ref PrivateSubnet1
+          - !Ref PrivateSubnet2
+        SecurityGroupIds: 
+          - !Ref SecurityGroup
+      Environment:
+        Variables:
+          ES_ENDPOINT: !Sub https://${OpensearchEndpoint}
+      Layers:
+        - !Ref HelperLayer
+
+  AllInOneAIImportOpensearchSyncHelperFunctionRole:
     Type: 'AWS::IAM::Role'
     Properties:
       AssumeRolePolicyDocument:
@@ -5660,10 +5831,10 @@ Resources:
           - 'arn:aws:iam::aws:policy/AmazonSQSFullAccess'
           - 'arn:aws-cn:iam::aws:policy/AmazonSQSFullAccess'
   
-  AllInOneAIImportOpensearchHelperFunctionAdditionalPermission:
+  AllInOneAIImportOpensearchSyncHelperFunctionAdditionalPermission:
     Type: 'AWS::IAM::Policy'
     Properties:
-      PolicyName: all_in_one_ai_import_opensearch_helper
+      PolicyName: all_in_one_ai_import_opensearch_sync_helper
       PolicyDocument:
         Version: 2012-10-17
         Statement:
@@ -5674,20 +5845,20 @@ Resources:
             Resource: '*'
             Effect: Allow
       Roles:
-        - !Ref AllInOneAIImportOpensearchHelperFunctionRole
+        - !Ref AllInOneAIImportOpensearchSyncHelperFunctionRole
 
-  AllInOneAIImportOpensearchHelperFunction:
+  AllInOneAIImportOpensearchSyncHelperFunction:
     Type: AWS::Lambda::Function
     Properties:
       Code:
         S3Bucket: !Ref S3Bucket
         S3Key: !Sub ${S3Key}codes/all_in_one_ai_import_opensearch_helper.zip
-      FunctionName: all_in_one_ai_import_opensearch_helper
+      FunctionName: all_in_one_ai_import_opensearch_sync_helper
       Tags:
         - Value: Name
           Key: 'AllInOneAIApi'
       Handler: lambda_function.lambda_handler
-      Role: !GetAtt AllInOneAIImportOpensearchHelperFunctionRole.Arn
+      Role: !GetAtt AllInOneAIImportOpensearchSyncHelperFunctionRole.Arn
       Timeout: 900
       MemorySize: 2048
       Runtime: python3.9
@@ -5702,6 +5873,258 @@ Resources:
           ES_ENDPOINT: !Sub https://${OpensearchEndpoint}
       Layers:
         - !Ref HelperLayer
+
+  AllInOneAIAddPermissionFunctionRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'sts:AssumeRole'
+            Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+      ManagedPolicyArns:
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
+          - 'arn:aws-cn:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/IAMFullAccess'
+          - 'arn:aws-cn:iam::aws:policy/IAMFullAccess'
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/AWSLambda_FullAccess'
+          - 'arn:aws-cn:iam::aws:policy/AWSLambda_FullAccess'
+  
+  AllInOneAIAddPermissionFunctionAdditionalPermission:
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName: all_in_one_ai_add_permission
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'logs:*'
+              - 'lambda:*'
+              - 'cloudwatch:*'
+            Resource: '*'
+            Effect: Allow
+      Roles:
+        - !Ref AllInOneAIAddPermissionFunctionRole
+
+  AllInOneAIAddPermissionFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket: !Ref S3Bucket
+        S3Key: !Sub ${S3Key}codes/all_in_one_ai_add_permission.zip
+      FunctionName: all_in_one_ai_add_permission
+      Tags:
+        - Value: Name
+          Key: 'AllInOneAIApi'
+      Handler: lambda_function.lambda_handler
+      Role: !GetAtt AllInOneAIAddPermissionFunctionRole.Arn
+      Timeout: 900
+      Runtime: python3.9
+      VpcConfig:
+        SubnetIds: 
+          - !Ref PrivateSubnet1
+          - !Ref PrivateSubnet2
+        SecurityGroupIds: 
+          - !Ref SecurityGroup
+
+  AllInOneAIRemovePermissionFunctionRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'sts:AssumeRole'
+            Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+      ManagedPolicyArns:
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
+          - 'arn:aws-cn:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/IAMFullAccess'
+          - 'arn:aws-cn:iam::aws:policy/IAMFullAccess'
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/AWSLambda_FullAccess'
+          - 'arn:aws-cn:iam::aws:policy/AWSLambda_FullAccess'
+  
+  AllInOneAIRemovePermissionFunctionAdditionalPermission:
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName: all_in_one_ai_remove_permission
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'logs:*'
+              - 'lambda:*'
+              - 'cloudwatch:*'
+            Resource: '*'
+            Effect: Allow
+      Roles:
+        - !Ref AllInOneAIRemovePermissionFunctionRole
+
+  AllInOneAIRemovePermissionFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket: !Ref S3Bucket
+        S3Key: !Sub ${S3Key}codes/all_in_one_ai_remove_permission.zip
+      FunctionName: all_in_one_ai_remove_permission
+      Tags:
+        - Value: Name
+          Key: 'AllInOneAIApi'
+      Handler: lambda_function.lambda_handler
+      Role: !GetAtt AllInOneAIRemovePermissionFunctionRole.Arn
+      Timeout: 900
+      Runtime: python3.9
+      VpcConfig:
+        SubnetIds: 
+          - !Ref PrivateSubnet1
+          - !Ref PrivateSubnet2
+        SecurityGroupIds: 
+          - !Ref SecurityGroup
+
+  AllInOneAICreateS3EventNotificationFunctionRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'sts:AssumeRole'
+            Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+      ManagedPolicyArns:
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
+          - 'arn:aws-cn:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/IAMFullAccess'
+          - 'arn:aws-cn:iam::aws:policy/IAMFullAccess'
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/AmazonS3FullAccess'
+          - 'arn:aws-cn:iam::aws:policy/AmazonS3FullAccess'
+  
+  AllInOneAICreateS3EventNotificationFunctionAdditionalPermission:
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName: all_in_one_ai_create_s3_event_notification
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'logs:*'
+              - 'lambda:*'
+              - 'cloudwatch:*'
+            Resource: '*'
+            Effect: Allow
+      Roles:
+        - !Ref AllInOneAICreateS3EventNotificationFunctionRole
+
+  AllInOneAICreateS3EventNotificationFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket: !Ref S3Bucket
+        S3Key: !Sub ${S3Key}codes/all_in_one_ai_create_s3_event_notification.zip
+      FunctionName: all_in_one_ai_create_s3_event_notification
+      Tags:
+        - Value: Name
+          Key: 'AllInOneAIApi'
+      Handler: lambda_function.lambda_handler
+      Role: !GetAtt AllInOneAICreateS3EventNotificationFunctionRole.Arn
+      Timeout: 900
+      Runtime: python3.9
+      VpcConfig:
+        SubnetIds: 
+          - !Ref PrivateSubnet1
+          - !Ref PrivateSubnet2
+        SecurityGroupIds: 
+          - !Ref SecurityGroup
+
+  AllInOneAIDeleteS3EventNotificationFunctionRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'sts:AssumeRole'
+            Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+      ManagedPolicyArns:
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
+          - 'arn:aws-cn:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/IAMFullAccess'
+          - 'arn:aws-cn:iam::aws:policy/IAMFullAccess'
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/AmazonS3FullAccess'
+          - 'arn:aws-cn:iam::aws:policy/AmazonS3FullAccess'
+  
+  AllInOneAIDeleteS3EventNotificationFunctionAdditionalPermission:
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName: all_in_one_ai_delete_s3_event_notification
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'logs:*'
+              - 'lambda:*'
+              - 'cloudwatch:*'
+            Resource: '*'
+            Effect: Allow
+      Roles:
+        - !Ref AllInOneAIDeleteS3EventNotificationFunctionRole
+
+  AllInOneAIDeleteS3EventNotificationFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket: !Ref S3Bucket
+        S3Key: !Sub ${S3Key}codes/all_in_one_ai_delete_s3_event_notification.zip
+      FunctionName: all_in_one_ai_delete_s3_event_notification
+      Tags:
+        - Value: Name
+          Key: 'AllInOneAIApi'
+      Handler: lambda_function.lambda_handler
+      Role: !GetAtt AllInOneAIDeleteS3EventNotificationFunctionRole.Arn
+      Timeout: 900
+      Runtime: python3.9
+      VpcConfig:
+        SubnetIds: 
+          - !Ref PrivateSubnet1
+          - !Ref PrivateSubnet2
+        SecurityGroupIds: 
+          - !Ref SecurityGroup
 
   AllInOneAIInferencePostProcessFunctionRole:
     Type: 'AWS::IAM::Role'
@@ -6213,7 +6636,8 @@ Resources:
       - ApiGatewayMethodPipelinePost
       - ApiGatewayMethodS3Get
       - ApiGatewayMethodSearchImage
-      - ApiGatewayMethodSearchImport
+      - ApiGatewayMethodSearchImportGet
+      - ApiGatewayMethodSearchImportPost
       - ApiGatewayMethodTrainingJobGet
       - ApiGatewayMethodTrainingJobPost
       - ApiGatewayMethodTrainingJobByNameGet
@@ -6543,9 +6967,9 @@ Outputs:
     Description: Arn of AllInOneAICreatePipelineHelperFunction
     Value: !GetAtt AllInOneAICreatePipelineHelperFunction.Arn
   
-  ImportOpensearchHelperFunctionArn:
-    Description: Arn of AllInOneAIImportOpensearchHelperFunction
-    Value: !GetAtt AllInOneAIImportOpensearchHelperFunction.Arn
+  ImportOpensearchSyncHelperFunctionArn:
+    Description: Arn of AllInOneAIImportOpensearchSyncHelperFunction
+    Value: !GetAtt AllInOneAIImportOpensearchSyncHelperFunction.Arn
   
   WebSocketGatewayProdEndpoint:
     Description: "The WSS Protocol URI to connect to"

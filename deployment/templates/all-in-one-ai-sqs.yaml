@@ -3,7 +3,7 @@ Description: Template for SQS
 Parameters:
   ImportOpensearchHelperFunctionArn:
     Type: String
-    Description: ImportOpensearchHelperFunction Arn
+    Description: ImportOpensearchSyncHelperFunction Arn
 
 Resources: 
   AllInOneAIDLQ: 
@@ -21,7 +21,7 @@ Resources:
         deadLetterTargetArn: !GetAtt AllInOneAIDLQ.Arn
         maxReceiveCount: 1000
 
-  ImportOpensearchHelperFunctionEventSourceMapping:
+  ImportOpensearchSyncHelperFunctionEventSourceMapping:
     Type: AWS::Lambda::EventSourceMapping
     Properties:
       BatchSize: 10
@@ -29,4 +29,4 @@ Resources:
       FunctionResponseTypes: 
         - ReportBatchItemFailures
       EventSourceArn: !GetAtt AllInOneAIQueue.Arn
-      FunctionName: !Ref ImportOpensearchHelperFunctionArn
+      FunctionName: !Ref ImportOpensearchSyncHelperFunctionArn

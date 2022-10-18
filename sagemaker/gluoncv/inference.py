@@ -28,12 +28,12 @@ def transform_fn(model: any, request_body: any, content_type: any, accept_type: 
         input_data = request_body
 
     task = os.environ['task'] if('task' in os.environ) else 'search'
-    pred = get_embedding_advance(input_data, model, task)
+    pred = predict(input_data, model, task)
     result = pred.tolist()
 
     return json.dumps({'result': result})
 
-def get_embedding_advance(input_pic, net, task):
+def predict(input_pic, net, task):
     img = input_pic        
     ctx = [mx.gpu(i) for i in range(mx.context.num_gpus())] if mx.context.num_gpus() else [mx.cpu()]
     img = transform_eval(img).copyto(ctx[0])

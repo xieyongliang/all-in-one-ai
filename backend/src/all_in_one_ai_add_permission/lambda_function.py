@@ -1,14 +1,19 @@
+from ast import Lambda
 import boto3
 import traceback
+import json
+from botocore.exceptions import ClientError
 
 sts_client = boto3.client('sts')
 lambda_client = boto3.client('lambda')
 source_account = sts_client.get_caller_identity().get('Account')
 
 def lambda_handler(event, context):
-    statement_id = event['body']['statement_id']
-    output_s3bucket = event['body']['output_s3bucket']
-    function_name = event['body']['function_name']
+    statement_id = event['industrial_model']
+    output_s3uri = event['output_s3uri']
+    function_name = event['lambda_function_arn']
+
+    output_s3bucket, _ = get_bucket_and_key(output_s3uri)
 
     try:
         response = lambda_client.add_permission(
@@ -20,9 +25,78 @@ def lambda_handler(event, context):
             StatementId = statement_id,
         )
 
+        print(response)
+    except ClientError as e:
+        error = e.response["Error"]
+        code = error["Code"]
+        if code == "ResourceConflictException":
+            response = lambda_client.remove_permission(
+                FunctionName = function_name,
+                StatementId = statement_id,
+            )
+            print(response)
+            
+            response = lambda_client.add_permission(
+                Action='lambda:InvokeFunction',
+                FunctionName = function_name,
+                Principal = 's3.amazonaws.com',
+                SourceAccount = source_account,
+                SourceArn = f'arn:aws:s3:::{output_s3bucket}',
+                StatementId = statement_id,
+            )
+            print(response)
+            
+            pass
+        else:
+            traceback.print_exc()
+
+            return {
+                'statusCode': 400,
+                'body': str(e)
+            }
+    
+    try:
+        response = lambda_client.get_function_configuration(
+            FunctionName = function_name
+        )
+
+        environment = {}
+        
+        if('Environment' in response):
+            environment = response['Environment']
+            if('Variables' in environment):
+                variables = environment['Variables']
+                if('ES_INDEX_MAP' in variables):
+                    es_index_map = json.loads(variables['ES_INDEX_MAP'])
+                    es_index_map[statement_id] = output_s3uri
+                else:
+                    es_index_map = {
+                        statement_id: output_s3uri
+                    }
+            else:
+                environment['Variables'] = {}
+                es_index_map = {
+                    statement_id: output_s3uri
+                }
+        else:
+            environment['Variables'] = {}
+            es_index_map = {
+                statement_id: output_s3uri
+            }
+            
+        environment['Variables']['ES_INDEX_MAP'] = json.dumps(es_index_map)
+        
+        print(environment)
+        response = lambda_client.update_function_configuration(
+            FunctionName = function_name,
+            Environment = environment
+        )
+
+        print(response)
+
         return {
             'statusCode': 200,
-            'body': response['Statement']
+            'body': ''
         }
     except Exception as e:
         traceback.print_exc()
@@ -32,3 +106,8 @@ def lambda_handler(event, context):
             'body': str(e)
         }
 
+def get_bucket_and_key(s3uri):
+    pos = s3uri.find('/', 5)
+    bucket = s3uri[5 : pos]
+    key = s3uri[pos + 1 : ]
+    return bucket, key
