@@ -5657,7 +5657,7 @@ Resources:
     Properties:
       Code:
         S3Bucket: !Ref S3Bucket
-        S3Key: !Sub ${S3Key}codes/all_in_one_ai_import_opensearch_async.zip
+        S3Key: !Sub ${S3Key}codes/all_in_one_ai_import_opensearch_async_helper.zip
       FunctionName: all_in_one_ai_import_opensearch_async
       Tags:
         - Value: Name
@@ -5741,26 +5741,26 @@ Resources:
         - !Ref HelperLayer
 
   AllInOneAIImportOpensearchAsyncHelperFunctionRole:
-      Type: 'AWS::IAM::Role'
-      Properties:
-        AssumeRolePolicyDocument:
-          Version: 2012-10-17
-          Statement:
-            - Action:
-                - 'sts:AssumeRole'
-              Effect: Allow
-              Principal:
-                Service:
-                  - lambda.amazonaws.com
-        ManagedPolicyArns:
-          - !If
-            - Globally                                                  
-            - 'arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
-            - 'arn:aws-cn:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
-          - !If
-            - Globally                                                  
-            - 'arn:aws:iam::aws:policy/AmazonS3FullAccess'
-            - 'arn:aws-cn:iam::aws:policy/AmazonS3FullAccess'
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'sts:AssumeRole'
+            Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+      ManagedPolicyArns:
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
+          - 'arn:aws-cn:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/AmazonS3FullAccess'
+          - 'arn:aws-cn:iam::aws:policy/AmazonS3FullAccess'
   
   AllInOneAIImportOpensearchAsyncHelperFunctionAdditionalPermission:
     Type: 'AWS::IAM::Policy'
@@ -5783,7 +5783,7 @@ Resources:
     Properties:
       Code:
         S3Bucket: !Ref S3Bucket
-        S3Key: !Sub ${S3Key}codes/all_in_one_ai_import_opensearch_helper.zip
+        S3Key: !Sub ${S3Key}codes/all_in_one_ai_import_opensearch_async_helper.zip
       FunctionName: all_in_one_ai_import_opensearch_async_helper
       Tags:
         - Value: Name
@@ -5852,7 +5852,7 @@ Resources:
     Properties:
       Code:
         S3Bucket: !Ref S3Bucket
-        S3Key: !Sub ${S3Key}codes/all_in_one_ai_import_opensearch_helper.zip
+        S3Key: !Sub ${S3Key}codes/all_in_one_ai_import_opensearch_sync_helper.zip
       FunctionName: all_in_one_ai_import_opensearch_sync_helper
       Tags:
         - Value: Name
