@@ -29,4 +29,4 @@ Resources:
       FunctionResponseTypes: 
         - ReportBatchItemFailures
       EventSourceArn: !GetAtt AllInOneAIQueue.Arn
-      FunctionName: !Ref ImportOpensearchSyncHelperFunctionArn
+      FunctionName: !Ref ImportOpensearchSyncHelperFunction.Arn
