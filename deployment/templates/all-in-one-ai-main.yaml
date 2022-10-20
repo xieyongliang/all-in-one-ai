@@ -261,6 +261,7 @@ Resources:
     Properties:
       Parameters:
         ImportOpensearchSyncHelperFunctionArn: !GetAtt LAMBDA.Outputs.ImportOpensearchSyncHelperFunctionArn
+        ImportOpensearchHelperFunctionArn: !GetAtt LAMBDA.Outputs.ImportOpensearchSyncHelperFunctionArn
       TemplateURL: 
         !If
         - Globally
