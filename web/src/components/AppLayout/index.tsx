@@ -128,7 +128,9 @@ const AppLayout: FunctionComponent<IProps> = ( {
                 return -1;
         })
         .forEach((item) => {
-            items.push({text: item.name, type: SideNavigationItemType.LINK, href: `/imodels/${item.id}?tab=demo#sample`})
+            var extra = JSON.parse(item.extra)
+            if(extra['visible'] === undefined || extra['visible'] === 'true')
+                items.push({text: item.name, type: SideNavigationItemType.LINK, href: `/imodels/${item.id}?tab=demo#sample`})
         })
         setIndustrialModelItems(items)
      }, [industrialModels, t])

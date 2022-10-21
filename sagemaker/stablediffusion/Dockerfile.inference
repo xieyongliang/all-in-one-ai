@@ -1,0 +1,50 @@
+FROM nvcr.io/nvidia/pytorch:20.12-py3
+
+# Set a docker label to advertise multi-model support on the container
+LABEL com.amazonaws.sagemaker.capabilities.multi-models=true
+# Set a docker label to enable container to use SAGEMAKER_BIND_TO_PORT environment variable if present
+LABEL com.amazonaws.sagemaker.capabilities.accept-bind-to-port=true
+
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
+
+# Upgrade installed packages
+RUN apt-get update && apt-get upgrade -y && apt-get clean
+
+# Install necessary dependencies for MMS and SageMaker Inference Toolkit
+RUN apt-get -y install --no-install-recommends \
+    build-essential \
+    ca-certificates \
+    openjdk-8-jdk-headless \
+    curl \
+    vim \
+    && rm -rf /var/lib/apt/lists/
+
+# Install MXNet, MMS, and SageMaker Inference Toolkit to set up MMS
+RUN pip3 --no-cache-dir install mxnet \
+                                multi-model-server \
+                                sagemaker-inference \
+                                retrying \
+                                sagemaker \
+                                smdebug
+
+ENV PATH="/opt/ml/code:${PATH}"
+
+COPY pretrained/ /opt/ml/model/
+
+RUN mkdir -p /opt/ml/code
+
+# /opt/ml and all subdirectories are utilized by SageMaker, we use the /code subdirectory to store our user code.
+COPY model_handler.py /opt/ml/code/
+COPY requirements.txt /opt/ml/code/
+
+RUN pip install -r /opt/ml/code/requirements.txt
+
+COPY dockerd-entrypoint.py /usr/local/bin/dockerd-entrypoint.py
+RUN chmod +x /usr/local/bin/dockerd-entrypoint.py
+
+# Define an entrypoint script for the docker image
+ENTRYPOINT ["python", "/usr/local/bin/dockerd-entrypoint.py"]
+
+# Define command to be passed to the entrypoint
+CMD ["serve"]
