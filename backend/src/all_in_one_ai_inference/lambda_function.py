@@ -19,12 +19,14 @@ def lambda_handler(event, context):
 
         endpoint_name = event['queryStringParameters']['endpoint_name']
         post_process = event['queryStringParameters']['post_process'] if('post_process' in event['queryStringParameters']) else None
+        infer_type = event['queryStringParameters']['infer_type'] if('infer_type' in event['queryStringParameters']) else 'sync'
         keywords = json.loads(event['queryStringParameters']['keywords']) if('keywords' in event['queryStringParameters']) else None
 
         body = {
             "endpoint_name": endpoint_name,
             "content_type": content_type,
-            "payload": payload
+            "payload": payload,
+            "infer_type": infer_type
         }
         
         response = lambda_client.invoke(

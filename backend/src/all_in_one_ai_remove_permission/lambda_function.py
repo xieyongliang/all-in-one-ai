@@ -2,16 +2,23 @@ import boto3
 import json
 import traceback
 from botocore.exceptions import ClientError
+import helper
 
 sts_client = boto3.client('sts')
 lambda_client = boto3.client('lambda')
 source_account = sts_client.get_caller_identity().get('Account')
+import_jobs_table = 'all_in_one_ai_import_jobs'
+ddbh = helper.ddb_helper({'table_name': import_jobs_table})
 
 def lambda_handler(event, context):
     statement_id = event['industrial_model']
     function_name = event['lambda_function_arn']
 
     try:
+        key = {}
+        key['industrial_model'] = statement_id
+        ddbh.delete_item(key)
+
         response = lambda_client.remove_permission(
             FunctionName = function_name,
             StatementId = statement_id,

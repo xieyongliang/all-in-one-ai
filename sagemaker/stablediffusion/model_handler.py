@@ -3,7 +3,10 @@ import json
 from diffusers import StableDiffusionPipeline
 import boto3
 import sagemaker
-from datetime import datetime
+import uuid
+import torch
+from torch import autocast
+import io
 
 def get_bucket_and_key(s3uri):
     pos = s3uri.find('/', 5)
@@ -20,22 +23,43 @@ class ModelHandler(object):
     def transform_fn(self, data: any, context: any):
         print(data)
         print(context)
-        data = json.loads(data[0]['body'].decode())
-        payload = data['inputs']
+        input_data = json.loads(data[0]['body'].decode())
 
         sagemaker_session = sagemaker.Session()
         bucket = sagemaker_session.default_bucket()
-        default_output_s3uri = 's3://{0}/{1}/inference/output'.format(bucket, 'stylegan')
-        output_s3uri = payload['output_s3uri'] if 'output_s3uri' in payload else default_output_s3uri
+        default_output_s3uri = 's3://{0}/{1}/asyncinvoke/images/'.format(bucket, 'stablediffusion')
+        output_s3uri = input_data['output_s3uri'] if 'output_s3uri' in input_data else default_output_s3uri
 
-        image = self.model(payload).images[0]
-        bucket, key = get_bucket_and_key(output_s3uri)
-        data = image.tobytes("hex", "rgb")
-        self.s3_client.upload_fileobj(data, bucket, key)
+        repetitions = os.environ['repetitions'] if('repetitions' in os.environ) else 6
+        print('repetitions: ', repetitions)
+        prediction = []
 
-        result = {
-            'results': output_s3uri
-        }
+        try:
+            with autocast("cuda"):
+                for r in range(repetitions):
+                    image = self.model(input_data['inputs']).images[0]        
+                    bucket, key = get_bucket_and_key(output_s3uri)
+                    key = '{0}{1}.jpg'.format(key, uuid.uuid4())
+                    buf = io.BytesIO()
+                    image.save(buf, format='JPEG')
+                    self.s3_client.put_object(
+                        Body = buf.getvalue(), 
+                        Bucket = bucket, 
+                        Key = key, 
+                        ContentType = 'image/jpeg'
+                    )
+                    print('image: ', 's3://{0}/{1}'.format(bucket, key))
+                    prediction.append('s3://{0}/{1}'.format(bucket, key))
+        except Exception as e:
+            print(e)
+        
+        print('prediction: ', prediction)
+
+        result = json.dumps(
+            {
+                'result': prediction
+            }
+        )
 
         return [result]
 
@@ -43,10 +67,18 @@ class ModelHandler(object):
         """
         Load the model for inference
         """
-        pretrained = os.environ['pretrained']
-        print('Loading model from ', pretrained)
-        model = StableDiffusionPipeline.from_pretrained("{0}/{1}".format('/opt/ml/model', pretrained))
-        model.to("cuda")
+        model_name = os.environ['model_name']
+        model_args = json.loads(os.environ['model_args'])
+        print('model_name', model_name)
+        print('model_args', model_args)
+        torch.backends.cudnn.benchmark = True
+        torch.backends.cuda.matmul.allow_tf32 = True
+        if(model_args != None):
+            model = StableDiffusionPipeline.from_pretrained(model_name, **model_args)
+        else:
+            model = StableDiffusionPipeline.from_pretrained(model_name)
+        model = model.to("cuda")
+        model.enable_attention_slicing()
         self.model = model
     
     def handle(self, data, context):

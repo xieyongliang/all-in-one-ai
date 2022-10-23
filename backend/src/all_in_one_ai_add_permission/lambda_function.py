@@ -1,21 +1,30 @@
-from ast import Lambda
 import boto3
 import traceback
 import json
 from botocore.exceptions import ClientError
+import helper
 
 sts_client = boto3.client('sts')
 lambda_client = boto3.client('lambda')
 source_account = sts_client.get_caller_identity().get('Account')
+import_jobs_table = 'all_in_one_ai_import_jobs'
+ddbh = helper.ddb_helper({'table_name': import_jobs_table})
 
 def lambda_handler(event, context):
     statement_id = event['industrial_model']
+    input_s3uir = event['input_s3uri']
     output_s3uri = event['output_s3uri']
     function_name = event['lambda_function_arn']
 
     output_s3bucket, _ = get_bucket_and_key(output_s3uri)
 
     try:
+        params = {}
+        params['industrial_model'] = statement_id
+        params['input_s3uir'] = input_s3uir
+        params['output_s3uri'] = output_s3uri
+        ddbh.put_item(params)
+
         response = lambda_client.add_permission(
             Action='lambda:InvokeFunction',
             FunctionName = function_name,

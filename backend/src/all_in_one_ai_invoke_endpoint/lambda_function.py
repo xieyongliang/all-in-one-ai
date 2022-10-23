@@ -1,7 +1,13 @@
 import boto3
 from botocore.config import Config
+from sagemaker.predictor import Predictor
+from sagemaker.predictor_async import AsyncPredictor
+from sagemaker.serializers import JSONSerializer
+from sagemaker.deserializers import JSONDeserializer
 import base64
 import traceback
+
+s3_client = boto3.client('s3')
 
 config = Config(
     read_timeout=120,
@@ -17,16 +23,32 @@ def lambda_handler(event, context):
         endpoint_name = event['endpoint_name']
         content_type = event['content_type']
         payload = event['payload']
+        infer_type = event['infer_type']
         
         body = payload if(content_type == 'application/json') else base64.b64decode(payload)
 
-        response = sagemaker_runtime_client.invoke_endpoint(
-            EndpointName = endpoint_name,
-            ContentType = content_type,
-            Body = body)
+        if(infer_type == 'sync'):
+            response = sagemaker_runtime_client.invoke_endpoint(
+                EndpointName = endpoint_name,
+                ContentType = content_type,
+                Body = body)
+                
+            print(response)
+            body = response['Body'].read()
+        else:
+            predictor = Predictor(
+                endpoint_name,
+                serializer = JSONSerializer(),
+                deserializer = JSONDeserializer()
+            )
+            async_predictor = AsyncPredictor(
+                predictor,
+                name = endpoint_name)
+            response = async_predictor.predict_async(body)
 
-        print(response)
-        body = response['Body'].read()
+            print(response)
+            body = response.output_path
+
         print(body)
         return {
             'statusCode': 200,

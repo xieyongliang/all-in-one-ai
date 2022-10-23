@@ -1,11 +1,15 @@
 import json
 import boto3
 import traceback
+import sagemaker
 from sagemaker.huggingface.model import HuggingFaceModel
+from sagemaker.async_inference import AsyncInferenceConfig
 from utils import persist_meta
 from datetime import datetime
 
 lambda_client = boto3.client('lambda')
+sagemaker_session = sagemaker.Session()
+bucket = sagemaker_session.default_bucket()
 
 def lambda_handler(event, context):
     print(event)
@@ -26,6 +30,7 @@ def lambda_handler(event, context):
         py_version = event['body']['py_version']
         instance_type = event['body']['instance_type']
         instance_count = event['body']['instance_count']
+        deploy_type = event['body']['deploy_type'] if 'deploy_type' in event['body'] else 'sync'
 
         model = HuggingFaceModel(
             name = model_name,
@@ -38,11 +43,14 @@ def lambda_handler(event, context):
 	        py_version = py_version,
 	        env = hub
         )
-    
+
+        async_config = AsyncInferenceConfig(output_path='s3://{0}/{1}/asyncinvoke/out/'.format(bucket, industrial_model))
+
         predictor = model.deploy(
             endpoint_name = endpoint_name,
             instance_type = instance_type, 
             initial_instance_count = instance_count,
+            async_inference_config = async_config if deploy_type == 'async' else None,
             wait = False
         )
 

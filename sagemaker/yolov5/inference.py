@@ -47,7 +47,6 @@ def input_fn(request_body, request_content_type):
         return Image.open(io.BytesIO(bytes))
     else:
         return request_body
-
     
 def predict_fn(input_data, model):
     """

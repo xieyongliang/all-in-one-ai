@@ -34,7 +34,7 @@ const SampleDataForm: FunctionComponent<IProps>  = (
     }) => {
     const [ textItems, setTextItems ] = useState([]);
     const [ curTextItem, setCurTextItem ] = useState('');
-    const [ data, setData ] = useState('{}');
+    const [ data, setData ] = useState(type === 'json' ? '{}' : '');
     const [ textPage, setTextPage ] = useState(1);
     const [ textCount, setTextCount ] = useState(0);
     const [ loading, setLoading ] = useState(false);
@@ -128,7 +128,8 @@ const SampleDataForm: FunctionComponent<IProps>  = (
         <Stack>
             { renderImageList() }
             { type === 'chart' && <LocaChartlDataForm header={header} data={data} train_framework='mxnet' deploy_framework='mxnet'/> }
-            { type === 'json' && <LocalImageDataForm header={header} data={data} train_framework='mxnet' deploy_framework='mxnet'/> }
+            { type === 'json' && <LocalImageDataForm type='json' header={header} data={data} train_framework='generic' deploy_framework='generic'/> }
+            { type === 'text' && <LocalImageDataForm type='text' header={header} data={data} train_framework='generic' deploy_framework='generic'/> }
         </Stack>
     )
 }

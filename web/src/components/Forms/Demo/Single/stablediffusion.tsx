@@ -16,7 +16,7 @@ interface IProps {
     onAdvancedModeChange : (checked) => any;
 }
 
-const StyleGANDemoForm: FunctionComponent<IProps> = (
+const StableDiffusionDemoForm: FunctionComponent<IProps> = (
     {
         industrialModels,
         advancedMode,
@@ -58,8 +58,8 @@ const StyleGANDemoForm: FunctionComponent<IProps> = (
                     <Toggle label = {t('industrial_models.demo.advanced_mode')} checked={advancedMode} onChange={onAdvancedModeChange}/>
                 </FormField>
             </Container>
-            {demoOption === 'sample' && <SampleDataForm type='json' header={industrialModels.find((item) => item.id === params.id).name} train_framework='generic' deploy_framework='generic'/>}
-            {demoOption === 'local' && <LocalImageDataForm type='json' data='{}' header={industrialModels.find((item) => item.id === params.id).name} train_framework='generic' deploy_framework='generic'/>}
+            {demoOption === 'sample' && <SampleDataForm type='text' header={industrialModels.find((item) => item.id === params.id).name} train_framework='generic' deploy_framework='generic'/>}
+            {demoOption === 'local' && <LocalImageDataForm type='text' data='' header={industrialModels.find((item) => item.id === params.id).name} train_framework='generic' deploy_framework='generic'/>}
         </Stack>
     )
 }
@@ -70,4 +70,4 @@ const mapStateToProps = (state: AppState) => ({
 
 export default connect(
     mapStateToProps
-)(StyleGANDemoForm);
+)(StableDiffusionDemoForm);

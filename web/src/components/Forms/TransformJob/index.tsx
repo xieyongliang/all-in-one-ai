@@ -15,6 +15,7 @@ import { logOutput } from '../../Utils/Helper';
 interface IProps {
     industrialModels : IIndustrialModel[];
     header?: string;
+    task?: string;
     s3uri?: string;
     onClose?: ()=>any;
 }
@@ -247,14 +248,23 @@ const TransformJobForm: FunctionComponent<IProps> = (props) => {
         }
 
         setProcessing(true)
-        axios.post('/transformjob', body) 
+        if(props.task === undefined)
+            axios.post('/transformjob', body) 
+                .then((response) => {
+                    history.goBack()
+                }, (error) => {
+                    logOutput('error', error.response.data, undefined, error);
+                    setProcessing(false);
+                });
+        else
+            axios.post('/search/import', body) 
             .then((response) => {
-                history.goBack()
+                props.onClose()
             }, (error) => {
                 logOutput('error', error.response.data, undefined, error);
                 setProcessing(false);
             });
-    }
+}
 
     const onCancel = () => {
         if(props.onClose !== undefined)

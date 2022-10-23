@@ -23,6 +23,7 @@ import { ProjectSubType, ProjectType } from '../../../data/enums/ProjectType';
 
 interface IProps {
     industrialModels: IIndustrialModel[];
+    type,
     header: string;
     data: string;
     train_framework: string;
@@ -32,6 +33,7 @@ interface IProps {
 const LocalImageDataForm: FunctionComponent<IProps> = (
     {
         industrialModels,
+        type,
         header,
         data,
         train_framework,
@@ -102,13 +104,14 @@ const LocalImageDataForm: FunctionComponent<IProps> = (
         }
         if(id === 'formFieldIdInput') {
             setInput(event.target.value)
-            try {
-                JSON.parse(event.target.value)
-                setInvalidInput(false)
-            }
-            catch(e) {
-                setInvalidInput(true)
-            }
+            if(type === 'json')
+                try {
+                    JSON.parse(event.target.value)
+                    setInvalidInput(false)
+                }
+                catch(e) {
+                    setInvalidInput(true)
+                }
         }
         if(id === 'formFieldIdPage')
             setImagePage(event)
@@ -175,28 +178,72 @@ const LocalImageDataForm: FunctionComponent<IProps> = (
 
     const onRun = () => {
         setProcessing(true)
-        var options = {headers: {'content-type': 'application/json'}, params : {endpoint_name: selectedEndpoint.value}} ;
+        var infer_type = (type === 'json') ? 'sync' : 'async'
+        var options = {headers: {'content-type': 'application/json'}, params : {endpoint_name: selectedEndpoint.value, infer_type: infer_type}} ;
         try {
-            var jsonData = JSON.parse(input);
-            var buffer = {inputs: jsonData};
+            var data = type ==='json' ? JSON.parse(input) : input;
+            var buffer = {inputs: data};
             setProcessing(true);
             axios.post('/inference', buffer, options)
                 .then((response) => {
-                    var imageCount = response.data.length
-                    var imageItems = []
-                    response.data.forEach((s3uri) => {
-                        axios.get('/s3', {params : { s3uri : s3uri }})
-                        .then((response) => {
-                            imageItems.push(response.data.payload[0])
-                            if(imageItems.length === imageCount) {
-                                setImageCount(imageCount);
-                                setImageItems(imageItems)
-                                setProcessing(false);
-                            }
-                        }, (error) => {
-                            console.log(error)
+                    if(type === 'json') {
+                        var imageCount = response.data.length
+                        var imageItems = []
+                        response.data.forEach((s3uri) => {
+                            axios.get('/s3', {params : { s3uri : s3uri }})
+                                .then((response) => {
+                                    imageItems.push(response.data.payload[0])
+                                    if(imageItems.length === imageCount) {
+                                        setImageCount(imageCount);
+                                        setImageItems(imageItems)
+                                        setProcessing(false);
+                                    }
+                                }, (error) => {
+                                    console.log(error)
+                                })
                         })
-                    })
+                    }
+                    else {
+                        var outUri = response.data;
+                        const interval = setInterval(() => {
+                            axios.get('/s3', {params : { s3uri : outUri }})
+                                .then((response) => {
+                                    if(response.data.count > 0) {
+                                        clearInterval(interval);
+                                        var resultUri = response.data.payload[0].httpuri;  
+                                        axios.get('/_file/download', {params : {'uri' : encodeURIComponent(resultUri)} , responseType: 'text'})
+                                            .then((response) => {
+                                                var data = (response.data.constructor === Object) ? response.data : response.data[0];
+                                                var imageCount = data.result.length;
+                                                var imageItems = [];
+                                                if(imageCount > 0)
+                                                    data.result.forEach((imageUri) => {
+                                                        axios.get('/s3', {params : { s3uri : imageUri }})
+                                                            .then((response) => {
+                                                                imageItems.push(response.data.payload[0]);
+                                                                if(imageItems.length === imageCount) {
+                                                                    setImageCount(imageCount);
+                                                                    setImageItems(imageItems);
+                                                                    setProcessing(false);
+                                                                }
+                                                            }, (error) => {
+                                                                console.log(error)
+                                                            })
+                                                    })
+                                                else {
+                                                    setImageCount(imageCount);
+                                                    setImageItems(imageItems);
+                                                    setProcessing(false);
+                                                }
+                                            }, (error) => {
+                                                console.log(error)
+                                            })
+                                    }
+                                }, (error) => {
+                                    console.log(error)
+                                })
+                        }, 1000);
+                    }
                 }, (error) => {
                         logOutput('error', error.response.data, undefined, error);
                         setProcessing(false);

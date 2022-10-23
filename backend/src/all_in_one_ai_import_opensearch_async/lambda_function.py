@@ -168,6 +168,7 @@ def lambda_handler(event, context):
             timeout = 900
         ),
         inputs = {
+            'input_s3uri': input_s3uri,
             'output_s3uri': output_s3uri,
             'industrial_model': industrial_model,
             'lambda_function_arn': import_opensearch_async_helper_lambda_arn

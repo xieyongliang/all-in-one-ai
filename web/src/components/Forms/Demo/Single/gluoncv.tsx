@@ -564,6 +564,7 @@ const GluonCVDemoForm: FunctionComponent<IProps> = (
                     header = {t('industrial_models.demo.import_with_batchtransform')}
                     s3uri = {industrialModel.samples}
                     onClose = {() => {setVisibleImportImage(false)}}
+                    task = 'import'
                 />
             )
     }

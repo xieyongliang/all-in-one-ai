@@ -47,6 +47,7 @@ import { useTranslation } from "react-i18next";
 import { logOutput } from '../Utils/Helper';
 import GenericDemoForm from '../Forms/Demo/Single/generic';
 import StyleGAN2DemoForm from '../Forms/Demo/Single/stylegan';
+import StableDiffusionDemoFrom from '../Forms/Demo/Single/stablediffusion';
 
 interface IProps {
     industrialModels : IIndustrialModel[];
@@ -290,6 +291,15 @@ const IndustrialModels: FunctionComponent<IProps> = (
                 label: t('industrial_models.demos'),
                 id: 'demo',
                 content: <StyleGAN2DemoForm advancedMode={advancedMode} onAdvancedModeChange={onAdvancedModeChange}/>
+            }
+        ]     
+    }
+    else if(algorithm === 'stablediffusion'){
+        tabs = [
+            {
+                label: t('industrial_models.demos'),
+                id: 'demo',
+                content: <StableDiffusionDemoFrom advancedMode={advancedMode} onAdvancedModeChange={onAdvancedModeChange}/>
             }
         ]     
     }

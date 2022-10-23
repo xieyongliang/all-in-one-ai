@@ -5936,6 +5936,8 @@ Resources:
           - !Ref PrivateSubnet2
         SecurityGroupIds: 
           - !Ref SecurityGroup
+      Layers:
+        - !Ref HelperLayer
 
   AllInOneAIRemovePermissionFunctionRole:
     Type: 'AWS::IAM::Role'
@@ -5999,6 +6001,8 @@ Resources:
           - !Ref PrivateSubnet2
         SecurityGroupIds: 
           - !Ref SecurityGroup
+      Layers:
+        - !Ref HelperLayer
 
   AllInOneAICreateS3EventNotificationFunctionRole:
     Type: 'AWS::IAM::Role'
@@ -6239,6 +6243,8 @@ Resources:
           - !Ref PrivateSubnet2
         SecurityGroupIds: 
           - !Ref SecurityGroup
+      Layers:
+        - !Ref SageMakerLayer
 
   AllInOneAIListEndpointsFunctionRole:
     Type: 'AWS::IAM::Role'
