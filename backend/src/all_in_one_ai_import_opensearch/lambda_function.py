@@ -57,9 +57,9 @@ def lambda_handler(event, context):
                 'body': response['Payload'].read().decode('utf-8')
             }
         elif event['httpMethod'] == 'POST':
-            event_body = json.loads(event['body'])
+            body = json.loads(event['body'])
             
-            industrial_model = event_body['industrial_model']
+            industrial_model = body['industrial_model']
             index = industrial_model
             endpoint = os.environ['ES_ENDPOINT']
             es = Elasticsearch(endpoint)
@@ -69,7 +69,7 @@ def lambda_handler(event, context):
             response = lambda_client.invoke(
                 FunctionName = 'all_in_one_ai_import_opensearch_async',
                 InvocationType = 'Event',
-                Payload=json.dumps({'body' : event_body})
+                Payload=json.dumps({'body' : body})
             )
             
             return {
