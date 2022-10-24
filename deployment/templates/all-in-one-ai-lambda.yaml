@@ -5900,6 +5900,10 @@ Resources:
           - Globally                                                  
           - 'arn:aws:iam::aws:policy/AWSLambda_FullAccess'
           - 'arn:aws-cn:iam::aws:policy/AWSLambda_FullAccess'
+        - !If
+          - Globally
+          - 'arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess'
+          - 'arn:aws-cn:iam::aws:policy/AmazonDynamoDBFullAccess'
   
   AllInOneAIAddPermissionFunctionAdditionalPermission:
     Type: 'AWS::IAM::Policy'
@@ -5965,6 +5969,10 @@ Resources:
           - Globally                                                  
           - 'arn:aws:iam::aws:policy/AWSLambda_FullAccess'
           - 'arn:aws-cn:iam::aws:policy/AWSLambda_FullAccess'
+        - !If
+          - Globally
+          - 'arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess'
+          - 'arn:aws-cn:iam::aws:policy/AmazonDynamoDBFullAccess'
   
   AllInOneAIRemovePermissionFunctionAdditionalPermission:
     Type: 'AWS::IAM::Policy'
