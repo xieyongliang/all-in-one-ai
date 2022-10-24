@@ -5674,6 +5674,7 @@ Resources:
           - !Ref SecurityGroup
       Layers:
         - !Ref HelperLayer
+        - !Ref SageMakerLayer
 
   AllInOneAIImportOpensearchSyncFunctionRole:
     Type: 'AWS::IAM::Role'
