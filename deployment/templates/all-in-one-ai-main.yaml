@@ -248,7 +248,12 @@ Resources:
         SageMakerRole: !GetAtt IAM.Outputs.SageMakerRole
         CreatePipelineHelperLambdaArn: !GetAtt LAMBDA.Outputs.CreatePipelineHelperFunctionArn
         ChinaRegion: !Ref ChinaRegion
-      TemplateURL: 
+        AddPermissionFunctionArn: !GetAtt LAMBDA.Outputs.AllInOneAIAddPermissionFunctionArn
+        RemovePermissionFunctionArn: !GetAtt LAMBDA.Outputs.AllInOneAIRemovePermissionFunctionArn
+        CreateS3EventNotificationFunctionArn: !GetAtt LAMBDA.Outputs.AllInOneAICreateS3EventNotificationFunctionArn
+        DeleteS3EventNotificationFunctionArn: !GetAtt LAMBDA.Outputs.AllInOneAIDeleteS3EventNotificationFunctionArn
+        ImportOpensearchAsyncHelperFunctionArn: !GetAtt LAMBDA.Outputs.AllInOneAIImportOpensearchAsyncHelperFunctionArn
+      TemplateURL:
         !If
         - Globally
         - !Sub https://${S3Bucket}.s3.${AWS::Region}.amazonaws.com/${S3Key}templates/all-in-one-ai-ssm.yaml

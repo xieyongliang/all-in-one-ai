@@ -24,6 +24,26 @@ Parameters:
     Default: false
     AllowedValues: [ true, false ]
 
+  AddPermissionFunctionArn:
+    Type: String
+    Description: AddPermissionFunction Lambda Arn
+
+  RemovePermissionFunctionArn:
+    Type: String
+    Description: RemovePermissionFunction Lambda Arn
+
+  CreateS3EventNotificationFunctionArn:
+    Type: String
+    Description: CreateS3EventNotificationFunction Lambda Arn
+
+  DeleteS3EventNotificationFunctionArn:
+    Type: String
+    Description: DeleteS3EventNotificationFunction Lambda Arn
+
+  ImportOpensearchAsyncHelperFunctionArn:
+    Type: String
+    Description: ImportOpensearchAsyncHelperFunction Lambda Arn
+
 Conditions:
   Globally: !Equals [ false, !Ref ChinaRegion ]
 
@@ -371,3 +391,38 @@ Resources:
       Name: /all_in_one_ai/config/meta/algorithms/generic/industrialmodels
       Type: String
       Value: !Sub s3://${S3Bucket}/${S3Key}algorithms/generic/industrialmodels/
+
+  Parameter44:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /all_in_one_ai/config/meta/pipeline/add_permission_lambda_arn
+      Type: String
+      Value: !Ref AddPermissionFunctionArn
+
+  Parameter45:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /all_in_one_ai/config/meta/pipeline/remove_permission_lambda_arn
+      Type: String
+      Value: !Ref RemovePermissionFunctionArn
+
+  Parameter46:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /all_in_one_ai/config/meta/pipeline/create_event_notification_lambda_arn
+      Type: String
+      Value: !Ref CreateS3EventNotificationFunctionArn
+
+  Parameter47:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /all_in_one_ai/config/meta/pipeline/delete_event_notification_lambda_arn
+      Type: String
+      Value: !Ref DeleteS3EventNotificationFunctionArn
+
+  Parameter48:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /all_in_one_ai/config/meta/pipeline/import_opensearch_async_helper_lambda_arn
+      Type: String
+      Value: !Ref ImportOpensearchAsyncHelperFunctionArn
