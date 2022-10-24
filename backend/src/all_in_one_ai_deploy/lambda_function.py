@@ -286,7 +286,7 @@ def lambda_handler(event, context):
                     'entry_point': 'inference.py',
                     'source_dir': source_dir,
                     'py_version': 'py38',
-                    'framework_version': '1.9.0',
+                    'framework_version': '1.10',
                     'model_name': model_name,
                     'model_data': model_data_url,
                     'model_environment': model_environment,
