@@ -171,3 +171,19 @@ Resources:
         ReadCapacityUnits: "1"
         WriteCapacityUnits: "1"
       TableName: "all_in_one_ai_websocket_connection"
+
+  ImportJobsDBTable: 
+    Type: AWS::DynamoDB::Table
+    Properties: 
+      AttributeDefinitions: 
+        - 
+          AttributeName: "industrial_model"
+          AttributeType: "S"
+      KeySchema: 
+        - 
+          AttributeName: "industrial_model"
+          KeyType: "HASH"
+      ProvisionedThroughput: 
+        ReadCapacityUnits: "1"
+        WriteCapacityUnits: "1"
+      TableName: "all_in_one_ai_import_jobs"
