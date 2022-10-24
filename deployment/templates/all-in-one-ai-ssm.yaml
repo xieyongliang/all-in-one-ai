@@ -32,6 +32,18 @@ Parameters:
     Type: String
     Description: RemovePermissionFunction Lambda Arn
 
+  CreateS3EventNotificationFunctionArn:
+    Type: String
+    Description: CreateS3EventNotificationFunction Lambda Arn
+
+  DeleteS3EventNotificationFunctionArn:
+    Type: String
+    Description: DeleteS3EventNotificationFunction Lambda Arn
+
+  ImportOpensearchAsyncHelperFunctionArn:
+    Type: String
+    Description: ImportOpensearchAsyncHelperFunction Lambda Arn
+
 Conditions:
   Globally: !Equals [ false, !Ref ChinaRegion ]
 
@@ -393,3 +405,24 @@ Resources:
       Name: /all_in_one_ai/config/meta/pipeline/remove_permission_lambda_arn
       Type: String
       Value: !Ref RemovePermissionFunctionArn
+
+  Parameter46:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /all_in_one_ai/config/meta/pipeline/create_event_notification_lambda_arn
+      Type: String
+      Value: !Ref CreateS3EventNotificationFunctionArn
+
+  Parameter47:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /all_in_one_ai/config/meta/pipeline/delete_event_notification_lambda_arn
+      Type: String
+      Value: !Ref DeleteS3EventNotificationFunctionArn
+
+  Parameter48:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /all_in_one_ai/config/meta/pipeline/import_opensearch_async_helper_lambda_arn
+      Type: String
+      Value: !Ref ImportOpensearchAsyncHelperFunctionArn

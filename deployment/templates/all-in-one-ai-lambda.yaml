@@ -5795,10 +5795,10 @@ Resources:
       MemorySize: 2048
       Runtime: python3.9
       VpcConfig:
-        SubnetIds: 
+        SubnetIds:
           - !Ref PrivateSubnet1
           - !Ref PrivateSubnet2
-        SecurityGroupIds: 
+        SecurityGroupIds:
           - !Ref SecurityGroup
       Environment:
         Variables:
@@ -5820,18 +5820,18 @@ Resources:
                 - lambda.amazonaws.com
       ManagedPolicyArns:
         - !If
-          - Globally                                                  
+          - Globally
           - 'arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
           - 'arn:aws-cn:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
         - !If
-          - Globally                                                  
+          - Globally
           - 'arn:aws:iam::aws:policy/service-role/AWSLambdaRole'
           - 'arn:aws-cn:iam::aws:policy/service-role/AWSLambdaRole'
         - !If
-          - Globally                                                  
+          - Globally
           - 'arn:aws:iam::aws:policy/AmazonSQSFullAccess'
           - 'arn:aws-cn:iam::aws:policy/AmazonSQSFullAccess'
-  
+
   AllInOneAIImportOpensearchSyncHelperFunctionAdditionalPermission:
     Type: 'AWS::IAM::Policy'
     Properties:
@@ -6989,3 +6989,15 @@ Outputs:
   AllInOneAIRemovePermissionFunctionArn:
     Description: "AllInOneAIRemovePermissionFunction"
     Value: !GetAtt AllInOneAIRemovePermissionFunction.Arn
+
+  AllInOneAICreateS3EventNotificationFunctionArn:
+    Description: "AllInOneAICreateS3EventNotificationFunction"
+    Value: !GetAtt AllInOneAICreateS3EventNotificationFunction.Arn
+
+  AllInOneAIDeleteS3EventNotificationFunctionArn:
+    Description: "AllInOneAIDeleteS3EventNotificationFunction"
+    Value: !GetAtt AllInOneAIDeleteS3EventNotificationFunction.Arn
+
+  AllInOneAIImportOpensearchAsyncHelperFunctionArn:
+    Description: "AllInOneAIImportOpensearchAsyncHelperFunction"
+    Value: !GetAtt AllInOneAIImportOpensearchAsyncHelperFunction.Arn

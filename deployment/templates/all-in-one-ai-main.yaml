@@ -250,6 +250,9 @@ Resources:
         ChinaRegion: !Ref ChinaRegion
         AddPermissionFunctionArn: !GetAtt LAMBDA.Outputs.AllInOneAIAddPermissionFunctionArn
         RemovePermissionFunctionArn: !GetAtt LAMBDA.Outputs.AllInOneAIRemovePermissionFunctionArn
+        CreateS3EventNotificationFunctionArn: !GetAtt LAMBDA.Outputs.AllInOneAICreateS3EventNotificationFunctionArn
+        DeleteS3EventNotificationFunctionArn: !GetAtt LAMBDA.Outputs.AllInOneAIDeleteS3EventNotificationFunctionArn
+        ImportOpensearchAsyncHelperFunctionArn: !GetAtt LAMBDA.Outputs.AllInOneAIImportOpensearchAsyncHelperFunctionArn
       TemplateURL:
         !If
         - Globally
