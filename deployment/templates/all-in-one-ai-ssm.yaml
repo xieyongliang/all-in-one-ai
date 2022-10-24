@@ -24,6 +24,14 @@ Parameters:
     Default: false
     AllowedValues: [ true, false ]
 
+  AddPermissionFunctionArn:
+    Type: String
+    Description: AddPermissionFunction Lambda Arn
+
+  RemovePermissionFunctionArn:
+    Type: String
+    Description: RemovePermissionFunction Lambda Arn
+
 Conditions:
   Globally: !Equals [ false, !Ref ChinaRegion ]
 
@@ -371,3 +379,17 @@ Resources:
       Name: /all_in_one_ai/config/meta/algorithms/generic/industrialmodels
       Type: String
       Value: !Sub s3://${S3Bucket}/${S3Key}algorithms/generic/industrialmodels/
+
+  Parameter44:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /all_in_one_ai/config/meta/pipeline/add_permission_lambda_arn
+      Type: String
+      Value: !Ref AddPermissionFunctionArn
+
+  Parameter45:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /all_in_one_ai/config/meta/pipeline/remove_permission_lambda_arn
+      Type: String
+      Value: !Ref RemovePermissionFunctionArn

@@ -6982,3 +6982,10 @@ Outputs:
     Description: "The WSS Protocol URI to connect to"
     Value: !Sub wss://${ApiGatewayWebSocket}.execute-api.${AWS::Region}.amazonaws.com/${Stage}
 
+  AllInOneAIAddPermissionFunctionArn:
+    Description: "AllInOneAIAddPermissionFunction"
+    Value: !GetAtt AllInOneAIAddPermissionFunction.Arn
+
+  AllInOneAIRemovePermissionFunctionArn:
+    Description: "AllInOneAIRemovePermissionFunction"
+    Value: !GetAtt AllInOneAIRemovePermissionFunction.Arn
