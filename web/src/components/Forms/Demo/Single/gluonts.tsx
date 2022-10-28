@@ -58,8 +58,8 @@ const GluonTSDemoForm: FunctionComponent<IProps> = (
                     <Toggle label = {t('industrial_models.demo.advanced_mode')} checked={advancedMode} onChange={onAdvancedModeChange}/>
                 </FormField>
             </Container>
-            {demoOption === 'sample' && <SampleDataForm type='chart' header={industrialModels.find((item) => item.id === params.id).name} train_framework='pytorch' deploy_framework='pytorch'/>}
-            {demoOption === 'local' && <LocaChartlDataForm header={industrialModels.find((item) => item.id === params.id).name} data='{}' train_framework='pytorch' deploy_framework='pytorch'/>}
+            {demoOption === 'sample' && <SampleDataForm type='chart' infer_type='sync' header={industrialModels.find((item) => item.id === params.id).name} train_framework='mxnet' deploy_framework='mxnet'/>}
+            {demoOption === 'local' && <LocaChartlDataForm header={industrialModels.find((item) => item.id === params.id).name} data='{}' train_framework='mxnet' deploy_framework='mxnet'/>}
         </Stack>
     )
 }

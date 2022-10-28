@@ -1,5 +1,6 @@
 import json
 import boto3
+import base64
 import os
 import helper
 from botocore.exceptions import ClientError
@@ -15,9 +16,8 @@ def lambda_handler(event, context):
     industrial_model = event['queryStringParameters']['industrial_model']
     
     item = ddbh.get_item({'industrial_model': industrial_model})
-    input_s3uri = item['input_s3uri']
-    output_s3uri = item['output_s3uri']
-    input_bucket, input_key = get_bucket_and_key(input_s3uri)
+    input_s3uri = item['input_s3uri'] if(item != None) else None
+    output_s3uri = item['output_s3uri'] if(item != None) else None
 
     index = industrial_model
     endpoint = os.environ['ES_ENDPOINT']
@@ -71,14 +71,17 @@ def lambda_handler(event, context):
                 print(response)
                 payload = []
                 for x in range(k_neighbors):
-                    s3uri = response['hits']['hits'][x]['_source']['img_s3uri']
-                    image_s3uri = '{0}{1}'.format(input_s3uri, s3uri[len(output_s3uri) : -4])
-                    print(image_s3uri)
+                    if(input_s3uri == None and output_s3uri == None):
+                        image_s3uri = response['hits']['hits'][x]['_source']['img_s3uri']
+                    else:
+                        s3uri = response['hits']['hits'][x]['_source']['img_s3uri']
+                        image_s3uri = '{0}{1}'.format(input_s3uri, s3uri[len(output_s3uri) : -4])
+                        print(image_s3uri)
                     bucket, key = get_bucket_and_key(image_s3uri)
-                    
+                        
                     httpuri = get_presigned_url(bucket, key)
                     score = response['hits']['hits'][x]['_score']
-                
+                    
                     payload.append({
                         'httpuri': httpuri,
                         'score': score,

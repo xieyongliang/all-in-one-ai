@@ -23,7 +23,8 @@ import { ProjectSubType, ProjectType } from '../../../data/enums/ProjectType';
 
 interface IProps {
     industrialModels: IIndustrialModel[];
-    type,
+    infer_type : string,
+    with_init_image?: boolean,
     header: string;
     data: string;
     train_framework: string;
@@ -33,7 +34,8 @@ interface IProps {
 const LocalImageDataForm: FunctionComponent<IProps> = (
     {
         industrialModels,
-        type,
+        infer_type,
+        with_init_image,
         header,
         data,
         train_framework,
@@ -41,6 +43,7 @@ const LocalImageDataForm: FunctionComponent<IProps> = (
     }) => {
     const [ input, setInput ] = useState('{}');
     const [ invalidInput, setInvalidInput ] = useState(false);
+    const [ initImage, setInitImage ] = useState('');
     const [ endpointOptions, setEndpointOptions ] = useState([]);
     const [ selectedEndpoint, setSelectedEndpoint ] = useState<SelectOption>({});
     const [ sampleCode, setSampleCode ] = useState('');
@@ -104,13 +107,17 @@ const LocalImageDataForm: FunctionComponent<IProps> = (
         }
         if(id === 'formFieldIdInput') {
             setInput(event.target.value)
-            if(type === 'json')
-                try {
-                    JSON.parse(event.target.value)
-                    setInvalidInput(false)
+            try {
+                JSON.parse(event.target.value)
+                setInvalidInput(false)
+                if(with_init_image) {
+                    var init_image = JSON.parse(event.target.value).infer_args.init_image;
+                    if(with_init_image)
+                        setInitImage(init_image)
                 }
-                catch(e) {
-                    setInvalidInput(true)
+            }
+            catch(e) {
+                setInvalidInput(true)
                 }
         }
         if(id === 'formFieldIdPage')
@@ -118,7 +125,9 @@ const LocalImageDataForm: FunctionComponent<IProps> = (
     }
 
     useEffect(() => {
-        setInput(data)
+        setInput(data);
+        var event = {'target': {'value': data}};
+        onChange('formFieldIdInput', event);
     }, [data])
 
     useEffect(() => {
@@ -178,15 +187,14 @@ const LocalImageDataForm: FunctionComponent<IProps> = (
 
     const onRun = () => {
         setProcessing(true)
-        var infer_type = (type === 'json') ? 'sync' : 'async'
         var options = {headers: {'content-type': 'application/json'}, params : {endpoint_name: selectedEndpoint.value, infer_type: infer_type}} ;
         try {
-            var data = type ==='json' ? JSON.parse(input) : input;
+            var data = JSON.parse(input)
             var buffer = {inputs: data};
             setProcessing(true);
             axios.post('/inference', buffer, options)
                 .then((response) => {
-                    if(type === 'json') {
+                    if(infer_type === 'sync') {
                         var imageCount = response.data.length
                         var imageItems = []
                         response.data.forEach((s3uri) => {
@@ -269,6 +277,7 @@ const LocalImageDataForm: FunctionComponent<IProps> = (
                 </FormField>
                  <FormField controlId={uuidv4()} description={t('industrial_models.demo.input')}>
                     <Textarea onChange={(event) => onChange('formFieldIdInput', event)} value={input} invalid={invalidInput}/>
+                    <img src={initImage} />
                 </FormField>
                 {
                     imageCount > 0 &&

@@ -1,3 +1,4 @@
+import json
 import boto3
 from botocore.config import Config
 from sagemaker.predictor import Predictor
@@ -19,11 +20,13 @@ config = Config(
 sagemaker_runtime_client = boto3.client('sagemaker-runtime', config = config)
 
 def lambda_handler(event, context):
+    print(event)
+    
     try:
         endpoint_name = event['endpoint_name']
         content_type = event['content_type']
         payload = event['payload']
-        infer_type = event['infer_type']
+        infer_type = event['infer_type'] if 'infer_type' in event else 'sync'
         
         body = payload if(content_type == 'application/json') else base64.b64decode(payload)
 
@@ -36,6 +39,8 @@ def lambda_handler(event, context):
             print(response)
             body = response['Body'].read()
         else:
+            data = json.loads(payload)
+            print(data)
             predictor = Predictor(
                 endpoint_name,
                 serializer = JSONSerializer(),
@@ -44,7 +49,7 @@ def lambda_handler(event, context):
             async_predictor = AsyncPredictor(
                 predictor,
                 name = endpoint_name)
-            response = async_predictor.predict_async(body)
+            response = async_predictor.predict_async(data)
 
             print(response)
             body = response.output_path

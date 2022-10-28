@@ -48,6 +48,9 @@ const StableDiffusionDemoForm: FunctionComponent<IProps> = (
         )
     }
 
+    var industrialModel = industrialModels.find((item) => item.id === params.id);
+    var extra = industrialModel.extra;
+    var task = JSON.parse(extra).task === 'image-to-image' ? 'image-to-image' : 'text-to-image'
     return (
         <Stack>
             <Container title = {t('industrial_models.demo.demo_options')}>
@@ -58,8 +61,8 @@ const StableDiffusionDemoForm: FunctionComponent<IProps> = (
                     <Toggle label = {t('industrial_models.demo.advanced_mode')} checked={advancedMode} onChange={onAdvancedModeChange}/>
                 </FormField>
             </Container>
-            {demoOption === 'sample' && <SampleDataForm type='text' header={industrialModels.find((item) => item.id === params.id).name} train_framework='generic' deploy_framework='generic'/>}
-            {demoOption === 'local' && <LocalImageDataForm type='text' data='' header={industrialModels.find((item) => item.id === params.id).name} train_framework='generic' deploy_framework='generic'/>}
+            {demoOption === 'sample' && <SampleDataForm type='json' infer_type='async' with_init_image={task === 'image-to-image'} header={industrialModel.name} train_framework='pytorch' deploy_framework='pytorch'/>}
+            {demoOption === 'local' && <LocalImageDataForm infer_type='async' data='' with_init_image={task === 'image-to-image'} header={industrialModels.find((item) => item.id === params.id).name} train_framework='pytorch' deploy_framework='pytorch'/>}
         </Stack>
     )
 }

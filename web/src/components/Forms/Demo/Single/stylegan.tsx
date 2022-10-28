@@ -58,8 +58,8 @@ const StyleGANDemoForm: FunctionComponent<IProps> = (
                     <Toggle label = {t('industrial_models.demo.advanced_mode')} checked={advancedMode} onChange={onAdvancedModeChange}/>
                 </FormField>
             </Container>
-            {demoOption === 'sample' && <SampleDataForm type='json' header={industrialModels.find((item) => item.id === params.id).name} train_framework='generic' deploy_framework='generic'/>}
-            {demoOption === 'local' && <LocalImageDataForm type='json' data='{}' header={industrialModels.find((item) => item.id === params.id).name} train_framework='generic' deploy_framework='generic'/>}
+            {demoOption === 'sample' && <SampleDataForm type='json' infer_type='sync' header={industrialModels.find((item) => item.id === params.id).name} train_framework='generic' deploy_framework='generic'/>}
+            {demoOption === 'local' && <LocalImageDataForm infer_type='sync' data='{}' header={industrialModels.find((item) => item.id === params.id).name} train_framework='generic' deploy_framework='generic'/>}
         </Stack>
     )
 }
