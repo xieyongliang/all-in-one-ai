@@ -44,6 +44,7 @@ app.post('/_image', (req, res) => {
             }
             else {
                 fs.writeFileSync('images/' + file_name + '.jpg', buffer);
+                res.status(200);
                 res.send(file_name);
             }
         }
@@ -212,16 +213,21 @@ app.get('/_file/download', (req, res) => {
                 res.setHeader('content-type', response.headers['content-type']);
                 res.send(response.data);
             }, (error) => {
+                if(error.response !== undefined) {
                     res.status(error.response.status);
                     res.send(error.response.data);
-                    console.log(error);
                 }
-            )
+                else {
+                    res.status(400);
+                    res.send('web server error');
+                    console.log(error)
+                }
+            })
     }
     catch (e) {
         res.status(500)
         res.send(JSON.Stringify(e))
-        console.log(expect)
+        console.log(e)
     }
 })
 app.get('/_search/image', (req, res) => {
@@ -263,15 +269,19 @@ app.post('/_industrialmodel', (req, res) => {
                 body['file_content'] = buffer;
             }
 
-            options = {headers: {'content-type': 'application/json'}};
+            options = {
+                headers: {'content-type': 'application/json'}, 
+                maxBodyLength: Infinity,
+                maxContentLength: Infinity
+            };
             if(model_id === undefined) {
                 axios.post(ApiURL + '/industrialmodel', body, options)
                     .then((response) => {
                         res.send(response.data);
                     }, (error) => {
+                            console.log(error);
                             res.status(error.response.status);
                             res.send(error.response.data);
-                            console.log(error);
                         }
                     )
             }

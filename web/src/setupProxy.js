@@ -2,7 +2,6 @@ const { createProxyMiddleware } = require('http-proxy-middleware');
 const uuid = require('uuid');
 const fs = require('fs');
 const { default: axios } = require('axios');
-const url = require('url');
 var Jimp = require('jimp');
 
 const ApiURL = process.env.API_GATEWAY_PROD_ENDPOINT
@@ -43,6 +42,7 @@ module.exports = function(app) {
                 }
                 else {
                     fs.writeFileSync('images/' + file_name + '.jpg', buffer);
+                    res.status(200);
                     res.send(file_name);
                 }
             }
@@ -211,16 +211,21 @@ module.exports = function(app) {
                     res.setHeader('content-type', response.headers['content-type']);
                     res.send(response.data);
                 }, (error) => {
+                    if(error.response !== undefined) {
                         res.status(error.response.status);
                         res.send(error.response.data);
-                        console.log(error);
                     }
-                )
+                    else {
+                        res.status(400);
+                        res.send('web server error');
+                        console.log(error)
+                    }
+                })
         }
         catch (e) {
             res.status(500)
             res.send(JSON.Stringify(e))
-            console.log(expect)
+            console.log(e)
         }
     })
     app.get('/_search/image', (req, res) => {

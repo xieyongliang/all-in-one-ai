@@ -18,6 +18,8 @@ import { useTranslation } from "react-i18next";
 
 interface IProps {
     type: string;
+    infer_type: string;
+    with_init_image?: boolean;
     industrialModels: IIndustrialModel[];
     header: string;
     train_framework: string;
@@ -29,8 +31,12 @@ const PAGE_SIZE = 20;
 const SampleDataForm: FunctionComponent<IProps>  = (
     {
         type,
+        infer_type,
+        with_init_image,
         industrialModels,
         header,
+        train_framework,
+        deploy_framework
     }) => {
     const [ textItems, setTextItems ] = useState([]);
     const [ curTextItem, setCurTextItem ] = useState('');
@@ -127,9 +133,8 @@ const SampleDataForm: FunctionComponent<IProps>  = (
     return (
         <Stack>
             { renderImageList() }
-            { type === 'chart' && <LocaChartlDataForm header={header} data={data} train_framework='mxnet' deploy_framework='mxnet'/> }
-            { type === 'json' && <LocalImageDataForm type='json' header={header} data={data} train_framework='generic' deploy_framework='generic'/> }
-            { type === 'text' && <LocalImageDataForm type='text' header={header} data={data} train_framework='generic' deploy_framework='generic'/> }
+            { type === 'chart' && <LocaChartlDataForm header={header} data={data} train_framework={train_framework} deploy_framework={deploy_framework}/> }
+            { type !== 'chart' && <LocalImageDataForm with_init_image={with_init_image} infer_type={infer_type} header={header} data={data} train_framework={train_framework} deploy_framework={deploy_framework}/> }
         </Stack>
     )
 }
