@@ -193,10 +193,38 @@ def lambda_handler(event, context):
         else_steps = [fail_step_add_permission]
     )
 
+    output_status_code = LambdaOutput(output_name="statusCode", output_type=LambdaOutputTypeEnum.Integer)
+    output_body = LambdaOutput(output_name="body", output_type=LambdaOutputTypeEnum.String)
+
+    step_lambda_clean_event_notification_before_create = LambdaStep(
+        name='DeleteEventNotificationLambda',
+        lambda_func=Lambda(
+            function_arn=delete_event_notification_lambda_arn,
+            timeout=900
+        ),
+        inputs={
+            'industrial_model': industrial_model,
+            'output_s3uri': output_s3uri
+        },
+        outputs=[output_status_code, output_body]
+    )
+
+    cond_eq_clean_event_notification = ConditionEquals(
+        left=step_lambda_clean_event_notification_before_create.properties.Outputs['statusCode'],
+        right=200
+    )
+
+    step_cond_clean_event_notification = ConditionStep(
+        name="CreateEventNotificationCondition",
+        conditions=[cond_eq_clean_event_notification],
+        if_steps=[step_lambda_create_event_notification],
+        else_steps=[]
+    )
+
     output_1 = LambdaOutput(output_name="statusCode", output_type=LambdaOutputTypeEnum.Integer)
     output_2 = LambdaOutput(output_name="body", output_type=LambdaOutputTypeEnum.String)
 
-    step_lambda_create_event_notification= LambdaStep(
+    step_lambda_create_event_notification = LambdaStep(
         name='CreateEventNotificationLambda',
         lambda_func=Lambda(
             function_arn = create_event_notification_lambda_arn,
@@ -231,7 +259,7 @@ def lambda_handler(event, context):
 
     pipeline = Pipeline(
         name = pipeline_name,
-        steps = [step_lambda_create_event_notification, step_cond_create_event_notification]
+        steps = [step_cond_clean_event_notification, step_lambda_create_event_notification, step_cond_create_event_notification]
     )
 
     print(pipeline.definition())
