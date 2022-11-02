@@ -51,7 +51,7 @@ def lambda_handler(event, context):
                     if(statement_id in es_index_map):
                         es_index_map.pop(statement_id)
                         if(es_index_map != {}):
-                            environment['Variables']['ES_INDEX_MAP'] = json.loads(es_index_map)
+                            environment['Variables']['ES_INDEX_MAP'] = json.dumps(es_index_map)
                         else:
                             environment['Variables'].pop('ES_INDEX_MAP')
                         
