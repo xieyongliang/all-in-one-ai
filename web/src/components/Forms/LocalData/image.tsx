@@ -98,7 +98,7 @@ const LocalImageDataForm: FunctionComponent<IProps> = (
         return response.data
     }
 
-    const onChange = (id, event) => {
+    const onChange = useCallback((id, event) => {
         if(id === 'formFieldIdEndpoint') {
             setSelectedEndpoint({label: event.target.value, value: event.target.value})
         }
@@ -122,13 +122,13 @@ const LocalImageDataForm: FunctionComponent<IProps> = (
         }
         if(id === 'formFieldIdPage')
             setImagePage(event)
-    }
+    }, [with_init_image])
 
     useEffect(() => {
         setInput(data);
         var event = {'target': {'value': data}};
         onChange('formFieldIdInput', event);
-    }, [data])
+    }, [data, onChange])
 
     useEffect(() => {
         var cancel = false
@@ -277,7 +277,7 @@ const LocalImageDataForm: FunctionComponent<IProps> = (
                 </FormField>
                  <FormField controlId={uuidv4()} description={t('industrial_models.demo.input')}>
                     <Textarea onChange={(event) => onChange('formFieldIdInput', event)} value={input} invalid={invalidInput}/>
-                    <img src={initImage} />
+                    <img src={initImage} alt='' />
                 </FormField>
                 {
                     imageCount > 0 &&
