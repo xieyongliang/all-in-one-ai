@@ -8,7 +8,6 @@ RUN pip install opencv-python-headless
 RUN mkdir -p /opt/ml/code
 COPY stable-diffusion-webui /opt/ml/code/
 COPY serve /opt/ml/code
-RUN wget -O /opt/ml/code/models/Stable-diffusion/model.ckpt "https://drive.yerf.org/wl/?id=EBfTrmcCCUAGaQBXVIj5lJmEhjoP1tgl&mode=grid&download=1"
 
 WORKDIR /opt/ml/code
 

@@ -1,3 +1,5 @@
 import os
 
-os.system('bash webui.sh --port 80 --api --listen')
+ckpt = os.environ['ckpt'] if ('ckpt' in os.environ) else '/opt/ml/model/model.ckpt'
+
+os.system('bash webui.sh --port 80 --api --listen --ckpt {0}'.format(ckpt))
