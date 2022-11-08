@@ -1,0 +1,3 @@
+import os
+
+os.system('bash webui.sh --port 8080 --api --nowebui --listen --pureui')

@@ -1,0 +1,3 @@
+import os
+
+os.system('bash webui.sh --port 80 --api --listen')
