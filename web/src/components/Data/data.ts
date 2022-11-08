@@ -47,6 +47,7 @@ export const ALGORITHMS = [
     {label: 'KeyBERT', value: 'keybert', reference: 'https://github.com/MaartenGr/KeyBERT/blob/master/README.md',  type: 'single', trainable: false, inferable: true, batchannotation: false},
     {label: 'StyleGAN2', value: 'stylegan', reference: 'https://github.com/NVlabs/stylegan2-ada-pytorch/blob/main/README.md',  type: 'single', trainable: true, inferable: true, batchannotation: false},
     {label: 'StableDiffusion', value: 'stablediffusion', reference: 'https://github.com/CompVis/stable-diffusion/blob/main/README.md',  type: 'single', trainable: false, inferable: true, batchannotation: false},
+    {label: 'Stable Diffusion Web UI', value: 'stable-diffusion-webui', reference: 'https://github.com/AUTOMATIC1111/stable-diffusion-webui/blob/master/README.md',  type: 'single', trainable: false, inferable: true, batchannotation: false},
     {label: 'Generic', value: 'generic', type: 'single', trainable: false, inferable: false, batchannotation: true},
     {label: 'Yolov5PaddleOCR', value: 'yolov5paddleocr', type: 'mixed', trainable: false, inferable: false, batchannotation: false}
 ]

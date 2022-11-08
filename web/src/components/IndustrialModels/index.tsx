@@ -294,7 +294,7 @@ const IndustrialModels: FunctionComponent<IProps> = (
             }
         ]     
     }
-    else if(algorithm === 'stablediffusion'){
+    else if(algorithm === 'stablediffusion' || algorithm === 'stable-diffusion-webui'){
         tabs = [
             {
                 label: t('industrial_models.demos'),

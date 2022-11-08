@@ -426,3 +426,32 @@ Resources:
       Name: /all_in_one_ai/config/meta/pipeline/import_opensearch_async_helper_lambda_arn
       Type: String
       Value: !Ref ImportOpensearchAsyncHelperFunctionArn
+
+  Parameter49:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /all_in_one_ai/config/meta/algorithms/stable-diffusion-webui/industrialmodels
+      Type: String
+      Value: !Sub s3://${S3Bucket}/${S3Key}algorithms/stylegan/industrialmodels/
+
+  Parameter50:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /all_in_one_ai/config/meta/algorithms/stable-diffusion-webui/training_image
+      Type: String
+      Value:
+        !If
+        - Globally
+        - !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/all-in-one-ai-stable-diffusion-webui-training:latest
+        - !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com.cn/all-in-one-ai-stable-diffusion-webui-training:latest
+
+  Parameter51:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /all_in_one_ai/config/meta/algorithms/stable-diffusion-webui/inference_image
+      Type: String
+      Value:
+        !If
+        - Globally
+        - !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/all-in-one-ai-stable-diffusion-webui-inference:latest
+        - !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com.cn/all-in-one-ai-stable-diffusion-webui-inference:latest
