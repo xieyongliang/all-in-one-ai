@@ -28,7 +28,7 @@
     |---|---|---|
     | data | /opt/ml/input/data/cfg/data.yaml | Data configuration file |
     | cfg | yolov5s.yaml | Model configuration file |
-    | weight | yolov5s.pt | Model weight file (if it is not existed yet and it is standard weight file, it will download automatically | 
+    | weight | yolov5s | Model weight file (if it is not existed yet and it is standard weight file, it will download automatically | 
     |project | /opt/ml/model/ | Model project directory |
     | name | tutorial | Model name |
     | img | 640 | Image size |

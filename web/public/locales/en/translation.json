@@ -55,7 +55,7 @@
     },
     "track": {
       "title": "Track maintenance solution guidance",
-      "about_content": "Cameras installed on train underframe to detect crack running on East Rail Line(EAL). Photos captured by cameras will be used to detect track defects.",
+      "about_content": "Cameras installed on train underframe to detect crack running. Photos captured by cameras will be used to detect track defects.",
       "features_content": "1) Optimize the alarm data connection in AWS. 2) Alarm data sync to S3 for further data visualization development. 3) Develop ML models to meet the performance requirement. 4) Manage the whole ML pipeline include building , training and deploying through MLOps approach with continuous learning feature. 5) Web UI for showing the model result and allowing user to verify the result. "  
     },
     "about": "About solution guidance",
