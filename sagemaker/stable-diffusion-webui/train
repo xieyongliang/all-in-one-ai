@@ -1,0 +1,6 @@
+import os
+import sys
+
+train_task = sys.argv[1]
+train_args = sys.argv[2]
+os.system('bash webui.sh --port 8080 --listen --train --train-task {0} --train-args {1} --embedding-dir /mnt/efs/embedding --hypernetwork-dir /mnt/efs/hypernetwork'.format(train_task, train_args))
