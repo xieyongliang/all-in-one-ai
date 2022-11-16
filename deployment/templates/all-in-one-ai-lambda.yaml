@@ -312,7 +312,7 @@ Resources:
           - __Stage__: '*'
             __ApiId__: !Ref ApiGatewayRestApi
 
-  AllInOneAIAnnotationFunctionCatchAllPermissionProd2:
+  AllInOneAIAnnotationFunctionCatchAllPermissionProd3:
     Type: 'AWS::Lambda::Permission'
     Properties:
       Action: 'lambda:InvokeFunction'
