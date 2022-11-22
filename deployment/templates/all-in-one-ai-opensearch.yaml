@@ -46,6 +46,7 @@ Resources:
         InstanceType: !Ref InstanceType
       SnapshotOptions:
         AutomatedSnapshotStartHour: '0'
+      EngineVersion: 'OpenSearch_1.3'
       AccessPolicies:
         Version: 2012-10-17
         Statement:
