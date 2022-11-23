@@ -42,7 +42,7 @@ def lambda_handler(event, context):
                 if(key not in hyperparameters.keys()):
                     hyperparameters[key] = default_hyperparameters[key]
             
-            git_config = {'repo': 'https://github.com/ultralytics/yolov5.git', 'branch': 'master'}
+            git_config = {'repo': 'https://github.com/ultralytics/yolov5.git', 'branch': 'v6.2'}
             
             payload = {
                 'body': {
