@@ -87,7 +87,7 @@ fi
 
 if [ -z $option] || [ $option == "training" ]
 then
-    training_image=all-in-one-ai-stable-diffusion-training
+    training_image=all-in-one-ai-stable-diffusion-webui-training
     training_fullname=${account}.dkr.ecr.${region}.amazonaws.com/${training_image}:latest
 
     # If the repository doesn't exist in ECR, create it.

@@ -11,5 +11,3 @@ COPY serve /opt/ml/code
 COPY config.json /opt/ml/code
 
 WORKDIR /opt/ml/code
-
-
