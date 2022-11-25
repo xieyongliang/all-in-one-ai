@@ -300,9 +300,10 @@ def main():
     if final_epoch is not None and args.rank == 0:
         final_model_path = os.path.join(model_dir, 'final.pt')
         os.remove(final_model_path) if os.path.exists(final_model_path) else None
-        os.symlink('{}.pt'.format(final_epoch), final_model_path)
+        os.system('mv {0}/{1}.pt {0}/final'.format(model_dir, final_epoch))
+        os.system('rm {0}/*.pt {0}/*.yaml {0}/*.zip'.format(model_dir))
+        os.system('mv {0}/final {0}/final.pt'.format(model_dir))
         writer.close()
-
 
 if __name__ == '__main__':
     main()

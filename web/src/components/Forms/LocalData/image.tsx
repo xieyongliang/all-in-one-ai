@@ -275,9 +275,9 @@ const LocalImageDataForm: FunctionComponent<IProps> = (
                         <Button icon={'refresh'} loading={loading} onClick={onRefresh}>{t('industrial_models.common.refresh')}</Button>
                     </Inline>
                 </FormField>
-                 <FormField controlId={uuidv4()} description={t('industrial_models.demo.input')}>
+                <FormField controlId={uuidv4()} description={t('industrial_models.demo.input')}>
                     <Textarea onChange={(event) => onChange('formFieldIdInput', event)} value={input} invalid={invalidInput}/>
-                    <img src={initImage} alt='' />
+                    <img src={initImage} alt='' width='20%'/>
                 </FormField>
                 {
                     imageCount > 0 &&
