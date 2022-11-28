@@ -3,14 +3,15 @@ import boto3
 from decimal import Decimal
 from datetime import date, datetime
 import traceback
+import sagemaker
 import helper
-
-sagemaker_client = boto3.client('sagemaker')
 
 ssmh = helper.ssm_helper()
 role_arn = ssmh.get_parameter('/all_in_one_ai/config/meta/sagemaker_role_arn')
 
 lambda_client = boto3.client('lambda')
+sagemaker_session = sagemaker.Session()
+bucket = sagemaker_session.default_bucket()
 
 def lambda_handler(event, context):
     print(event)
@@ -303,6 +304,74 @@ def lambda_handler(event, context):
                 'outdir': '/opt/ml/model',
                 'gpus': 1,
                 'kimg': 1000
+            }
+
+            for key in default_hyperparameters.keys():
+                if(key not in hyperparameters.keys()):
+                    hyperparameters[key] = default_hyperparameters[key]
+
+            payload = {
+                'body': {
+                    'job_name': job_name,
+                    'industrial_model': industrial_model,
+                    'role': role_arn,
+                    'image_uri': image_uri,
+                    'instance_type': instance_type,
+                    'instance_count': instance_count,
+                    'hyperparameters': hyperparameters,
+                    'inputs': inputs
+                }
+            }
+
+            response = lambda_client.invoke(
+                FunctionName = 'all_in_one_ai_create_train_generic',
+                InvocationType = 'Event',
+                Payload=json.dumps(payload)
+            )
+        elif(algorithm == 'stable-diffusion-webui'):
+            image_uri = ssmh.get_parameter('/all_in_one_ai/config/meta/algorithms/{0}/training_image'.format(algorithm))
+
+            default_hyperparameters = {
+                'region': boto3.session.Session().region_name,
+                'embeddings-s3uri': 's3://{0}/stable-diffusion-webui/embeddings/'.format(bucket),
+                'train-task': 'embedding'
+            }
+
+            for key in default_hyperparameters.keys():
+                if(key not in hyperparameters.keys()):
+                    hyperparameters[key] = default_hyperparameters[key]
+
+            payload = {
+                'body': {
+                    'job_name': job_name,
+                    'industrial_model': industrial_model,
+                    'role': role_arn,
+                    'image_uri': image_uri,
+                    'instance_type': instance_type,
+                    'instance_count': instance_count,
+                    'hyperparameters': hyperparameters,
+                    'inputs': inputs
+                }
+            }
+
+            response = lambda_client.invoke(
+                FunctionName = 'all_in_one_ai_create_train_generic',
+                InvocationType = 'Event',
+                Payload=json.dumps(payload)
+            )
+        elif(algorithm == 'wenet'):       
+            image_uri = ssmh.get_parameter('/all_in_one_ai/config/meta/algorithms/{0}/training_image'.format(algorithm))
+
+            default_hyperparameters = {
+                'stage': '4',
+                'stop_stage': '4', 
+                'set': 'XS', 
+                'data': '/opt/ml/input/data/processed',
+                'dir':  '/opt/ml/model',
+                'giga_data_dir': '/opt/ml/input/data/raw-data',
+                'shards_dir':    '/opt/ml/input/data/shards',
+                'num_nodes':     str(instance_count),
+                'CUDA_VISIBLE_DEVICES': '0'
             }
 
             for key in default_hyperparameters.keys():

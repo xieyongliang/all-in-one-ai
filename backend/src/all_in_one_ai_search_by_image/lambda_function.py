@@ -7,7 +7,7 @@ from botocore.exceptions import ClientError
 from elasticsearch import Elasticsearch
 
 lambda_client = boto3.client('lambda')
-s3_client = boto3.client('s3', config=boto3.session.Config(s3={'addressing_style': 'virtual'}, signature_version='s3v4'))
+s3_client = boto3.client('s3')
 import_jobs_table = 'all_in_one_ai_import_jobs'
 ddbh = helper.ddb_helper({'table_name': import_jobs_table})
 

@@ -12,7 +12,7 @@ ssmh = helper.ssm_helper()
 models_table = ssmh.get_parameter('/all_in_one_ai/config/meta/industrial_model_table')
 ddbh = helper.ddb_helper({'table_name': models_table})
 
-s3_client = boto3.client('s3', config=boto3.session.Config(s3={'addressing_style': 'virtual'}, signature_version='s3v4'))
+s3_client = boto3.client('s3')
 s3_resource = boto3.resource('s3')
 
 def lambda_handler(event, context):
