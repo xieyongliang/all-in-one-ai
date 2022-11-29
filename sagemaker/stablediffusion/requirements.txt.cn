@@ -1,0 +1,8 @@
+-i https://pypi.tuna.tsinghua.edu.cn/simple
+diffusers
+transformers
+ftfy
+spacy
+boto3
+sagemaker
+nvgpu

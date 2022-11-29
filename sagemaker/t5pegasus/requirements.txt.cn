@@ -1,0 +1,10 @@
+-i https://pypi.tuna.tsinghua.edu.cn/simple
+h5py==2.10
+keras==2.3.1
+tensorflow
+bert4keras==0.10.0
+jieba
+tqdm
+rouge
+nltk
+openpyxl
