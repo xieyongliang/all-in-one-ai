@@ -2,8 +2,8 @@
 
 ## Fully update
 -   Delete CloudFormation stack from all-in-one-ai main stack
--   Delete the asserts uploaded to S3 URI.
--   tart a fresh deployment
+-   Delete the assets uploaded to S3 URI.
+-   Start a fresh deployment
 -   Please refer to quick deployment section in all-in-one-ai-deployment-guide.
 
 ##	Partial update
