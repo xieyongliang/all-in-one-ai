@@ -3816,6 +3816,7 @@ Resources:
           - !Ref SecurityGroup
       Layers:
         - !Ref HelperLayer
+        - !Ref SageMakerLayer
 
   AllInOneAITrainFunctionCatchAllPermissionProd1:
     Type: 'AWS::Lambda::Permission'

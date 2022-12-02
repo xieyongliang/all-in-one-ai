@@ -334,6 +334,7 @@ def lambda_handler(event, context):
             default_hyperparameters = {
                 'region': boto3.session.Session().region_name,
                 'embeddings-s3uri': 's3://{0}/stable-diffusion-webui/embeddings/'.format(bucket),
+                'hypernetwork-s3uri': 's3://{0}/stable-diffusion-webui/hypernetwork/'.format(bucket),
                 'train-task': 'embedding'
             }
 

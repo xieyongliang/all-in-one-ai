@@ -38,14 +38,14 @@ def model_fn(model_dir):
 
     if(task == 'text-to-image'):
         if(model_args != None):
-            model = StableDiffusionPipeline.from_pretrained(model_name, **model_args)
+            model = StableDiffusionPipeline.from_pretrained(model_name, **model_args, torch_dtype=torch.float16)
         else:
-            model = StableDiffusionPipeline.from_pretrained(model_name)
+            model = StableDiffusionPipeline.from_pretrained(model_name, torch_dtype=torch.float16)
     else:
         if(model_args != None):
-            model = StableDiffusionImg2ImgPipeline.from_pretrained(model_name, **model_args)
+            model = StableDiffusionImg2ImgPipeline.from_pretrained(model_name, **model_args, torch_dtype=torch.float16)
         else:
-            model = StableDiffusionImg2ImgPipeline.from_pretrained(model_name)
+            model = StableDiffusionImg2ImgPipeline.from_pretrained(model_name,torch_dtype=torch.float16)
 
     model = model.to("cuda")
     model.enable_attention_slicing()

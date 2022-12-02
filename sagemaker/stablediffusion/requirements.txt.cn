@@ -6,3 +6,5 @@ spacy
 boto3
 sagemaker
 nvgpu
+accelerate
+scipy
