@@ -48,6 +48,7 @@ import { logOutput } from '../Utils/Helper';
 import GenericDemoForm from '../Forms/Demo/Single/generic';
 import StyleGAN2DemoForm from '../Forms/Demo/Single/stylegan';
 import StableDiffusionDemoFrom from '../Forms/Demo/Single/stablediffusion';
+import DummyForm from '../Forms/Demo/Dummy'
 
 interface IProps {
     industrialModels : IIndustrialModel[];
@@ -294,7 +295,7 @@ const IndustrialModels: FunctionComponent<IProps> = (
             }
         ]     
     }
-    else if(algorithm === 'stablediffusion' || algorithm === 'stable-diffusion-webui'){
+    else if(algorithm === 'stablediffusion'){
         tabs = [
             {
                 label: t('industrial_models.demos'),
@@ -308,7 +309,7 @@ const IndustrialModels: FunctionComponent<IProps> = (
             {
                 label: t('industrial_models.demos'),
                 id: 'demo',
-                content: <div>{t('industrial_models.demo.unsupported')}</div>
+                content: <DummyForm advancedMode={advancedMode} onAdvancedModeChange={onAdvancedModeChange}/>
             }
         ];
     }
