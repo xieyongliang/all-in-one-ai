@@ -9,15 +9,20 @@ parser.add_argument('--embeddings-s3uri', default='', type=str, help='Embeddings
 parser.add_argument('--hypernetwork-s3uri', default='', type=str, help='Hypernetwork S3Uri')
 parser.add_argument('--ckpt', default='/opt/ml/input/models/model.ckpt', type=str, help='SD model')
 parser.add_argument('--region-name', type=str, help='Region Name')
+parser.add_argument('--username', default='', type=str, help='Username')
+parser.add_argument('--api-endpoint', default='', type=str, help='API Endpoint')
 
 args = parser.parse_args()
 
-cmd = "bash webui.sh --port 8080 --listen --train --train-task {0} --train-args '{1}' --embeddings-dir /opt/ml/model --hypernetwork-dir /opt/ml/model --ckpt {2} --region-name {3}".format(args.train_task, args.train_args, args.ckpt, args.region_name)
+cmd = "bash webui.sh --port 8080 --listen --train --train-task {0} --train-args '{1}' --embeddings-dir /opt/ml/model --hypernetwork-dir /opt/ml/model --ckpt {2} --region-name {3} --api-endpoint {4}".format(args.train_task, args.train_args, args.ckpt, args.region_name, args.api_endpoint)
 
 if args.embeddings_s3uri != '':
     cmd = '{0} --embeddings-s3uri {1}'.format(cmd, args.embeddings_s3uri)
 
 if args.hypernetwork_s3uri != '':
     cmd = '{0} --hypernetwork-s3uri {1}'.format(cmd, args.hypernetwork_s3uri)
+    
+if args.username != '':
+    cmd = '{0} --username {1}'.format(cmd, args.username)
 
 os.system(cmd)
