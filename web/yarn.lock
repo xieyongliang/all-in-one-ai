@@ -13092,6 +13092,13 @@
     "@babel/runtime" "^7.14.5"
     "html-parse-stringify" "^3.0.1"
 
+"react-iframe@latest":
+  "integrity" "sha512-F4cQJGs3ydaG6fJWfuz9yLwOU0Trzl6kttXuUG+vYwosH8enOOFxZWEDQCSbNVO8ayjfYZeqLxEvdvcsSy4GvA=="
+  "resolved" "https://registry.npmjs.org/react-iframe/-/react-iframe-1.8.5.tgz"
+  "version" "1.8.5"
+  dependencies:
+    "object-assign" "^4.1.1"
+
 "react-image-marker@latest":
   "integrity" "sha512-HFrzKVnX/hgZqHlxwV7XQNiyMRowD1IAnbsf4dZCEuSzGlGHxAv+sCv/AU1VHHVxFxoHubNL/xYNpGQfgtX67A=="
   "resolved" "https://registry.npmjs.org/react-image-marker/-/react-image-marker-1.2.0.tgz"

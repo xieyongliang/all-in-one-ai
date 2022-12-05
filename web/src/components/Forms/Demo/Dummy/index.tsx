@@ -1,6 +1,6 @@
-import { FunctionComponent, useEffect, useState } from 'react';
+import { FunctionComponent, useEffect, useRef, useState } from 'react';
 import { useHistory, useParams } from 'react-router-dom';
-import { Container, Stack, Toggle, Link, Inline, Button, FormField } from 'aws-northstar';
+import { Container, Toggle, Link, Inline, Button, FormField } from 'aws-northstar';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { github } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 import JSZip from 'jszip';
@@ -11,6 +11,7 @@ import { AppState } from '../../../../store';
 import { connect } from 'react-redux';
 import { v4 as uuidv4 } from 'uuid';
 import { IIndustrialModel } from '../../../../store/industrialmodels/reducer';
+import Iframe from 'react-iframe'
 
 import '../index.scss'
 import { useTranslation } from "react-i18next";
@@ -32,8 +33,20 @@ const DummyForm: FunctionComponent<IProps> = (props) => {
     
     var params : PathParams = useParams();
 
+    const[ width, setWidth ] = useState(0);
+
+    const ref = useRef(null);
+
+    const onLoad = () => {
+        var offsetWidth = ref.current.parentElement.offsetWidth;
+        console.log(offsetWidth - 30)
+        setWidth(offsetWidth - 30);
+    }
+
     var industrialModel = props.industrialModels.find((item) => item.id === params.id);
     var algorithm = industrialModel.algorithm;
+    var extra = industrialModel.extra
+    var href = JSON.parse(extra).href
     var trainable = ALGORITHMS.find((item) => item.value === algorithm).trainable;
     var inferable = ALGORITHMS.find((item) => item.value === algorithm).inferable;
 
@@ -100,22 +113,36 @@ const DummyForm: FunctionComponent<IProps> = (props) => {
         )
     }
 
+    console.log(width)
+
     const renderDemoOptions = () => {
         return (
             <Container title = {t('industrial_models.demo.demo_options')}>
                 <FormField controlId={uuidv4()}>
                     <Toggle label = {t('industrial_models.demo.advanced_mode')} checked={props.advancedMode} onChange={props.onAdvancedModeChange}/>
+                    {
+                        href !== undefined &&
+                        <Iframe url={href}
+                            width={width.toString()}
+                            height="400"
+                            id=""
+                            className=""
+                            display="block"
+                            position="relative"
+                            frameBorder={1}
+                        />
+                    }
                 </FormField>
             </Container>
         )
     }
 
     return (
-        <Stack>
+        <div ref={ref} onLoad={onLoad}>
             { renderDemoOptions() }
             { renderQuickStart() }
             { renderSampleCode() }
-        </Stack>
+        </div>
     )
 }
 

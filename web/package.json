@@ -70,7 +70,8 @@
     "react-i18next": "latest",
     "i18next-http-backend": "latest",
     "i18next": "latest",
-    "react-use-websocket": "latest"
+    "react-use-websocket": "latest",
+    "react-iframe": "latest"
   },
   "devDependencies": {
     "@types/file-saver": "^2.0.3",
