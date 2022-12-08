@@ -3,12 +3,15 @@ import boto3
 from decimal import Decimal
 from datetime import date, datetime
 import traceback
+import sagemaker
+import os
 import helper
 
 ssmh = helper.ssm_helper()
 role_arn = ssmh.get_parameter('/all_in_one_ai/config/meta/sagemaker_role_arn')
-
 lambda_client = boto3.client('lambda')
+sagemaker_session = sagemaker.Session()
+bucket = sagemaker_session.default_bucket()
 
 def lambda_handler(event, context):
     print(event)
@@ -304,7 +307,16 @@ def lambda_handler(event, context):
             )
         elif(algorithm == 'stable-diffusion-webui'):
             image_uri = ssmh.get_parameter('/all_in_one_ai/config/meta/algorithms/{0}/inference_image'.format(algorithm))
-            
+            if not model_environment:
+                model_environment = {}
+
+            if 'embeddings_s3uri' not in model_environment:
+                model_environment['embeddings_s3uri'] = 's3://{0}/stable-diffusion-webui/embeddings/'.format(bucket)
+            if 'hypernetwork_s3uri' not in model_environment:
+                model_environment['hypernetwork_s3uri'] = 's3://{0}/stable-diffusion-webui/hypernetwork/'.format(bucket)
+            if 'api_endpoint' not in model_environment:
+                model_environment['api_endpoint'] = ssmh.get_parameter('/all_in_one_ai/config/meta/api_endpoint')
+
             payload = {
                 'body': {
                     'industrial_model': industrial_model,

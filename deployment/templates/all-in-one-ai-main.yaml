@@ -253,6 +253,7 @@ Resources:
         CreateS3EventNotificationFunctionArn: !GetAtt LAMBDA.Outputs.AllInOneAICreateS3EventNotificationFunctionArn
         DeleteS3EventNotificationFunctionArn: !GetAtt LAMBDA.Outputs.AllInOneAIDeleteS3EventNotificationFunctionArn
         ImportOpensearchAsyncHelperFunctionArn: !GetAtt LAMBDA.Outputs.AllInOneAIImportOpensearchAsyncHelperFunctionArn
+        ApiGatewayProdEndpoint: !GetAtt LAMBDA.Outputs.ApiGatewayProdEndpoint
       TemplateURL:
         !If
         - Globally
