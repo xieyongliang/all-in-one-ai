@@ -335,8 +335,14 @@ def lambda_handler(event, context):
                 'region': boto3.session.Session().region_name,
                 'embeddings-s3uri': 's3://{0}/stable-diffusion-webui/embeddings/'.format(bucket),
                 'hypernetwork-s3uri': 's3://{0}/stable-diffusion-webui/hypernetwork/'.format(bucket),
-                'train-task': 'embedding'
+                'train-task': 'embedding',
+                'api_endpoint': ssmh.get_parameter('/all_in_one_ai/config/meta/api_endpoint')
             }
+
+            if 'embeddings' not in inputs:
+                inputs['embeddings'] = 's3://{0}/stable-diffusion-webui/embeddings/'.format(bucket)
+            if 'hypernetwork' not in inputs:
+                inputs['embeddings'] = 's3://{0}/stable-diffusion-webui/hypernetwork/'.format(bucket)
 
             for key in default_hyperparameters.keys():
                 if(key not in hyperparameters.keys()):

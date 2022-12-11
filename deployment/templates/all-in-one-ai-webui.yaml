@@ -6,21 +6,9 @@ Parameters:
     Type: AWS::EC2::VPC::Id
     Description: Select a VPC that allows instances to access the Internet.
   
-  PublicSubnets:
-    Type: List<AWS::EC2::Subnet::Id>
-    Description: Select at least two public subnets in your selected VPC.
-  
-  PrivateSubnets:
-    Type: List<AWS::EC2::Subnet::Id>
-    Description: Select at least two private subnets in your selected VPC.
-
   ApiGatewayProdEndpoint:
     Type: String
     Description: API Prod stage endpoint
-
-  WebSocketGatewayProdEndpoint:
-    Type: String
-    Description: WebSocket Prod stage endpoint  
 
   DomainName:
     Type: String
@@ -29,22 +17,6 @@ Parameters:
   Certificate:
     Type: String
     Description: Certificate of ALB
-
-  UserPool:
-    Type: String
-    Description: UserPool Id
-
-  UserPoolClient:
-    Type: String
-    Description: UserPoolClient Id
-
-  UserPoolDomain:
-    Type: String
-    Description: Endpoint of UserPoolDomain
-
-  CognitoRegion:
-    Type: String
-    Description: Cognito Region
 
   ChinaRegion: 
     Description: Check if the stack to be in CN Region
@@ -72,8 +44,8 @@ Resources:
     Properties:
       GroupId: !Ref EcsSecurityGroup
       IpProtocol: tcp
-      FromPort: 3000
-      ToPort: 3000
+      FromPort: 8080
+      ToPort: 8080
       SourceSecurityGroupId: !Ref AlbSecurityGroup      
  
   AlbSecurityGroup:
@@ -106,7 +78,7 @@ Resources:
     Type: AWS::Logs::LogGroup
     Properties:
       RetentionInDays: 14
-  
+
   ExecutionRole:
     Type: AWS::IAM::Role
     Properties:
@@ -130,48 +102,36 @@ Resources:
       Family: !Join 
         - ''
         - - !Ref 'AWS::StackName'
-          - '-portal'
+          - '-stable-diffusion-webui'
       NetworkMode: awsvpc
       RequiresCompatibilities:
         - FARGATE
-      Cpu: '2048'
-      Memory: '4096'
-      ExecutionRoleArn: !GetAtt ExecutionRole.Arn
+      Cpu: '16384'
+      Memory: '32768'
+      ExecutionRoleArn: !Ref ExecutionRole
+      EphemeralStorage: 
+         SizeInGiB: 200
       ContainerDefinitions:
-        - Name: web-app
-          Cpu: '1024'
+        - Name: webapp
+          Cpu: '16384'
           Essential: 'true'
           Image: 
             !If
             - Globally
-            - !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/all-in-one-ai-web:latest
-            - !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com.cn/all-in-one-ai-web:latest
-          Memory: '4096'
+            - !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/all-in-one-ai-stable-diffusion-webui:latest
+            - !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com.cn/all-in-one-ai-stable-diffusion-webui:latest
+          Memory: '32768'
           LogConfiguration:
             LogDriver: awslogs
             Options:
               awslogs-group: !Ref CloudwatchLogsGroup
               awslogs-region: !Ref 'AWS::Region'
-              awslogs-stream-prefix: all-in-one-ai-web
+              awslogs-stream-prefix: all-in-one-ai-stable-diffusion-webui
           PortMappings:
-            - ContainerPort: 3000
+            - ContainerPort: 8080
           Environment:
-            - Name: API_GATEWAY_PROD_ENDPOINT
+            - Name: api_endpoint
               Value: !Ref ApiGatewayProdEndpoint
-            - Name: WEBSOCKET_GATEWAY_PROD_ENDPOINT
-              Value: !Ref WebSocketGatewayProdEndpoint
-            - Name: UserPool
-              Value: !Ref UserPool
-            - Name: UserPoolClient
-              Value: !Ref UserPoolClient
-            - Name: UserPoolDomain
-              Value: !Ref UserPoolDomain
-            - Name: CognitoRegion
-              Value: !Ref CognitoRegion
-            - Name: CallbackURL
-              Value: !Sub https://${DomainName}/callback
-            - Name: LogoutURL
-              Value: !Sub https://${DomainName}
 
   ECSALB:
     Type: 'AWS::ElasticLoadBalancingV2::LoadBalancer'
@@ -218,8 +178,8 @@ Resources:
       HealthCheckProtocol: HTTP
       HealthCheckTimeoutSeconds: 5
       HealthyThresholdCount: 2
-      Name: WEBECSTG
-      Port: 3000
+      Name: WEBUIECSTG
+      Port: 8080
       Protocol: HTTP
       TargetType: ip
       UnhealthyThresholdCount: 2
@@ -233,10 +193,10 @@ Resources:
       Cluster: !Ref ECSCluster
       LaunchType: FARGATE
       DesiredCount: 1
-      HealthCheckGracePeriodSeconds: 120
+      HealthCheckGracePeriodSeconds: 1200
       LoadBalancers:
         - ContainerName: web-app
-          ContainerPort: 3000
+          ContainerPort: 8080
           TargetGroupArn: !Ref ECSTG
       TaskDefinition: !Ref Taskdefinition
       NetworkConfiguration:
@@ -253,10 +213,10 @@ Resources:
       Cluster: !Ref ECSCluster
       LaunchType: FARGATE
       DesiredCount: 1
-      HealthCheckGracePeriodSeconds: 120
+      HealthCheckGracePeriodSeconds: 1200
       LoadBalancers:
         - ContainerName: web-app
-          ContainerPort: 3000
+          ContainerPort: 8080
           TargetGroupArn: !Ref ECSTG
       TaskDefinition: !Ref Taskdefinition
       NetworkConfiguration:
@@ -267,5 +227,5 @@ Resources:
 
 Outputs:
   DNSName:
-    Description: Web ALB DNS Name
+    Description: Webui ALB DNS Name
     Value: !GetAtt ECSALB.DNSName
