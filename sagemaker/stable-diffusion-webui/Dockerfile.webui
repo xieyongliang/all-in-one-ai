@@ -8,7 +8,6 @@ RUN pip install opencv-python-headless
 RUN mkdir -p /opt/ml/code
 COPY stable-diffusion-webui /opt/ml/code/
 COPY webui /opt/ml/code
-COPY config.json /opt/ml/code
 
 WORKDIR /opt/ml/code
 

@@ -4,7 +4,7 @@ ckpt = os.environ['ckpt'] if ('ckpt' in os.environ) else '/opt/ml/model/model.ck
 embeddings_s3uri = os.environ['embeddings_s3uri'] if 'embeddings_s3uri' in os.environ else ''
 hypernetwork_s3uri = os.environ['hypernetwork_s3uri'] if 'hypernetwork_s3uri' in os.environ else ''
 
-cmd = "bash webui.sh --nowebui --api --listen --port 8080 --ckpt {0}".format(ckpt)
+cmd = "bash webui.sh --nowebui --api --listen --port 8080 --ckpt-dir /opt/ml/model/".format(ckpt)
 
 if embeddings_s3uri != '':
     cmd = '{0} --embeddings-s3uri {1}'.format(cmd, embeddings_s3uri)
