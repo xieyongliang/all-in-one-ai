@@ -3727,7 +3727,7 @@ Resources:
   ApiGatewayResourceSD:
     Type: AWS::ApiGateway::Resource
     Properties:
-      ParentId: !GetAtt ApiGatewayRestApi.ResourceId
+      ParentId: !GetAtt ApiGatewayRestApi.RootResourceId
       PathPart: 'sd'
       RestApiId: !Ref ApiGatewayRestApi 
 
