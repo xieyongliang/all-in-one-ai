@@ -3727,14 +3727,14 @@ Resources:
   ApiGatewayResourceSD:
     Type: AWS::ApiGateway::Resource
     Properties:
-      ParentId: !GetAtt ApiGatewayRestApi.RootResourceId
+      ParentId: !GetAtt ApiGatewayRestApi.ResourceId
       PathPart: 'sd'
       RestApiId: !Ref ApiGatewayRestApi 
 
   ApiGatewayResourceSDIndustrialModel:
     Type: AWS::ApiGateway::Resource
     Properties:
-      ParentId: !GetAtt ApiGatewayResourceSD.RootResourceId
+      ParentId: !GetAtt ApiGatewayResourceSD.ResourceId
       PathPart: 'industrialmodel'
       RestApiId: !Ref ApiGatewayRestApi 
 
@@ -3839,7 +3839,7 @@ Resources:
   ApiGatewayResourceSDModel:
     Type: AWS::ApiGateway::Resource
     Properties:
-      ParentId: !GetAtt ApiGatewayResourceSD.RootResourceId
+      ParentId: !GetAtt ApiGatewayResourceSD.ResourceId
       PathPart: 'model'
       RestApiId: !Ref ApiGatewayRestApi 
 
@@ -3944,7 +3944,7 @@ Resources:
   ApiGatewayResourceSDUser:
     Type: AWS::ApiGateway::Resource
     Properties:
-      ParentId: !GetAtt ApiGatewayResourceSD.RootResourceId
+      ParentId: !GetAtt ApiGatewayResourceSD.ResourceId
       PathPart: 'user'
       RestApiId: !Ref ApiGatewayRestApi 
 
