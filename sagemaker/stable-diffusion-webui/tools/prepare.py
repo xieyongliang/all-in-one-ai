@@ -50,6 +50,29 @@ try:
     bucket = sagemaker.Session().default_bucket()
     
     ddbh = ddb_helper({'table_name': 'all_in_one_ai_sd_model'})
+
+    if not ddbh.table_exist():
+        ddbh.create_table(
+            {
+                'key_schema': [
+                    {
+                        'AttributeName': 'model_name',
+                        'KeyType': 'HASH'
+                    }
+                ],
+                'attribute_definitions': [
+                    {
+                        'AttributeName': 'model_name',
+                        'AttributeType': 'S'
+                    }
+                ],
+                'provisioned_throughput': {
+                    'ReadCapacityUnits': 1,
+                    'WriteCapacityUnits': 1
+                }
+            }
+        )
+
     items = ddbh.scan()
     for item in items:
         key = {
