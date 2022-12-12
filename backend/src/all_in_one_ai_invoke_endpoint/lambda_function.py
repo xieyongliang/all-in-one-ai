@@ -18,6 +18,7 @@ config = Config(
 )
 
 sagemaker_runtime_client = boto3.client('sagemaker-runtime', config = config)
+sagemaker_client = boto3.client('sagemaker')
 
 def lambda_handler(event, context):
     print(event)
@@ -26,9 +27,14 @@ def lambda_handler(event, context):
         endpoint_name = event['endpoint_name']
         content_type = event['content_type']
         payload = event['payload']
-        infer_type = event['infer_type'] if 'infer_type' in event else 'sync'
         
         body = payload if(content_type == 'application/json') else base64.b64decode(payload)
+
+        response = sagemaker_client.describe_endpoint(
+            EndpointName = endpoint_name
+        )
+        
+        infer_type = 'async' if ('AsyncInferenceConfig' in response) else 'sync'
 
         if(infer_type == 'sync'):
             response = sagemaker_runtime_client.invoke_endpoint(
@@ -54,7 +60,7 @@ def lambda_handler(event, context):
             print(response)
             body = response.output_path
 
-        print(body)
+
         return {
             'statusCode': 200,
             'body': body
