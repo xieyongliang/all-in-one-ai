@@ -187,3 +187,35 @@ Resources:
         ReadCapacityUnits: "1"
         WriteCapacityUnits: "1"
       TableName: "all_in_one_ai_import_jobs"
+
+  SDModelDBTable: 
+    Type: AWS::DynamoDB::Table
+    Properties: 
+      AttributeDefinitions: 
+        - 
+          AttributeName: "model_name"
+          AttributeType: "S"
+      KeySchema: 
+        - 
+          AttributeName: "model_name"
+          KeyType: "HASH"
+      ProvisionedThroughput: 
+        ReadCapacityUnits: "1"
+        WriteCapacityUnits: "1"
+      TableName: "all_in_one_ai_sd_model"
+
+  SDUserDBTable: 
+    Type: AWS::DynamoDB::Table
+    Properties: 
+      AttributeDefinitions: 
+        - 
+          AttributeName: "username"
+          AttributeType: "S"
+      KeySchema: 
+        - 
+          AttributeName: "username"
+          KeyType: "HASH"
+      ProvisionedThroughput: 
+        ReadCapacityUnits: "1"
+        WriteCapacityUnits: "1"
+      TableName: "all_in_one_ai_sd_user"
