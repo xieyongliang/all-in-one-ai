@@ -6,6 +6,14 @@ Parameters:
     Type: AWS::EC2::VPC::Id
     Description: Select a VPC that allows instances to access the Internet.
   
+  PublicSubnets:
+    Type: List<AWS::EC2::Subnet::Id>
+    Description: Select at least two public subnets in your selected VPC.
+  
+  PrivateSubnets:
+    Type: List<AWS::EC2::Subnet::Id>
+    Description: Select at least two private subnets in your selected VPC.  
+  
   ApiGatewayProdEndpoint:
     Type: String
     Description: API Prod stage endpoint
@@ -126,7 +134,7 @@ Resources:
             Options:
               awslogs-group: !Ref CloudwatchLogsGroup
               awslogs-region: !Ref 'AWS::Region'
-              awslogs-stream-prefix: all-in-one-ai-stable-diffusion-webui
+              awslogs-stream-prefix: all-in-one-ai-webui
           PortMappings:
             - ContainerPort: 8080
           Environment:
@@ -136,7 +144,7 @@ Resources:
   ECSALB:
     Type: 'AWS::ElasticLoadBalancingV2::LoadBalancer'
     Properties:
-      Name: all-in-one-ai
+      Name: all-in-one-ai-webui
       Scheme: internet-facing
       LoadBalancerAttributes:
         - Key: idle_timeout.timeout_seconds
@@ -195,7 +203,7 @@ Resources:
       DesiredCount: 1
       HealthCheckGracePeriodSeconds: 1200
       LoadBalancers:
-        - ContainerName: web-app
+        - ContainerName: webapp
           ContainerPort: 8080
           TargetGroupArn: !Ref ECSTG
       TaskDefinition: !Ref Taskdefinition
@@ -215,7 +223,7 @@ Resources:
       DesiredCount: 1
       HealthCheckGracePeriodSeconds: 1200
       LoadBalancers:
-        - ContainerName: web-app
+        - ContainerName: webapp
           ContainerPort: 8080
           TargetGroupArn: !Ref ECSTG
       TaskDefinition: !Ref Taskdefinition
