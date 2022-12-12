@@ -3840,7 +3840,7 @@ Resources:
     Type: AWS::ApiGateway::Resource
     Properties:
       ParentId: !GetAtt ApiGatewayResourceSD.ResourceId
-      PathPart: 'model'
+      PathPart: 'models'
       RestApiId: !Ref ApiGatewayRestApi 
 
   ApiGatewayMethodSDModelGet:
@@ -3932,12 +3932,12 @@ Resources:
         - Globally
         - !Sub
           - >-
-            arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/GET/sd/model
+            arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/GET/sd/models
           - __Stage__: '*'
             __ApiId__: !Ref ApiGatewayRestApi
         - !Sub
           - >-
-            arn:aws-cn:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/GET/sd/model
+            arn:aws-cn:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/GET/sd/models
           - __Stage__: '*'
             __ApiId__: !Ref ApiGatewayRestApi
 
@@ -6976,6 +6976,9 @@ Resources:
       - ApiGatewayMethodModelPackageByNamePost
       - ApiGatewayMethodPipelineGet
       - ApiGatewayMethodPipelinePost
+      - ApiGatewayMethodSDIndustrialModelGet
+      - ApiGatewayMethodSDModelGet
+      - ApiGatewayMethodSDUserPost
       - ApiGatewayMethodS3Get
       - ApiGatewayMethodSearchImage
       - ApiGatewayMethodSearchImportGet
