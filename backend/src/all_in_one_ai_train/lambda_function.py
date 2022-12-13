@@ -330,19 +330,25 @@ def lambda_handler(event, context):
             )
         elif(algorithm == 'stable-diffusion-webui'):
             image_uri = ssmh.get_parameter('/all_in_one_ai/config/meta/algorithms/{0}/training_image'.format(algorithm))
+            embedding_s3uri = 's3://{0}/stable-diffusion-webui/embeddings/'.format(bucket)
+            hypernetwork_s3uri = 's3://{0}/stable-diffusion-webui/hypernetwork/'.format(bucket)
 
             default_hyperparameters = {
                 'region': boto3.session.Session().region_name,
-                'embeddings-s3uri': 's3://{0}/stable-diffusion-webui/embeddings/'.format(bucket),
-                'hypernetwork-s3uri': 's3://{0}/stable-diffusion-webui/hypernetwork/'.format(bucket),
+                'embeddings-s3uri': embedding_s3uri,
+                'hypernetwork-s3uri': hypernetwork_s3uri,
                 'train-task': 'embedding',
                 'api_endpoint': ssmh.get_parameter('/all_in_one_ai/config/meta/api_endpoint')
             }
 
             if 'embeddings' not in inputs:
-                inputs['embeddings'] = 's3://{0}/stable-diffusion-webui/embeddings/'.format(bucket)
+                with_embeddings = s3uri_contain_files(embedding_s3uri)
+                if with_embeddings:
+                    inputs['embeddings'] = embedding_s3uri
             if 'hypernetwork' not in inputs:
-                inputs['embeddings'] = 's3://{0}/stable-diffusion-webui/hypernetwork/'.format(bucket)
+                with_hypernetwork = s3uri_contain_files(hypernetwork_s3uri)
+                if with_hypernetwork:
+                    inputs['hypernetwork'] = hypernetwork_s3uri
 
             for key in default_hyperparameters.keys():
                 if(key not in hyperparameters.keys()):
@@ -430,3 +436,18 @@ def defaultencode(o):
     if isinstance(o, (datetime, date)):
         return o.isoformat()
     raise TypeError(repr(o) + ' is not JSON serializable')
+
+def get_bucket_and_key(s3uri):
+    pos = s3uri.find('/', 5)
+    bucket = s3uri[5 : pos]
+    key = s3uri[pos + 1 : ]
+    return bucket, key
+
+def s3uri_contain_files(s3uri):
+  s3_client = boto3.client('s3')
+  s3_resource= boto3.resource('s3')
+  bucket, key = get_bucket_and_key(s3uri)
+  s3_bucket = s3_resource.Bucket(bucket)
+  objs = list(s3_bucket.objects.filter(Prefix=key))
+  return len(objs) > 1
+
