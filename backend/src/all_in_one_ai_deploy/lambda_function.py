@@ -327,7 +327,8 @@ def lambda_handler(event, context):
                     'model_environment': model_environment,
                     'endpoint_name': endpoint_name,
                     'instance_type': instance_type,
-                    'instance_count': instance_count
+                    'instance_count': instance_count,
+                    'infer_type': 'async'
                 }
             }
 
