@@ -5,6 +5,7 @@ from datetime import date, datetime
 import traceback
 import sagemaker
 import helper
+from botocore.client import Config
 
 ssmh = helper.ssm_helper()
 role_arn = ssmh.get_parameter('/all_in_one_ai/config/meta/sagemaker_role_arn')
@@ -444,10 +445,10 @@ def get_bucket_and_key(s3uri):
     return bucket, key
 
 def s3uri_contain_files(s3uri):
-  s3_client = boto3.client('s3')
-  s3_resource= boto3.resource('s3')
-  bucket, key = get_bucket_and_key(s3uri)
-  s3_bucket = s3_resource.Bucket(bucket)
-  objs = list(s3_bucket.objects.filter(Prefix=key))
-  return len(objs) > 1
+    s3_client = boto3.client('s3', config=Config(signature_version='s3v4'))
+    s3_resource= boto3.resource('s3')
+    bucket, key = get_bucket_and_key(s3uri)
+    s3_bucket = s3_resource.Bucket(bucket)
+    objs = list(s3_bucket.objects.filter(Prefix=key))
+    return len(objs) > 1
 

@@ -6,10 +6,11 @@ from botocore.exceptions import ClientError
 from elasticsearch import Elasticsearch
 import traceback
 from time import sleep
+from botocore.client import Config
 
 sqs_resource = boto3.resource('sqs')
 sqs_client = boto3.client('sqs')
-s3_client = boto3.client('s3')
+s3_client = boto3.client('s3', config=Config(signature_version='s3v4'))
 
 def lambda_handler(event, context):
     print(event)

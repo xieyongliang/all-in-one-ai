@@ -299,7 +299,7 @@ def lambda_handler(event, context):
                     'endpoint_name': endpoint_name,
                     'instance_type': instance_type,
                     'instance_count': instance_count,
-                    'infer_type': 'async'
+                    'deploy_type': 'async'
                 }
             }
 
@@ -333,7 +333,7 @@ def lambda_handler(event, context):
                     'endpoint_name': endpoint_name,
                     'instance_type': instance_type,
                     'instance_count': instance_count,
-                    'infer_type': 'async'
+                    'deploy_type': 'async'
                 }
             }
 

@@ -5,9 +5,10 @@ import os
 import helper
 from botocore.exceptions import ClientError
 from elasticsearch import Elasticsearch
+from botocore.client import Config
 
 lambda_client = boto3.client('lambda')
-s3_client = boto3.client('s3')
+s3_client = boto3.client('s3', config=Config(signature_version='s3v4'))
 import_jobs_table = 'all_in_one_ai_import_jobs'
 ddbh = helper.ddb_helper({'table_name': import_jobs_table})
 

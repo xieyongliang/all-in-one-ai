@@ -2,11 +2,12 @@ import json
 import boto3
 import helper
 from botocore.exceptions import ClientError
+from botocore.client import Config
 
 ssmh = helper.ssm_helper()
 transform_job_table = ssmh.get_parameter('/all_in_one_ai/config/meta/transform_job_table')
-s3_client = boto3.client('s3')
 
+s3_client = boto3.client('s3', config=Config(signature_version='s3v4'))
 lambda_client = boto3.client('lambda')
 
 def lambda_handler(event, context):

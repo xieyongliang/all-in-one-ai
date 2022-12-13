@@ -2,8 +2,9 @@ import json
 import boto3
 import traceback
 from botocore.exceptions import ClientError
+from botocore.client import Config
 
-s3_client = boto3.client('s3')
+s3_client = boto3.client('s3', config=Config(signature_version='s3v4'))
 s3_resource = boto3.resource('s3')
 
 def lambda_handler(event, context):

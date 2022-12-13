@@ -6,8 +6,9 @@ import traceback
 from io import BytesIO
 from datetime import date, datetime
 from decimal import Decimal
+from botocore.client import Config
 
-s3_client = boto3.client('s3')
+s3_client = boto3.client('s3', config=Config(signature_version='s3v4'))
 greengrassv2_client = boto3.client('greengrassv2')
 
 def lambda_handler(event, context):

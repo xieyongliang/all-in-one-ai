@@ -7,8 +7,9 @@ from sagemaker.serializers import JSONSerializer
 from sagemaker.deserializers import JSONDeserializer
 import base64
 import traceback
+from botocore.client import Config
 
-s3_client = boto3.client('s3')
+s3_client = boto3.client('s3', config=Config(signature_version='s3v4'))
 
 config = Config(
     read_timeout=120,

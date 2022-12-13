@@ -1,8 +1,9 @@
 import boto3
 import traceback
 from botocore.exceptions import ClientError
+from botocore.client import Config
 
-s3_client = boto3.client('s3')
+s3_client = boto3.client('s3', config=Config(signature_version='s3v4'))
 sts_client = boto3.client('sts')
 source_account = sts_client.get_caller_identity().get('Account')
 
