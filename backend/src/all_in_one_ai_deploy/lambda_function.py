@@ -29,7 +29,10 @@ def lambda_handler(event, context):
         instance_count = request['initial_instance_count']
 
         if(model_data_url == None):
-            model_data_url =  ssmh.get_parameter('/all_in_one_ai/config/meta/algorithms/{0}/artifact'.format(algorithm))
+            try: 
+                model_data_url =  ssmh.get_parameter('/all_in_one_ai/config/meta/algorithms/{0}/artifact'.format(algorithm))
+            except Exception:
+                model_data_url = ''
 
         if(algorithm == 'yolov5'):            
             source_dir = ssmh.get_parameter('/all_in_one_ai/config/meta/algorithms/{0}/source'.format(algorithm))
