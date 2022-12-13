@@ -2,7 +2,6 @@ import os
 import io
 import sys
 import sagemaker
-import os
 from helper import ddb_helper
 import traceback
 import boto3
