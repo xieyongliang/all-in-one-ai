@@ -316,6 +316,8 @@ def lambda_handler(event, context):
                 model_environment['hypernetwork_s3uri'] = 's3://{0}/stable-diffusion-webui/hypernetwork/'.format(bucket)
             if 'api_endpoint' not in model_environment:
                 model_environment['api_endpoint'] = ssmh.get_parameter('/all_in_one_ai/config/meta/api_endpoint')
+            if model_data_url == '':
+                model_data_url = 's3://{0}/stable-diffusion-webui/assets/model.tar.gz'.format(bucket)
 
             payload = {
                 'body': {
