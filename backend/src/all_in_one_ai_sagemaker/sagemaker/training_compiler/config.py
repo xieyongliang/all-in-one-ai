@@ -14,6 +14,8 @@
 from __future__ import absolute_import
 import logging
 
+from sagemaker.workflow import is_pipeline_variable
+
 logger = logging.getLogger(__name__)
 
 
@@ -21,16 +23,12 @@ class TrainingCompilerConfig(object):
     """The SageMaker Training Compiler configuration class."""
 
     DEBUG_PATH = "/opt/ml/output/data/compiler/"
-    SUPPORTED_INSTANCE_CLASS_PREFIXES = ["p3", "g4dn", "p4d", "g5"]
+    SUPPORTED_INSTANCE_CLASS_PREFIXES = ["p3", "p3dn", "g4dn", "p4d", "g5"]
 
     HP_ENABLE_COMPILER = "sagemaker_training_compiler_enabled"
     HP_ENABLE_DEBUG = "sagemaker_training_compiler_debug_mode"
 
-    def __init__(
-        self,
-        enabled=True,
-        debug=False,
-    ):
+    def __init__(self, enabled=True, debug=False):
         """This class initializes a ``TrainingCompilerConfig`` instance.
 
         `Amazon SageMaker Training Compiler
@@ -116,10 +114,7 @@ class TrainingCompilerConfig(object):
         return compiler_config_hyperparameters
 
     @classmethod
-    def validate(
-        cls,
-        estimator,
-    ):
+    def validate(cls, estimator):
         """Checks if SageMaker Training Compiler is configured correctly.
 
         Args:
@@ -132,16 +127,24 @@ class TrainingCompilerConfig(object):
             ValueError: Raised if the requested configuration is not compatible
                         with SageMaker Training Compiler.
         """
-        if estimator.instance_type:
+        if is_pipeline_variable(estimator.instance_type):
+            warn_msg = (
+                "Estimator instance_type is a PipelineVariable (%s), "
+                "which has to be interpreted as one of the "
+                "%s classes in execution time."
+            )
+            logger.warning(
+                warn_msg,
+                type(estimator.instance_type),
+                str(cls.SUPPORTED_INSTANCE_CLASS_PREFIXES).replace(",", ""),
+            )
+        elif estimator.instance_type:
             if "local" not in estimator.instance_type:
                 requested_instance_class = estimator.instance_type.split(".")[
                     1
                 ]  # Expecting ml.class.size
                 if not any(
-                    [
-                        requested_instance_class.startswith(i)
-                        for i in cls.SUPPORTED_INSTANCE_CLASS_PREFIXES
-                    ]
+                    [requested_instance_class == i for i in cls.SUPPORTED_INSTANCE_CLASS_PREFIXES]
                 ):
                     error_helper_string = (
                         "Unsupported Instance class {}."

@@ -323,7 +323,7 @@
         {"shape":"LimitExceededException"},
         {"shape":"InvalidNextTokenException"}
       ],
-      "documentation":"<p>Retrieves your request parameters, Savings Plan Recommendations Summary and Details. </p>"
+      "documentation":"<p>Retrieves the Savings Plans recommendations for your account. First use <code>StartSavingsPlansPurchaseRecommendationGeneration</code> to generate a new set of recommendations, and then use <code>GetSavingsPlansPurchaseRecommendation</code> to retrieve them.</p>"
     },
     "GetSavingsPlansUtilization":{
       "name":"GetSavingsPlansUtilization",
@@ -413,6 +413,20 @@
       ],
       "documentation":"<p>Returns the name, Amazon Resource Name (ARN), <code>NumberOfRules</code> and effective dates of all Cost Categories defined in the account. You have the option to use <code>EffectiveOn</code> to return a list of Cost Categories that were active on a specific date. If there is no <code>EffectiveOn</code> specified, you’ll see Cost Categories that are effective on the current date. If Cost Category is still effective, <code>EffectiveEnd</code> is omitted in the response. <code>ListCostCategoryDefinitions</code> supports pagination. The request can have a <code>MaxResults</code> range up to 100.</p>"
     },
+    "ListSavingsPlansPurchaseRecommendationGeneration":{
+      "name":"ListSavingsPlansPurchaseRecommendationGeneration",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListSavingsPlansPurchaseRecommendationGenerationRequest"},
+      "output":{"shape":"ListSavingsPlansPurchaseRecommendationGenerationResponse"},
+      "errors":[
+        {"shape":"LimitExceededException"},
+        {"shape":"InvalidNextTokenException"}
+      ],
+      "documentation":"<p>Retrieves a list of your historical recommendation generations within the past 30 days.</p>"
+    },
     "ListTagsForResource":{
       "name":"ListTagsForResource",
       "http":{
@@ -439,6 +453,21 @@
         {"shape":"LimitExceededException"}
       ],
       "documentation":"<p>Modifies the feedback property of a given cost anomaly. </p>"
+    },
+    "StartSavingsPlansPurchaseRecommendationGeneration":{
+      "name":"StartSavingsPlansPurchaseRecommendationGeneration",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"StartSavingsPlansPurchaseRecommendationGenerationRequest"},
+      "output":{"shape":"StartSavingsPlansPurchaseRecommendationGenerationResponse"},
+      "errors":[
+        {"shape":"LimitExceededException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"GenerationExistsException"}
+      ],
+      "documentation":"<p>Requests a Savings Plans recommendation generation. This enables you to calculate a fresh set of Savings Plans recommendations that takes your latest usage data and current Savings Plans inventory into account. You can refresh Savings Plans recommendations up to three times daily for a consolidated billing family.</p> <note> <p> <code>StartSavingsPlansPurchaseRecommendationGeneration</code> has no request syntax because no input parameters are needed to support this operation.</p> </note>"
     },
     "TagResource":{
       "name":"TagResource",
@@ -853,11 +882,11 @@
         },
         "EffectiveStart":{
           "shape":"ZonedDateTime",
-          "documentation":"<p>The effective state data of your Cost Category.</p>"
+          "documentation":"<p>The effective start date of your Cost Category.</p>"
         },
         "EffectiveEnd":{
           "shape":"ZonedDateTime",
-          "documentation":"<p>The effective end data of your Cost Category.</p>"
+          "documentation":"<p>The effective end date of your Cost Category.</p>"
         },
         "Name":{"shape":"CostCategoryName"},
         "RuleVersion":{"shape":"CostCategoryRuleVersion"},
@@ -1276,6 +1305,10 @@
       ],
       "members":{
         "Name":{"shape":"CostCategoryName"},
+        "EffectiveStart":{
+          "shape":"ZonedDateTime",
+          "documentation":"<p>The Cost Category's effective start date. It can only be a billing start date (first day of the month). If the date isn't provided, it's the first day of the current month. Dates can't be before the previous twelve months, or in the future.</p>"
+        },
         "RuleVersion":{"shape":"CostCategoryRuleVersion"},
         "Rules":{
           "shape":"CostCategoryRulesList",
@@ -1301,7 +1334,7 @@
         },
         "EffectiveStart":{
           "shape":"ZonedDateTime",
-          "documentation":"<p>The Cost Category's effective start date. </p>"
+          "documentation":"<p>The Cost Category's effective start date. It can only be a billing start date (first day of the month).</p>"
         }
       }
     },
@@ -1496,7 +1529,7 @@
       "members":{
         "Key":{
           "shape":"Dimension",
-          "documentation":"<p>The names of the metadata types that you can use to filter and group your results. For example, <code>AZ</code> returns a list of Availability Zones.</p>"
+          "documentation":"<p>The names of the metadata types that you can use to filter and group your results. For example, <code>AZ</code> returns a list of Availability Zones. <code>LINK_ACCOUNT_NAME</code> and <code>SERVICE_CODE</code> can only be used in <a href=\"https://docs.aws.amazon.com/aws-cost-management/latest/APIReference/AAPI_CostCategoryRule.html\">CostCategoryRule</a>.</p>"
         },
         "Values":{
           "shape":"Values",
@@ -1834,6 +1867,52 @@
     "ForecastResultsByTime":{
       "type":"list",
       "member":{"shape":"ForecastResult"}
+    },
+    "GenerationExistsException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>A request to generate a recommendation is already in progress.</p>",
+      "exception":true
+    },
+    "GenerationStatus":{
+      "type":"string",
+      "enum":[
+        "SUCCEEDED",
+        "PROCESSING",
+        "FAILED"
+      ]
+    },
+    "GenerationSummary":{
+      "type":"structure",
+      "members":{
+        "RecommendationId":{
+          "shape":"RecommendationId",
+          "documentation":"<p>Indicates the ID for this specific recommendation.</p>"
+        },
+        "GenerationStatus":{
+          "shape":"GenerationStatus",
+          "documentation":"<p>Indicates whether the recommendation generation succeeded, is processing, or failed.</p>"
+        },
+        "GenerationStartedTime":{
+          "shape":"ZonedDateTime",
+          "documentation":"<p>Indicates the start time of the recommendation generation.</p>"
+        },
+        "GenerationCompletionTime":{
+          "shape":"ZonedDateTime",
+          "documentation":"<p>Indicates the completion time of the recommendation generation.</p>"
+        },
+        "EstimatedCompletionTime":{
+          "shape":"ZonedDateTime",
+          "documentation":"<p>Indicates the estimated time for when the recommendation generation will complete.</p>"
+        }
+      },
+      "documentation":"<p>The summary of the Savings Plans recommendation generation.</p>"
+    },
+    "GenerationSummaryList":{
+      "type":"list",
+      "member":{"shape":"GenerationSummary"}
     },
     "GenericBoolean":{"type":"boolean"},
     "GenericDouble":{"type":"double"},
@@ -2177,7 +2256,7 @@
         },
         "Dimension":{
           "shape":"Dimension",
-          "documentation":"<p>The name of the dimension. Each <code>Dimension</code> is available for a different <code>Context</code>. For more information, see <code>Context</code>. </p>"
+          "documentation":"<p>The name of the dimension. Each <code>Dimension</code> is available for a different <code>Context</code>. For more information, see <code>Context</code>. <code>LINK_ACCOUNT_NAME</code> and <code>SERVICE_CODE</code> can only be used in <a href=\"https://docs.aws.amazon.com/aws-cost-management/latest/APIReference/AAPI_CostCategoryRule.html\">CostCategoryRule</a>. </p>"
         },
         "Context":{
           "shape":"Context",
@@ -2208,7 +2287,7 @@
       "members":{
         "DimensionValues":{
           "shape":"DimensionValuesWithAttributesList",
-          "documentation":"<p>The filters that you used to filter your request. Some dimensions are available only for a specific context.</p> <p>If you set the context to <code>COST_AND_USAGE</code>, you can use the following dimensions for searching:</p> <ul> <li> <p>AZ - The Availability Zone. An example is <code>us-east-1a</code>.</p> </li> <li> <p>DATABASE_ENGINE - The Amazon Relational Database Service database. Examples are Aurora or MySQL.</p> </li> <li> <p>INSTANCE_TYPE - The type of Amazon EC2 instance. An example is <code>m4.xlarge</code>.</p> </li> <li> <p>LEGAL_ENTITY_NAME - The name of the organization that sells you Amazon Web Services services, such as Amazon Web Services.</p> </li> <li> <p>LINKED_ACCOUNT - The description in the attribute map that includes the full name of the member account. The value field contains the Amazon Web Services ID of the member account.</p> </li> <li> <p>OPERATING_SYSTEM - The operating system. Examples are Windows or Linux.</p> </li> <li> <p>OPERATION - The action performed. Examples include <code>RunInstance</code> and <code>CreateBucket</code>.</p> </li> <li> <p>PLATFORM - The Amazon EC2 operating system. Examples are Windows or Linux.</p> </li> <li> <p>PURCHASE_TYPE - The reservation type of the purchase to which this usage is related. Examples include On-Demand Instances and Standard Reserved Instances.</p> </li> <li> <p>SERVICE - The Amazon Web Services service such as Amazon DynamoDB.</p> </li> <li> <p>USAGE_TYPE - The type of usage. An example is DataTransfer-In-Bytes. The response for the <code>GetDimensionValues</code> operation includes a unit attribute. Examples include GB and Hrs.</p> </li> <li> <p>USAGE_TYPE_GROUP - The grouping of common usage types. An example is Amazon EC2: CloudWatch – Alarms. The response for this operation includes a unit attribute.</p> </li> <li> <p>RECORD_TYPE - The different types of charges such as RI fees, usage costs, tax refunds, and credits.</p> </li> <li> <p>RESOURCE_ID - The unique identifier of the resource. ResourceId is an opt-in feature only available for last 14 days for EC2-Compute Service.</p> </li> </ul> <p>If you set the context to <code>RESERVATIONS</code>, you can use the following dimensions for searching:</p> <ul> <li> <p>AZ - The Availability Zone. An example is <code>us-east-1a</code>.</p> </li> <li> <p>CACHE_ENGINE - The Amazon ElastiCache operating system. Examples are Windows or Linux.</p> </li> <li> <p>DEPLOYMENT_OPTION - The scope of Amazon Relational Database Service deployments. Valid values are <code>SingleAZ</code> and <code>MultiAZ</code>.</p> </li> <li> <p>INSTANCE_TYPE - The type of Amazon EC2 instance. An example is <code>m4.xlarge</code>.</p> </li> <li> <p>LINKED_ACCOUNT - The description in the attribute map that includes the full name of the member account. The value field contains the Amazon Web Services ID of the member account.</p> </li> <li> <p>PLATFORM - The Amazon EC2 operating system. Examples are Windows or Linux.</p> </li> <li> <p>REGION - The Amazon Web Services Region.</p> </li> <li> <p>SCOPE (Utilization only) - The scope of a Reserved Instance (RI). Values are regional or a single Availability Zone.</p> </li> <li> <p>TAG (Coverage only) - The tags that are associated with a Reserved Instance (RI).</p> </li> <li> <p>TENANCY - The tenancy of a resource. Examples are shared or dedicated.</p> </li> </ul> <p>If you set the context to <code>SAVINGS_PLANS</code>, you can use the following dimensions for searching:</p> <ul> <li> <p>SAVINGS_PLANS_TYPE - Type of Savings Plans (EC2 Instance or Compute)</p> </li> <li> <p>PAYMENT_OPTION - Payment option for the given Savings Plans (for example, All Upfront)</p> </li> <li> <p>REGION - The Amazon Web Services Region.</p> </li> <li> <p>INSTANCE_TYPE_FAMILY - The family of instances (For example, <code>m5</code>)</p> </li> <li> <p>LINKED_ACCOUNT - The description in the attribute map that includes the full name of the member account. The value field contains the Amazon Web Services ID of the member account.</p> </li> <li> <p>SAVINGS_PLAN_ARN - The unique identifier for your Savings Plan</p> </li> </ul>"
+          "documentation":"<p>The filters that you used to filter your request. Some dimensions are available only for a specific context.</p> <p>If you set the context to <code>COST_AND_USAGE</code>, you can use the following dimensions for searching:</p> <ul> <li> <p>AZ - The Availability Zone. An example is <code>us-east-1a</code>.</p> </li> <li> <p>DATABASE_ENGINE - The Amazon Relational Database Service database. Examples are Aurora or MySQL.</p> </li> <li> <p>INSTANCE_TYPE - The type of Amazon EC2 instance. An example is <code>m4.xlarge</code>.</p> </li> <li> <p>LEGAL_ENTITY_NAME - The name of the organization that sells you Amazon Web Services services, such as Amazon Web Services.</p> </li> <li> <p>LINKED_ACCOUNT - The description in the attribute map that includes the full name of the member account. The value field contains the Amazon Web Services ID of the member account.</p> </li> <li> <p>OPERATING_SYSTEM - The operating system. Examples are Windows or Linux.</p> </li> <li> <p>OPERATION - The action performed. Examples include <code>RunInstance</code> and <code>CreateBucket</code>.</p> </li> <li> <p>PLATFORM - The Amazon EC2 operating system. Examples are Windows or Linux.</p> </li> <li> <p>PURCHASE_TYPE - The reservation type of the purchase to which this usage is related. Examples include On-Demand Instances and Standard Reserved Instances.</p> </li> <li> <p>SERVICE - The Amazon Web Services service such as Amazon DynamoDB.</p> </li> <li> <p>USAGE_TYPE - The type of usage. An example is DataTransfer-In-Bytes. The response for the <code>GetDimensionValues</code> operation includes a unit attribute. Examples include GB and Hrs.</p> </li> <li> <p>USAGE_TYPE_GROUP - The grouping of common usage types. An example is Amazon EC2: CloudWatch – Alarms. The response for this operation includes a unit attribute.</p> </li> <li> <p>RECORD_TYPE - The different types of charges such as RI fees, usage costs, tax refunds, and credits.</p> </li> <li> <p>RESOURCE_ID - The unique identifier of the resource. ResourceId is an opt-in feature only available for last 14 days for EC2-Compute Service. You can opt-in by enabling <code>Hourly</code> and <code>Resource Level Data</code> in Cost Management Console preferences.</p> </li> </ul> <p>If you set the context to <code>RESERVATIONS</code>, you can use the following dimensions for searching:</p> <ul> <li> <p>AZ - The Availability Zone. An example is <code>us-east-1a</code>.</p> </li> <li> <p>CACHE_ENGINE - The Amazon ElastiCache operating system. Examples are Windows or Linux.</p> </li> <li> <p>DEPLOYMENT_OPTION - The scope of Amazon Relational Database Service deployments. Valid values are <code>SingleAZ</code> and <code>MultiAZ</code>.</p> </li> <li> <p>INSTANCE_TYPE - The type of Amazon EC2 instance. An example is <code>m4.xlarge</code>.</p> </li> <li> <p>LINKED_ACCOUNT - The description in the attribute map that includes the full name of the member account. The value field contains the Amazon Web Services ID of the member account.</p> </li> <li> <p>PLATFORM - The Amazon EC2 operating system. Examples are Windows or Linux.</p> </li> <li> <p>REGION - The Amazon Web Services Region.</p> </li> <li> <p>SCOPE (Utilization only) - The scope of a Reserved Instance (RI). Values are regional or a single Availability Zone.</p> </li> <li> <p>TAG (Coverage only) - The tags that are associated with a Reserved Instance (RI).</p> </li> <li> <p>TENANCY - The tenancy of a resource. Examples are shared or dedicated.</p> </li> </ul> <p>If you set the context to <code>SAVINGS_PLANS</code>, you can use the following dimensions for searching:</p> <ul> <li> <p>SAVINGS_PLANS_TYPE - Type of Savings Plans (EC2 Instance or Compute)</p> </li> <li> <p>PAYMENT_OPTION - Payment option for the given Savings Plans (for example, All Upfront)</p> </li> <li> <p>REGION - The Amazon Web Services Region.</p> </li> <li> <p>INSTANCE_TYPE_FAMILY - The family of instances (For example, <code>m5</code>)</p> </li> <li> <p>LINKED_ACCOUNT - The description in the attribute map that includes the full name of the member account. The value field contains the Amazon Web Services ID of the member account.</p> </li> <li> <p>SAVINGS_PLAN_ARN - The unique identifier for your Savings Plan</p> </li> </ul>"
         },
         "ReturnSize":{
           "shape":"PageSize",
@@ -2935,6 +3014,40 @@
         }
       }
     },
+    "ListSavingsPlansPurchaseRecommendationGenerationRequest":{
+      "type":"structure",
+      "members":{
+        "GenerationStatus":{
+          "shape":"GenerationStatus",
+          "documentation":"<p>The status of the recommendation generation.</p>"
+        },
+        "RecommendationIds":{
+          "shape":"RecommendationIdList",
+          "documentation":"<p>The IDs for each specific recommendation.</p>"
+        },
+        "PageSize":{
+          "shape":"NonNegativeInteger",
+          "documentation":"<p>The number of recommendations that you want returned in a single response object.</p>"
+        },
+        "NextPageToken":{
+          "shape":"NextPageToken",
+          "documentation":"<p>The token to retrieve the next set of results.</p>"
+        }
+      }
+    },
+    "ListSavingsPlansPurchaseRecommendationGenerationResponse":{
+      "type":"structure",
+      "members":{
+        "GenerationSummaryList":{
+          "shape":"GenerationSummaryList",
+          "documentation":"<p>The list of historical recommendation generations.</p>"
+        },
+        "NextPageToken":{
+          "shape":"NextPageToken",
+          "documentation":"<p>The token to retrieve the next set of results.</p>"
+        }
+      }
+    },
     "ListTagsForResourceRequest":{
       "type":"structure",
       "required":["ResourceArn"],
@@ -3213,6 +3326,16 @@
     },
     "RICostForUnusedHours":{"type":"string"},
     "RealizedSavings":{"type":"string"},
+    "RecommendationId":{
+      "type":"string",
+      "max":36,
+      "min":36,
+      "pattern":"^[\\S\\s]{8}-[\\S\\s]{4}-[\\S\\s]{4}-[\\S\\s]{4}-[\\S\\s]{12}$"
+    },
+    "RecommendationIdList":{
+      "type":"list",
+      "member":{"shape":"RecommendationId"}
+    },
     "RecommendationTarget":{
       "type":"string",
       "enum":[
@@ -3750,9 +3873,13 @@
         "UsageType":{
           "shape":"GenericString",
           "documentation":"<p>The <code>UsageType</code> value that's associated with the cost anomaly. </p>"
+        },
+        "LinkedAccountName":{
+          "shape":"GenericString",
+          "documentation":"<p>The member account name value that's associated with the cost anomaly.</p>"
         }
       },
-      "documentation":"<p>The combination of Amazon Web Service, linked account, Region, and usage type where a cost anomaly is observed. </p>"
+      "documentation":"<p>The combination of Amazon Web Service, linked account, linked account name, Region, and usage type where a cost anomaly is observed. The linked account name will only be available when the account name can be identified.</p>"
     },
     "RootCauses":{
       "type":"list",
@@ -4193,6 +4320,28 @@
         "DESCENDING"
       ]
     },
+    "StartSavingsPlansPurchaseRecommendationGenerationRequest":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "StartSavingsPlansPurchaseRecommendationGenerationResponse":{
+      "type":"structure",
+      "members":{
+        "RecommendationId":{
+          "shape":"RecommendationId",
+          "documentation":"<p>The ID for this specific recommendation.</p>"
+        },
+        "GenerationStartedTime":{
+          "shape":"ZonedDateTime",
+          "documentation":"<p>The start time of the recommendation generation.</p>"
+        },
+        "EstimatedCompletionTime":{
+          "shape":"ZonedDateTime",
+          "documentation":"<p>The estimated time for when the recommendation generation will complete.</p>"
+        }
+      }
+    },
     "Subscriber":{
       "type":"structure",
       "members":{
@@ -4291,7 +4440,7 @@
           "documentation":"<p>The match options that you can use to filter your results. <code>MatchOptions</code> is only applicable for actions related to Cost Category. The default values for <code>MatchOptions</code> are <code>EQUALS</code> and <code>CASE_SENSITIVE</code>.</p>"
         }
       },
-      "documentation":"<p>The values that are available for a tag.</p> <p>If <code>Values</code> and <code>Key</code> aren't specified, the <code>ABSENT</code> <code>MatchOption</code> is applied to all tags. That is, it's filtered on resources with no tags.</p> <p>If <code>Values</code> is provided and <code>Key</code> isn't specified, the <code>ABSENT</code> <code>MatchOption</code> is applied to the tag <code>Key</code> only. That is, it's filtered on resources without the given tag key.</p>"
+      "documentation":"<p>The values that are available for a tag.</p> <p>If <code>Values</code> and <code>Key</code> aren't specified, the <code>ABSENT</code> <code>MatchOption</code> is applied to all tags. That is, it's filtered on resources with no tags.</p> <p>If <code>Key</code> is provided and <code>Values</code> isn't specified, the <code>ABSENT</code> <code>MatchOption</code> is applied to the tag <code>Key</code> only. That is, it's filtered on resources without the given tag key.</p>"
     },
     "TagValuesList":{
       "type":"list",
@@ -4561,6 +4710,10 @@
           "shape":"Arn",
           "documentation":"<p>The unique identifier for your Cost Category.</p>"
         },
+        "EffectiveStart":{
+          "shape":"ZonedDateTime",
+          "documentation":"<p>The Cost Category's effective start date. It can only be a billing start date (first day of the month). If the date isn't provided, it's the first day of the current month. Dates can't be before the previous twelve months, or in the future.</p>"
+        },
         "RuleVersion":{"shape":"CostCategoryRuleVersion"},
         "Rules":{
           "shape":"CostCategoryRulesList",
@@ -4582,7 +4735,7 @@
         },
         "EffectiveStart":{
           "shape":"ZonedDateTime",
-          "documentation":"<p>The Cost Category's effective start date. </p>"
+          "documentation":"<p>The Cost Category's effective start date. It can only be a billing start date (first day of the month).</p>"
         }
       }
     },

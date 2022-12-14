@@ -17,6 +17,7 @@ import sys
 import inspect
 import warnings
 import hashlib
+from http.client import HTTPMessage
 import logging
 import shlex
 import re
@@ -33,9 +34,7 @@ from urllib3 import exceptions
 logger = logging.getLogger(__name__)
 
 
-from botocore.vendored.six.moves import http_client
-
-class HTTPHeaders(http_client.HTTPMessage):
+class HTTPHeaders(HTTPMessage):
     pass
 
 from urllib.parse import (
@@ -307,6 +306,7 @@ except ImportError:
 # Vendoring IPv6 validation regex patterns from urllib3
 # https://github.com/urllib3/urllib3/blob/7e856c0/src/urllib3/util/url.py
 IPV4_PAT = r"(?:[0-9]{1,3}\.){3}[0-9]{1,3}"
+IPV4_RE = re.compile("^" + IPV4_PAT + "$")
 HEX_PAT = "[0-9A-Fa-f]{1,4}"
 LS32_PAT = "(?:{hex}:{hex}|{ipv4})".format(hex=HEX_PAT, ipv4=IPV4_PAT)
 _subs = {"hex": HEX_PAT, "ls32": LS32_PAT}

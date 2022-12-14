@@ -21,7 +21,7 @@ import sys
 import time
 import typing
 import warnings
-from typing import List, Dict, Any, Sequence
+from typing import List, Dict, Any, Sequence, Optional
 
 import boto3
 import botocore
@@ -34,7 +34,7 @@ from sagemaker import vpc_utils
 
 from sagemaker._studio import _append_project_tags
 from sagemaker.deprecations import deprecated_class
-from sagemaker.inputs import ShuffleConfig, TrainingInput
+from sagemaker.inputs import ShuffleConfig, TrainingInput, BatchDataCaptureConfig
 from sagemaker.user_agent import prepend_user_agent
 from sagemaker.utils import (
     name_from_image,
@@ -312,7 +312,7 @@ class Session(object):  # pylint: disable=too-many-public-methods
         # For each object key, create the directory on the local machine if needed, and then
         # download the file.
         for key in keys:
-            tail_s3_uri_path = os.path.basename(key_prefix)
+            tail_s3_uri_path = os.path.basename(key)
             if not os.path.splitext(key_prefix)[1]:
                 tail_s3_uri_path = os.path.relpath(key, key_prefix)
             destination_path = os.path.join(path, tail_s3_uri_path)
@@ -821,6 +821,7 @@ class Session(object):  # pylint: disable=too-many-public-methods
         job_name,
         profiler_rule_configs=None,
         profiler_config=None,
+        resource_config=None,
     ):
         """Calls the UpdateTrainingJob API for the given job name and returns the response.
 
@@ -829,11 +830,15 @@ class Session(object):  # pylint: disable=too-many-public-methods
             profiler_rule_configs (list): List of profiler rule configurations. (default: ``None``).
             profiler_config(dict): Configuration for how profiling information is emitted with
                 SageMaker Profiler. (default: ``None``).
+            resource_config (dict): Configuration of the resources for the training job. You can
+                update the keep-alive period if the warm pool status is `Available`. No other fields
+                can be updated. (default: ``None``).
         """
         update_training_job_request = self._get_update_training_job_request(
             job_name=job_name,
             profiler_rule_configs=profiler_rule_configs,
             profiler_config=profiler_config,
+            resource_config=resource_config,
         )
         LOGGER.info("Updating training job with name %s", job_name)
         LOGGER.debug("Update request: %s", json.dumps(update_training_job_request, indent=4))
@@ -844,14 +849,18 @@ class Session(object):  # pylint: disable=too-many-public-methods
         job_name,
         profiler_rule_configs=None,
         profiler_config=None,
+        resource_config=None,
     ):
-        """Constructs a request compatible for updateing an Amazon SageMaker training job.
+        """Constructs a request compatible for updating an Amazon SageMaker training job.
 
         Args:
             job_name (str): Name of the training job being updated.
             profiler_rule_configs (list): List of profiler rule configurations. (default: ``None``).
             profiler_config(dict): Configuration for how profiling information is emitted with
                 SageMaker Profiler. (default: ``None``).
+            resource_config (dict): Configuration of the resources for the training job. You can
+                update the keep-alive period if the warm pool status is `Available`. No other fields
+                can be updated. (default: ``None``).
 
         Returns:
             Dict: an update training request dict
@@ -865,6 +874,9 @@ class Session(object):  # pylint: disable=too-many-public-methods
 
         if profiler_config is not None:
             update_training_job_request["ProfilerConfig"] = profiler_config
+
+        if resource_config is not None:
+            update_training_job_request["ResourceConfig"] = resource_config
 
         return update_training_job_request
 
@@ -1571,6 +1583,112 @@ class Session(object):  # pylint: disable=too-many-public-methods
 
         return response
 
+    def update_monitoring_alert(
+        self,
+        monitoring_schedule_name: str,
+        monitoring_alert_name: str,
+        data_points_to_alert: int,
+        evaluation_period: int,
+    ):
+        """Update the monitoring alerts associated with the given schedule_name and alert_name
+
+        Args:
+            monitoring_schedule_name (str): The name of the monitoring schedule to update.
+            monitoring_alert_name (str): The name of the monitoring alert to update.
+            data_points_to_alert (int):  The data point to alert.
+            evaluation_period (int): The period to evaluate the alert status.
+
+        Returns:
+            dict: A dict represents the update alert response.
+        """
+        return self.sagemaker_client.update_monitoring_alert(
+            MonitoringScheduleName=monitoring_schedule_name,
+            MonitoringAlertName=monitoring_alert_name,
+            DatapointsToAlert=data_points_to_alert,
+            EvaluationPeriod=evaluation_period,
+        )
+
+    def list_monitoring_alerts(
+        self,
+        monitoring_schedule_name: str,
+        next_token: Optional[str] = None,
+        max_results: Optional[int] = 10,
+    ) -> Dict:
+        """Lists the monitoring alerts associated with the given monitoring_schedule_name.
+
+        Args:
+            monitoring_schedule_name (str): The name of the monitoring schedule to filter on.
+                If not provided, does not filter on it.
+            next_token (Optional[str]):  The pagination token. Default: None
+            max_results (Optional[int]): The maximum number of results to return.
+                Must be between 1 and 100. Default: 10
+
+        Returns:
+            dict: list of monitoring alerts.
+        """
+        params = {
+            "MonitoringScheduleName": monitoring_schedule_name,
+            "MaxResults": max_results,
+        }
+        if next_token:
+            params.update({"NextToken": next_token})
+
+        return self.sagemaker_client.list_monitoring_alerts(**params)
+
+    def list_monitoring_alert_history(
+        self,
+        monitoring_schedule_name: Optional[str] = None,
+        monitoring_alert_name: Optional[str] = None,
+        sort_by: Optional[str] = "CreationTime",
+        sort_order: Optional[str] = "Descending",
+        next_token: Optional[str] = None,
+        max_results: Optional[int] = 10,
+        creation_time_before: Optional[str] = None,
+        creation_time_after: Optional[str] = None,
+        status_equals: Optional[str] = None,
+    ) -> Dict:
+        """Lists the alert history associated with the given schedule_name and alert_name.
+
+        Args:
+            monitoring_schedule_name (Optional[str]): The name of the monitoring_schedule_name
+                to filter on. If not provided, does not filter on it. Default: None.
+            monitoring_alert_name (Optional[str]): The name of the monitoring_alert_name
+                to filter on. If not provided, does not filter on it. Default: None.
+            sort_by (Optional[str]): sort_by (str): The field to sort by.
+                Can be one of: "Name", "CreationTime" Default: "CreationTime".
+            sort_order (Optional[str]): The sort order. Can be one of: "Ascending", "Descending".
+                Default: "Descending".
+            next_token (Optional[str]):  The pagination token. Default: None
+            max_results (Optional[int]): The maximum number of results to return.
+                Must be between 1 and 100. Default: 10.
+            creation_time_before (Optional[str]): A filter to filter alert history before a time
+            creation_time_after (Optional[str]): A filter to filter alert history after a time
+                Default: None.
+            status_equals (Optional[str]): A filter to filter alert history by status
+                Default: None.
+
+        Returns:
+            dict: list of monitoring alert history.
+        """
+        params = {
+            "MonitoringScheduleName": monitoring_schedule_name,
+            "SortBy": sort_by,
+            "SortOrder": sort_order,
+            "MaxResults": max_results,
+        }
+        if monitoring_alert_name:
+            params.update({"MonitoringAlertName": monitoring_alert_name})
+        if creation_time_before:
+            params.update({"CreationTimeBefore": creation_time_before})
+        if creation_time_after:
+            params.update({"CreationTimeAfter": creation_time_after})
+        if status_equals:
+            params.update({"StatusEquals": status_equals})
+        if next_token:
+            params.update({"NextToken": next_token})
+
+        return self.sagemaker_client.list_monitoring_alert_history(**params)
+
     def was_processing_job_successful(self, job_name):
         """Calls the DescribeProcessingJob API for the given job name.
 
@@ -1634,6 +1752,7 @@ class Session(object):  # pylint: disable=too-many-public-methods
         job_objective=None,
         generate_candidate_definitions_only=False,
         tags=None,
+        model_deploy_config=None,
     ):
         """Create an Amazon SageMaker AutoML job.
 
@@ -1657,6 +1776,71 @@ class Session(object):  # pylint: disable=too-many-public-methods
                 definitions. If True, AutoML.list_candidates() cannot be called. Default: False.
             tags ([dict[str,str]]): A list of dictionaries containing key-value
                 pairs.
+            model_deploy_config (dict): Specifies how to generate the endpoint name
+                for an automatic one-click Autopilot model deployment.
+                Contains "AutoGenerateEndpointName" and "EndpointName"
+        """
+        auto_ml_job_request = self._get_auto_ml_request(
+            input_config=input_config,
+            output_config=output_config,
+            auto_ml_job_config=auto_ml_job_config,
+            role=role,
+            job_name=job_name,
+            problem_type=problem_type,
+            job_objective=job_objective,
+            generate_candidate_definitions_only=generate_candidate_definitions_only,
+            tags=tags,
+            model_deploy_config=model_deploy_config,
+        )
+
+        def submit(request):
+            LOGGER.info("Creating auto-ml-job with name: %s", job_name)
+            LOGGER.debug("auto ml request: %s", json.dumps(request), indent=4)
+            self.sagemaker_client.create_auto_ml_job(**request)
+
+        self._intercept_create_request(auto_ml_job_request, submit, self.auto_ml.__name__)
+
+    def _get_auto_ml_request(
+        self,
+        input_config,
+        output_config,
+        auto_ml_job_config,
+        role,
+        job_name,
+        problem_type=None,
+        job_objective=None,
+        generate_candidate_definitions_only=False,
+        tags=None,
+        model_deploy_config=None,
+    ):
+        """Constructs a request compatible for creating an Amazon SageMaker AutoML job.
+
+        Args:
+            input_config (list[dict]): A list of Channel objects. Each channel contains "DataSource"
+                and "TargetAttributeName", "CompressionType" is an optional field.
+            output_config (dict): The S3 URI where you want to store the training results and
+                optional KMS key ID.
+            auto_ml_job_config (dict): A dict of AutoMLJob config, containing "StoppingCondition",
+                "SecurityConfig", optionally contains "VolumeKmsKeyId".
+            role (str): The Amazon Resource Name (ARN) of an IAM role that
+                Amazon SageMaker can assume to perform tasks on your behalf.
+            job_name (str): A string that can be used to identify an AutoMLJob. Each AutoMLJob
+                should have a unique job name.
+            problem_type (str): The type of problem of this AutoMLJob. Valid values are
+                "Regression", "BinaryClassification", "MultiClassClassification". If None,
+                SageMaker AutoMLJob will infer the problem type automatically.
+            job_objective (dict): AutoMLJob objective, contains "AutoMLJobObjectiveType" (optional),
+                "MetricName" and "Value".
+            generate_candidate_definitions_only (bool): Indicates whether to only generate candidate
+                definitions. If True, AutoML.list_candidates() cannot be called. Default: False.
+            tags ([dict[str,str]]): A list of dictionaries containing key-value
+                pairs.
+            model_deploy_config (dict): Specifies how to generate the endpoint name
+                for an automatic one-click Autopilot model deployment.
+                Contains "AutoGenerateEndpointName" and "EndpointName"
+
+        Returns:
+            Dict: a automl request dict
         """
         auto_ml_job_request = {
             "AutoMLJobName": job_name,
@@ -1666,6 +1850,8 @@ class Session(object):  # pylint: disable=too-many-public-methods
             "RoleArn": role,
             "GenerateCandidateDefinitionsOnly": generate_candidate_definitions_only,
         }
+        if model_deploy_config is not None:
+            auto_ml_job_request["ModelDeployConfig"] = model_deploy_config
 
         if job_objective is not None:
             auto_ml_job_request["AutoMLJobObjective"] = job_objective
@@ -1676,9 +1862,7 @@ class Session(object):  # pylint: disable=too-many-public-methods
         if tags is not None:
             auto_ml_job_request["Tags"] = tags
 
-        LOGGER.info("Creating auto-ml-job with name: %s", job_name)
-        LOGGER.debug("auto ml request: %s", json.dumps(auto_ml_job_request, indent=4))
-        self.sagemaker_client.create_auto_ml_job(**auto_ml_job_request)
+        return auto_ml_job_request
 
     def describe_auto_ml_job(self, job_name):
         """Calls the DescribeAutoMLJob API for the given job name and returns the response.
@@ -1937,6 +2121,7 @@ class Session(object):  # pylint: disable=too-many-public-methods
         stop_condition,
         tags,
         warm_start_config,
+        strategy_config=None,
         enable_network_isolation=False,
         image_uri=None,
         algorithm_arn=None,
@@ -1952,6 +2137,8 @@ class Session(object):  # pylint: disable=too-many-public-methods
         Args:
             job_name (str): Name of the tuning job being created.
             strategy (str): Strategy to be used for hyperparameter estimations.
+            strategy_config (dict): A configuration for the hyperparameter tuning
+                job optimisation strategy.
             objective_type (str): The type of the objective metric for evaluating training jobs.
                 This value can be either 'Minimize' or 'Maximize'.
             objective_metric_name (str): Name of the metric for evaluating training jobs.
@@ -2036,6 +2223,7 @@ class Session(object):  # pylint: disable=too-many-public-methods
                 objective_metric_name=objective_metric_name,
                 parameter_ranges=parameter_ranges,
                 early_stopping_type=early_stopping_type,
+                strategy_config=strategy_config,
             ),
             "TrainingJobDefinition": self._map_training_config(
                 static_hyperparameters=static_hyperparameters,
@@ -2191,6 +2379,7 @@ class Session(object):  # pylint: disable=too-many-public-methods
         objective_type=None,
         objective_metric_name=None,
         parameter_ranges=None,
+        strategy_config=None,
     ):
         """Construct tuning job configuration dictionary.
 
@@ -2208,6 +2397,8 @@ class Session(object):  # pylint: disable=too-many-public-methods
             objective_metric_name (str): Name of the metric for evaluating training jobs.
             parameter_ranges (dict): Dictionary of parameter ranges. These parameter ranges can
                 be one of three types: Continuous, Integer, or Categorical.
+            strategy_config (dict): A configuration for the hyperparameter tuning job optimisation
+                strategy.
 
         Returns:
             A dictionary of tuning job configuration. For format details, please refer to
@@ -2231,6 +2422,8 @@ class Session(object):  # pylint: disable=too-many-public-methods
         if parameter_ranges is not None:
             tuning_config["ParameterRanges"] = parameter_ranges
 
+        if strategy_config is not None:
+            tuning_config["StrategyConfig"] = strategy_config
         return tuning_config
 
     @classmethod
@@ -2442,6 +2635,7 @@ class Session(object):  # pylint: disable=too-many-public-methods
         tags,
         data_processing,
         model_client_config=None,
+        batch_data_capture_config: BatchDataCaptureConfig = None,
     ):
         """Construct an dict can be used to create an Amazon SageMaker transform job.
 
@@ -2477,6 +2671,9 @@ class Session(object):  # pylint: disable=too-many-public-methods
             model_client_config (dict): A dictionary describing the model configuration for the
                 job. Dictionary contains two optional keys,
                 'InvocationsTimeoutInSeconds', and 'InvocationsMaxRetries'.
+            batch_data_capture_config (BatchDataCaptureConfig): Configuration object which
+                specifies the configurations related to the batch data capture for the transform job
+                (default: None)
 
         Returns:
             Dict: a create transform job request dict
@@ -2513,6 +2710,9 @@ class Session(object):  # pylint: disable=too-many-public-methods
         if model_client_config and len(model_client_config) > 0:
             transform_request["ModelClientConfig"] = model_client_config
 
+        if batch_data_capture_config is not None:
+            transform_request["DataCaptureConfig"] = batch_data_capture_config._to_request_dict()
+
         return transform_request
 
     def transform(
@@ -2530,6 +2730,7 @@ class Session(object):  # pylint: disable=too-many-public-methods
         tags,
         data_processing,
         model_client_config=None,
+        batch_data_capture_config: BatchDataCaptureConfig = None,
     ):
         """Create an Amazon SageMaker transform job.
 
@@ -2565,6 +2766,8 @@ class Session(object):  # pylint: disable=too-many-public-methods
             model_client_config (dict): A dictionary describing the model configuration for the
                 job. Dictionary contains two optional keys,
                 'InvocationsTimeoutInSeconds', and 'InvocationsMaxRetries'.
+            batch_data_capture_config (BatchDataCaptureConfig): Configuration object which
+                specifies the configurations related to the batch data capture for the transform job
         """
         tags = _append_project_tags(tags)
         transform_request = self._get_transform_request(
@@ -2581,6 +2784,7 @@ class Session(object):  # pylint: disable=too-many-public-methods
             tags=tags,
             data_processing=data_processing,
             model_client_config=model_client_config,
+            batch_data_capture_config=batch_data_capture_config,
         )
 
         def submit(request):
@@ -2958,6 +3162,9 @@ class Session(object):  # pylint: disable=too-many-public-methods
         tags=None,
         kms_key=None,
         data_capture_config_dict=None,
+        volume_size=None,
+        model_data_download_timeout=None,
+        container_startup_health_check_timeout=None,
     ):
         """Create an Amazon SageMaker endpoint configuration.
 
@@ -2981,6 +3188,16 @@ class Session(object):  # pylint: disable=too-many-public-methods
                 attached to the instance hosting the endpoint.
             data_capture_config_dict (dict): Specifies configuration related to Endpoint data
                 capture for use with Amazon SageMaker Model Monitoring. Default: None.
+            volume_size (int): The size, in GB, of the ML storage volume attached to individual
+                inference instance associated with the production variant. Currenly only Amazon EBS
+                gp2 storage volumes are supported.
+            model_data_download_timeout (int): The timeout value, in seconds, to download and
+                extract model data from Amazon S3 to the individual inference instance associated
+                with this production variant.
+            container_startup_health_check_timeout (int): The timeout value, in seconds, for your
+                inference container to pass health check by SageMaker Hosting. For more information
+                about health check see:
+                https://docs.aws.amazon.com/sagemaker/latest/dg/your-algorithms-inference-code.html#your-algorithms-inference-algo-ping-requests
 
         Example:
             >>> tags = [{'Key': 'tagname', 'Value': 'tagvalue'}]
@@ -3002,6 +3219,9 @@ class Session(object):  # pylint: disable=too-many-public-methods
                     instance_type,
                     initial_instance_count,
                     accelerator_type=accelerator_type,
+                    volume_size=volume_size,
+                    model_data_download_timeout=model_data_download_timeout,
+                    container_startup_health_check_timeout=container_startup_health_check_timeout,
                 )
             ],
         }
@@ -3671,12 +3891,19 @@ class Session(object):  # pylint: disable=too-many-public-methods
                 instance_name = metadata["ResourceName"]
                 domain_id = metadata.get("DomainId")
                 user_profile_name = metadata.get("UserProfileName")
+                space_name = metadata.get("SpaceName")
             try:
                 if domain_id is None:
                     instance_desc = self.sagemaker_client.describe_notebook_instance(
                         NotebookInstanceName=instance_name
                     )
                     return instance_desc["RoleArn"]
+
+                # In Space app, find execution role from DefaultSpaceSettings on domain level
+                if space_name is not None:
+                    domain_desc = self.sagemaker_client.describe_domain(DomainId=domain_id)
+                    return domain_desc["DefaultSpaceSettings"]["ExecutionRole"]
+
                 user_profile_desc = self.sagemaker_client.describe_user_profile(
                     DomainId=domain_id, UserProfileName=user_profile_name
                 )
@@ -4114,6 +4341,56 @@ class Session(object):  # pylint: disable=too-many-public-methods
             FeatureGroupName=feature_group_name, FeatureAdditions=feature_additions
         )
 
+    def list_feature_groups(
+        self,
+        name_contains,
+        feature_group_status_equals,
+        offline_store_status_equals,
+        creation_time_after,
+        creation_time_before,
+        sort_order,
+        sort_by,
+        max_results,
+        next_token,
+    ) -> Dict[str, Any]:
+        """List all FeatureGroups satisfying given filters.
+
+        Args:
+            name_contains (str): A string that partially matches one or more FeatureGroups' names.
+                Filters FeatureGroups by name.
+            feature_group_status_equals (str): A FeatureGroup status.
+                Filters FeatureGroups by FeatureGroup status.
+            offline_store_status_equals (str): An OfflineStore status.
+                Filters FeatureGroups by OfflineStore status.
+            creation_time_after (datetime.datetime): Use this parameter to search for FeatureGroups
+                created after a specific date and time.
+            creation_time_before (datetime.datetime): Use this parameter to search for FeatureGroups
+                created before a specific date and time.
+            sort_order (str): The order in which FeatureGroups are listed.
+            sort_by (str): The value on which the FeatureGroup list is sorted.
+            max_results (int): The maximum number of results returned by ListFeatureGroups.
+            next_token (str): A token to resume pagination of ListFeatureGroups results.
+        Returns:
+            Response dict from service.
+        """
+        list_feature_groups_args = {}
+
+        def check_object(key, value):
+            if value is not None:
+                list_feature_groups_args[key] = value
+
+        check_object("NameContains", name_contains)
+        check_object("FeatureGroupStatusEquals", feature_group_status_equals)
+        check_object("OfflineStoreStatusEquals", offline_store_status_equals)
+        check_object("CreationTimeAfter", creation_time_after)
+        check_object("CreationTimeBefore", creation_time_before)
+        check_object("SortOrder", sort_order)
+        check_object("SortBy", sort_by)
+        check_object("MaxResults", max_results)
+        check_object("NextToken", next_token)
+
+        return self.sagemaker_client.list_feature_groups(**list_feature_groups_args)
+
     def update_feature_metadata(
         self,
         feature_group_name: str,
@@ -4180,6 +4457,48 @@ class Session(object):  # pylint: disable=too-many-public-methods
             FeatureGroupName=feature_group_name,
             Record=record,
         )
+
+    def delete_record(
+        self,
+        feature_group_name: str,
+        record_identifier_value_as_string: str,
+        event_time: str,
+    ):
+        """Deletes a single record from the FeatureGroup.
+
+        Args:
+            feature_group_name (str): name of the FeatureGroup.
+            record_identifier_value_as_string (str): name of the record identifier.
+            event_time (str): a timestamp indicating when the deletion event occurred.
+        """
+        return self.sagemaker_featurestore_runtime_client.delete_record(
+            FeatureGroupName=feature_group_name,
+            RecordIdentifierValueAsString=record_identifier_value_as_string,
+            EventTime=event_time,
+        )
+
+    def get_record(
+        self,
+        record_identifier_value_as_string: str,
+        feature_group_name: str,
+        feature_names: Sequence[str],
+    ) -> Dict[str, Sequence[Dict[str, str]]]:
+        """Gets a single record in the FeatureGroup.
+
+        Args:
+            record_identifier_value_as_string (str): name of the record identifier.
+            feature_group_name (str): name of the FeatureGroup.
+            feature_names (Sequence[str]): list of feature names.
+        """
+        get_record_args = {
+            "FeatureGroupName": feature_group_name,
+            "RecordIdentifierValueAsString": record_identifier_value_as_string,
+        }
+
+        if feature_names:
+            get_record_args["FeatureNames"] = feature_names
+
+        return self.sagemaker_featurestore_runtime_client.get_record(**get_record_args)
 
     def start_query_execution(
         self,
@@ -4613,6 +4932,9 @@ def production_variant(
     initial_weight=1,
     accelerator_type=None,
     serverless_inference_config=None,
+    volume_size=None,
+    model_data_download_timeout=None,
+    container_startup_health_check_timeout=None,
 ):
     """Create a production variant description suitable for use in a ``ProductionVariant`` list.
 
@@ -4634,7 +4956,16 @@ def production_variant(
         serverless_inference_config (dict): Specifies configuration dict related to serverless
             endpoint. The dict is converted from sagemaker.model_monitor.ServerlessInferenceConfig
             object (default: None)
-
+        volume_size (int): The size, in GB, of the ML storage volume attached to individual
+            inference instance associated with the production variant. Currenly only Amazon EBS
+            gp2 storage volumes are supported.
+        model_data_download_timeout (int): The timeout value, in seconds, to download and extract
+            model data from Amazon S3 to the individual inference instance associated with this
+            production variant.
+        container_startup_health_check_timeout (int): The timeout value, in seconds, for your
+            inference container to pass health check by SageMaker Hosting. For more information
+            about health check see:
+            https://docs.aws.amazon.com/sagemaker/latest/dg/your-algorithms-inference-code.html#your-algorithms-inference-algo-ping-requests
     Returns:
         dict[str, str]: An SageMaker ``ProductionVariant`` description
     """
@@ -4653,6 +4984,12 @@ def production_variant(
         initial_instance_count = initial_instance_count or 1
         production_variant_configuration["InitialInstanceCount"] = initial_instance_count
         production_variant_configuration["InstanceType"] = instance_type
+        update_args(
+            production_variant_configuration,
+            VolumeSizeInGB=volume_size,
+            ModelDataDownloadTimeoutInSeconds=model_data_download_timeout,
+            ContainerStartupHealthCheckTimeoutInSeconds=container_startup_health_check_timeout,
+        )
 
     return production_variant_configuration
 
@@ -4987,7 +5324,12 @@ def _rule_statuses_changed(current_statuses, last_statuses):
 def _logs_init(sagemaker_session, description, job):
     """Placeholder docstring"""
     if job == "Training":
-        instance_count = description["ResourceConfig"]["InstanceCount"]
+        if "InstanceGroups" in description["ResourceConfig"]:
+            instance_count = 0
+            for instanceGroup in description["ResourceConfig"]["InstanceGroups"]:
+                instance_count += instanceGroup["InstanceCount"]
+        else:
+            instance_count = description["ResourceConfig"]["InstanceCount"]
     elif job == "Transform":
         instance_count = description["TransformResources"]["InstanceCount"]
     elif job == "Processing":

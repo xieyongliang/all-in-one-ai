@@ -23,6 +23,7 @@ else:
     import _posixshmem
     _USE_POSIX = True
 
+from . import resource_tracker
 
 _O_CREX = os.O_CREAT | os.O_EXCL
 
@@ -116,8 +117,7 @@ class SharedMemory:
                 self.unlink()
                 raise
 
-            from .resource_tracker import register
-            register(self._name, "shared_memory")
+            resource_tracker.register(self._name, "shared_memory")
 
         else:
 
@@ -237,9 +237,8 @@ class SharedMemory:
         called once (and only once) across all processes which have access
         to the shared memory block."""
         if _USE_POSIX and self._name:
-            from .resource_tracker import unregister
             _posixshmem.shm_unlink(self._name)
-            unregister(self._name, "shared_memory")
+            resource_tracker.unregister(self._name, "shared_memory")
 
 
 _encoding = "utf8"
@@ -314,9 +313,6 @@ class ShareableList:
             for fmt in _formats:
                 offset += self._alignment if fmt[-1] != "s" else int(fmt[:-1])
                 self._allocated_offsets.append(offset)
-            _recreation_codes = [
-                self._extract_recreation_code(item) for item in sequence
-            ]
             _recreation_codes = [
                 self._extract_recreation_code(item) for item in sequence
             ]
@@ -425,7 +421,7 @@ class ShareableList:
     def __getitem__(self, position):
         position = position if position >= 0 else position + self._list_len
         try:
-            offset = self._offset_data_start + self._allocated_offsets[position]    
+            offset = self._offset_data_start + self._allocated_offsets[position]
             (v,) = struct.unpack_from(
                 self._get_packing_format(position),
                 self.shm.buf,

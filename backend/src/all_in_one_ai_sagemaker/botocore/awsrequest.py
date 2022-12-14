@@ -100,7 +100,7 @@ class AWSConnection:
     def _convert_to_bytes(self, mixed_buffer):
         # Take a list of mixed str/bytes and convert it
         # all into a single bytestring.
-        # Any six.text_types will be encoded as utf-8.
+        # Any str will be encoded as utf-8.
         bytes_buffer = []
         for chunk in mixed_buffer:
             if isinstance(chunk, str):
@@ -299,7 +299,11 @@ def create_request_object(request_dict):
     """
     r = request_dict
     request_object = AWSRequest(
-        method=r['method'], url=r['url'], data=r['body'], headers=r['headers']
+        method=r['method'],
+        url=r['url'],
+        data=r['body'],
+        headers=r['headers'],
+        auth_path=r.get('auth_path'),
     )
     request_object.context = r['context']
     return request_object

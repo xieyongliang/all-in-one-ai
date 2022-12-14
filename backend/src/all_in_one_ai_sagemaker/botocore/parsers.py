@@ -115,11 +115,12 @@ Each call to ``parse()`` returns a dict has this form::
 
 """
 import base64
+import http.client
 import json
 import logging
 import re
 
-from botocore.compat import ETree, XMLParseError, six
+from botocore.compat import ETree, XMLParseError
 from botocore.eventstream import EventStream, NoInitialResponseError
 from botocore.utils import (
     is_json_value_header,
@@ -306,7 +307,7 @@ class ResponseParser:
         return {
             'Error': {
                 'Code': str(response['status_code']),
-                'Message': six.moves.http_client.responses.get(
+                'Message': http.client.responses.get(
                     response['status_code'], ''
                 ),
             },
@@ -683,6 +684,7 @@ class BaseJSONParser(ResponseParser):
     def _do_error_parse(self, response, shape):
         body = self._parse_body_as_json(response['body'])
         error = {"Error": {"Message": '', "Code": ''}, "ResponseMetadata": {}}
+        headers = response['headers']
         # Error responses can have slightly different structures for json.
         # The basic structure is:
         #
@@ -697,7 +699,16 @@ class BaseJSONParser(ResponseParser):
         # if the message did not contain an error code
         # include the response status code
         response_code = response.get('status_code')
-        code = body.get('__type', response_code and str(response_code))
+        # Error response may contain an x-amzn-query-error header for json
+        # we need to fetch the error code from this header in that case
+        query_error = headers.get('x-amzn-query-error', '')
+        query_error_components = query_error.split(';')
+        code = None
+        if len(query_error_components) == 2 and query_error_components[0]:
+            code = query_error_components[0]
+            error['Error']['Type'] = query_error_components[1]
+        if code is None:
+            code = body.get('__type', response_code and str(response_code))
         if code is not None:
             # code has a couple forms as well:
             # * "com.aws.dynamodb.vAPI#ProvisionedThroughputExceededException"
@@ -1053,7 +1064,7 @@ class RestXMLParser(BaseRestParser, BaseXMLResponseParser):
         return {
             'Error': {
                 'Code': str(response['status_code']),
-                'Message': six.moves.http_client.responses.get(
+                'Message': http.client.responses.get(
                     response['status_code'], ''
                 ),
             },

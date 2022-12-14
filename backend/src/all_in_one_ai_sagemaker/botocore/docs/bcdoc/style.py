@@ -14,6 +14,8 @@
 import logging
 
 logger = logging.getLogger('bcdocs')
+# Terminal punctuation where a space is not needed before.
+PUNCTUATION_CHARACTERS = ('.', ',', '?', '!', ':', ';')
 
 
 class BaseStyle:
@@ -61,6 +63,16 @@ class BaseStyle:
 
     def italics(self, s):
         return s
+
+    def add_trailing_space_to_previous_write(self):
+        # Adds a trailing space if none exists. This is mainly used for
+        # ensuring inline code and links are separated from surrounding text.
+        last_write = self.doc.pop_write()
+        if last_write is None:
+            last_write = ''
+        if last_write != '' and last_write[-1] != ' ':
+            last_write += ' '
+        self.doc.push_write(last_write)
 
 
 class ReSTStyle(BaseStyle):
@@ -160,6 +172,7 @@ class ReSTStyle(BaseStyle):
 
     def start_code(self, attrs=None):
         self.doc.do_translation = True
+        self.add_trailing_space_to_previous_write()
         self._start_inline('``')
 
     def end_code(self):
@@ -203,10 +216,15 @@ class ReSTStyle(BaseStyle):
         self.new_paragraph()
 
     def start_a(self, attrs=None):
+        # Write an empty space to guard against zero whitespace
+        # before an "a" tag. Example: hi<a>Example</a>
+        self.add_trailing_space_to_previous_write()
         if attrs:
             for attr_key, attr_value in attrs:
                 if attr_key == 'href':
-                    self.a_href = attr_value
+                    # Removes unnecessary whitespace around the href link.
+                    # Example: <a href=" http://example.com ">Example</a>
+                    self.a_href = attr_value.strip()
                     self.doc.write('`')
         else:
             # There are some model documentation that
@@ -227,9 +245,23 @@ class ReSTStyle(BaseStyle):
         else:
             self.doc.write(text)
 
-    def end_a(self):
+    def _clean_link_text(self):
+        doc = self.doc
+        # Pop till we reach the link start character to retrieve link text.
+        last_write = doc.pop_write()
+        while not last_write.startswith('`'):
+            last_write = doc.pop_write() + last_write
+        doc.push_write('`')
+
+        # Remove whitespace from the start of link text.
+        last_write = last_write[1:].lstrip(' ')
+        if last_write != '':
+            doc.push_write(last_write)
+
+    def end_a(self, next_child=None):
         self.doc.do_translation = False
         if self.a_href:
+            self._clean_link_text()
             last_write = self.doc.pop_write()
             last_write = last_write.rstrip(' ')
             if last_write and last_write != '`':
@@ -249,7 +281,15 @@ class ReSTStyle(BaseStyle):
                 self.doc.hrefs[self.a_href] = self.a_href
                 self.doc.write('`__')
             self.a_href = None
-        self.doc.write(' ')
+
+        if (
+            next_child is None
+            or next_child.data[0] not in PUNCTUATION_CHARACTERS
+        ):
+            # We only want to add a trailing space if the link is
+            # not followed by a period, comma, or other gramatically
+            # correct special character.
+            self.doc.write(' ')
 
     def start_i(self, attrs=None):
         self.doc.do_translation = True

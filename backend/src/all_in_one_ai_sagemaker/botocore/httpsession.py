@@ -3,6 +3,7 @@ import os
 import os.path
 import socket
 import sys
+import warnings
 from base64 import b64encode
 
 from urllib3 import PoolManager, Timeout, proxy_from_url
@@ -37,8 +38,14 @@ except ImportError:
     from ssl import OP_NO_TICKET, PROTOCOL_TLS_CLIENT
 
 try:
-    # Always import the original SSLContext, even if it has been patched
-    from urllib3.contrib.pyopenssl import orig_util_SSLContext as SSLContext
+    # pyopenssl will be removed in urllib3 2.0, we'll fall back to ssl_ at that point.
+    # This can be removed once our urllib3 floor is raised to >= 2.0.
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", category=DeprecationWarning)
+        # Always import the original SSLContext, even if it has been patched
+        from urllib3.contrib.pyopenssl import (
+            orig_util_SSLContext as SSLContext,
+        )
 except ImportError:
     from urllib3.util.ssl_ import SSLContext
 
@@ -47,6 +54,7 @@ from botocore.compat import (
     IPV6_ADDRZ_RE,
     ensure_bytes,
     filter_ssl_warnings,
+    unquote,
     urlparse,
 )
 from botocore.exceptions import (
@@ -59,7 +67,6 @@ from botocore.exceptions import (
     ReadTimeoutError,
     SSLError,
 )
-from botocore.vendored.six.moves.urllib_parse import unquote
 
 filter_ssl_warnings()
 logger = logging.getLogger(__name__)

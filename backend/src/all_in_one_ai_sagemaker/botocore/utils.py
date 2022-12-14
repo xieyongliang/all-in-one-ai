@@ -12,8 +12,8 @@
 # language governing permissions and limitations under the License.
 import base64
 import binascii
-import cgi
 import datetime
+import email.message
 import functools
 import hashlib
 import io
@@ -23,7 +23,10 @@ import random
 import re
 import socket
 import time
+import warnings
 import weakref
+from pathlib import Path
+from urllib.request import getproxies, proxy_bypass
 
 import dateutil.parser
 from dateutil.tz import tzutc
@@ -37,15 +40,16 @@ import botocore.httpsession
 from botocore.compat import HEX_PAT  # noqa: F401
 from botocore.compat import IPV4_PAT  # noqa: F401
 from botocore.compat import IPV6_ADDRZ_PAT  # noqa: F401
-from botocore.compat import IPV6_ADDRZ_RE  # noqa: F401
 from botocore.compat import IPV6_PAT  # noqa: F401
 from botocore.compat import LS32_PAT  # noqa: F401
 from botocore.compat import UNRESERVED_PAT  # noqa: F401
-from botocore.compat import UNSAFE_URL_CHARS  # noqa: F401
 from botocore.compat import ZONE_ID_PAT  # noqa: F401
 from botocore.compat import (
     HAS_CRT,
+    IPV4_RE,
+    IPV6_ADDRZ_RE,
     MD5_AVAILABLE,
+    UNSAFE_URL_CHARS,
     OrderedDict,
     get_md5,
     get_tzinfo_options,
@@ -81,7 +85,6 @@ from botocore.exceptions import (
     UnsupportedS3ControlArnError,
     UnsupportedS3ControlConfigurationError,
 )
-from botocore.vendored.six.moves.urllib.request import getproxies, proxy_bypass
 
 logger = logging.getLogger(__name__)
 DEFAULT_METADATA_SERVICE_TIMEOUT = 1
@@ -1219,6 +1222,11 @@ def is_valid_ipv6_endpoint_url(endpoint_url):
     return IPV6_ADDRZ_RE.match(hostname) is not None
 
 
+def is_valid_ipv4_endpoint_url(endpoint_url):
+    hostname = urlparse(endpoint_url).hostname
+    return IPV4_RE.match(hostname) is not None
+
+
 def is_valid_endpoint_url(endpoint_url):
     """Verify the endpoint_url is valid.
 
@@ -1498,7 +1506,207 @@ def hyphenize_service_id(service_id):
     return service_id.replace(' ', '-').lower()
 
 
+class S3RegionRedirectorv2:
+    """Updated version of S3RegionRedirector for use when
+    EndpointRulesetResolver is in use for endpoint resolution.
+
+    This class is considered private and subject to abrupt breaking changes or
+    removal without prior announcement. Please do not use it directly.
+    """
+
+    def __init__(self, endpoint_bridge, client, cache=None):
+        self._cache = cache or {}
+        self._client = weakref.proxy(client)
+
+    def register(self, event_emitter=None):
+        logger.debug('Registering S3 region redirector handler')
+        emitter = event_emitter or self._client.meta.events
+        emitter.register('needs-retry.s3', self.redirect_from_error)
+        emitter.register(
+            'before-parameter-build.s3', self.annotate_request_context
+        )
+        emitter.register(
+            'before-endpoint-resolution.s3', self.redirect_from_cache
+        )
+
+    def redirect_from_error(self, request_dict, response, operation, **kwargs):
+        """
+        An S3 request sent to the wrong region will return an error that
+        contains the endpoint the request should be sent to. This handler
+        will add the redirect information to the signing context and then
+        redirect the request.
+        """
+        if response is None:
+            # This could be none if there was a ConnectionError or other
+            # transport error.
+            return
+
+        redirect_ctx = request_dict.get('context', {}).get('s3_redirect', {})
+        if ArnParser.is_arn(redirect_ctx.get('bucket')):
+            logger.debug(
+                'S3 request was previously for an Accesspoint ARN, not '
+                'redirecting.'
+            )
+            return
+
+        if redirect_ctx.get('redirected'):
+            logger.debug(
+                'S3 request was previously redirected, not redirecting.'
+            )
+            return
+
+        error = response[1].get('Error', {})
+        error_code = error.get('Code')
+        response_metadata = response[1].get('ResponseMetadata', {})
+
+        # We have to account for 400 responses because
+        # if we sign a Head* request with the wrong region,
+        # we'll get a 400 Bad Request but we won't get a
+        # body saying it's an "AuthorizationHeaderMalformed".
+        is_special_head_object = (
+            error_code in ('301', '400') and operation.name == 'HeadObject'
+        )
+        is_special_head_bucket = (
+            error_code in ('301', '400')
+            and operation.name == 'HeadBucket'
+            and 'x-amz-bucket-region'
+            in response_metadata.get('HTTPHeaders', {})
+        )
+        is_wrong_signing_region = (
+            error_code == 'AuthorizationHeaderMalformed' and 'Region' in error
+        )
+        is_redirect_status = response[0] is not None and response[
+            0
+        ].status_code in (301, 302, 307)
+        is_permanent_redirect = error_code == 'PermanentRedirect'
+        if not any(
+            [
+                is_special_head_object,
+                is_wrong_signing_region,
+                is_permanent_redirect,
+                is_special_head_bucket,
+                is_redirect_status,
+            ]
+        ):
+            return
+
+        bucket = request_dict['context']['s3_redirect']['bucket']
+        client_region = request_dict['context'].get('client_region')
+        new_region = self.get_bucket_region(bucket, response)
+
+        if new_region is None:
+            logger.debug(
+                "S3 client configured for region %s but the bucket %s is not "
+                "in that region and the proper region could not be "
+                "automatically determined." % (client_region, bucket)
+            )
+            return
+
+        logger.debug(
+            "S3 client configured for region %s but the bucket %s is in region"
+            " %s; Please configure the proper region to avoid multiple "
+            "unnecessary redirects and signing attempts."
+            % (client_region, bucket, new_region)
+        )
+        # Adding the new region to _cache will make construct_endpoint() to
+        # use the new region as value for the AWS::Region builtin parameter.
+        self._cache[bucket] = new_region
+
+        # Re-resolve endpoint with new region and modify request_dict with
+        # the new URL, auth scheme, and signing context.
+        ep_resolver = self._client._ruleset_resolver
+        ep_info = ep_resolver.construct_endpoint(
+            operation_model=operation,
+            call_args=request_dict['context']['s3_redirect']['params'],
+            request_context=request_dict['context'],
+        )
+        request_dict['url'] = self.set_request_url(
+            request_dict['url'], ep_info.url
+        )
+        request_dict['context']['s3_redirect']['redirected'] = True
+        auth_schemes = ep_info.properties.get('authSchemes')
+        if auth_schemes is not None:
+            auth_info = ep_resolver.auth_schemes_to_signing_ctx(auth_schemes)
+            auth_type, signing_context = auth_info
+            request_dict['context']['auth_type'] = auth_type
+            request_dict['context']['signing'] = {
+                **request_dict['context'].get('signing', {}),
+                **signing_context,
+            }
+
+        # Return 0 so it doesn't wait to retry
+        return 0
+
+    def get_bucket_region(self, bucket, response):
+        """
+        There are multiple potential sources for the new region to redirect to,
+        but they aren't all universally available for use. This will try to
+        find region from response elements, but will fall back to calling
+        HEAD on the bucket if all else fails.
+
+        :param bucket: The bucket to find the region for. This is necessary if
+            the region is not available in the error response.
+        :param response: A response representing a service request that failed
+            due to incorrect region configuration.
+        """
+        # First try to source the region from the headers.
+        service_response = response[1]
+        response_headers = service_response['ResponseMetadata']['HTTPHeaders']
+        if 'x-amz-bucket-region' in response_headers:
+            return response_headers['x-amz-bucket-region']
+
+        # Next, check the error body
+        region = service_response.get('Error', {}).get('Region', None)
+        if region is not None:
+            return region
+
+        # Finally, HEAD the bucket. No other choice sadly.
+        try:
+            response = self._client.head_bucket(Bucket=bucket)
+            headers = response['ResponseMetadata']['HTTPHeaders']
+        except ClientError as e:
+            headers = e.response['ResponseMetadata']['HTTPHeaders']
+
+        region = headers.get('x-amz-bucket-region', None)
+        return region
+
+    def set_request_url(self, old_url, new_endpoint, **kwargs):
+        """
+        Splice a new endpoint into an existing URL. Note that some endpoints
+        from the the endpoint provider have a path component which will be
+        discarded by this function.
+        """
+        return _get_new_endpoint(old_url, new_endpoint, False)
+
+    def redirect_from_cache(self, builtins, params, **kwargs):
+        """
+        If a bucket name has been redirected before, it is in the cache. This
+        handler will update the AWS::Region endpoint resolver builtin param
+        to use the region from cache instead of the client region to avoid the
+        redirect.
+        """
+        bucket = params.get('Bucket')
+        if bucket is not None and bucket in self._cache:
+            new_region = self._cache.get(bucket)
+            builtins['AWS::Region'] = new_region
+
+    def annotate_request_context(self, params, context, **kwargs):
+        """Store the bucket name in context for later use when redirecting.
+        The bucket name may be an access point ARN or alias.
+        """
+        bucket = params.get('Bucket')
+        context['s3_redirect'] = {
+            'redirected': False,
+            'bucket': bucket,
+            'params': params,
+        }
+
+
 class S3RegionRedirector:
+    """This handler has been replaced by S3RegionRedirectorv2. The original
+    version remains in place for any third-party libraries that import it.
+    """
+
     def __init__(self, endpoint_bridge, client, cache=None):
         self._endpoint_resolver = endpoint_bridge
         self._cache = cache
@@ -1508,6 +1716,13 @@ class S3RegionRedirector:
         # This needs to be a weak ref in order to prevent memory leaks on
         # python 2.6
         self._client = weakref.proxy(client)
+
+        warnings.warn(
+            'The S3RegionRedirector class has been deprecated for a new '
+            'internal replacement. A future version of botocore may remove '
+            'this class.',
+            category=FutureWarning,
+        )
 
     def register(self, event_emitter=None):
         emitter = event_emitter or self._client.meta.events
@@ -1685,6 +1900,17 @@ class ArnParser:
             'account': arn_parts[4],
             'resource': arn_parts[5],
         }
+
+    @staticmethod
+    def is_arn(value):
+        if not isinstance(value, str) or not value.startswith('arn:'):
+            return False
+        arn_parser = ArnParser()
+        try:
+            arn_parser.parse_arn(value)
+            return True
+        except InvalidArnException:
+            return False
 
 
 class S3ArnParamHandler:
@@ -2398,12 +2624,22 @@ class S3ControlEndpointSetter:
 
 
 class S3ControlArnParamHandler:
+    """This handler has been replaced by S3ControlArnParamHandlerv2. The
+    original version remains in place for any third-party importers.
+    """
+
     _RESOURCE_SPLIT_REGEX = re.compile(r'[/:]')
 
     def __init__(self, arn_parser=None):
         self._arn_parser = arn_parser
         if arn_parser is None:
             self._arn_parser = ArnParser()
+        warnings.warn(
+            'The S3ControlArnParamHandler class has been deprecated for a new '
+            'internal replacement. A future version of botocore may remove '
+            'this class.',
+            category=FutureWarning,
+        )
 
     def register(self, event_emitter):
         event_emitter.register(
@@ -2518,6 +2754,83 @@ class S3ControlArnParamHandler:
         arn_details['bucket_name'] = bucket_name
         arn_details['outpost_name'] = arn_details['resources'][1]
         context['arn_details'] = arn_details
+
+
+class S3ControlArnParamHandlerv2(S3ControlArnParamHandler):
+    """Updated version of S3ControlArnParamHandler for use when
+    EndpointRulesetResolver is in use for endpoint resolution.
+
+    This class is considered private and subject to abrupt breaking changes or
+    removal without prior announcement. Please do not use it directly.
+    """
+
+    def __init__(self, arn_parser=None):
+        self._arn_parser = arn_parser
+        if arn_parser is None:
+            self._arn_parser = ArnParser()
+
+    def register(self, event_emitter):
+        event_emitter.register(
+            'before-endpoint-resolution.s3-control',
+            self.handle_arn,
+        )
+
+    def _handle_name_param(self, params, model, context):
+        # CreateAccessPoint is a special case that does not expand Name
+        if model.name == 'CreateAccessPoint':
+            return
+        arn_details = self._get_arn_details_from_param(params, 'Name')
+        if arn_details is None:
+            return
+        self._raise_for_fips_pseudo_region(arn_details)
+        self._raise_for_accelerate_endpoint(context)
+        if self._is_outpost_accesspoint(arn_details):
+            self._store_outpost_accesspoint(params, context, arn_details)
+        else:
+            error_msg = 'The Name parameter does not support the provided ARN'
+            raise UnsupportedS3ControlArnError(
+                arn=arn_details['original'],
+                msg=error_msg,
+            )
+
+    def _store_outpost_accesspoint(self, params, context, arn_details):
+        self._override_account_id_param(params, arn_details)
+
+    def _handle_bucket_param(self, params, model, context):
+        arn_details = self._get_arn_details_from_param(params, 'Bucket')
+        if arn_details is None:
+            return
+        self._raise_for_fips_pseudo_region(arn_details)
+        self._raise_for_accelerate_endpoint(context)
+        if self._is_outpost_bucket(arn_details):
+            self._store_outpost_bucket(params, context, arn_details)
+        else:
+            error_msg = (
+                'The Bucket parameter does not support the provided ARN'
+            )
+            raise UnsupportedS3ControlArnError(
+                arn=arn_details['original'],
+                msg=error_msg,
+            )
+
+    def _store_outpost_bucket(self, params, context, arn_details):
+        self._override_account_id_param(params, arn_details)
+
+    def _raise_for_fips_pseudo_region(self, arn_details):
+        # FIPS pseudo region names cannot be used in ARNs
+        arn_region = arn_details['region']
+        if arn_region.startswith('fips-') or arn_region.endswith('fips-'):
+            raise UnsupportedS3ControlArnError(
+                arn=arn_details['original'],
+                msg='Invalid ARN, FIPS region not allowed in ARN.',
+            )
+
+    def _raise_for_accelerate_endpoint(self, context):
+        s3_config = context['client_config'].s3 or {}
+        if s3_config.get('use_accelerate_endpoint'):
+            raise UnsupportedS3ControlConfigurationError(
+                msg='S3 control client does not support accelerate endpoints',
+            )
 
 
 class ContainerMetadataFetcher:
@@ -2698,10 +3011,12 @@ def get_encoding_from_headers(headers, default='ISO-8859-1'):
     if not content_type:
         return None
 
-    content_type, params = cgi.parse_header(content_type)
+    message = email.message.Message()
+    message['content-type'] = content_type
+    charset = message.get_param("charset")
 
-    if 'charset' in params:
-        return params['charset'].strip("'\"")
+    if charset is not None:
+        return charset
 
     if 'text' in content_type:
         return default
@@ -2872,3 +3187,105 @@ class EventbridgeSignerSetter:
             dns_suffix = self._DEFAULT_DNS_SUFFIX
 
         return f"https://{endpoint}.endpoint.events.{dns_suffix}/"
+
+
+def is_s3_accelerate_url(url):
+    """Does the URL match the S3 Accelerate endpoint scheme?
+
+    Virtual host naming style with bucket names in the netloc part of the URL
+    are not allowed by this function.
+    """
+    if url is None:
+        return False
+
+    # Accelerate is only valid for Amazon endpoints.
+    url_parts = urlsplit(url)
+    if not url_parts.netloc.endswith(
+        'amazonaws.com'
+    ) or url_parts.scheme not in ['https', 'http']:
+        return False
+
+    # The first part of the URL must be s3-accelerate.
+    parts = url_parts.netloc.split('.')
+    if parts[0] != 's3-accelerate':
+        return False
+
+    # Url parts between 's3-accelerate' and 'amazonaws.com' which
+    # represent different url features.
+    feature_parts = parts[1:-2]
+
+    # There should be no duplicate URL parts.
+    if len(feature_parts) != len(set(feature_parts)):
+        return False
+
+    # Remaining parts must all be in the whitelist.
+    return all(p in S3_ACCELERATE_WHITELIST for p in feature_parts)
+
+
+class JSONFileCache:
+    """JSON file cache.
+    This provides a dict like interface that stores JSON serializable
+    objects.
+    The objects are serialized to JSON and stored in a file.  These
+    values can be retrieved at a later time.
+    """
+
+    CACHE_DIR = os.path.expanduser(os.path.join('~', '.aws', 'boto', 'cache'))
+
+    def __init__(self, working_dir=CACHE_DIR, dumps_func=None):
+        self._working_dir = working_dir
+        if dumps_func is None:
+            dumps_func = self._default_dumps
+        self._dumps = dumps_func
+
+    def _default_dumps(self, obj):
+        return json.dumps(obj, default=self._serialize_if_needed)
+
+    def __contains__(self, cache_key):
+        actual_key = self._convert_cache_key(cache_key)
+        return os.path.isfile(actual_key)
+
+    def __getitem__(self, cache_key):
+        """Retrieve value from a cache key."""
+        actual_key = self._convert_cache_key(cache_key)
+        try:
+            with open(actual_key) as f:
+                return json.load(f)
+        except (OSError, ValueError):
+            raise KeyError(cache_key)
+
+    def __delitem__(self, cache_key):
+        actual_key = self._convert_cache_key(cache_key)
+        try:
+            key_path = Path(actual_key)
+            key_path.unlink()
+        except FileNotFoundError:
+            raise KeyError(cache_key)
+
+    def __setitem__(self, cache_key, value):
+        full_key = self._convert_cache_key(cache_key)
+        try:
+            file_content = self._dumps(value)
+        except (TypeError, ValueError):
+            raise ValueError(
+                f"Value cannot be cached, must be "
+                f"JSON serializable: {value}"
+            )
+        if not os.path.isdir(self._working_dir):
+            os.makedirs(self._working_dir)
+        with os.fdopen(
+            os.open(full_key, os.O_WRONLY | os.O_CREAT, 0o600), 'w'
+        ) as f:
+            f.truncate()
+            f.write(file_content)
+
+    def _convert_cache_key(self, cache_key):
+        full_path = os.path.join(self._working_dir, cache_key + '.json')
+        return full_path
+
+    def _serialize_if_needed(self, value, iso=False):
+        if isinstance(value, datetime.datetime):
+            if iso:
+                return value.isoformat()
+            return value.strftime('%Y-%m-%dT%H:%M:%S%Z')
+        return value

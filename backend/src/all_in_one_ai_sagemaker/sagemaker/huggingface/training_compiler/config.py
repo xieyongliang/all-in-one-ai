@@ -26,7 +26,7 @@ logger = logging.getLogger(__name__)
 class TrainingCompilerConfig(BaseConfig):
     """The SageMaker Training Compiler configuration class."""
 
-    SUPPORTED_INSTANCE_CLASS_PREFIXES = ["p3", "g4dn", "p4d", "g5"]
+    SUPPORTED_INSTANCE_CLASS_PREFIXES = ["p3", "p3dn", "g4dn", "p4d", "g5"]
     SUPPORTED_INSTANCE_TYPES_WITH_EFA = [
         "ml.g4dn.8xlarge",
         "ml.g4dn.12xlarge",
@@ -53,10 +53,10 @@ class TrainingCompilerConfig(BaseConfig):
         estimator.
 
         Args:
-            enabled (bool): Optional. Switch to enable SageMaker Training Compiler.
-                The default is ``True``.
-            debug (bool): Optional. Whether to dump detailed logs for debugging.
-                This comes with a potential performance slowdown.
+            enabled (bool or PipelineVariable): Optional. Switch to enable SageMaker
+                Training Compiler. The default is ``True``.
+            debug (bool or PipelineVariable): Optional. Whether to dump detailed logs
+                for debugging. This comes with a potential performance slowdown.
                 The default is ``False``.
 
         **Example**: The following code shows the basic usage of the
@@ -87,10 +87,7 @@ class TrainingCompilerConfig(BaseConfig):
         super(TrainingCompilerConfig, self).__init__(enabled=enabled, debug=debug)
 
     @classmethod
-    def validate(
-        cls,
-        estimator,
-    ):
+    def validate(cls, estimator):
         """Checks if SageMaker Training Compiler is configured correctly.
 
         Args:
