@@ -434,11 +434,29 @@ Resources:
   Parameter49:
     Type: AWS::SSM::Parameter
     Properties:
-      Name: /all_in_one_ai/config/meta/algorithms/stable-diffusion-webui/industrialmodels
+      Name: /all_in_one_ai/config/meta/algorithms/stablediffusion/industrialmodels
       Type: String
-      Value: !Sub s3://${S3Bucket}/${S3Key}algorithms/stylegan/industrialmodels/
+      Value: !Sub s3://${S3Bucket}/${S3Key}algorithms/stablediffusion/industrialmodels/
 
   Parameter50:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /all_in_one_ai/config/meta/algorithms/stablediffusion/inference_image
+      Type: String
+      Value:
+        !If
+        - Globally
+        - !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/all-in-one-ai-stablediffusion-inference:latest
+        - !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com.cn/all-in-one-ai-stablediffusion-inference:latest
+
+  Parameter51:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /all_in_one_ai/config/meta/algorithms/stable-diffusion-webui/industrialmodels
+      Type: String
+      Value: !Sub s3://${S3Bucket}/${S3Key}algorithms/stable-diffusion-webui/industrialmodels/
+
+  Parameter52:
     Type: AWS::SSM::Parameter
     Properties:
       Name: /all_in_one_ai/config/meta/algorithms/stable-diffusion-webui/training_image
@@ -449,7 +467,7 @@ Resources:
         - !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/all-in-one-ai-stable-diffusion-webui-training:latest
         - !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com.cn/all-in-one-ai-stable-diffusion-webui-training:latest
 
-  Parameter51:
+  Parameter53:
     Type: AWS::SSM::Parameter
     Properties:
       Name: /all_in_one_ai/config/meta/algorithms/stable-diffusion-webui/inference_image
@@ -460,7 +478,7 @@ Resources:
         - !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/all-in-one-ai-stable-diffusion-webui-inference:latest
         - !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com.cn/all-in-one-ai-stable-diffusion-webui-inference:latest
 
-  Parameter52:
+  Parameter54:
     Type: AWS::SSM::Parameter
     Properties:
       Name: /all_in_one_ai/config/meta/api_endpoint

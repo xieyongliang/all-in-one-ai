@@ -160,6 +160,7 @@ all_in_one_ai_pipeline
 all_in_one_ai_remove_permission
 all_in_one_ai_s3
 all_in_one_ai_sd_industrial_model
+all_in_one_ai_sd_hypernetwork
 all_in_one_ai_sd_model
 all_in_one_ai_sd_user
 all_in_one_ai_search_by_image
