@@ -3774,9 +3774,13 @@ Resources:
           - 'arn:aws-cn:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
         - !If
           - Globally                                                  
-          - 'arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess'
-          - 'arn:aws-cn:iam::aws:policy/AmazonDynamoDBFullAccess'
-  
+          - 'arn:aws:iam::aws:policy/AmazonSageMakerFullAccess'
+          - 'arn:aws-cn:iam::aws:policy/AmazonSageMakerFullAccess'
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/AmazonS3FullAccess'
+          - 'arn:aws-cn:iam::aws:policy/AmazonS3FullAccess'
+            
   AllInOneAISDHypernetworkFunctionAdditionalPermission:
     Type: 'AWS::IAM::Policy'
     Properties:
