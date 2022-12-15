@@ -7,7 +7,7 @@ parser.add_argument('--train-task', type=str, help='Train task, either embedding
 parser.add_argument('--train-args', type=str, help='Train arguments')
 parser.add_argument('--embeddings-s3uri', default='', type=str, help='Embeddings S3Uri')
 parser.add_argument('--hypernetwork-s3uri', default='', type=str, help='Hypernetwork S3Uri')
-parser.add_argument('--ckpt', default='/opt/ml/input/models/768-v-ema.ckpt', type=str, help='SD model')
+parser.add_argument('--ckpt', default='/opt/ml/input/data/models/768-v-ema.ckpt', type=str, help='SD model')
 parser.add_argument('--region-name', type=str, help='Region Name')
 parser.add_argument('--username', default='', type=str, help='Username')
 parser.add_argument('--api-endpoint', default='', type=str, help='API Endpoint')
