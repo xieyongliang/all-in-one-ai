@@ -3802,7 +3802,7 @@ Resources:
     Properties:
       Code:
         S3Bucket: !Ref S3Bucket
-        S3Key: !Sub ${S3Key}codes/all_in_one_aisd_hypernetwork.zip
+        S3Key: !Sub ${S3Key}codes/all_in_one_ai_sd_hypernetwork.zip
       FunctionName: all_in_one_ai_sd_hypernetwork
       Tags:
         - Value: Name
