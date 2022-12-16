@@ -339,7 +339,7 @@ def lambda_handler(event, context):
                 'embeddings-s3uri': embedding_s3uri,
                 'hypernetwork-s3uri': hypernetwork_s3uri,
                 'train-task': 'embedding',
-                'api_endpoint': ssmh.get_parameter('/all_in_one_ai/config/meta/api_endpoint')
+                'api-endpoint': ssmh.get_parameter('/all_in_one_ai/config/meta/api_endpoint')
             }
 
             if 'embeddings' not in inputs:
@@ -451,4 +451,3 @@ def s3uri_contain_files(s3uri):
     s3_bucket = s3_resource.Bucket(bucket)
     objs = list(s3_bucket.objects.filter(Prefix=key))
     return len(objs) > 1
-
