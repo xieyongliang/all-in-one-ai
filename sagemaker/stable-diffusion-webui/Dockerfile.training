@@ -5,7 +5,7 @@ RUN apt-get update
 RUN apt-get install --assume-yes apt-utils -y
 
 RUN apt update
-RUN apt install wget git python3 python3-venv -y
+RUN apt install wget git -y
 RUN apt install libgl1-mesa-glx -y
 RUN pip install opencv-python-headless
 RUN mkdir -p /opt/ml/code
