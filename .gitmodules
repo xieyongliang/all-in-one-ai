@@ -1,3 +1,6 @@
 [submodule "sagemaker/stable-diffusion-webui/stable-diffusion-webui"]
 	path = sagemaker/stable-diffusion-webui/stable-diffusion-webui
 	url = https://github.com/xieyongliang/stable-diffusion-webui.git
+[submodule "sagemaker/stable-diffusion-webui/xformers"]
+	path = sagemaker/stable-diffusion-webui/xformers
+	url = https://github.com/xieyongliang/xformers.git
