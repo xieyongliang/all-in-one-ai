@@ -127,6 +127,10 @@ Make sure the following resources not existed. In case they are existed, please 
 
     git clone --recurse-submodules -j8 https://github.com/xieyongliang/all-in-one-ai.git -t [path-to-all-in-one-ai]
 
+###  Update source code
+
+    git pull --recurse-submodules -j8
+
 ###  Build and deploy
 
     Run the following commands to package python codes and build docker image for web portal and then upload assets to S3 and push docker image to ECR which region is the same AWS region as where CloudFormation stack. It will may take 30-60 minutes.
@@ -232,6 +236,85 @@ If Cognito authentication is disabled, please launch All-in-One AI CloudFormatio
     ![Cognito CloudFormation step 6](./assets/images/main_step_7.png)
 
     ![Cognito CloudFormation step 6](./assets/images/main_step_7_2.png)
+
+## Build stable-diffusion-webui
+###  Build and push to ECR
+
+Go to sagemaker/stable-diffusion-webui and 
+    
+    run ./build_and_push.sh [region-name]
+
+Note: It is a partial step of build_and_deploy.sh
+
+###  stable-diffusion-webui deployment
+
+1.  Launch CloudFormation stack template by clicking [![Launch CloudFormation stack](./assets/images/launch.png)](https://console.aws.amazon.com/cloudformation/home?#/stacks/create/template) , and input Amazon S3 URL with HTTP URI of all-in-one-ai-cognito.yaml.
+
+    ![stable-difffusion-webui CloudFormation step 1](./assets/images/stable-diffusion-webui-01.png)
+
+2. Specify stack details.  Please input API Gateway endpoint and select your private subnets, public subnets, vpc, and customize other parameters if needed. If you want to use HTTP, please leave the rest as blank. If you want to use HTTPS, please input ACM certifacate ARN and your domain name.Choose Next. For API Gateway endpoint, you can check it from the stack outputs of all-in-one-lambda.yaml.
+
+    ![stable-difffusion-webui CloudFormation step 2](./assets/images/stable-diffusion-webui-02.png)
+
+    ![stable-difffusion-webui CloudFormation step 2](./assets/images/stable-diffusion-webui-03.png)    
+
+3. Configure stack options. Keep everything as default and choose Next.
+
+    ![stable-difffusion-webui CloudFormation step 3](./assets/images/stable-diffusion-webui-04.png)
+
+    ![stable-difffusion-webui CloudFormation step 3](./assets/images/stable-diffusion-webui-05.png)
+
+4.  Review stack all-in-one-ai. Check the 1 check boxes in the bottom. Choose Create Stack.
+
+    ![stable-difffusion-webui CloudFormation step 4](./assets/images/stable-diffusion-webui-06.png)
+
+    ![stable-difffusion-webui CloudFormation step 4](./assets/images/stable-diffusion-webui-07.png)
+
+5.  Wait for around 10 minutes to get the stack launched and check the stack outpus.
+
+    ![stable-difffusion-webui CloudFormation step 5](./assets/images/stable-diffusion-webui-08.png)
+
+###  Prepare SD models
+
+*   SD v2.0
+    
+    [768-v-ema.ckpt](https://huggingface.co/stabilityai/stable-diffusion-2/blob/main/768-v-ema.ckpt)
+
+    [stable-diffusion/v2-inference-v.yaml](https://github.com/Stability-AI/stablediffusion/blob/main/configs/stable-diffusion/v2-inference-v.yaml)
+
+*   SD v1.5
+    
+    [v1-5-pruned-emaonly.ckpt](https://huggingface.co/runwayml/stable-diffusion-v1-5/blob/main/v1-5-pruned-emaonly.ckpt)
+
+    [v1-5-pruned.ckpt](https://huggingface.co/runwayml/stable-diffusion-v1-5/blob/main/v1-5-pruned.ckpt)
+
+*   SD v1.4
+    
+    [sd-v1-4-full-ema.ckpt](https://huggingface.co/CompVis/stable-diffusion-v-1-4-original/blob/main/sd-v1-4-full-ema.ckpt)
+
+    [sd-v1-4.ckpt](https://huggingface.co/CompVis/stable-diffusion-v-1-4-original/blob/main/sd-v1-4.ckpt)
+
+You could pick up all your interested SD models and download them into one directory and then run 
+    
+    python3 prepare.py [path-to-sd-models-directory]
+
+This script will help to generate model.tar.gz and push s3://[sagemaker-default-bucket]/assets/, push the whole model directory to s3://[sagemaker-default-bucket]/models/, and generate meta-data and save in DynamoDB.
+
+For instance, the following diagram shows the contents at the model files at s3://[sagemaker-default-bucket]/models/.
+
+![stable-difffusion-webui models](./assets/images/stable-diffusion-webui-00.png)
+
+Note:
+
+*   For SD v2.0, please keep the filename consistent, e.g. 768-v-ema.ckpt and 768-v-ema.yaml.
+
+*   Only English versions of SD 2.x and SD 1.x are supported. Chinese versions (e.g. Taiyi) are not supported yet.
+
+### Launch stable-diffusion-webui
+
+*   Wait 10 minutes until the stable-diffusion-webui server pass the health check and then check the stack outputs of all-in-one-ai-webui and then launch the stable-diffusion-webui.
+
+![stable-difffusion-webui](./assets/images/stable-diffusion-webui-09.png)
 
 ##  Resource Cleanup
 *   The resource created by CloudFormation will be deleted automatically when you delete CloudFormation stack. Before you delete CloudFormation stack, please make sure the following resources created dynamically are deleted.
