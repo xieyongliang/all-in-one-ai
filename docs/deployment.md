@@ -125,7 +125,7 @@ Make sure the following resources not existed. In case they are existed, please 
 
 ###  Get source code
 
-    git clone --recurse-submodules -j8 https://github.com/xieyongliang/all-in-one-ai.git -t [path-to-all-in-one-ai]
+    git clone --recurse-submodules -j8 https://github.com/xieyongliang/all-in-one-ai.git [path-to-all-in-one-ai]
 
 ###  Update source code
 

@@ -148,7 +148,7 @@ Resources:
       Scheme: internet-facing
       LoadBalancerAttributes:
         - Key: idle_timeout.timeout_seconds
-          Value: '30'
+          Value: '3600'
       Subnets: !Ref PublicSubnets
       SecurityGroups:
         - !Ref AlbSecurityGroup
