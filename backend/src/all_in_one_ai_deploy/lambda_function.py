@@ -322,6 +322,12 @@ def lambda_handler(event, context):
             if model_data_url == '':
                 model_data_url = 's3://{0}/stable-diffusion-webui/assets/model.tar.gz'.format(bucket)
 
+            if endpoint_name == '':
+                base_name = sagemaker.utils.base_name_from_image(image_uri)
+                endpoint_name = sagemaker.utils.name_from_base(base_name)
+            
+            model_environment['endpoint_name'] = endpoint_name
+
             payload = {
                 'body': {
                     'industrial_model': industrial_model,

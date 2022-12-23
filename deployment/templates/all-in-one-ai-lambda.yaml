@@ -3967,7 +3967,24 @@ Resources:
           - !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAISDModelFunction.Arn}/invocations'
           - !Sub 'arn:aws-cn:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAISDModelFunction.Arn}/invocations'
       ResourceId: !Ref ApiGatewayResourceSDModel
-      RestApiId: !Ref ApiGatewayRestApi   
+      RestApiId: !Ref ApiGatewayRestApi
+
+  ApiGatewayMethodSDModelPost:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      ApiKeyRequired: false
+      AuthorizationType: NONE
+      HttpMethod: POST
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: 
+          !If
+          - Globally
+          - !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAISDModelFunction.Arn}/invocations'
+          - !Sub 'arn:aws-cn:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAISDModelFunction.Arn}/invocations'
+      ResourceId: !Ref ApiGatewayResourceSDModel
+      RestApiId: !Ref ApiGatewayRestApi
 
   AllInOneAISDModelFunctionRole:
     Type: 'AWS::IAM::Role'
@@ -4047,6 +4064,26 @@ Resources:
         - !Sub
           - >-
             arn:aws-cn:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/GET/sd/models
+          - __Stage__: '*'
+            __ApiId__: !Ref ApiGatewayRestApi
+
+  AllInOneAISDModelFunctionCatchAllPermissionProd2:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: 'lambda:InvokeFunction'
+      Principal: apigateway.amazonaws.com      
+      FunctionName: !Ref AllInOneAISDModelFunction
+      SourceArn: 
+        !If
+        - Globally
+        - !Sub
+          - >-
+            arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/POST/sd/models
+          - __Stage__: '*'
+            __ApiId__: !Ref ApiGatewayRestApi
+        - !Sub
+          - >-
+            arn:aws-cn:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/POST/sd/models
           - __Stage__: '*'
             __ApiId__: !Ref ApiGatewayRestApi
 
@@ -7088,6 +7125,7 @@ Resources:
       - ApiGatewayMethodSDHypernetworkGet
       - ApiGatewayMethodSDIndustrialModelGet
       - ApiGatewayMethodSDModelGet
+      - ApiGatewayMethodSDModelPost
       - ApiGatewayMethodSDUserPost
       - ApiGatewayMethodS3Get
       - ApiGatewayMethodSearchImage

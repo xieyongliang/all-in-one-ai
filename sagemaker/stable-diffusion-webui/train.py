@@ -7,6 +7,8 @@ parser.add_argument('--train-task', type=str, help='Train task, either embedding
 parser.add_argument('--train-args', type=str, help='Train arguments')
 parser.add_argument('--embeddings-s3uri', default='', type=str, help='Embeddings S3Uri')
 parser.add_argument('--hypernetwork-s3uri', default='', type=str, help='Hypernetwork S3Uri')
+parser.add_argument('--sd-models-s3uri', default='', type=str, help='SD Models S3Uri')
+parser.add_argument('--db-models-s3uri', default='', type=str, help='DB Models S3Uri')
 parser.add_argument('--ckpt', default='/opt/ml/input/data/models/768-v-ema.ckpt', type=str, help='SD model')
 parser.add_argument('--region-name', type=str, help='Region Name')
 parser.add_argument('--username', default='', type=str, help='Username')
@@ -21,7 +23,13 @@ if args.embeddings_s3uri != '':
 
 if args.hypernetwork_s3uri != '':
     cmd = '{0} --hypernetwork-s3uri {1}'.format(cmd, args.hypernetwork_s3uri)
-    
+
+if args.sd_models_s3uri != '':
+    cmd = '{0} --sd-models-s3uri {1}'.format(cmd, args.sd_models_s3uri)
+
+if args.db_models_s3uri != '':
+    cmd = '{0} --db-models-s3uri {1}'.format(cmd, args.db_models_s3uri)
+
 if args.username != '':
     cmd = '{0} --username {1}'.format(cmd, args.username)
 
