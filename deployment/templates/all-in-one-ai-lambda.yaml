@@ -4000,13 +4000,17 @@ Resources:
                 - lambda.amazonaws.com
       ManagedPolicyArns:
         - !If
-          - Globally                                                  
+          - Globally
           - 'arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
           - 'arn:aws-cn:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
         - !If
-          - Globally                                                  
+          - Globally
           - 'arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess'
           - 'arn:aws-cn:iam::aws:policy/AmazonDynamoDBFullAccess'
+        - !If
+          - Globally
+          - 'arn:aws:iam::aws:policy/AmazonSageMakerFullAccess'
+          - 'arn:aws-cn:iam::aws:policy/AmazonSageMakerFullAccess'
   
   AllInOneAISDModelFunctionAdditionalPermission:
     Type: 'AWS::IAM::Policy'
@@ -4046,6 +4050,7 @@ Resources:
           - !Ref SecurityGroup
       Layers:
         - !Ref HelperLayer
+        - !Ref SageMakerLayer
 
   AllInOneAISDModelFunctionCatchAllPermissionProd1:
     Type: 'AWS::Lambda::Permission'

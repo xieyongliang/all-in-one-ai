@@ -375,6 +375,7 @@ def _tmpdir(suffix="", prefix="tmp"):
     """
     #tmp = tempfile.mkdtemp(suffix=suffix, prefix=prefix, dir=None)
     tmp = '/mnt/efs/sagemaker/{0}'.format(uuid.uuid4())
+    os.system('mkdir -p {0}'.format(tmp))
     yield tmp
     shutil.rmtree(tmp)
 

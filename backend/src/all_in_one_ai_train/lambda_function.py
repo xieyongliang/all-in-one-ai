@@ -332,8 +332,10 @@ def lambda_handler(event, context):
         elif(algorithm == 'stable-diffusion-webui'):
             image_uri = ssmh.get_parameter('/all_in_one_ai/config/meta/algorithms/{0}/training_image'.format(algorithm))
             embedding_s3uri = 's3://{0}/stable-diffusion-webui/embeddings/'.format(bucket)
+            models_s3uri = 's3://{0}/stable-diffusion-webui/models/'.format(bucket)
             hypernetwork_s3uri = 's3://{0}/stable-diffusion-webui/hypernetwork/'.format(bucket)
-
+            lora_s3uri = 's3://{0}/stable-diffusion-webui/lora/'.format(bucket)
+            dreambooth_s3uri = 's3://{0}/stable-diffusion-webui/dreambooth/'.format(bucket)
             default_hyperparameters = {
                 'region': boto3.session.Session().region_name,
                 'embeddings-s3uri': embedding_s3uri,
@@ -342,18 +344,38 @@ def lambda_handler(event, context):
                 'api-endpoint': ssmh.get_parameter('/all_in_one_ai/config/meta/api_endpoint')
             }
 
-            if 'embeddings' not in inputs:
-                with_embeddings = s3uri_contain_files(embedding_s3uri)
-                if with_embeddings:
-                    inputs['embeddings'] = embedding_s3uri
-            if 'hypernetwork' not in inputs:
-                with_hypernetwork = s3uri_contain_files(hypernetwork_s3uri)
-                if with_hypernetwork:
-                    inputs['hypernetwork'] = hypernetwork_s3uri
-
             for key in default_hyperparameters.keys():
                 if(key not in hyperparameters.keys()):
                     hyperparameters[key] = default_hyperparameters[key]
+
+            print(hyperparameters)
+            if hyperparameters['train-task'] == 'embedding' or hyperparameters['train-task'] == 'hypernetwork':
+                if 'embeddings' not in inputs:
+                    with_embeddings = s3uri_contain_files(embedding_s3uri)
+                    if with_embeddings:
+                        inputs['embeddings'] = embedding_s3uri
+                if 'hypernetwork' not in inputs:
+                    with_hypernetwork = s3uri_contain_files(hypernetwork_s3uri)
+                    if with_hypernetwork:
+                        inputs['hypernetwork'] = hypernetwork_s3uri
+            else:
+                train_args = json.loads(json.loads(hyperparameters['train-args']))
+                train_dreambooth_settings = train_args['train_dreambooth_settings']
+                if 'lora' not in inputs and train_dreambooth_settings['db_lora_model_name'] != '' :
+                    with_lora =  s3uri_contain_files(lora_s3uri)
+                    if with_lora:
+                        inputs['lora'] = lora_s3uri
+                if 'dreambooth' not in inputs and train_dreambooth_settings['db_create_new_db_model']:
+                    with_dreambooth = s3uri_contain_files(dreambooth_s3uri)
+                    if with_dreambooth:
+                        inputs['dreambooth'] = dreambooth_s3uri
+                if 'db-models-s3uri' not in hyperparameters:
+                    hyperparameters['db-models-s3uri'] = dreambooth_s3uri
+                if 'sd-models-s3uri' not in hyperparameters:
+                    hyperparameters['sd-models-s3uri'] = models_s3uri
+
+            if 'models' not in inputs or inputs['models'] == '':
+                inputs['models'] = models_s3uri
 
             payload = {
                 'body': {

@@ -2,6 +2,7 @@ import json
 import boto3
 import traceback
 from sagemaker.huggingface import HuggingFace
+import sagemaker
 from utils import persist_meta
 from datetime import datetime
 
@@ -21,10 +22,11 @@ def lambda_handler(event, context):
         hyperparameters = event['body']['hyperparameters']
         py_version = event['body']['py_version']
         pytorch_version = event['body']['pytorch_version']
+        tensorflow_version = event['body']['tensorflow_version']
         instance_type = event['body']['instance_type']
         instance_count = event['body']['instance_count']
         inputs = event['body']['inputs']
-        transformers_version = event['body']['transformers_version'],
+        transformers_version = event['body']['transformers_version']
 
         estimator = HuggingFace(
             entry_point = entry_point,
@@ -35,6 +37,7 @@ def lambda_handler(event, context):
             py_version = py_version,
             transformers_version = transformers_version,
             pytorch_version = pytorch_version,
+            tensorflow_version = tensorflow_version,
             instance_count = instance_count,  
             instance_type = instance_type
         )
