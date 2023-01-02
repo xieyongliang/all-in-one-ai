@@ -139,7 +139,7 @@ def lambda_handler(event, context):
                     else:
                         dreambooth_config_s3uri = 's3://{0}/stable-diffusion-webui/dreambooth-config/'.format(bucket)
 
-                    dreambooth_config_s3uri = '{0}{1}.json'.format(dreambooth_s3uri, dreambooth_config_id)
+                    dreambooth_config_s3uri = '{0}{1}.json'.format(dreambooth_config_s3uri, dreambooth_config_id)
 
                     bucket, key = get_bucket_and_key(dreambooth_config_s3uri)
 
