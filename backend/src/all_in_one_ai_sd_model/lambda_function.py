@@ -46,10 +46,9 @@ def lambda_handler(event, context):
                 for item in items:
                     ddbh.put_item(item)
 
-                return {
-                    'statusCode': 200,
-                    'body': json.dumps(items)
-                }
+            return {
+                'statusCode': 200
+            }
         elif event['httpMethod'] == 'GET':
             module = None
             if event['queryStringParameters'] and 'module' in event['queryStringParameters']:
