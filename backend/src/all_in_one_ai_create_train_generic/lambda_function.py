@@ -19,14 +19,19 @@ def lambda_handler(event, context):
         hyperparameters = event['body']['hyperparameters']
         instance_type = event['body']['instance_type']
         instance_count = event['body']['instance_count']
+        subnets = event['body']['subnets'] if 'subnets' in event['body'] else None
+        security_group_ids = event['body']['security_group_ids'] if 'security_group_ids' in event['body'] else None
+        
         inputs = event['body']['inputs']
 
         estimator = Estimator(
-            role = role,
-            instance_count = instance_count,
-            instance_type = instance_type,
-            image_uri = image_uri,
-            hyperparameters=hyperparameters
+            role=role,
+            instance_count=instance_count,
+            instance_type=instance_type,
+            image_uri=image_uri,
+            hyperparameters=hyperparameters,
+            subnets=subnets,
+            security_group_ids=security_group_ids
         )
 
         estimator.fit(inputs, job_name = job_name, wait = False)

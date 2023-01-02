@@ -28,6 +28,7 @@ def lambda_handler(event, context):
         instance_type = event['body']['instance_type']
         instance_count = event['body']['instance_count']
         deploy_type = event['body']['deploy_type'] if 'deploy_type' in event['body'] else 'sync'
+        vpc_config = event['body']['vpc_config'] if 'vpc_config' in event['body'] else None
 
         model = Model(
             name = model_name,
@@ -35,7 +36,8 @@ def lambda_handler(event, context):
             role = role,
             image_uri = image_uri,
             env = model_environment,
-            predictor_cls = Predictor
+            predictor_cls = Predictor,
+            vpc_config=vpc_config
         )
 
         async_config = AsyncInferenceConfig(output_path='s3://{0}/{1}/asyncinvoke/out/'.format(bucket, industrial_model))

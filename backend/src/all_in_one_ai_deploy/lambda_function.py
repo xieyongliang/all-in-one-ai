@@ -322,6 +322,10 @@ def lambda_handler(event, context):
             if model_data_url == '':
                 model_data_url = 's3://{0}/stable-diffusion-webui/assets/model.tar.gz'.format(bucket)
 
+            vpc_config = {}
+            vpc_config['Subnets'] =  [ os.environ['PrivateSubnet1'], os.environ['PrivateSubnet2'] ]
+            vpc_config['SecurityGroupIds'] = [ os.environ['SecurityGroup'] ]
+
             if endpoint_name == '':
                 base_name = sagemaker.utils.base_name_from_image(image_uri)
                 endpoint_name = sagemaker.utils.name_from_base(base_name)
@@ -339,7 +343,8 @@ def lambda_handler(event, context):
                     'endpoint_name': endpoint_name,
                     'instance_type': instance_type,
                     'instance_count': instance_count,
-                    'deploy_type': 'async'
+                    'deploy_type': 'async',
+                    'vpc_config': vpc_config
                 }
             }
 

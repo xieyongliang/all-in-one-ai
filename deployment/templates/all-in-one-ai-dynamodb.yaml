@@ -211,10 +211,16 @@ Resources:
         - 
           AttributeName: "username"
           AttributeType: "S"
+        - 
+          AttributeName: "endpoint_name"
+          AttributeType: "S"
       KeySchema: 
         - 
           AttributeName: "username"
           KeyType: "HASH"
+        - 
+          AttributeName: "endpoint_name"
+          KeyType: "RANGE"
       ProvisionedThroughput: 
         ReadCapacityUnits: "1"
         WriteCapacityUnits: "1"

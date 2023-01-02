@@ -5,6 +5,7 @@ from datetime import date, datetime
 import traceback
 import sagemaker
 import helper
+import os
 from botocore.client import Config
 
 ssmh = helper.ssm_helper()
@@ -386,7 +387,9 @@ def lambda_handler(event, context):
                     'instance_type': instance_type,
                     'instance_count': instance_count,
                     'hyperparameters': hyperparameters,
-                    'inputs': inputs
+                    'subnets': [ os.environ['PrivateSubnet1'], os.environ['PrivateSubnet2'] ],
+                    'security_group_ids': [ os.environ['SecurityGroup'] ],
+                    'inputs': inputs,
                 }
             }
 
