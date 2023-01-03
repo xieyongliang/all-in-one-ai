@@ -30,8 +30,6 @@ RUN pip3 --no-cache-dir install mxnet \
 
 ENV PATH="/opt/ml/code:${PATH}"
 
-COPY pretrained/ /opt/ml/model/
-
 RUN mkdir -p /opt/ml/code
 
 # /opt/ml and all subdirectories are utilized by SageMaker, we use the /code subdirectory to store our user code.
