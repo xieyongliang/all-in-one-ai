@@ -125,11 +125,7 @@ Make sure the following resources not existed. In case they are existed, please 
 
 ###  Get source code
 
-    git clone --recurse-submodules -j8 https://github.com/xieyongliang/all-in-one-ai.git [path-to-all-in-one-ai]
-
-###  Update source code
-
-    git pull --recurse-submodules -j8
+    Contact your corresponding Amazon AWS Account BD/SA or email to yonglxie@amazon.com to get the source code.
 
 ###  Build and deploy
 
