@@ -366,7 +366,7 @@ def lambda_handler(event, context):
                     with_lora =  s3uri_contain_files(lora_s3uri)
                     if with_lora:
                         inputs['lora'] = lora_s3uri
-                if 'dreambooth' not in inputs and train_dreambooth_settings['db_create_new_db_model']:
+                if 'dreambooth' not in inputs and not train_dreambooth_settings['db_create_new_db_model']:
                     with_dreambooth = s3uri_contain_files(dreambooth_s3uri)
                     if with_dreambooth:
                         inputs['dreambooth'] = dreambooth_s3uri
