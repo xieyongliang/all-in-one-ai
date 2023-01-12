@@ -484,3 +484,24 @@ Resources:
       Name: /all_in_one_ai/config/meta/api_endpoint
       Type: String
       Value: !Ref ApiGatewayProdEndpoint
+
+  Parameter55:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /all_in_one_ai/config/meta/algorithms/detr/industrialmodels
+      Type: String
+      Value: !Sub s3://${S3Bucket}/${S3Key}algorithms/detr/industrialmodels/
+
+  Parameter56:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /all_in_one_ai/config/meta/algorithms/detr/source
+      Type: String
+      Value: !Sub s3://${S3Bucket}/${S3Key}algorithms/detr/source/sourcedir.tar.gz
+
+  Parameter57:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /all_in_one_ai/config/meta/algorithms/detr/artifact
+      Type: String
+      Value: !Sub s3://${S3Bucket}/${S3Key}algorithms/detr/artifact/model.tar.gz

@@ -1,0 +1,5 @@
+torch
+transformers
+timm
+Pillow
+boto3
