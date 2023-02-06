@@ -114,21 +114,19 @@ Resources:
       NetworkMode: awsvpc
       RequiresCompatibilities:
         - FARGATE
-      Cpu: '16384'
-      Memory: '32768'
+      Cpu: '8192'
+      Memory: '16384'
       ExecutionRoleArn: !Ref ExecutionRole
-      EphemeralStorage: 
-         SizeInGiB: 200
       ContainerDefinitions:
         - Name: webapp
-          Cpu: '16384'
+          Cpu: '8192'
           Essential: 'true'
           Image: 
             !If
             - Globally
             - !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/all-in-one-ai-stable-diffusion-webui:latest
             - !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com.cn/all-in-one-ai-stable-diffusion-webui:latest
-          Memory: '32768'
+          Memory: '16384'
           LogConfiguration:
             LogDriver: awslogs
             Options:
