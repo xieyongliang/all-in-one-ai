@@ -117,6 +117,8 @@ Resources:
       Cpu: '8192'
       Memory: '16384'
       ExecutionRoleArn: !Ref ExecutionRole
+      EphemeralStorage: 
+         SizeInGiB: 200
       ContainerDefinitions:
         - Name: webapp
           Cpu: '8192'
