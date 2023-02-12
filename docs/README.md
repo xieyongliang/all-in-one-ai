@@ -83,7 +83,7 @@ There are 3 kinds of AI/ML algorithms supported in All-In-One AI:
 
     - [GluonTS](https://github.com/MaartenGr/KeyBERT)
 
-## Backend APIs
+## Backend Lambda functions
 ### Manage industrial scenarios
 *   List existing industrial scenarios
     -   all_in_one_ai_industrial_scenario (TBD)
@@ -221,11 +221,13 @@ There are 3 kinds of AI/ML algorithms supported in All-In-One AI:
     -	all_in_one_ai_create_train_huggingface
     -	all_in_one_ai_create_train_pytorch
     -	all_in_one_ai_create_train_mxnet
+    -   all_in_one_ai_create_tensorflow
 *	Start deploy
     -	all_in_one_ai_deploy
     -	all_in_one_ai_deploy_train_huggingface
     -	all_in_one_ai_deploy_train_pytorch
     -	all_in_one_ai_deploy_train_mxnet
+    -   all_in_one_ai_deploy_train_tensorflow
 ### Toolkits
 *	S3 toolkit
     -   all_in_one_ai_s3
@@ -246,6 +248,295 @@ There are 3 kinds of AI/ML algorithms supported in All-In-One AI:
     -   all_in_one_ai_websocket_login
     -   all_in_one_ai_websocket_command
     -   all_in_one_ai_websocket_report
+
+##  Rest APIs
+
+*   Overview
+
+        ---
+        swagger: "2.0"
+        info:
+        version: "2023-01-09T10:02:49Z"
+        title: "all-in-one-ai-api"
+        host: "a4xh9o0fn1.execute-api.us-west-2.amazonaws.com"
+        basePath: "/Prod"
+        schemes:
+        - "https"
+        paths:
+        /annotation:
+            get:
+            responses: {}
+            post:
+            responses: {}
+            delete:
+            responses: {}
+        /api:
+            get:
+            responses: {}
+            post:
+            responses: {}
+        /api/{api_name}:
+            get:
+            parameters:
+            - name: "api_name"
+                in: "path"
+                required: true
+                type: "string"
+            responses: {}
+        /deploy:
+            post:
+            responses: {}
+        /endpoint:
+            get:
+            responses: {}
+            post:
+            responses: {}
+        /endpoint/{endpoint_name}:
+            get:
+            parameters:
+            - name: "endpoint_name"
+                in: "path"
+                required: true
+                type: "string"
+            responses: {}
+            delete:
+            parameters:
+            - name: "endpoint_name"
+                in: "path"
+                required: true
+                type: "string"
+            responses: {}
+        /function/{function_name}:
+            get:
+            parameters:
+            - name: "function_name"
+                in: "path"
+                required: true
+                type: "string"
+            responses: {}
+        /greengrass/component:
+            get:
+            responses: {}
+        /greengrass/component/{component_name}:
+            get:
+            parameters:
+            - name: "component_name"
+                in: "path"
+                required: true
+                type: "string"
+            responses: {}
+            post:
+            parameters:
+            - name: "component_name"
+                in: "path"
+                required: true
+                type: "string"
+            responses: {}
+        /greengrass/component/{component_name}/{component_version_arn}:
+            get:
+            parameters:
+            - name: "component_name"
+                in: "path"
+                required: true
+                type: "string"
+            - name: "component_version_arn"
+                in: "path"
+                required: true
+                type: "string"
+            responses: {}
+        /greengrass/coredevices:
+            get:
+            responses: {}
+        /greengrass/deployment:
+            get:
+            responses: {}
+            post:
+            responses: {}
+        /greengrass/deployment/{deployment_id}:
+            get:
+            parameters:
+            - name: "deployment_id"
+                in: "path"
+                required: true
+                type: "string"
+            responses: {}
+        /greengrass/thinggroups:
+            get:
+            responses: {}
+        /industrialmodel:
+            get:
+            responses: {}
+            post:
+            responses: {}
+        /industrialmodel/{model_id}:
+            get:
+            parameters:
+            - name: "model_id"
+                in: "path"
+                required: true
+                type: "string"
+            responses: {}
+            post:
+            parameters:
+            - name: "model_id"
+                in: "path"
+                required: true
+                type: "string"
+            responses: {}
+            delete:
+            parameters:
+            - name: "model_id"
+                in: "path"
+                required: true
+                type: "string"
+            responses: {}
+        /inference:
+            post:
+            responses: {}
+        /model:
+            get:
+            responses: {}
+            post:
+            responses: {}
+        /model/{model_name}:
+            get:
+            parameters:
+            - name: "model_name"
+                in: "path"
+                required: true
+                type: "string"
+            responses: {}
+            delete:
+            parameters:
+            - name: "model_name"
+                in: "path"
+                required: true
+                type: "string"
+            responses: {}
+        /modelpackage:
+            get:
+            responses: {}
+        /modelpackage/group:
+            get:
+            responses: {}
+            post:
+            responses: {}
+        /modelpackage/{model_package_group_name}:
+            get:
+            parameters:
+            - name: "model_package_group_name"
+                in: "path"
+                required: true
+                type: "string"
+            responses: {}
+            post:
+            parameters:
+            - name: "model_package_group_name"
+                in: "path"
+                required: true
+                type: "string"
+            responses: {}
+        /pipeline:
+            get:
+            responses: {}
+            post:
+            responses: {}
+        /s3:
+            get:
+            responses: {}
+        /sd/hypernetwork:
+            get:
+            responses: {}
+        /sd/industrialmodel:
+            get:
+            responses: {}
+        /sd/models:
+            get:
+            responses: {}
+            post:
+            responses: {}
+        /sd/user:
+            post:
+            responses: {}
+        /search/image:
+            post:
+            responses: {}
+        /search/import:
+            get:
+            responses: {}
+            post:
+            responses: {}
+        /train:
+            post:
+            responses: {}
+        /trainingjob:
+            get:
+            responses: {}
+            post:
+            responses: {}
+        /trainingjob/{training_job_name}:
+            get:
+            parameters:
+            - name: "training_job_name"
+                in: "path"
+                required: true
+                type: "string"
+            responses: {}
+        /transformjob:
+            get:
+            responses: {}
+            post:
+            responses: {}
+        /transformjob/{transform_job_name}:
+            get:
+            parameters:
+            - name: "transform_job_name"
+                in: "path"
+                required: true
+                type: "string"
+            responses: {}
+        /transformjob/{transform_job_name}/review:
+            get:
+            parameters:
+            - name: "transform_job_name"
+                in: "path"
+                required: true
+                type: "string"
+            responses: {}
+
+*   Train API
+
+    **Create SageMaker training job - /train**
+
+    |Key|Value|
+    |||
+    |HTTP Method|POST|
+    |HTTP Content-Type|'application/json'|
+    |HTTP Request| <pre>{<br>  'model_algorithm': [name of model algorithm],<br>  'industrial_model': [name of industrial model],<br>  'instance_type': [instance type of SageMaker training job],<br>  'instance_count': [instance count of SageMaker training job],<br>  'model_hyperparameters': [model hyperparameters definitions in json string],<br>  'inputs': [input data channel definitions in json string],<br>  'training_job_name': [name of SageMaker training job]<br>} </pre>|
+    |HTTP Response|[Name of SageMaker training job]|
+
+*   Deploy API
+
+    **Create SageMaker deployment - /deploy**
+
+    |Key|Value|
+    |||
+    |HTTP Method|POST|
+    |HTTP Content-Type|'application/json'|
+    |HTTP Request| <pre>{<br>  'model_algorithm': [name of model algorithm],<br>  'industrial_model': [name of industrial model],<br>  'model_name': [name of SageMaker model],<br>  'model_environment']: [model environment variable definition in json string],<br>   'model_data_url': [S3 URI of model data file in tar.gz format],<br>  'endpoint_name': [name of SageMaker endpoint],<br>  'instance_type': [instance type of SageMaker endpoint],<br>  'instance_count': [initial instance count of endpoint]<br>}</pre> |
+    |HTTP Response| <pre>{<br>  'model_name': [name of SageMaker model],<br>  'endpoint_name': [name of SageMaker endpoint]<br>}<pre> |
+
+*   Inference API
+
+    **Invoke SageMaker endpoint to inference - /inference**
+
+    |Property|Value|
+    |||
+    |HTTP Method|POST|
+    |HTTP Request - Content-Type|[MIME type of HTTP request body]|
+    |HTTP Request - querystring|endpoint_name : [name of SageMaker endpoint]|
+    |HTTP Request - body|[inference request which is up to model algorithm]|
+    |HTTP Response|[inference response from SageMaker endpoint which is up to model algorithm]|
 
 ##  Sample data
 [all-in-one-ai-sample-data](https://github.com/xieyongliang/all-in-one-ai-sample-data)
