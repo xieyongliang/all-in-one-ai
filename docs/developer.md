@@ -1413,5 +1413,5 @@
             ]
         }
 
-    ![Inference stable-diffusion-webui image-to-image](./assets/images/quickstart_inference_stable_diffusion_webui_text_to_image.png)
+    ![Inference stable-diffusion-webui image-to-image](./assets/images/quickstart_inference_stable_diffusion_webui_image_to_image.png)
   
