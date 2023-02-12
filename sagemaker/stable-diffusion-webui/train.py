@@ -40,4 +40,6 @@ os.system('mkdir -p /opt/ml/input/data/embeddings')
 os.system('mkdir -p /opt/ml/input/data/hypernetwork')
 os.system('mkdir -p /opt/ml/input/data/lora')
 os.system('mkdir -p /opt/ml/input/data/dreambooth')
+os.system('mkdir -p /opt/ml/input/data/models')
+
 os.system(cmd)

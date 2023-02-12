@@ -359,6 +359,10 @@ def lambda_handler(event, context):
                     with_hypernetwork = s3uri_contain_files(hypernetwork_s3uri)
                     if with_hypernetwork:
                         inputs['hypernetwork'] = hypernetwork_s3uri
+
+                if 'models' not in inputs or inputs['models'] == '':
+                    model_name = hyperparameters['ckpt']
+                    inputs['models'] = '{0}/{1}'.format(models_s3uri, model_name[0 : -5])
             else:
                 train_args = json.loads(json.loads(hyperparameters['train-args']))
                 train_dreambooth_settings = train_args['train_dreambooth_settings']
@@ -375,8 +379,13 @@ def lambda_handler(event, context):
                 if 'sd-models-s3uri' not in hyperparameters:
                     hyperparameters['sd-models-s3uri'] = models_s3uri
 
-            if 'models' not in inputs or inputs['models'] == '':
-                inputs['models'] = models_s3uri
+                if 'models' not in inputs or inputs['models'] == '':
+                    if train_dreambooth_settings['db_create_new_db_model']:
+                        model_name = train_dreambooth_settings['db_new_model_src']
+                        model_name = train_dreambooth_settings['db_new_model_src']
+                        inputs['models'] = '{0}/{1}'.format(models_s3uri, model_name[0 : -5])
+                    elif 'models' in inputs:
+                        inputs.pop('models')
 
             payload = {
                 'body': {

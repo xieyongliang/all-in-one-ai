@@ -74,7 +74,8 @@ def lambda_handler(event, context):
                     items = []
                     if response['KeyCount'] > 0:
                         for item in response['CommonPrefixes']:
-                            items.append(item['Prefix'])
+                            prefix = item['Prefix']
+                            items.append(prefix[prefix.rfind('/', 0, len(prefix) - 1) + 1 : len(prefix) - 1])
 
                     return {
                         'statusCode': 200,
@@ -85,7 +86,7 @@ def lambda_handler(event, context):
                     if 'lora_s3uri' in event['queryStringParameters']:
                         lora_s3uri = event['queryStringParameters']['lora_s3uri']
                     else:
-                        lora_s3uri = 's3://{0}/stable-diffusion-webui/dreambooth/'.format(bucket)
+                        lora_s3uri = 's3://{0}/stable-diffusion-webui/lora/'.format(bucket)
 
 
                     bucket, key = get_bucket_and_key(lora_s3uri)
@@ -100,7 +101,8 @@ def lambda_handler(event, context):
                     items = []
                     if response['KeyCount'] > 0:
                         for item in response['CommonPrefixes']:
-                            items.append(item['Prefix'])
+                            prefix = item['Prefix']
+                            items.append(prefix[prefix.rfind('/', 0, len(prefix) - 1) + 1 : len(prefix) - 1])
 
                     return {
                         'statusCode': 200,
@@ -157,6 +159,32 @@ def lambda_handler(event, context):
                         'body': params
                     }
 
+                if module == 'sd_models':
+                    if 'sd_models_s3uri' in event['queryStringParameters']:
+                        sd_models_s3uri = event['queryStringParameters']['sd_models_s3uri']
+                    else:
+                        sd_models_s3uri = 's3://{0}/stable-diffusion-webui/models/'.format(bucket)
+
+
+                    bucket, key = get_bucket_and_key(sd_models_s3uri)
+
+                    response = s3_client.list_objects_v2(
+                        Bucket=bucket,
+                        Prefix=key,
+                        Delimiter='/'
+                    )
+
+                    print(response)
+                    items = []
+                    if response['KeyCount'] > 0:
+                        for item in response['Contents']:
+                            if item['Key'].endswith('.ckpt'):
+                                items.append(item['Key'][item['Key'].rfind('/') + 1 : ])
+
+                    return {
+                        'statusCode': 200,
+                        'body': json.dumps(items)
+                    }
 
             endpoint_name = None
             if event['queryStringParameters'] and 'endpoint_name' in event['queryStringParameters']:
