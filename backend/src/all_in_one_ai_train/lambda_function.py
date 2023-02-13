@@ -382,7 +382,7 @@ def lambda_handler(event, context):
                 if 'models' not in inputs or inputs['models'] == '':
                     if train_dreambooth_settings['db_create_new_db_model']:
                         model_name = train_dreambooth_settings['db_new_model_src']
-                        inputs['models'] = '{0}/{1}'.format(models_s3uri, model_name[0 : -5])
+                        inputs['models'] = '{0}{1}'.format(models_s3uri, model_name[0 : -5])
                     elif 'models' in inputs:
                         inputs.pop('models')
 
