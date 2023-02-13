@@ -24,7 +24,7 @@ def lambda_handler(event, context):
         algorithm = request['model_algorithm']
         industrial_model = request['industrial_model']
         instance_type = request['instance_type']
-        instance_count = request['instance_count']
+        instance_count = int(request['instance_count'])
         hyperparameters = request['model_hyperparameters'] if('model_hyperparameters' in request) else {}
         inputs = request['inputs']
         job_name = request['training_job_name']

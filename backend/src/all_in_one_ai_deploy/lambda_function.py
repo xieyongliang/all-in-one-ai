@@ -26,7 +26,7 @@ def lambda_handler(event, context):
         model_data_url = request['model_data_url'] if(request['model_data_url'] != '') else None
         endpoint_name = request['endpoint_name']
         instance_type = request['instance_type']
-        instance_count = request['initial_instance_count']
+        instance_count = int(request['initial_instance_count'])
 
         if(model_data_url == None):
             try: 

@@ -30,7 +30,7 @@ def lambda_handler(event, context):
                 payload['endpoint_config_name'] = request['endpoint_config_name']
             payload['model_name'] = request['model_name']
             payload['instance_type'] = request['instance_type']
-            payload['initial_instance_count'] = request['initial_instance_count']
+            payload['initial_instance_count'] = int(request['initial_instance_count'])
             payload['initial_variant_weight'] = request['initial_variant_weight']
             if('tags' in request):
                 payload['tags'] = request['tags']
