@@ -132,29 +132,21 @@ def lambda_handler(event, context):
                     else:
                         items = ddbh.scan()
                 else:
-                    if industrial_model == None:
-                        items = ddbh.scan(FilterExpression=Key('endpoint_name').eq(endpoint_name))
-                    else:
-                        key = {
-                            'endpoint_name': endpoint_name,
-                            'industrial_model': industrial_model
-                        }
-                        item = ddbh.get_item(key)
-                        if item == None:
-                            items = []
-                        else:
-                            items = [ item ]
-                
+                    items = [{'endpoint_name': endpoint_name}]                
+
                 result = []
                 for item in items:
                     if (event['httpMethod'] == 'DELETE'):
                         if(process_delete_item(item)):
-                            key = {
-                                'endpoint_name': item['endpoint_name'],
-                                'industrial_model': item['industrial_model']
-                            }
-                            ddbh.delete_item(key)
-                            result.append(item)
+                            try:
+                                key = {
+                                    'endpoint_name': item['endpoint_name'],
+                                    'industrial_model': industrial_model
+                                }
+                                ddbh.delete_item(key = key)
+                            except Exception as e:
+                                print(e)
+                        result.append(item)
                     else:
                         if(process_get_item(item)):
                             result.append(item)

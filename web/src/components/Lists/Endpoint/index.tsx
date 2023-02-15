@@ -20,7 +20,6 @@ interface EndpointItem {
 
 const EndpointList: FunctionComponent = () => {
     const [ loading, setLoading ] = useState(true);
-    const [ loadedAll, setLoadedAll ] = useState(false);
     const [ selectedEndpoint, setSelectedEndpoint ] = useState<EndpointItem>();
     const [ showAll, setShowAll ] = useState(false);
     const [ visibleDeleteConfirmation, setVisibleDeleteConfirmation ] = useState(false);
@@ -90,39 +89,36 @@ const EndpointList: FunctionComponent = () => {
     }, [params.id])
 
     const onRefreshAllItems = useCallback(() => {
-        if(!loadedAll) {        
-            var endpointAllItems = [];    
-            setLoading(true);
-            axios.get('/endpoint', {params : {'action': 'list'}})
-                .then((response) => {
-                    if(response.data.length === 0) {
+        var endpointAllItems = [];
+        setLoading(true);
+        axios.get('/endpoint', {params : {'action': 'list'}})
+            .then((response) => {
+                if(response.data.length === 0) {
+                    setEndpointAllItems(endpointAllItems);
+                    setLoading(false);
+                    setSelectedEndpoint(undefined);
+                }
+                for(let item of response.data) {
+                    endpointAllItems.push(
+                        {
+                            endpointName: item.EndpointName,
+                            endpointStatus: item.EndpointStatus,
+                            creationTime: item.CreationTime,
+                            lastModifiedTime: item.LastModifiedTime
+                        }
+                    )
+                    if(endpointAllItems.length === response.data.length) {
                         setEndpointAllItems(endpointAllItems);
                         setLoading(false);
                         setSelectedEndpoint(undefined);
                     }
-                    for(let item of response.data) {
-                        endpointAllItems.push(
-                            {
-                                endpointName: item.EndpointName, 
-                                endpointStatus: item.EndpointStatus, 
-                                creationTime: item.CreationTime, 
-                                lastModifiedTime: item.LastModifiedTime
-                            }
-                        )
-                        if(endpointAllItems.length === response.data.length) {
-                            setEndpointAllItems(endpointAllItems);
-                            setLoading(false);
-                            setSelectedEndpoint(undefined);
-                        }
-                    }
-                }, (error) => {
-                    logOutput('error', error.response.data, undefined, error);
-                    setLoading(false);
                 }
-            );
-            setLoadedAll(true);
-        }
-    }, [loadedAll])
+            }, (error) => {
+                logOutput('error', error.response.data, undefined, error);
+                setLoading(false);
+            }
+        );
+    }, [])
 
     useEffect(() => {
         onRefreshCurItems()
@@ -212,7 +208,7 @@ const EndpointList: FunctionComponent = () => {
                 <Toggle label={t('industrial_models.common.show_all')} checked={showAll} onChange={onChangeShowAll}/>
             </div>
             <div className='tableaction'>
-                <Button icon="refresh" onClick={() => {onRefreshCurItems(); setLoadedAll(false)}} loading={loading}>{t('industrial_models.common.refresh')}</Button>
+                <Button icon="refresh" onClick={() => {if(showAll) onRefreshAllItems(); else onRefreshCurItems();}} loading={loading}>{t('industrial_models.common.refresh')}</Button>
             </div>
             <div className='tableaction'>
                 <ButtonDropdown

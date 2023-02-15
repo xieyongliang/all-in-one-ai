@@ -294,7 +294,7 @@ You could pick up all your interested SD models and download them into one direc
     
     python3 prepare.py [path-to-sd-models-directory]
 
-This script will help to generate model.tar.gz and push s3://[sagemaker-default-bucket]/assets/, push the whole model directory to s3://[sagemaker-default-bucket]/models/, and generate meta-data and save in DynamoDB.
+This script will help to generate model.tar.gz and push s3://[sagemaker-default-bucket]/assets/, push the whole model directory to s3://[sagemaker-default-bucket]/models/.
 
 For instance, the following diagram shows the contents at the model files at s3://[sagemaker-default-bucket]/models/.
 

@@ -16,7 +16,6 @@ interface ModelItem {
 
 const ModelList: FunctionComponent = () => {
     const [ loading, setLoading ] = useState(false);
-    const [ loadedAll, setLoadedAll ] = useState(false);
     const [ selectedModel, setSelectedModel ] = useState<ModelItem>();
     const [ showAll, setShowAll ] = useState(false);
     const [ visibleDeleteConfirmation, setVisibleDeleteConfirmation ] = useState(false);
@@ -64,32 +63,29 @@ const ModelList: FunctionComponent = () => {
     
 
     const onRefreshAllItems = useCallback(() => {
-        if(!loadedAll) {
-            var modelAllItems = [];
-            setLoading(true);
-            axios.get('/model', {params : {'action': 'list'}})
-                .then((response) => {
-                    if(response.data.length === 0) {
+        var modelAllItems = [];
+        setLoading(true);
+        axios.get('/model', {params : {'action': 'list'}})
+            .then((response) => {
+                if(response.data.length === 0) {
+                    setModelAllItems(modelAllItems);
+                    setLoading(false);
+                    setSelectedModel(undefined);
+                }
+                for(let item of response.data) {
+                    modelAllItems.push({modelName: item.ModelName, creationTime: item.CreationTime})
+                    if(modelAllItems.length === response.data.length) {
                         setModelAllItems(modelAllItems);
                         setLoading(false);
                         setSelectedModel(undefined);
                     }
-                    for(let item of response.data) {
-                        modelAllItems.push({modelName: item.ModelName, creationTime: item.CreationTime})
-                        if(modelAllItems.length === response.data.length) {
-                            setModelAllItems(modelAllItems);
-                            setLoading(false);
-                            setSelectedModel(undefined);
-                        }
-                    }
-                }, (error) => {
-                    logOutput('error', error.response.data, undefined, error);
-                    setLoading(false);            
                 }
-            );
-            setLoadedAll(true);
-        }
-    }, [loadedAll])
+            }, (error) => {
+                logOutput('error', error.response.data, undefined, error);
+                setLoading(false);
+            }
+        );
+    }, [])
 
     useEffect(() => {
         onRefreshCurItems()
@@ -155,7 +151,7 @@ const ModelList: FunctionComponent = () => {
                 <Toggle label={t('industrial_models.common.show_all')} checked={showAll} onChange={onChangeShowAll}/>
             </div>
             <div className='tableaction'>
-                <Button icon="refresh" onClick={() => {onRefreshCurItems(); setLoadedAll(false)}} loading={loading}>{t('industrial_models.common.refresh')}</Button>
+                <Button icon="refresh" onClick={() => {if(showAll) onRefreshAllItems(); else onRefreshCurItems();}} loading={loading}>{t('industrial_models.common.refresh')}</Button>
             </div>
             <div className='tableaction'>
                 <ButtonDropdown

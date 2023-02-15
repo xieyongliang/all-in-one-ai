@@ -142,6 +142,14 @@ export const TRAININGINPUTDATA = {
         {
             key: 'hypernetwork',
             value: ''
+        },
+        {
+            key: 'dreambooth',
+            value: ''
+        },
+        {
+            key: 'lora',
+            value: ''
         }
     ]
 }
