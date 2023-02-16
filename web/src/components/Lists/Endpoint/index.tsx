@@ -33,6 +33,7 @@ const EndpointList: FunctionComponent = () => {
     const [ disabledDetach, setDisabledDetach ] = useState(true);
     const [ endpointCurItems, setEndpointCurItems ] = useState([]);
     const [ endpointAllItems, setEndpointAllItems ] = useState([]);
+    const [ disabledASG, setDisabledASG ] = useState(true)
 
     const { t } = useTranslation();
 
@@ -42,6 +43,10 @@ const EndpointList: FunctionComponent = () => {
 
     const onCreate = () => {
         history.push(`/imodels/${params.id}?tab=endpoint#create`)
+    }
+
+    const onASG = () => {
+        history.push(`/imodels/${params.id}?tab=asg#create`)
     }
 
     const onDelete = () => {
@@ -213,7 +218,7 @@ const EndpointList: FunctionComponent = () => {
             <div className='tableaction'>
                 <ButtonDropdown
                     content={t('industrial_models.common.actions')}
-                        items={[{ text: t('industrial_models.common.delete'), onClick: onDelete, disabled: disabledDelete }, { text: t('industrial_models.common.attach'), onClick: onAttach, disabled: disabledAttach }, { text: t('industrial_models.common.detach'), onClick: onDetach, disabled: disabledDetach }, { text: t('industrial_models.common.add_or_edit_tags'), disabled: true }]}
+                        items={[{ text: t('industrial_models.common.delete'), onClick: onDelete, disabled: disabledDelete }, { text: t('industrial_models.common.attach'), onClick: onAttach, disabled: disabledAttach }, { text: t('industrial_models.common.detach'), onClick: onDetach, disabled: disabledDetach }, { text: t('industrial_models.common.add_or_edit_tags'), disabled: true }, { text: t('industrial_models.endpoint.asg_settings'), onClick: onASG, disabled: disabledASG }]}
                 />
             </div>
             <div className='tableaction'>
@@ -325,6 +330,7 @@ const EndpointList: FunctionComponent = () => {
         if(selectedItems.length > 0) {
             setSelectedEndpoint(selectedItems[0])
             setDisabledDelete(false)
+            setDisabledASG(false)
 
             var endpointCurItem = endpointCurItems.find((item) => item.endpointName === selectedItems[0].endpointName)
 
