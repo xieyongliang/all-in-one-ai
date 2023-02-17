@@ -1,14 +1,22 @@
-if [ "$#" -ne 2 ]; then
-    echo "usage: $0 [s3uri] [region]"
+if [ "$#" -gt 3 -o "$#" -lt 2 ]; then
+    echo "usage: $0 [s3uri] [region] [algorithm]"
     exit 1
 fi
 
 s3uri=$1
 region=$2
+algorithm=$3
 
 sagemaker_dir="$PWD"
 
-dirlist=$(find . -mindepth 1 -maxdepth 1 -type d)
+if [ ! -z "$algorithm" ]; then
+    dirlist=${algorithm}
+else
+    dirlist=$(find . -mindepth 1 -maxdepth 1 -type d)
+fi
+
+echo $dirlist
+
 for subdir in $dirlist
 do
     cd ${sagemaker_dir}/${subdir}

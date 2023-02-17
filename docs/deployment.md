@@ -244,7 +244,7 @@ Note: It is a partial step of build_and_deploy.sh
 
 ###  stable-diffusion-webui deployment
 
-1.  Launch CloudFormation stack template by clicking [![Launch CloudFormation stack](./assets/images/launch.png)](https://console.aws.amazon.com/cloudformation/home?#/stacks/create/template) , and input Amazon S3 URL with HTTP URI of all-in-one-ai-cognito.yaml.
+1.  Launch CloudFormation stack template by clicking [![Launch CloudFormation stack](./assets/images/launch.png)](https://console.aws.amazon.com/cloudformation/home?#/stacks/create/template) , and input Amazon S3 URL with HTTP URI of all-in-one-ai-webui.yaml.
 
     ![stable-difffusion-webui CloudFormation step 1](./assets/images/stable-diffusion-webui-01.png)
 
@@ -271,6 +271,11 @@ Note: It is a partial step of build_and_deploy.sh
     ![stable-difffusion-webui CloudFormation step 5](./assets/images/stable-diffusion-webui-08.png)
 
 ###  Prepare SD models
+*   SD v2.1
+
+    [768-v-ema.ckpt](https://huggingface.co/stabilityai/stable-diffusion-2-1/blob/main/v2-1_768-ema-pruned.ckpt)
+
+    [stable-diffusion/v2-inference-v.yaml](https://github.com/Stability-AI/stablediffusion/blob/main/configs/stable-diffusion/v2-inference-v.yaml)
 
 *   SD v2.0
     
