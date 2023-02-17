@@ -76,7 +76,7 @@ const EndpointASGForm: FunctionComponent<IProps> = (props) => {
 
     const renderEndpointAutoScalingGroupSettings = () => {
         return (
-            <FormSection header={t('industrial_models.endpoint.asg_settings')}>
+            <FormSection header={t('industrial_models.endpoint.asg_policy')}>
                 <FormField label={t('industrial_models.endpoint.asg_min_capacity')} controlId={uuidv4()}>
                     <Input type='text' value={minCapacity} onChange={(event) => {onChange('formFieldIdMinCapacity', event)}} />
                 </FormField>
@@ -98,7 +98,7 @@ const EndpointASGForm: FunctionComponent<IProps> = (props) => {
 
     return (
         <Form
-            header={t('industrial_models.endpoint.asg_policy')}
+            header={t('industrial_models.endpoint.asg_settings')}
             actions={
                 <div>
                     <Button variant='link' onClick={onClose}>{t('industrial_models.demo.close')}</Button>
