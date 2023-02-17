@@ -1,0 +1,297 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: (All-In-One-AI) - The AWS CloudFormation template for deployment of the All-In-One-AI. Version v1.0.0 (Global)
+
+Parameters:
+  S3Bucket:
+    Description: S3 Bucket of assets
+    Type: String
+
+  S3Key:
+    Description: S3 Key of assets
+    Type: String
+
+  CustomIdentifier:
+    Description: AWS Resource CustomIdentifier
+    Type: String
+    Default: all-in-one-ai
+
+  AvailabilityZones:
+    Description: >-
+      The list of Availability Zones to use for the subnets in the VPC. Please select two AvailabilityZones.
+    Type: 'List<AWS::EC2::AvailabilityZone::Name>'
+
+  CIDR:
+    Type: String
+    Default: 10.0.0.0/16
+    AllowedPattern: >-
+      ^(([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5]){1}(\/([0-9]|[1-2][0-9]|3[0-2]))?$
+    ConstraintDescription: must be a valid CIDR block format.
+    Description: The CIDR block for the VPC.
+
+  PublicSubnet1CIDR:
+    Type: String
+    Default: 10.0.0.0/24
+    AllowedPattern: >-
+      ^(([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5]){1}(\/([0-9]|[1-2][0-9]|3[0-2]))?$
+    ConstraintDescription: must be a valid CIDR block format.
+    Description: The CIDR block for the public subnet located in Availability Zone A.
+
+  PublicSubnet2CIDR:
+    Type: String
+    Default: 10.0.1.0/24
+    AllowedPattern: >-
+      ^(([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5]){1}(\/([0-9]|[1-2][0-9]|3[0-2]))?$
+    ConstraintDescription: must be a valid CIDR block format.
+    Description: The CIDR block for the public  subnet located in Availability Zone B.
+
+  PrivateSubnet1CIDR:
+    Type: String
+    Default: 10.0.2.0/24
+    AllowedPattern: >-
+      ^(([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5]){1}(\/([0-9]|[1-2][0-9]|3[0-2]))?$
+    ConstraintDescription: must be a valid CIDR block format.
+    Description: The CIDR block for the private  subnet located in Availability Zone 1.
+
+  PrivateSubnet2CIDR:
+    Type: String
+    Default: 10.0.3.0/24
+    AllowedPattern: >-
+      ^(([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5]){1}(\/([0-9]|[1-2][0-9]|3[0-2]))?$
+    ConstraintDescription: must be a valid CIDR block format.
+    Description: The CIDR block for the private  subnet located in Availability Zone 2.
+
+  EfsEncrpytedBoolean:
+    AllowedValues:
+      - True
+      - False
+    Default: True
+    Description: Create an encrypted Amazon EFS file system.
+    Type: String
+  
+  EfsGrowth:
+    ConstraintDescription: Must be an integer.
+    Default: 0
+    Description: Amount of dummy data (GiB) to add to the file system (max 6144 GiB). Amazon EFS storage charges apply. 
+    MaxValue: 6144
+    MinValue: 0
+    Type: Number
+  
+  EfsPerformanceMode:
+    AllowedValues:
+      - generalPurpose
+      - maxIO
+    Default: generalPurpose
+    Description: Select the performance mode of the file system.
+    Type: String
+
+  DomainName:
+    Type: String
+    Description: Domain Name of Web
+
+  Certificate:
+    Type: String
+    Description: Certificate of ALB
+
+  WebUIDomainName:
+    Type: String
+    Description: Domain Name of WebUI
+
+  UserPool:
+    Type: String
+    Description: UserPool Id
+
+  UserPoolClient:
+    Type: String
+    Description: UserPoolClient Id
+
+  UserPoolDomain:
+    Type: String
+    Description: Endpoint of UserPoolDomain
+
+  CognitoRegion:
+    Type: String
+    Description: Cognito Region
+
+  ChinaRegion: 
+    Description: Check if the stack to be in CN Region
+    Type: String
+    Default: false
+    AllowedValues: [ True, False ]
+
+Conditions:
+  Globally: !Equals [ False, !Ref ChinaRegion ]
+  USE_HTTP: !Equals [ '', !Ref Certificate ]
+
+Resources:
+  VPC:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      Parameters:
+        AvailabilityZones: !Join 
+          - ','
+          - !Ref AvailabilityZones
+        CIDR: !Ref CIDR
+        PublicSubnet1CIDR: !Ref PublicSubnet1CIDR
+        PublicSubnet2CIDR: !Ref PublicSubnet2CIDR
+        PrivateSubnet1CIDR: !Ref PrivateSubnet1CIDR
+        PrivateSubnet2CIDR: !Ref PrivateSubnet2CIDR
+        CustomIdentifier: !Ref CustomIdentifier
+      TemplateURL: 
+        !If
+        - Globally
+        - !Sub https://${S3Bucket}.s3.${AWS::Region}.amazonaws.com/${S3Key}templates/all-in-one-ai-vpc.yaml
+        - !Sub https://${S3Bucket}.s3.${AWS::Region}.amazonaws.com.cn/${S3Key}templates/all-in-one-ai-vpc.yaml
+
+  EFS:
+    Type: AWS::CloudFormation::Stack
+    DependsOn: 
+      - VPC    
+    Properties:
+      Parameters:
+        EncrpytedBoolean: !Ref EfsEncrpytedBoolean
+        Growth: !Ref EfsGrowth
+        PerformanceMode: !Ref EfsPerformanceMode
+        SecurityGroup: !GetAtt VPC.Outputs.EfsSecurityGroup
+        Subnets: !Join [",", [!GetAtt VPC.Outputs.PrivateSubnet1, !GetAtt VPC.Outputs.PrivateSubnet2]]
+      TemplateURL: 
+        !If
+        - Globally
+        - !Sub https://${S3Bucket}.s3.${AWS::Region}.amazonaws.com/${S3Key}templates/all-in-one-ai-efs.yaml
+        - !Sub https://${S3Bucket}.s3.${AWS::Region}.amazonaws.com.cn/${S3Key}templates/all-in-one-ai-efs.yaml
+
+  IAM:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      Parameters:
+        ChinaRegion: !Ref ChinaRegion
+      TemplateURL: 
+        !If
+        - Globally
+        - !Sub https://${S3Bucket}.s3.${AWS::Region}.amazonaws.com/${S3Key}templates/all-in-one-ai-iam.yaml
+        - !Sub https://${S3Bucket}.s3.${AWS::Region}.amazonaws.com.cn/${S3Key}templates/all-in-one-ai-iam.yaml
+
+  DYNAMODB:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: 
+        !If
+        - Globally
+        - !Sub https://${S3Bucket}.s3.${AWS::Region}.amazonaws.com/${S3Key}templates/all-in-one-ai-dynamodb.yaml
+        - !Sub https://${S3Bucket}.s3.${AWS::Region}.amazonaws.com.cn/${S3Key}templates/all-in-one-ai-dynamodb.yaml
+
+  LAMBDA:
+    Type: AWS::CloudFormation::Stack
+    DependsOn: 
+      - VPC
+      - OPENSEARCH
+      - EFS
+    Properties:
+      Parameters:
+        S3Bucket: !Ref S3Bucket
+        S3Key: !Ref S3Key
+        VPC: !GetAtt VPC.Outputs.VPC
+        PrivateSubnet1: !GetAtt VPC.Outputs.PrivateSubnet1
+        PrivateSubnet2: !GetAtt VPC.Outputs.PrivateSubnet2
+        PublicSubnet1: !GetAtt VPC.Outputs.PublicSubnet1
+        PublicSubnet2: !GetAtt VPC.Outputs.PublicSubnet2  
+        OpensearchEndpoint: "https://noopensearch"
+        EfsAccessPointArn: !GetAtt EFS.Outputs.EfsAccessPointArn
+        SecurityGroup: !GetAtt VPC.Outputs.DefaultSecurityGroup
+        Eip1: !GetAtt VPC.Outputs.Eip1
+        Eip2: !GetAtt VPC.Outputs.Eip2
+        ChinaRegion: !Ref ChinaRegion
+      TemplateURL:
+        !If
+        - Globally
+        - !Sub https://${S3Bucket}.s3.${AWS::Region}.amazonaws.com/${S3Key}templates/all-in-one-ai-lambda.yaml
+        - !Sub https://${S3Bucket}.s3.${AWS::Region}.amazonaws.com.cn/${S3Key}templates/all-in-one-ai-lambda.yaml
+
+  SSM:
+    Type: AWS::CloudFormation::Stack
+    DependsOn: 
+      - IAM
+      - LAMBDA
+    Properties:
+      Parameters:
+        S3Bucket: !Ref S3Bucket
+        S3Key: !Ref S3Key
+        SageMakerRole: !GetAtt IAM.Outputs.SageMakerRole
+        CreatePipelineHelperLambdaArn: !GetAtt LAMBDA.Outputs.CreatePipelineHelperFunctionArn
+        ChinaRegion: !Ref ChinaRegion
+        AddPermissionFunctionArn: !GetAtt LAMBDA.Outputs.AllInOneAIAddPermissionFunctionArn
+        RemovePermissionFunctionArn: !GetAtt LAMBDA.Outputs.AllInOneAIRemovePermissionFunctionArn
+        CreateS3EventNotificationFunctionArn: !GetAtt LAMBDA.Outputs.AllInOneAICreateS3EventNotificationFunctionArn
+        DeleteS3EventNotificationFunctionArn: !GetAtt LAMBDA.Outputs.AllInOneAIDeleteS3EventNotificationFunctionArn
+        ImportOpensearchAsyncHelperFunctionArn: !GetAtt LAMBDA.Outputs.AllInOneAIImportOpensearchAsyncHelperFunctionArn
+        ApiGatewayProdEndpoint: !GetAtt LAMBDA.Outputs.ApiGatewayProdEndpoint
+      TemplateURL:
+        !If
+        - Globally
+        - !Sub https://${S3Bucket}.s3.${AWS::Region}.amazonaws.com/${S3Key}templates/all-in-one-ai-ssm.yaml
+        - !Sub https://${S3Bucket}.s3.${AWS::Region}.amazonaws.com.cn/${S3Key}templates/all-in-one-ai-ssm.yaml
+
+  SQS:
+    Type: AWS::CloudFormation::Stack
+    DependsOn: 
+      - LAMBDA
+    Properties:
+      Parameters:
+        ImportOpensearchSyncHelperFunctionArn: !GetAtt LAMBDA.Outputs.ImportOpensearchSyncHelperFunctionArn
+      TemplateURL: 
+        !If
+        - Globally
+        - !Sub https://${S3Bucket}.s3.${AWS::Region}.amazonaws.com/${S3Key}templates/all-in-one-ai-sqs.yaml
+        - !Sub https://${S3Bucket}.s3.${AWS::Region}.amazonaws.com.cn/${S3Key}templates/all-in-one-ai-sqs.yaml
+
+  WEB:
+    Type: AWS::CloudFormation::Stack
+    DependsOn: 
+      - VPC
+      - LAMBDA
+    Properties:
+      Parameters:
+        VPC: !GetAtt VPC.Outputs.VPC
+        PrivateSubnets: !Join [",", [!GetAtt VPC.Outputs.PrivateSubnet1, !GetAtt VPC.Outputs.PrivateSubnet2]]
+        PublicSubnets: !Join [",", [!GetAtt VPC.Outputs.PublicSubnet1, !GetAtt VPC.Outputs.PublicSubnet2]]
+        ApiGatewayProdEndpoint: !GetAtt LAMBDA.Outputs.ApiGatewayProdEndpoint
+        WebSocketGatewayProdEndpoint: !GetAtt LAMBDA.Outputs.WebSocketGatewayProdEndpoint
+        DomainName: !Ref DomainName
+        Certificate: !Ref Certificate
+        UserPool: !Ref UserPool
+        UserPoolClient: !Ref UserPoolClient
+        UserPoolDomain: !Ref UserPoolDomain
+        CognitoRegion: !Ref CognitoRegion
+        ChinaRegion: !Ref ChinaRegion
+      TemplateURL: 
+        !If
+        - Globally
+        - !Sub https://${S3Bucket}.s3.${AWS::Region}.amazonaws.com/${S3Key}templates/all-in-one-ai-web.yaml
+        - !Sub https://${S3Bucket}.s3.${AWS::Region}.amazonaws.com.cn/${S3Key}templates/all-in-one-ai-web.yaml
+
+  WEBUI:
+    Type: AWS::CloudFormation::Stack
+    DependsOn: 
+      - VPC
+      - LAMBDA
+    Properties:
+      Parameters:
+        VPC: !GetAtt VPC.Outputs.VPC
+        PrivateSubnets: !Join [",", [!GetAtt VPC.Outputs.PrivateSubnet1, !GetAtt VPC.Outputs.PrivateSubnet2]]
+        PublicSubnets: !Join [",", [!GetAtt VPC.Outputs.PublicSubnet1, !GetAtt VPC.Outputs.PublicSubnet2]]
+        ApiGatewayProdEndpoint: !GetAtt LAMBDA.Outputs.ApiGatewayProdEndpoint
+        DomainName: !Ref WebUIDomainName
+        Certificate: !Ref Certificate
+        ChinaRegion: !Ref ChinaRegion
+      TemplateURL: 
+        !If
+        - Globally
+        - !Sub https://${S3Bucket}.s3.${AWS::Region}.amazonaws.com/${S3Key}templates/all-in-one-ai-webui.yaml
+        - !Sub https://${S3Bucket}.s3.${AWS::Region}.amazonaws.com.cn/${S3Key}templates/all-in-one-ai-webui.yaml
+
+Outputs:
+  WebPortalUrl:
+    Description: Web Portal DNS Url
+    Value: !If [ USE_HTTP, !Sub "http://${WEB.Outputs.DNSName}", !Sub "https://${DomainName}" ]
+  WebUIPortalUrl:
+    Description: WebUI Portal DNS Url
+    Value: !If [ USE_HTTP, !Sub "http://${WEBUI.Outputs.DNSName}", !Sub "https://${WebUIDomainName}" ]
