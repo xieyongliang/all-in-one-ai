@@ -10,6 +10,7 @@ import { PathParams } from '../../Interfaces/PathParams';
 import { getLocaleDate, logOutput } from '../../Utils/Helper/index';
 import './index.scss'
 import { useTranslation } from "react-i18next";
+import EndpointASGForm from '../../Forms/Endpoint/asg';
 
 interface EndpointItem {
     endpointName: string;
@@ -34,6 +35,7 @@ const EndpointList: FunctionComponent = () => {
     const [ endpointCurItems, setEndpointCurItems ] = useState([]);
     const [ endpointAllItems, setEndpointAllItems ] = useState([]);
     const [ disabledASG, setDisabledASG ] = useState(true)
+    const [ visibleASG, setVisibleASG ] = useState(false)
 
     const { t } = useTranslation();
 
@@ -46,7 +48,11 @@ const EndpointList: FunctionComponent = () => {
     }
 
     const onASG = () => {
-        history.push(`/imodels/${params.id}?tab=asg#create`)
+        setVisibleASG(true)
+    }
+
+    const onClose = () => {
+        setVisibleASG(false)
     }
 
     const onDelete = () => {
@@ -360,13 +366,18 @@ const EndpointList: FunctionComponent = () => {
             />
         )
     }
-        
+    
+    const renderASGForm = () => {
+        return <EndpointASGForm endpointName={selectedEndpoint.endpointName} onClose={onClose}/>;
+    }
+
     return (
         <Stack>
-            { selectedEndpoint !== undefined && renderDeleteConfirmationDialog() }
-            { selectedEndpoint !== undefined && renderAttachConfirmationDialog() }
-            { selectedEndpoint !== undefined && renderDetachConfirmationDialog() }
-            { renderEndpointList() }
+            { visibleASG && renderASGForm() }
+            { !visibleASG && selectedEndpoint !== undefined && renderDeleteConfirmationDialog() }
+            { !visibleASG && selectedEndpoint !== undefined && renderAttachConfirmationDialog() }
+            { !visibleASG && selectedEndpoint !== undefined && renderDetachConfirmationDialog() }
+            { !visibleASG && renderEndpointList() }
         </Stack>
     )
 }

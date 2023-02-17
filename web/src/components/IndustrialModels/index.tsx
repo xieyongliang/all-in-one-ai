@@ -49,7 +49,6 @@ import GenericDemoForm from '../Forms/Demo/Single/generic';
 import StyleGAN2DemoForm from '../Forms/Demo/Single/stylegan';
 import StableDiffusionDemoFrom from '../Forms/Demo/Single/stablediffusion';
 import DummyForm from '../Forms/Demo/Dummy'
-import EndpointASGForm from '../Forms/Endpoint/asg';
 
 interface IProps {
     industrialModels : IIndustrialModel[];
@@ -113,8 +112,6 @@ const IndustrialModels: FunctionComponent<IProps> = (
                 return <ModelForm/>;
             case 'endpoint':
                 return <EndpointForm/>;
-            case 'asg':
-                return <EndpointASGForm/>;
             case 'deploy':
                 return <DeployForm/>;
             case 'restapi':

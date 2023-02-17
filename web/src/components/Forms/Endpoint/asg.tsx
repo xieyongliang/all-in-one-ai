@@ -1,12 +1,17 @@
 import { FunctionComponent, useEffect, useState } from 'react';
-import { useHistory, useLocation } from 'react-router-dom';
+import { useHistory } from 'react-router-dom';
 import { Button, Form, FormSection, LoadingIndicator, FormField, Input } from 'aws-northstar';
 import axios from 'axios';
 import { logOutput } from '../../Utils/Helper';
 import { useTranslation } from "react-i18next";
 import { v4 as uuidv4 } from 'uuid';
 
-const EndpointASGForm: FunctionComponent = () => {
+interface IProps {
+    endpointName: string;
+    onClose: () => any;
+}
+
+const EndpointASGForm: FunctionComponent<IProps> = (props) => {
     const [ minCapacity, setMinCapacity ] = useState(1)
     const [ maxCapacity, setMaxCapacity ] = useState(2)
     const [ targetValue, setTargetValue ] = useState(5)
@@ -19,22 +24,19 @@ const EndpointASGForm: FunctionComponent = () => {
 
     const history = useHistory();
 
-    var localtion = useLocation();
-    var id = localtion.hash.substring(9);
-
     useEffect(() => {
-        axios.get('/endpoint/' + id, {params : {action: 'asg'}})
+        axios.get(`/endpoint/${props.endpointName}`, {params : {action: 'asg'}})
             .then((response) => {
             setMinCapacity(response.data.asg_min_capacity)
             setMaxCapacity(response.data.asg_max_capacity)
-            setTargetValue(response.data.asg_target_Value)
+            setTargetValue(response.data.asg_target_value)
             setScaleInCoolDown(response.data.asg_scale_in_cooldown)
             setScaleOutCoolDown(response.data.asg_scale_out_cooldown)
             setLoading(false);
         }, (error) => {
             logOutput('error', error.response.data, undefined, error);
         });
-    }, [id])
+    }, [props.endpointName])
 
     const onApply = () => {
         var body = {
@@ -45,9 +47,10 @@ const EndpointASGForm: FunctionComponent = () => {
             'asg_scale_out_cooldown': scaleOutCoolDown
         }
         setProcessing(true)
-        axios.post('/endpoint', body,  { headers: {'content-type': 'application/json' }, params : {action: 'asg'}}) 
+        axios.post(`/endpoint/${props.endpointName}`, body,  { headers: {'content-type': 'application/json' }, params : {action: 'asg'}}) 
             .then((response) => {
-                history.goBack()
+                setProcessing(false)
+                props.onClose()
             }, (error) => {
                 logOutput('error', error.response.data, undefined, error);
                 setProcessing(false)
@@ -55,7 +58,7 @@ const EndpointASGForm: FunctionComponent = () => {
     }
 
     const onClose = () => {
-        history.goBack()
+        props.onClose()
     }
 
     const onChange = (id: string, event: any) => {
@@ -66,9 +69,9 @@ const EndpointASGForm: FunctionComponent = () => {
         if(id === 'formFieldIdTargetValue')
             setTargetValue(event)
         if(id === 'formFieldIdScaleInCoolDown')
-            setTargetValue(event)    
+            setScaleInCoolDown(event)    
         if(id === 'formFieldIdScaleOutCoolDown')
-            setTargetValue(event)
+            setScaleOutCoolDown(event)
     }
 
     const renderEndpointAutoScalingGroupSettings = () => {
@@ -84,10 +87,10 @@ const EndpointASGForm: FunctionComponent = () => {
                     <Input type='text' value={targetValue} onChange={(event) => {onChange('formFieldIdTargetValue', event)}} />
                 </FormField>
                 <FormField label={t('industrial_models.endpoint.asg_scale_in_cooldown')} controlId={uuidv4()}>
-                    <Input type='text' value={targetValue} onChange={(event) => {onChange('formFieldIdScaleInCoolDown', event)}} />
+                    <Input type='text' value={scaleInCoolDown} onChange={(event) => {onChange('formFieldIdScaleInCoolDown', event)}} />
                 </FormField>
                 <FormField label={t('industrial_models.endpoint.asg_scale_out_cooldown')} controlId={uuidv4()}>
-                    <Input type='text' value={targetValue} onChange={(event) => {onChange('formFieldIdScaleOutCoolDown', event)}} />
+                    <Input type='text' value={scaleOutCoolDown} onChange={(event) => {onChange('formFieldIdScaleOutCoolDown', event)}} />
                 </FormField>
             </FormSection>
         )
@@ -98,7 +101,7 @@ const EndpointASGForm: FunctionComponent = () => {
             header={t('industrial_models.endpoint.asg_policy')}
             actions={
                 <div>
-                    <Button onClick={onClose}>{t('industrial_models.demo.close')}</Button>
+                    <Button variant='link' onClick={onClose}>{t('industrial_models.demo.close')}</Button>
                     <Button variant='primary' loading={processing} onClick={onApply}>{t('industrial_models.common.submit')}</Button>
                 </div>
             }>   
