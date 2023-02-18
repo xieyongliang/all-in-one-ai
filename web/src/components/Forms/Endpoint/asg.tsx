@@ -34,7 +34,8 @@ const EndpointASGForm: FunctionComponent<IProps> = (props) => {
             setScaleOutCoolDown(response.data.asg_scale_out_cooldown)
             setLoading(false);
         }, (error) => {
-            console.log(error)
+            setLoading(false);
+            console.log(error);
         });
     }, [props.endpointName])
 
