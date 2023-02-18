@@ -1287,20 +1287,6 @@
 
     ![Deploy stable-diffusion-webui](./assets/images/quickstart_deploy_stable_diffusion_webui.png)
 
-4. Setup stable-diffusion-webui
-
-    **Signin or Signup**
-
-    Choose user tab and then signin or signup firstly. Note you won't be able to perform any GPU related actions unless you are logined via either signin or signup.
-
-    **Configure your SageMaker endpoint and your stable diffusion models**
-
-    Select your SageMaker endpoint firstly from dropdown list of avaiable SageMaker endpoints list. You may refresh the available SageMaker endpoints list by clicking refresh button right after SageMaker endpoints dropdown list. Then refresh stable diffusion models by clicking refresh button right after stable diffusion models and choose your stable diffusion model.
-
-    ![Setup stable-diffusion-webui ](./assets/images/quickstart_setup_stable_diffusion_webui_sagemaker_endpoint.png)
-
-    ![Setup stable-diffusion-webui ](./assets/images/quickstart_setup_stable_diffusion_webui_sd_model.png)
-
 5. Quickstart - Inference - Text to Image
 
     **HTTP request**

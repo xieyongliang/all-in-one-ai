@@ -129,9 +129,9 @@ Make sure the following resources not existed. In case they are existed, please 
 
 ###  Build and deploy
 
-    Run the following commands to package python codes and build docker image for web portal and then upload assets to S3 and push docker image to ECR which region is the same AWS region as where CloudFormation stack. It will may take 30-60 minutes.
+    Run the following commands to package python codes and build docker image for web portal and then upload assets to S3 and push docker image to ECR which region is the same AWS region as where CloudFormation stack. It will may take 15-30 minutes. Parameters s3uri and aws-region are mandatory while parameter algorithm is optional to specify which algorithm will be built-in and if it is not presented, all of algorithms will be built-in.
 
-    ./build_and_deploy.sh [s3uri] [aws-region]
+    Usage: ./build_and_deploy.sh [s3uri] [aws-region] [algorithm]
 
 ###  Various deployment options
 1.  Option 1 – web portal with HTTP access
@@ -244,31 +244,39 @@ Note: It is a partial step of build_and_deploy.sh
 
 ###  stable-diffusion-webui deployment
 
-1.  Launch CloudFormation stack template by clicking [![Launch CloudFormation stack](./assets/images/launch.png)](https://console.aws.amazon.com/cloudformation/home?#/stacks/create/template) , and input Amazon S3 URL with HTTP URI of all-in-one-ai-webui.yaml.
+1.  Launch CloudFormation stack template by clicking [![Launch CloudFormation stack](./assets/images/launch.png)](https://console.aws.amazon.com/cloudformation/home?#/stacks/create/template) , and input Amazon S3 URL with HTTP URI of all-in-one-ai-webui-main.yaml.
 
     ![stable-difffusion-webui CloudFormation step 1](./assets/images/stable-diffusion-webui-01.png)
 
-2. Specify stack details.  Please input API Gateway endpoint and select your private subnets, public subnets, vpc, and customize other parameters if needed. If you want to use HTTP, please leave the rest as blank. If you want to use HTTPS, please input ACM certifacate ARN and your domain name.Choose Next. For API Gateway endpoint, you can check it from the stack outputs of all-in-one-lambda.yaml.
+2. Specify stack details. Please select at least 2 availability zone, Certificate, DomainName, input S3 bucket/key information of your stack template, input CognitoRegion, UserPool, UserPoolClient, UserPoolDomain if Cognito authentication is enabled and customize other parameters if needed. Choose Next.
 
     ![stable-difffusion-webui CloudFormation step 2](./assets/images/stable-diffusion-webui-02.png)
 
     ![stable-difffusion-webui CloudFormation step 2](./assets/images/stable-diffusion-webui-03.png)    
 
-3. Configure stack options. Keep everything as default and choose Next.
-
     ![stable-difffusion-webui CloudFormation step 3](./assets/images/stable-diffusion-webui-04.png)
+
+3. Configure stack options. Keep everything as default and choose Next.
 
     ![stable-difffusion-webui CloudFormation step 3](./assets/images/stable-diffusion-webui-05.png)
 
-4.  Review stack all-in-one-ai. Check the 1 check boxes in the bottom. Choose Create Stack.
-
     ![stable-difffusion-webui CloudFormation step 4](./assets/images/stable-diffusion-webui-06.png)
+
+4.  Review stack all-in-one-ai. Check the 1 check boxes in the bottom. Choose Create Stack.
 
     ![stable-difffusion-webui CloudFormation step 4](./assets/images/stable-diffusion-webui-07.png)
 
-5.  Wait for around 10 minutes to get the stack launched and check the stack outpus.
-
     ![stable-difffusion-webui CloudFormation step 5](./assets/images/stable-diffusion-webui-08.png)
+
+    ![stable-difffusion-webui CloudFormation step 5](./assets/images/stable-diffusion-webui-09.png)
+
+    ![stable-difffusion-webui CloudFormation step 5](./assets/images/stable-diffusion-webui-10.png)
+
+    ![stable-difffusion-webui CloudFormation step 5](./assets/images/stable-diffusion-webui-11.png)
+
+5.  Wait for around 15 minutes to get the stack launched and check the stack outpus.
+
+    ![stable-difffusion-webui CloudFormation step 5](./assets/images/stable-diffusion-webui-12.png)
 
 ###  Prepare SD models
 *   SD v2.1
@@ -315,7 +323,23 @@ Note:
 
 *   Wait 10 minutes until the stable-diffusion-webui server pass the health check and then check the stack outputs of all-in-one-ai-webui and then launch the stable-diffusion-webui.
 
-![stable-difffusion-webui](./assets/images/stable-diffusion-webui-09.png)
+![stable-difffusion-webui](./assets/images/stable-diffusion-webui-13.png)
+
+### Setup stable-diffusion-webui
+
+*   Signin or Signup
+
+    Choose user tab and then signin or signup firstly. Note you won't be able to perform any GPU related actions unless you are logined via either signin or signup.
+
+    ![Signin or Signup stable-diffusion-webui ](./assets/images/stable_diffusion_webui_setup_user.png)    
+
+*   Configure your SageMaker endpoint and your stable diffusion models
+
+    Select your SageMaker endpoint firstly from dropdown list of avaiable SageMaker endpoints list. You may refresh the available SageMaker endpoints list by clicking refresh button right after SageMaker endpoints dropdown list. Then refresh stable diffusion models by clicking refresh button right after stable diffusion models and choose your stable diffusion model.
+
+    ![Setup stable-diffusion-webui ](./assets/images/stable_diffusion_webui_setup_sagemaker_endpoint.png)
+
+    ![Setup stable-diffusion-webui ](./assets/images/stable_diffusion_webui_setup_sd_model.png)
 
 ##  Resource Cleanup
 *   The resource created by CloudFormation will be deleted automatically when you delete CloudFormation stack. Before you delete CloudFormation stack, please make sure the following resources created dynamically are deleted.
