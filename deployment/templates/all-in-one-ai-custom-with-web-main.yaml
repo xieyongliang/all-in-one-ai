@@ -92,10 +92,6 @@ Parameters:
     Type: String
     Description: Certificate of ALB
 
-  WebUIDomainName:
-    Type: String
-    Description: Domain Name of WebUI
-
   UserPool:
     Type: String
     Description: UserPool Id
@@ -254,30 +250,7 @@ Resources:
         - !Sub https://${S3Bucket}.s3.${AWS::Region}.amazonaws.com/${S3Key}templates/all-in-one-ai-web.yaml
         - !Sub https://${S3Bucket}.s3.${AWS::Region}.amazonaws.com.cn/${S3Key}templates/all-in-one-ai-web.yaml
 
-  WEBUI:
-    Type: AWS::CloudFormation::Stack
-    DependsOn: 
-      - VPC
-      - LAMBDA
-    Properties:
-      Parameters:
-        VPC: !GetAtt VPC.Outputs.VPC
-        PrivateSubnets: !Join [",", [!GetAtt VPC.Outputs.PrivateSubnet1, !GetAtt VPC.Outputs.PrivateSubnet2]]
-        PublicSubnets: !Join [",", [!GetAtt VPC.Outputs.PublicSubnet1, !GetAtt VPC.Outputs.PublicSubnet2]]
-        ApiGatewayProdEndpoint: !GetAtt LAMBDA.Outputs.ApiGatewayProdEndpoint
-        DomainName: !Ref WebUIDomainName
-        Certificate: !Ref Certificate
-        ChinaRegion: !Ref ChinaRegion
-      TemplateURL: 
-        !If
-        - Globally
-        - !Sub https://${S3Bucket}.s3.${AWS::Region}.amazonaws.com/${S3Key}templates/all-in-one-ai-webui.yaml
-        - !Sub https://${S3Bucket}.s3.${AWS::Region}.amazonaws.com.cn/${S3Key}templates/all-in-one-ai-webui.yaml
-
 Outputs:
   WebPortalUrl:
     Description: Web Portal Url
     Value: !If [ USE_HTTP, !Sub "http://${WEB.Outputs.DNSName}", !Sub "https://${DomainName}" ]
-  WebUIPortalUrl:
-    Description: WebUI Portal Url
-    Value: !If [ USE_HTTP, !Sub "http://${WEBUI.Outputs.DNSName}", !Sub "https://${WebUIDomainName}" ]

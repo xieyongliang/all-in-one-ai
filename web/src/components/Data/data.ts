@@ -232,6 +232,14 @@ export const ENDPOINTOPTIONS : SelectOption[]= [
             { label: 'ml.g4dn.8xlarge', value: 'ml.g4dn.8xlarge' },
             { label: 'ml.g4dn.12xlarge', value: 'ml.g4dn.12xlarge' },
             { label: 'ml.g4dn.16xlarge', value: 'ml.g4dn.16xlarge' },
+            { label: 'ml.g5.xlarge', value: 'ml.g5.xlarge' },
+            { label: 'ml.g5.2xlarge', value: 'ml.g5.2xlarge' },
+            { label: 'ml.g5.4xlarge', value: 'ml.g5.4xlarge' },
+            { label: 'ml.g5.8xlarge', value: 'ml.g5.8xlarge' },
+            { label: 'ml.g5.12xlarge', value: 'ml.g5.12xlarge' },
+            { label: 'ml.g5.16xlarge', value: 'ml.g5.16xlarge' },
+            { label: 'ml.g5.24xlarge', value: 'ml.g5.24xlarge' },
+            { label: 'ml.g5.48xlarge', value: 'ml.g5.48xlarge' },
             { label: 'ml.inf1.xlarge', value: 'ml.inf1.xlarge' },
             { label: 'ml.inf1.2xlarge', value: 'ml.inf1.2xlarge' },
             { label: 'ml.inf1.6xlarge', value: 'ml.inf1.6xlarge' },
@@ -239,6 +247,7 @@ export const ENDPOINTOPTIONS : SelectOption[]= [
             { label: 'ml.p2.xlarge', value: 'ml.p2.xlarge' },
             { label: 'ml.p2.8xlarge', value: 'ml.p2.8xlarge' },
             { label: 'ml.p2.16xlarge', value: 'ml.p2.16xlarge' },
+            { label: 'ml.p4d.24xlarge', value: 'ml.p4d.24xlarge' },
         ]
     }
 ];
@@ -278,18 +287,27 @@ export const TRAININGOPTIONS : SelectOption[]= [
     {
         label: 'Accelerated computing', 
         options: [ 
+            { label: 'ml.g4dn.xlarge', value: 'ml.g4dn.xlarge' },
+            { label: 'ml.g4dn.2xlarge', value: 'ml.g4dn.2xlarge' },
+            { label: 'ml.g4dn.4xlarge', value: 'ml.g4dn.4xlarge' },
+            { label: 'ml.g4dn.8xlarge', value: 'ml.g4dn.8xlarge' },
+            { label: 'ml.g4dn.12xlarge', value: 'ml.g4dn.12xlarge' },
+            { label: 'ml.g4dn.16xlarge', value: 'ml.g4dn.16xlarge' },
+            { label: 'ml.g5.xlarge', value: 'ml.g5.xlarge' },
+            { label: 'ml.g5.2xlarge', value: 'ml.g5.2xlarge' },
+            { label: 'ml.g5.4xlarge', value: 'ml.g5.4xlarge' },
+            { label: 'ml.g5.8xlarge', value: 'ml.g5.8xlarge' },
+            { label: 'ml.g5.12xlarge', value: 'ml.g5.12xlarge' },
+            { label: 'ml.g5.16xlarge', value: 'ml.g5.16xlarge' },
+            { label: 'ml.g5.24xlarge', value: 'ml.g5.24xlarge' },
+            { label: 'ml.g5.48xlarge', value: 'ml.g5.48xlarge' },
             { label: 'ml.p2.xlarge', value: 'ml.p2.xlarge'},
             { label: 'ml.p2.8xlarge', value: 'ml.p2.8xlarge'},
             { label: 'ml.p2.16xlarge', value: 'ml.p2.16xlarge'},
             { label: 'ml.p3.2xlarge', value: 'ml.p3.2xlarge'},
             { label: 'ml.p3.8xlarge', value: 'ml.p3.8xlarge'},
             { label: 'ml.p3.16xlarge', value: 'ml.p3.16xlarge'},
-            { label: 'ml.g4dn.xlarge', value: 'ml.g4dn.xlarge' },
-            { label: 'ml.g4dn.2xlarge', value: 'ml.g4dn.2xlarge' },
-            { label: 'ml.g4dn.4xlarge', value: 'ml.g4dn.4xlarge' },
-            { label: 'ml.g4dn.8xlarge', value: 'ml.g4dn.8xlarge' },
-            { label: 'ml.g4dn.12xlarge', value: 'ml.g4dn.12xlarge' },
-            { label: 'ml.g4dn.16xlarge', value: 'ml.g4dn.16xlarge' }
+            { label: 'ml.p4d.24xlarge', value: 'ml.p4d.24xlarge' },
         ]
     }
 ];
