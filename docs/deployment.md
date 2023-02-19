@@ -125,13 +125,22 @@ Make sure the following resources not existed. In case they are existed, please 
 
 ###  Get source code
 
-    Contact your corresponding Amazon AWS Account BD/SA or email to yonglxie@amazon.com to get the source code.
+Contact your corresponding Amazon AWS Account BD/SA or email to yonglxie@amazon.com to get the source code.
 
-###  Build and deploy
+You may run the following commands to clone or update all-in-one-ai source tree.
 
-    Run the following commands to package python codes and build docker image for web portal and then upload assets to S3 and push docker image to ECR which region is the same AWS region as where CloudFormation stack. It will may take 15-30 minutes. Parameters s3uri and aws-region are mandatory while parameter algorithm is optional to specify which algorithm will be built-in and if it is not presented, all of algorithms will be built-in.
+    git clone --recurse-submodules -j8 [git-repo] [path-to-all-in-one-ai]
+        
+    git pull --recurse-submodules -j8
 
-    Usage: ./build_and_deploy.sh [s3uri] [aws-region] [algorithm]
+
+###  Build all-in-one-ai
+
+Change directory to [path-to-all-in-one-ai]/deployment and run the following commands to package python codes and build docker image for web portal and then upload assets to S3 and push docker image to ECR which region is the same AWS region as where CloudFormation stack. It will may take 15-30 minutes. Parameters s3uri and aws-region are mandatory while parameter algorithm is optional to specify which algorithm will be built-in and if it is not presented, all of algorithms will be built-in.
+
+    cd [path-to-all-in-one-ai]/deployment
+
+    ./build_and_deploy.sh [s3uri] [aws-region] [algorithm]
 
 ###  Various deployment options
 1.  Option 1 – web portal with HTTP access
@@ -233,14 +242,23 @@ If Cognito authentication is disabled, please launch All-in-One AI CloudFormatio
 
     ![Cognito CloudFormation step 6](./assets/images/main_step_7_2.png)
 
-## Build stable-diffusion-webui
-###  Build and push to ECR
+## stable-diffusion-webui
+###  Build stable-diffusion-webui (Fully)
 
-Go to sagemaker/stable-diffusion-webui and 
+Change directory to [path-to-all-in-one-ai]/deployment and run the following commands to package python codes and build docker image for web portal and then upload assets to S3 and push docker image to ECR which region is the same AWS region as where CloudFormation stack. It will may take 15-30 minutes. Parameters s3uri and aws-region are mandatory while parameter algorithm is optional to specify which algorithm will be built-in and if it is not presented, all of algorithms will be built-in.
+
+    cd [path-to-all-in-one-ai]/deployment
+
+    ./build_and_deploy.sh [s3uri] [aws-region] stable-diffusion-webui
+
+
+###  Build stable-diffusion-webui (Partially)
+
+Go to sagemaker/stable-diffusion-webui and run the following command.
     
-    run ./build_and_push.sh [region-name]
+    cd [path-to-all-in-one-ai]/sagemaker/stable-diffusion-webui
 
-Note: It is a partial step of build_and_deploy.sh
+    run ./build_and_push.sh [region-name]
 
 ###  stable-diffusion-webui deployment
 
