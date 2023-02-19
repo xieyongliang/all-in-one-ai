@@ -12,7 +12,7 @@ ddbh = helper.ddb_helper({'table_name': import_jobs_table})
 
 def lambda_handler(event, context):
     statement_id = event['industrial_model']
-    input_s3uir = event['input_s3uri']
+    input_s3uri = event['input_s3uri']
     output_s3uri = event['output_s3uri']
     function_name = event['lambda_function_arn']
 
@@ -21,7 +21,7 @@ def lambda_handler(event, context):
     try:
         params = {}
         params['industrial_model'] = statement_id
-        params['input_s3uir'] = input_s3uir
+        params['input_s3uri'] = input_s3uri
         params['output_s3uri'] = output_s3uri
         ddbh.put_item(params)
 

@@ -22,7 +22,7 @@ def lambda_handler(event, context):
                 action = event['queryStringParameters']['action']
             if(action == 'query'):
                 if es.indices.exists(index = index):
-                    count = es.count(index = index,)['count']
+                    count = es.count(index = index)['count']
                 else:
                     count = 0
 

@@ -6483,10 +6483,6 @@ Resources:
           - Globally                                                  
           - 'arn:aws:iam::aws:policy/AWSLambda_FullAccess'
           - 'arn:aws-cn:iam::aws:policy/AWSLambda_FullAccess'
-        - !If
-          - Globally
-          - 'arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess'
-          - 'arn:aws-cn:iam::aws:policy/AmazonDynamoDBFullAccess'
   
   AllInOneAIRemovePermissionFunctionAdditionalPermission:
     Type: 'AWS::IAM::Policy'
@@ -6524,8 +6520,6 @@ Resources:
           - !Ref PrivateSubnet2
         SecurityGroupIds: 
           - !Ref SecurityGroup
-      Layers:
-        - !Ref HelperLayer
 
   AllInOneAICreateS3EventNotificationFunctionRole:
     Type: 'AWS::IAM::Role'
