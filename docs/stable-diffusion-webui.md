@@ -1,3 +1,12 @@
+## Toolkits to be prepared prior to build and deploy
+-   git
+-   awscli
+-   zip
+-   python3
+-   pip3
+-   docker
+-   jq
+
 ##  Build stable-diffusion-webui (Fully)
 
 Change directory to [path-to-all-in-one-ai]/deployment and run the following commands to package python codes and build docker image for web portal and then upload assets to S3 and push docker image to ECR which region is the same AWS region as where CloudFormation stack. It will may take 15-30 minutes. Parameters s3uri and aws-region are mandatory while parameter algorithm is optional to specify which algorithm will be built-in and if it is not presented, all of algorithms will be built-in.

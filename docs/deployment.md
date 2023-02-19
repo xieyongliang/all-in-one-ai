@@ -94,6 +94,7 @@ Make sure the following resources not existed. In case they are existed, please 
 -   python3
 -   pip3
 -   docker
+-   jq
 
 ### Service quotas and limits
 -   Amazon VPC – 1
