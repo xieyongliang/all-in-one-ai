@@ -35,6 +35,7 @@ const ImportImage: FunctionComponent<ImagePreviewProps> = (props) => {
             .then((response) => {
                 setTimeout(() => {
                     setProcessing(false)
+                    props.onClose()
                   }, 60000);
             }, (error) => {
                 logOutput('error', error.response.data, undefined, error);
@@ -59,7 +60,7 @@ const ImportImage: FunctionComponent<ImagePreviewProps> = (props) => {
                     onChange={(event) => onChange('formFieldIdEndpoint', event)}
                 />
             </FormField>
-            <FormField controlId={uuidv4()} label={t('industrial_models.demo.select_endpoint')}>
+            <FormField controlId={uuidv4()} label={t('industrial_models.transform_job.s3_location')}>
                 <Input value={props.industrialModel.samples} readonly={true} />
             </FormField>
         </Form>

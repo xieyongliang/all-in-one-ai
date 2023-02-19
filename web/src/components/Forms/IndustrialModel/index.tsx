@@ -12,6 +12,7 @@ import { ALGORITHMS } from '../../Data/data';
 import { v4 as uuidv4 } from 'uuid';
 import { useTranslation } from "react-i18next";
 import { logOutput } from "../../Utils/Helper";
+import algorithmsConfig from '../../Data/config.json'
 
 interface IProps {
     updateindustrialmodelsAction : (industrialModels : IIndustrialModel[]) => any
@@ -20,7 +21,7 @@ interface IProps {
 }
 
 const IndustrialModelForm: FunctionComponent<IProps> = (props) => {
-    const [ selectedAlgorithm, setSelectedAlgorithm] = useState({label: 'Yolov5', value: 'yolov5'})
+    const [ selectedAlgorithm, setSelectedAlgorithm] = useState({label: '', value: ''})
     const [ modelName, setModelName ] = useState('')
     const [ modelDescription, setModelDescription ] = useState('')
     const [ modelSamples, setModelSamples ] = useState('')
@@ -35,8 +36,13 @@ const IndustrialModelForm: FunctionComponent<IProps> = (props) => {
     useEffect(() => {
         var algorithmOptions = []
         ALGORITHMS.forEach((item)=> {
-            algorithmOptions.push({label: item.label, value: item.value})
-        })
+            if(algorithmsConfig.algorithm != '') {
+                if(item.value == algorithmsConfig.algorithm)
+                    algorithmOptions.push({label: item.label, value: item.value})
+            }
+            else
+                algorithmOptions.push({label: item.label, value: item.value})
+    })
         setAlgorithmOptions(algorithmOptions)
     }, [])
 

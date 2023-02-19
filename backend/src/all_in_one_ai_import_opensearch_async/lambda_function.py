@@ -13,47 +13,46 @@ from sagemaker.workflow.conditions import ConditionEquals
 from sagemaker.workflow.fail_step import FailStep
 import helper
 from datetime import datetime
+import json
 
 ssmh = helper.ssm_helper()
 role_arn = ssmh.get_parameter('/all_in_one_ai/config/meta/sagemaker_role_arn')
 add_permission_lambda_arn = ssmh.get_parameter('/all_in_one_ai/config/meta/pipeline/add_permission_lambda_arn')
 remove_permission_lambda_arn = ssmh.get_parameter('/all_in_one_ai/config/meta/pipeline/remove_permission_lambda_arn')
-create_event_notification_lambda_arn = ssmh.get_parameter(
-    '/all_in_one_ai/config/meta/pipeline/create_event_notification_lambda_arn')
-delete_event_notification_lambda_arn = ssmh.get_parameter(
-    '/all_in_one_ai/config/meta/pipeline/delete_event_notification_lambda_arn')
-import_opensearch_async_helper_lambda_arn = ssmh.get_parameter(
-    '/all_in_one_ai/config/meta/pipeline/import_opensearch_async_helper_lambda_arn')
-
+create_event_notification_lambda_arn = ssmh.get_parameter('/all_in_one_ai/config/meta/pipeline/create_event_notification_lambda_arn')
+delete_event_notification_lambda_arn = ssmh.get_parameter('/all_in_one_ai/config/meta/pipeline/delete_event_notification_lambda_arn')
+import_opensearch_async_helper_lambda_arn = ssmh.get_parameter('/all_in_one_ai/config/meta/pipeline/import_opensearch_async_helper_lambda_arn')
 
 def lambda_handler(event, context):
     print(event)
 
-    industrial_model = event['body']['industrial_model']
-    transform_job_name = event['body']['transform_job_name']
-    model_name = event['body']['model_name']
-    max_concurrent_transforms = event['body']['max_concurrent_transforms']
-    invocations_timeout_in_seconds = event['body']['invocations_timeout_in_seconds']
-    invocations_max_retries = event['body']['invocations_max_retries']
-    max_payload_in_mb = event['body']['max_payload_in_mb']
-    batch_strategy = event['body']['batch_strategy']
-    environment = event['body']['environment'] if ('environment' in event['body']) else {}
-    s3_data_type = event['body']['s3_data_type']
-    input_s3uri = event['body']['input_s3uri']
-    content_type = event['body']['content_type']
-    compression_type = event['body']['compression_type']
-    split_type = event['body']['split_type']
-    output_s3uri = event['body']['output_s3uri']
-    accept = event['body']['accept']
-    assemble_with = event['body']['assemble_with']
-    instance_type = event['body']['instance_type']
-    instance_count = event['body']['instance_count']
-    input_filter = event['body']['input_filter']
-    output_filter = event['body']['output_filter']
-    join_source = event['body']['join_source']
-    tags = event['body']['tags'] if ('tags' in event['body']) else []
+    payload = json.loads(event['body'])
+    industrial_model = payload['industrial_model']
+    transform_job_name = payload['transform_job_name']
+    model_name = payload['model_name']
+    max_concurrent_transforms = payload['max_concurrent_transforms']
+    invocations_timeout_in_seconds = payload['invocations_timeout_in_seconds']
+    invocations_max_retries = payload['invocations_max_retries']
+    max_payload_in_mb = payload['max_payload_in_mb']
+    batch_strategy = payload['batch_strategy']
+    environment = payload['environment'] if('environment' in payload) else {}
+    s3_data_type = payload['s3_data_type']
+    input_s3uri = payload['input_s3uri']
+    content_type = payload['content_type']
+    compression_type = payload['compression_type']
+    split_type = payload['split_type']
+    output_s3uri = payload['output_s3uri']
+    accept = payload['accept']
+    assemble_with = payload['assemble_with']
+    instance_type = payload['instance_type']
+    instance_count = payload['instance_count']
+    input_filter = payload['input_filter']
+    output_filter = payload['output_filter']
+    join_source = payload['join_source']
+    #tags = payload['tags'] if('tags' in payload) else []
+    tags = []
 
-    transformer = Transformer(
+    transformer= Transformer(
         model_name,
         instance_count,
         instance_type,

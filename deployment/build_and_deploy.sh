@@ -19,4 +19,26 @@ cd ${project_dir}/sagemaker
 ./build_and_push.sh ${s3uri} ${region} ${algorithm}
 
 cd ${project_dir}/web
+algorithm2=$(cat src/components/Data/config.json | jq -r .algorithm)
+if [ ! -z "${algorithm}" -a ! -z "{$algorithm2}" ]; then
+if [ "${algorithm}" != "${algorithm2}" ]; then
+tee src/components/Data/config.json << END
+{
+    "algorithm": "${algorithm}"
+}
+END
+fi
+elif [ ! -z "${algorithm}" -a -z "{$algorithm2}" ]; then
+tee src/components/Data/config.json << END
+{
+    "algorithm": "${algorithm}"
+}
+END
+elif [ -z "${algorithm}" -a ! -z "{$algorithm2}" ]; then
+tee src/components/Data/config.json << END
+{
+    "algorithm": ""
+}
+END
+fi
 ./build_and_push.sh ${region}

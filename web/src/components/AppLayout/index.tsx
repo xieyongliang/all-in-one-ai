@@ -27,6 +27,7 @@ import { useCookies } from 'react-cookie';
 import useWebSocket from 'react-use-websocket';
 import { useTranslation } from "react-i18next";
 import { getLocaleDate, logOutput } from '../Utils/Helper';
+import algorithmsConfig from '../Data/config.json'
 
 interface IProps {
     industrialModels : IIndustrialModel[];
@@ -138,8 +139,15 @@ const AppLayout: FunctionComponent<IProps> = ( {
     useEffect(() => {
         var items = []
             ALGORITHMS.forEach((item) => {
-                if(item.type === 'single')
-                    items.push({text: item.label, type: SideNavigationItemType.LINK, href: `/algorithms/${item.value}`})
+                if(algorithmsConfig.algorithm != '') {
+                    if(item.value == algorithmsConfig.algorithm)
+                        if(item.type === 'single')
+                            items.push({text: item.label, type: SideNavigationItemType.LINK, href: `/algorithms/${item.value}`})
+                }
+                else {
+                    if(item.type === 'single')
+                        items.push({text: item.label, type: SideNavigationItemType.LINK, href: `/algorithms/${item.value}`})
+                }
             })
             setAlgorithmsItems(items)
     }, [])

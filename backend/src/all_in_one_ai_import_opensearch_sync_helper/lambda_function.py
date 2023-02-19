@@ -1,6 +1,5 @@
 import json
 import os
-import helper
 import boto3
 from elasticsearch import Elasticsearch
 
@@ -63,9 +62,7 @@ def lambda_handler(event, context):
             print(payload)
             statusCode = payload['statusCode']
             if(statusCode == 200):
-
-                payload = json.loads(payload['body'])
-                prediction = payload['predictions'][0]
+                prediction = json.loads(payload['body'])['result']
                 response = es.index(
                     index = index,
                     body = {

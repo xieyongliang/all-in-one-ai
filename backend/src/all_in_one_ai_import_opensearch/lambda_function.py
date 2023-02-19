@@ -7,8 +7,7 @@ import traceback
 lambda_client = boto3.client('lambda')
 
 def lambda_handler(event, context):
-    print(event)
-    
+
     try:
         if event['httpMethod'] == 'GET':
             industrial_model = event['queryStringParameters']['industrial_model']
@@ -36,6 +35,7 @@ def lambda_handler(event, context):
                     )
                 }
 
+            print(event)
             create_index(es, index)
 
             endpoint_name = event['queryStringParameters']['endpoint_name']
@@ -57,26 +57,26 @@ def lambda_handler(event, context):
                 'body': response['Payload'].read().decode('utf-8')
             }
         elif event['httpMethod'] == 'POST':
-            body = json.loads(event['body'])
-            
-            industrial_model = body['industrial_model']
+            print(event)
+            payload = json.loads(event['body'])
+            industrial_model = payload['industrial_model']
             index = industrial_model
             endpoint = os.environ['ES_ENDPOINT']
             es = Elasticsearch(endpoint)
+
 
             create_index(es, index)
             
             response = lambda_client.invoke(
                 FunctionName = 'all_in_one_ai_import_opensearch_async',
                 InvocationType = 'Event',
-                Payload=json.dumps({'body' : body})
+                Payload=json.dumps({'body' : event['body']})
             )
             
             return {
                 'statusCode': response['StatusCode'],
                 'body': response['Payload'].read().decode('utf-8')
             }
-            
         else:
             return {
                 'statusCode': 400,
@@ -114,4 +114,3 @@ def create_index(es, index):
 
     es.indices.create(index = index, body = knn_index, ignore = 400)
     print(es.indices.get(index = index))
-    
