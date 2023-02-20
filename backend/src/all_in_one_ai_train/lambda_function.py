@@ -361,7 +361,7 @@ def lambda_handler(event, context):
                         inputs['hypernetwork'] = hypernetwork_s3uri
 
                 if 'models' not in inputs or inputs['models'] == '':
-                    model_name = hyperparameters['ckpt']
+                    model_name = os.path.basename(hyperparameters['ckpt'])
                     inputs['models'] = '{0}/{1}'.format(models_s3uri, model_name[0 : -5])
             else:
                 train_args = json.loads(json.loads(hyperparameters['train-args']))
