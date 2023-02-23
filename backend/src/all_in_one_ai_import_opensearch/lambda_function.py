@@ -3,8 +3,11 @@ import os
 import boto3
 from elasticsearch import Elasticsearch
 import traceback
+import helper
 
 lambda_client = boto3.client('lambda')
+import_jobs_table = 'all_in_one_ai_import_jobs'
+ddbh = helper.ddb_helper({'table_name': import_jobs_table})
 
 def lambda_handler(event, context):
 
@@ -22,7 +25,7 @@ def lambda_handler(event, context):
                 action = event['queryStringParameters']['action']
             if(action == 'query'):
                 if es.indices.exists(index = index):
-                    count = es.count(index = index)['count']
+                    count = es.count(index = index,)['count']
                 else:
                     count = 0
 
@@ -39,6 +42,10 @@ def lambda_handler(event, context):
             create_index(es, index)
 
             endpoint_name = event['queryStringParameters']['endpoint_name']
+
+            key = {}
+            key['industrial_model'] = industrial_model
+            ddbh.delete_item(key)
 
             request = {
                 'industrial_model': industrial_model,
@@ -64,9 +71,12 @@ def lambda_handler(event, context):
             endpoint = os.environ['ES_ENDPOINT']
             es = Elasticsearch(endpoint)
 
-
             create_index(es, index)
-            
+
+            key = {}
+            key['industrial_model'] = industrial_model
+            ddbh.delete_item(key)
+
             response = lambda_client.invoke(
                 FunctionName = 'all_in_one_ai_import_opensearch_async',
                 InvocationType = 'Event',
@@ -114,3 +124,4 @@ def create_index(es, index):
 
     es.indices.create(index = index, body = knn_index, ignore = 400)
     print(es.indices.get(index = index))
+    
