@@ -9,7 +9,10 @@ from botocore.client import Config
 sagemaker_session = sagemaker.Session()
 
 sd_model_table = 'all_in_one_ai_sd_model'
-ddbh = helper.ddb_helper({'table_name': sd_model_table})
+ddbh_sd = helper.ddb_helper({'table_name': sd_model_table})
+
+cn_model_table = 'all_in_one_ai_cn_model'
+ddbh_cn = helper.ddb_helper({'table_name': cn_model_table})
 
 s3_client = boto3.client('s3', config=Config(signature_version='s3v4'))
 
@@ -26,6 +29,10 @@ def lambda_handler(event, context):
             dreambooth_config_id = None
             if event['queryStringParameters'] and 'dreambooth_config_id' in event['queryStringParameters']:
                 dreambooth_config_id = event['queryStringParameters']['dreambooth_config_id']
+            
+            module = None
+            if event['queryStringParameters'] and 'module' in event['queryStringParameters']:
+                module = event['queryStringParameters']['module']
 
             if dreambooth_config_id:
                 dreambooth_config_s3uri = None
@@ -41,10 +48,19 @@ def lambda_handler(event, context):
                     Body=json.dumps(request).encode('utf-8')
                 )
             else:
-                items = request['items']
+                if module == 'Stable-diffusion':
+                    items = request['items']
 
-                for item in items:
-                    ddbh.put_item(item)
+                    for item in items:
+                        ddbh_sd.put_item(item)
+                elif module == 'ControlNet':
+                    items = request
+                    ddbh_cn.put_item(item)
+                else:
+                    return {
+                        'statusCode': 400,
+                        'body': 'Unsupported module'
+                    }                    
 
             return {
                 'statusCode': 200
@@ -191,9 +207,17 @@ def lambda_handler(event, context):
                 endpoint_name = event['queryStringParameters']['endpoint_name']
 
             if endpoint_name:
-                items = ddbh.scan(FilterExpression=Key('endpoint_name').eq(endpoint_name))
+                if module == 'Stable-diffusion':
+                    items = ddbh_sd.scan(FilterExpression=Key('endpoint_name').eq(endpoint_name))
+                elif module == 'ControlNet':
+                    items = ddbh_cn.scan(FilterExpression=Key('endpoint_name').eq(endpoint_name))
+                else:
+                    return {
+                        'statusCode': 400,
+                        'body': 'Unsupported module'
+                    }  
             else:
-                items = ddbh.scan()
+                items = ddbh_sd.scan()
 
             print(items)
 

@@ -10,6 +10,7 @@ COPY stable-diffusion-webui /opt/ml/code/
 COPY webui /opt/ml/code
 
 RUN git clone https://github.com/xieyongliang/sd_dreambooth_extension.git /opt/ml/code/extensions/sd_dreambooth_extension
+RUN git clone https://github.com/xieyongliang/sd-webui-controlnet.git /opt/ml/code/extensions/sd-webui-controlnet
 
 WORKDIR /opt/ml/code
 
