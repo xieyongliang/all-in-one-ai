@@ -26,6 +26,7 @@ cp stable-diffusion-webui/build_and_push.sh.lite stable-diffusion-webui/build_an
 else
 cp stable-diffusion-webui/build_and_push.sh.origin stable-diffusion-webui/build_and_push.sh
 fi
+chmod +x stable-diffusion-webui/build_and_push.sh
 ./build_and_push.sh ${s3uri} ${region} ${algorithm}
 
 cd ${project_dir}/web
