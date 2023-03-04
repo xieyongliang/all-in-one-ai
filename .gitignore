@@ -18,6 +18,7 @@ web/.env.local
 web/.env.development.local
 web/.env.test.local
 web/.env.production.local
+web/Dockerfile
 
 .DS_Store
 backend/.DS_Store
@@ -31,3 +32,8 @@ yarn-debug.log*
 yarn-error.log*
 
 .ipynb_checkpoints
+
+sagemaker/stable-diffusion-webui/Dockerfile.inference
+sagemaker/stable-diffusion-webui/Dockerfile.training
+sagemaker/stable-diffusion-webui/Dockerfile.webui
+
