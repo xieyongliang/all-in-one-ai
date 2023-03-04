@@ -22,13 +22,9 @@ aws s3 cp templates ${s3uri}/templates --recursive --region ${region}
 
 cd ${project_dir}/sagemaker
 if [ "${algorithm}" == "stable-diffusion-webui" -a "${option}" == "lite" ]; then
-cp stable-diffusion-webui/Dockerfile.interface.lite stable-diffusion-webui/Dockerfile.interface
-cp stable-diffusion-webui/Dockerfile.training.lite stable-diffusion-webui/Dockerfile.training
-cp stable-diffusion-webui/Dockerfile.webui.lite stable-diffusion-webui/Dockerfile.webui
+cp stable-diffusion-webui/build_and_push.sh.lite stable-diffusion-webui/build_and_push.sh
 else
-cp stable-diffusion-webui/Dockerfile.interface.origin stable-diffusion-webui/Dockerfile.interface
-cp stable-diffusion-webui/Dockerfile.training.origin stable-diffusion-webui/Dockerfile.training
-cp stable-diffusion-webui/Dockerfile.webui.origin stable-diffusion-webui/Dockerfile.webui
+cp stable-diffusion-webui/build_and_push.sh.origin stable-diffusion-webui/build_and_push.sh
 fi
 ./build_and_push.sh ${s3uri} ${region} ${algorithm}
 
@@ -60,5 +56,4 @@ tee src/components/Data/config.json << END
 }
 END
 fi
-cp build_and_push.sh.origin build_and_push.sh
 ./build_and_push.sh ${region}
