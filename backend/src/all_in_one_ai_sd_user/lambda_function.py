@@ -1,6 +1,5 @@
 import helper
 import traceback
-import uuid
 import json
 
 sd_user_table = 'all_in_one_ai_sd_user'

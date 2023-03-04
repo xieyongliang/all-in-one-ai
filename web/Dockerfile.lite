@@ -1,0 +1,3 @@
+FROM public.ecr.aws/l1s7l7p8/all-in-one-ai-web:latest
+ 
+COPY . /user/src/app

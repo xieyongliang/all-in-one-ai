@@ -25,6 +25,8 @@ fi
 
 if [ -z $option] || [ $option == "inference" ]
 then
+    cp Dockerfile.inference.lite Dockerfile.inference
+
     inference_image=all-in-one-ai-stable-diffusion-webui-inference
     inference_fullname=${account}.dkr.ecr.${region}.amazonaws.com/${inference_image}:latest
 
@@ -56,6 +58,8 @@ fi
 
 if [ -z $option] || [ $option == "webui" ]
 then
+    cp Dockerfile.webui.lite Dockerfile.webui
+
     webui_image=all-in-one-ai-stable-diffusion-webui
     webui_fullname=${account}.dkr.ecr.${region}.amazonaws.com/${webui_image}:latest
 
@@ -87,6 +91,8 @@ fi
 
 if [ -z $option] || [ $option == "training" ]
 then
+    cp Dockerfile.training.lite Dockerfile.training
+
     training_image=all-in-one-ai-stable-diffusion-webui-training
     training_fullname=${account}.dkr.ecr.${region}.amazonaws.com/${training_image}:latest
 
