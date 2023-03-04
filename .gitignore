@@ -19,6 +19,7 @@ web/.env.development.local
 web/.env.test.local
 web/.env.production.local
 web/Dockerfile
+web/src/components/Data/config.json
 
 .DS_Store
 backend/.DS_Store
@@ -36,4 +37,5 @@ yarn-error.log*
 sagemaker/stable-diffusion-webui/Dockerfile.inference
 sagemaker/stable-diffusion-webui/Dockerfile.training
 sagemaker/stable-diffusion-webui/Dockerfile.webui
+sagemaker/stable-diffusion-webui/build_and_push.sh
 
