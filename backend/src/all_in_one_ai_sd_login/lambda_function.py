@@ -5,8 +5,6 @@ import os
 
 sm_client = boto3.client('secretsmanager')
 
-default_username = 'admin'
-
 def lambda_handler(event, context):
     print(event)
 
@@ -18,7 +16,8 @@ def lambda_handler(event, context):
             administrator_login = sm_client.get_secret_value(
                 SecretId=os.environ['Administratorlogin']
             )
-            default_password = administrator_login['SecretString']
+            default_username = json.loads(administrator_login['SecretString'])['username']
+            default_password = json.loads(administrator_login['SecretString'])['password']
 
             username = request['username']
             password = request['password']
