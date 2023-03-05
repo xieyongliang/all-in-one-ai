@@ -9,7 +9,7 @@ algorithm=$3
 option=$4
 
 if [ "${algorithm}" == "stable-diffusion-webui" -a -z "${option}" ]; then
-${option}="lite"
+option="lite"
 fi
 
 project_dir="$PWD"/..

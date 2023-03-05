@@ -1,9 +1,11 @@
 import json
 import traceback
-from datetime import datetime
+import boto3
+import os
+
+sm_client = boto3.client('secretsmanager')
 
 default_username = 'admin'
-default_password = 'admin'
 
 def lambda_handler(event, context):
     print(event)
@@ -13,12 +15,15 @@ def lambda_handler(event, context):
             request = json.loads(event['body'])
             print(request)
 
+            administrator_login = sm_client.get_secret_value(
+                SecretId=os.environ['Administratorlogin']
+            )
+            default_password = administrator_login['SecretString']
+
             username = request['username']
             password = request['password']
-            now = datetime.now()
-            current_time = now.strftime("%H:%M")
 
-            if username == default_username and password == default_password + current_time:
+            if username == default_username and password == default_password:
                 return {
                     'statusCode': 200,
                     'body': ''

@@ -95,6 +95,7 @@ Make sure the following resources not existed. In case they are existed, please 
 -   pip3
 -   docker
 -   jq
+-   s5cmd
 
 ### Service quotas and limits
 -   Amazon VPC – 1
@@ -297,7 +298,7 @@ Go to sagemaker/stable-diffusion-webui and run the following command.
 
     ![stable-difffusion-webui CloudFormation step 5](./assets/images/stable-diffusion-webui-12.png)
 
-###  Prepare SD models
+###  Prepare models
 *   SD v2.1
 
     [768-v-ema.ckpt](https://huggingface.co/stabilityai/stable-diffusion-2-1/blob/main/v2-1_768-ema-pruned.ckpt)
@@ -322,11 +323,25 @@ Go to sagemaker/stable-diffusion-webui and run the following command.
 
     [sd-v1-4.ckpt](https://huggingface.co/CompVis/stable-diffusion-v-1-4-original/blob/main/sd-v1-4.ckpt)
 
-You could pick up all your interested SD models and download them into one directory and then run 
-    
-    python3 prepare.py [path-to-sd-models-directory]
+*   ControlNet
+    [pre-trained ControlNet models](https://huggingface.co/lllyasviel/ControlNet/tree/main/models)
 
-This script will help to generate model.tar.gz and push s3://[sagemaker-default-bucket]/assets/, push the whole model directory to s3://[sagemaker-default-bucket]/models/.
+You could pick up all your interested SD models and download them and organize the directory structure as following. You will need to put your SD models to assets/Stable-diffusion and models and put your pre-trained ControlNet models to assets/ControlNet. 
+
+    --[path-to-model-preparation-directory]
+       --assets
+         --Stable-diffusion
+         --ControlNet
+       --models
+
+You will need to run the following commands.
+
+    cd [path-to-model-preparation-directory]/assets
+    tar czvf model.tar.gz Stable-diffusion ControlNet
+    cd [path-to-model-preparation-direcotry]
+    python3 prepare.sh
+
+This script will help to push assets/model.tar.gz to s3://[sagemaker-default-bucket]/assets/, push the models directory to s3://[sagemaker-default-bucket]/models/.
 
 For instance, the following diagram shows the contents at the model files at s3://[sagemaker-default-bucket]/models/.
 

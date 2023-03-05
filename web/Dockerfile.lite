@@ -1,3 +1,4 @@
 FROM public.ecr.aws/l1s7l7p8/all-in-one-ai-web:latest
  
 COPY . /user/src/app
+RUN export NODE_OPTIONS=--openssl-legacy-provider && npm install -g webpack && npm install --legacy-peer-deps && yarn build

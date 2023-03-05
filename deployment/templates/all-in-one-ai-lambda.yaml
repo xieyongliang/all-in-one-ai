@@ -50,6 +50,10 @@ Parameters:
     Type: String
     Description: EIP for Nat2
 
+  Administratorlogin:
+    Type: String
+    Description: Administratorlogin which will be used to verify the eligiblity to use stable-diffusion-webui
+
   ChinaRegion: 
     Description: Check if the stack to be in CN Region
     Type: String
@@ -4163,7 +4167,17 @@ Resources:
           - Globally                                                  
           - 'arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess'
           - 'arn:aws-cn:iam::aws:policy/AmazonDynamoDBFullAccess'
-  
+      Policies:
+        - PolicyName: SecretPolicy
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "secretsmanager:GetSecretValue"
+                  - "secretsmanager:RotateSecret"
+                Resource:
+                  - !Ref Administratorlogin
+
   AllInOneAISDLoginFunctionAdditionalPermission:
     Type: 'AWS::IAM::Policy'
     Properties:
@@ -4200,6 +4214,9 @@ Resources:
           - !Ref PrivateSubnet2
         SecurityGroupIds: 
           - !Ref SecurityGroup
+      Environment:
+        Variables:
+          Administratorlogin: !Ref Administratorlogin
       Layers:
         - !Ref HelperLayer
 
@@ -7268,6 +7285,7 @@ Resources:
       - ApiGatewayMethodPipelinePost
       - ApiGatewayMethodSDHypernetworkGet
       - ApiGatewayMethodSDIndustrialModelGet
+      - ApiGatewayMethodSDLoginPost
       - ApiGatewayMethodSDModelGet
       - ApiGatewayMethodSDModelPost
       - ApiGatewayMethodSDUserPost
