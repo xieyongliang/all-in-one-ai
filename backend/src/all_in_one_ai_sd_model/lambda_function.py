@@ -50,12 +50,12 @@ def lambda_handler(event, context):
             else:
                 if module == 'Stable-diffusion':
                     items = request['items']
-
                     for item in items:
                         ddbh_sd.put_item(item)
                 elif module == 'ControlNet':
-                    items = request
-                    ddbh_cn.put_item(item)
+                    items = request['items']
+                    for item in items:
+                        ddbh_cn.put_item(item)
                 else:
                     return {
                         'statusCode': 400,
