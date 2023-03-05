@@ -116,9 +116,9 @@ def lambda_handler(event, context):
                     print(response)
                     items = []
                     if response['KeyCount'] > 0:
-                        for item in response['CommonPrefixes']:
-                            prefix = item['Prefix']
-                            items.append(prefix[prefix.rfind('/', 0, len(prefix) - 1) + 1 : len(prefix) - 1])
+                        for item in response['Contents']:
+                            if item['Key'].endswith('.pt'):
+                                items.append(item['Key'][item['Key'].rfind('/') + 1 : ])
 
                     return {
                         'statusCode': 200,
