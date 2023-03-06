@@ -355,7 +355,20 @@ Note:
 
 ### Launch stable-diffusion-webui
 
-*   Wait 10 minutes until the stable-diffusion-webui server pass the health check and then check the stack outputs of all-in-one-ai-webui and then launch the stable-diffusion-webui.
+*   Wait 10 minutes until the stable-diffusion-webui server pass the health check and then check the stack outputs of all-in-one-ai-webui and then launch the stable-diffusion-webui. 
+
+*   You will need to run your secretmanager.sh script to get your username/password where your-secret-id is one of your CloudFormation stack's output.
+
+
+        cd ~ubuntu/sagemaker/stable-diffusion-webui/tools
+        ./secretmanager.sh [your-secret-id] [region] get
+
+
+*   You will be asked to input username/password for eligibility check to use this stable-diffusion-webui. 
+
+![stable-difffusion-webui](./assets/images/stable_diffusion_webui_login.png)
+
+*   After you pass the eligibility check, you are ready to use stable-diffusion-webui.
 
 ![stable-difffusion-webui](./assets/images/stable-diffusion-webui-13.png)
 
