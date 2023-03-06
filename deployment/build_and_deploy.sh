@@ -1,3 +1,4 @@
+#!/bin/bash
 if [ "$#" -gt 4 -o "$#" -lt 2 ]; then
     echo "usage: $0 [s3uri] [region] [algorithm] [lite or normal], by default lite for stable-diffusion-webui"
     exit 1

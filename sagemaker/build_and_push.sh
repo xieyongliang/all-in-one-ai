@@ -1,3 +1,4 @@
+#!/bin/bash
 if [ "$#" -gt 3 -o "$#" -lt 2 ]; then
     echo "usage: $0 [s3uri] [region] [algorithm]"
     exit 1
