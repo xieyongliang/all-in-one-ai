@@ -52,6 +52,7 @@ Parameters:
 
   Administratorlogin:
     Type: String
+    Default: ''
     Description: Administratorlogin which will be used to verify the eligiblity to use stable-diffusion-webui
 
   ChinaRegion: 
