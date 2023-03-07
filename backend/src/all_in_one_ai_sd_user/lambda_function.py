@@ -15,13 +15,7 @@ def lambda_handler(event, context):
             
             action = request.pop('action')
             
-            if action == 'signup':
-                ddbh.put_item(request)
-                return {
-                    'statusCode': 200,
-                    'body': json.dumps(request)
-                }
-            elif action == 'signin':
+            if action == 'signin':
                 username = request['username']
                 password = request['password']
 
@@ -40,54 +34,52 @@ def lambda_handler(event, context):
                 else:
                     return {
                         'statusCode': 400,
-                        'body': json.dumps({})
+                        'body': 'Mismatched username/password'
                     }                
-            elif action == 'get':
-                key = {
-                    'username': request.pop('username')
-                }
-                response = ddbh.get_item(key)
-                options = response['options'] if 'options' in response else ''
+            elif action == 'load':
+                items = ddbh.scan()
                 return {
                     'statusCode': 200,
-                    'body': options
+                    'body': json.dumps(items)
                 }
-            elif action == 'edit':
-                key = {
-                    'username': request.pop('username')
-                }
-                ddbh.update_item(key, request)
-                return {
-                    'statusCode': 200,
-                    'body': json.dumps(request)
-                }
-            elif action == 'delete':
-                username = request['username']
-                password = request['password']
-                
-                key = {
-                    'username': username
-                }
-                
-                item = ddbh.get_item(key)
-                print(item)
-                
-                if item != None and password == item['password']:
+            elif action == 'save':
+                updated = 0
+                created = 0
+                deleted = 0
+                items_new = request['items']
+                items_origin = ddbh.scan()
+                items = {}
+                for item_origin in items_origin:
+                    items[item_origin['username']] = item_origin['password']
+                for item_new in items_new:
+                    username = item_new['username']
+                    if username in items:
+                        key = {
+                            'username': username
+                        }
+                        item_new.pop('username')
+                        ddbh.update_item(key, item_new)
+                        updated += 1
+                        items.pop(username)
+                    elif username != '':
+                        ddbh.put_item(item_new)
+                        created += 1
+                for username in items:
                     key = {
                         'username': username
-                    }
-                
-                    items = ddbh.delete_item(key) 
-                    
-                    return {
-                        'statusCode': 200,
-                        'body': json.dumps(item)
-                    }
-                else:
-                    return {
-                        'statusCode': 400,
-                        'body': json.dumps({})
                     }                    
+                    items = ddbh.delete_item(key)
+                    deleted += 1
+                return {
+                    'statusCode': 200,
+                    'body': json.dumps(
+                        {
+                            'created': created,
+                            'updated': updated,
+                            'deleted': deleted
+                        }
+                    )
+                }
         else:
             return {
                 'statusCode': 400,

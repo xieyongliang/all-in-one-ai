@@ -4168,6 +4168,10 @@ Resources:
           - Globally                                                  
           - 'arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess'
           - 'arn:aws-cn:iam::aws:policy/AmazonDynamoDBFullAccess'
+        - !If
+          - Globally
+          - 'arn:aws:iam::aws:policy/service-role/AWSLambdaRole'
+          - 'arn:aws-cn:iam::aws:policy/service-role/AWSLambdaRole'
       Policies:
         - PolicyName: SecretPolicy
           PolicyDocument:

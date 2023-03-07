@@ -4,6 +4,7 @@ import boto3
 import os
 
 sm_client = boto3.client('secretsmanager')
+lambda_client = boto3.client('lambda')
 
 def lambda_handler(event, context):
     print(event)
@@ -27,6 +28,31 @@ def lambda_handler(event, context):
                     'statusCode': 200,
                     'body': ''
                 }
+            elif username != default_username:
+                payload = {
+                    'action': 'signin',
+                    'username': request['username'],
+                    'password': request['password']
+                }
+                response = lambda_client.invoke(
+                    FunctionName = 'all_in_one_ai_sd_user',
+                    InvocationType = 'RequestResponse',
+                    Payload=json.dumps({'body': json.dumps(payload), 'httpMethod': 'POST'})
+                )
+                if('FunctionError' not in response):
+                    payload = response["Payload"].read().decode("utf-8")
+                    payload = json.loads(payload)
+
+                    if(payload['statusCode'] == 200):
+                        return {
+                            'statusCode': payload['statusCode'],
+                            'body': json.dumps(payload['body'])
+                        }
+                else:
+                    return {
+                        'statusCode': 400,
+                        'body': response['FunctionError']
+                    }
             else:
                 return {
                     'statusCode': 400,
