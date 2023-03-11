@@ -162,7 +162,7 @@ def lambda_handler(event, context):
                 else:
                     return {
                         'statusCode': 400,
-                        'body': response                     
+                        'body': json.dumps(response)
                     }
             else:
                 if endpoint_name == None:
@@ -256,6 +256,7 @@ def defaultencode(o):
 def sagemaker_endpoint_asg_put_asg_policy(endpoint_name, min_capcity = 1, max_capcity = 2, target_value = 5, scale_in_cooldown = 600, scale_out_cooldown = 300):
     try:
         resource_id = f"endpoint/{endpoint_name}/variant/AllTraffic"
+        print(resource_id)
         response = asg_client.register_scalable_target(
             ServiceNamespace="sagemaker",
             ResourceId=resource_id,
@@ -263,7 +264,8 @@ def sagemaker_endpoint_asg_put_asg_policy(endpoint_name, min_capcity = 1, max_ca
             MinCapacity=min_capcity,
             MaxCapacity=max_capcity,
         )
-        
+        print('register_scalable_target', response)
+
         response = asg_client.put_scaling_policy(
             PolicyName=f'Request-ScalingPolicy-{endpoint_name}',
             ServiceNamespace="sagemaker",
@@ -282,16 +284,18 @@ def sagemaker_endpoint_asg_put_asg_policy(endpoint_name, min_capcity = 1, max_ca
                 "ScaleOutCooldown": scale_out_cooldown # duration between scale out attempts
             },
         )
+        print('put_scaling_policy', response)
 
-        print(response)
         return True
+
     except Exception as e:
-        print(e)
+        traceback.print_exc()
         return str(e)
 
 def sagemaker_endpoint_asg_describe_asg_policy(endpoint_name):
     try:
         resource_id = f"endpoint/{endpoint_name}/variant/AllTraffic"
+        print(resource_id)
         response = asg_client.describe_scalable_targets(
             ServiceNamespace="sagemaker",
             ResourceIds=[resource_id],
@@ -308,13 +312,21 @@ def sagemaker_endpoint_asg_describe_asg_policy(endpoint_name):
                 ScalableDimension="sagemaker:variant:DesiredInstanceCount",
             )
             print(response)
-            target_value = response['ScalingPolicies'][0]['TargetTrackingScalingPolicyConfiguration']['TargetValue']
-            scale_out_cooldown = response['ScalingPolicies'][0]['TargetTrackingScalingPolicyConfiguration']['ScaleOutCooldown']
-            scale_in_cooldown = response['ScalingPolicies'][0]['TargetTrackingScalingPolicyConfiguration']['ScaleInCooldown']
-            
-            return min_capacity, max_capcity, target_value, scale_in_cooldown, scale_out_cooldown
+            found = False
+            for scaling_policy in response['ScalingPolicies']:
+                if scaling_policy['TargetTrackingScalingPolicyConfiguration']['CustomizedMetricSpecification']['MetricName'] == 'ApproximateBacklogSizePerInstance':
+                    target_value = response['ScalingPolicies'][0]['TargetTrackingScalingPolicyConfiguration']['TargetValue']
+                    scale_out_cooldown = response['ScalingPolicies'][0]['TargetTrackingScalingPolicyConfiguration']['ScaleOutCooldown']
+                    scale_in_cooldown = response['ScalingPolicies'][0]['TargetTrackingScalingPolicyConfiguration']['ScaleInCooldown']
+                    found = True
+                    break
+            if found:
+                return min_capacity, max_capcity, target_value, scale_in_cooldown, scale_out_cooldown
+            else:
+                return 'ScalingPolicy with MetricName is not found'
         else:
             return 'ScalableTargets is empty'
+
     except Exception as e:
-        print(e)
+        traceback.print_exc()
         return str(e)

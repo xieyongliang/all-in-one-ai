@@ -603,6 +603,23 @@ Resources:
       ResourceId: !Ref ApiGatewayResourceEndpointByName
       RestApiId: !Ref ApiGatewayRestApi   
 
+  ApiGatewayMethodEndpointByNamePost:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      ApiKeyRequired: false
+      AuthorizationType: NONE
+      HttpMethod: POST
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri:
+          !If
+          - Globally
+          - !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIEndpointFunction.Arn}/invocations'
+          - !Sub 'arn:aws-cn:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIEndpointFunction.Arn}/invocations'
+      ResourceId: !Ref ApiGatewayResourceEndpointByName
+      RestApiId: !Ref ApiGatewayRestApi
+
   ApiGatewayMethodEndpointByNameDelete:
     Type: AWS::ApiGateway::Method
     Properties:
@@ -649,6 +666,10 @@ Resources:
           - Globally                                                  
           - 'arn:aws:iam::aws:policy/service-role/AWSLambdaRole'
           - 'arn:aws-cn:iam::aws:policy/service-role/AWSLambdaRole'
+        - !If
+          - Globally
+          - 'arn:aws:iam::aws:policy/AmazonSageMakerFullAccess'
+          - 'arn:aws-cn:iam::aws:policy/AmazonSageMakerFullAccess'
   
   AllInOneAIEndpointFunctionAdditionalPermission:
     Type: 'AWS::IAM::Policy'
@@ -7260,6 +7281,7 @@ Resources:
       - ApiGatewayMethodEndpointGet
       - ApiGatewayMethodEndpointPost
       - ApiGatewayMethodEndpointByNameGet
+      - ApiGatewayMethodEndpointByNamePost
       - ApiGatewayMethodEndpointByNameDelete
       - ApiGatewayMethodFunctionByNameGet
       - ApiGatewayMethodGreengrassComponentGet
