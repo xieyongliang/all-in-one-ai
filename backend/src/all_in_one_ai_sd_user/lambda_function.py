@@ -80,6 +80,25 @@ def lambda_handler(event, context):
                         }
                     )
                 }
+            elif action == 'get':
+                key = {
+                    'username': request.pop('username')
+                }
+                response = ddbh.get_item(key)
+                options = response['options'] if 'options' in response else ''
+                return {
+                    'statusCode': 200,
+                    'body': options
+                }
+            elif action == 'put':
+                key = {
+                    'username': request.pop('username')
+                }
+                ddbh.update_item(key, request)
+                return {
+                    'statusCode': 200,
+                    'body': json.dumps(request)
+                }
         else:
             return {
                 'statusCode': 400,
