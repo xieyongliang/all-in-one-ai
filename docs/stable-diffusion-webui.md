@@ -135,11 +135,11 @@ Note:
 
 *   Admin user will be able to manager users, e.g. users creation / update / deletion.
 
-![stable-difffusion-webui](./assets/images/stable-diffusion-webui-14.png)
+![stable-difffusion-webui](./assets/images/stable-diffusion-webui-13.png)
 
 *   Normal users will be able to use stable-diffusion-webui for normal image generation tasks.
 
-![stable-difffusion-webui](./assets/images/stable-diffusion-webui-13.png)
+![stable-difffusion-webui](./assets/images/stable-diffusion-webui-14.png)
 
 *   You can switch users by clicking Logout button.
 
