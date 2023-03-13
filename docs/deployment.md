@@ -360,25 +360,25 @@ Note:
 *   You will need to run your secretmanager.sh script to get your username/password where your-secret-id is one of your CloudFormation stack's output.
 
 
-        cd ~ubuntu/sagemaker/stable-diffusion-webui/tools
+        cd [path-to-all-in-one-ai]/sagemaker/stable-diffusion-webui/tools
         ./secretmanager.sh [your-secret-id] [region] get
 
 
-*   You will be asked to input username/password for eligibility check to use this stable-diffusion-webui. 
+*   You will be asked to input username/password for eligibility check to use this stable-diffusion-webui. Here username/password could be either from the above step with secretmanager.sh or from your admin user who will manage users.
 
 ![stable-difffusion-webui](./assets/images/stable_diffusion_webui_login.png)
 
-*   After you pass the eligibility check, you are ready to use stable-diffusion-webui.
+*   Admin user will be able to manager users, e.g. users creation / update / deletion.
+
+![stable-difffusion-webui](./assets/images/stable-diffusion-webui-14.png)
+
+*   Normal users will be able to use stable-diffusion-webui for normal image generation tasks.
 
 ![stable-difffusion-webui](./assets/images/stable-diffusion-webui-13.png)
 
+*   You can switch users by clicking Logout button.
+
 ### Setup stable-diffusion-webui
-
-*   Signin or Signup
-
-    Choose user tab and then signin or signup firstly. Note you won't be able to perform any GPU related actions unless you are logined via either signin or signup.
-
-    ![Signin or Signup stable-diffusion-webui ](./assets/images/stable_diffusion_webui_setup_user.png)    
 
 *   Configure your SageMaker endpoint and your stable diffusion models
 
