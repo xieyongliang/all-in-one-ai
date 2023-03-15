@@ -2698,7 +2698,11 @@ Resources:
           - Globally                                                  
           - 'arn:aws:iam::aws:policy/service-role/AWSLambdaRole'
           - 'arn:aws-cn:iam::aws:policy/service-role/AWSLambdaRole'
-  
+        - !If
+          - Globally
+          - 'arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess'
+          - 'arn:aws-cn:iam::aws:policy/AmazonDynamoDBFullAccess'
+
   AllInOneAISearchByImageFunctionAdditionalPermission:
     Type: 'AWS::IAM::Policy'
     Properties:
