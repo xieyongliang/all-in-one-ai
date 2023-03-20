@@ -4,7 +4,7 @@ if [ "$#" -ne 1 ]; then
     exit 1
 fi
 
-if [ -f "./s5cmd" ];
+if [ -f "./s5cmd" ]; then
     echo "Please ref to https://github.com/peak/s5cmd and install s5cmd and run again"
 fi
 
