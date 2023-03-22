@@ -85,10 +85,16 @@ def lambda_handler(event, context):
                     'username': request.pop('username')
                 }
                 response = ddbh.get_item(key)
-                options = response['options'] if 'options' in response else ''
+                options = response.get('options', '')
+                attrs = response.get('attributes', {})
                 return {
                     'statusCode': 200,
-                    'body': options
+                    'body': json.dumps(
+                        {
+                            'options': options,
+                            'attributes': attrs,
+                        }
+                    )
                 }
             elif action == 'put':
                 key = {
