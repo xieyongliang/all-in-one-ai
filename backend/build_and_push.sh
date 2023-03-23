@@ -18,7 +18,7 @@ source_dir="$backend_dir/src"
 build_dir="$backend_dir/build/tmp"
 
 echo "------------------------------------------------------------------------------"
-echo "[Init] Clean old dist, node_modules and bower_components folders"
+echo "[Init] Clean old dist folders"
 echo "------------------------------------------------------------------------------"
 echo "rm -rf $build_dist_dir"
 rm -rf $build_dist_dir
@@ -76,14 +76,14 @@ echo "--------------------------------------------------------------------------
 echo "[Rebuild] other all_in_one_ai_list_* lambda functions"
 echo "------------------------------------------------------------------------------"
 
-lambda_foldes="
+lambda_folders="
 all_in_one_ai_list_endpoints
 all_in_one_ai_list_models
 all_in_one_ai_list_training_jobs
 all_in_one_ai_list_transform_jobs
 "
 
-for lambda_folder in $lambda_foldes; do
+for lambda_folder in $lambda_folders; do
     # build and copy console distribution files
     echo ${source_dir}
     cd ${source_dir}/${lambda_folder}
@@ -104,7 +104,7 @@ echo "[Rebuild] other all_in_one_ai_* lambda functions"
 echo "------------------------------------------------------------------------------"
 
 
-lambda_foldes="
+lambda_folders="
 all_in_one_ai_add_permission
 all_in_one_ai_annotation
 all_in_one_ai_api
@@ -175,7 +175,7 @@ all_in_one_ai_websocket_connect
 all_in_one_ai_websocket_disconnect
 all_in_one_ai_websocket_send_message"
 
-for lambda_folder in $lambda_foldes; do
+for lambda_folder in $lambda_folders; do
     # build and copy console distribution files
     echo ${source_dir}
     cd ${source_dir}/${lambda_folder}
