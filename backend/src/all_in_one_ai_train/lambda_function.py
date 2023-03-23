@@ -378,6 +378,8 @@ def lambda_handler(event, context):
                     hyperparameters['db-models-s3uri'] = dreambooth_s3uri
                 if 'sd-models-s3uri' not in hyperparameters:
                     hyperparameters['sd-models-s3uri'] = models_s3uri
+                if 'lora-models-s3uri' not in hyperparameters:
+                    hyperparameters['lora-models-s3uri'] = lora_s3uri
 
                 if 'models' not in inputs or inputs['models'] == '':
                     if train_dreambooth_settings['db_create_new_db_model']:
