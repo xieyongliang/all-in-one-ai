@@ -8,7 +8,7 @@ parser.add_argument('--embeddings-s3uri', default='', type=str, help='Embeddings
 parser.add_argument('--hypernetwork-s3uri', default='', type=str, help='Hypernetwork S3Uri')
 parser.add_argument('--sd-models-s3uri', default='', type=str, help='SD Models S3Uri')
 parser.add_argument('--db-models-s3uri', default='', type=str, help='DB Models S3Uri')
-parser.add_argument('--ckpt', default='/opt/ml/input/data/models/768-v-ema.ckpt', type=str, help='SD model')
+parser.add_argument('--lora-models-s3uri', default='', type=str, help='Lora Models S3Uri')
 parser.add_argument('--region-name', type=str, help='Region Name')
 parser.add_argument('--username', default='', type=str, help='Username')
 parser.add_argument('--api-endpoint', default='', type=str, help='API Endpoint')
@@ -16,7 +16,7 @@ parser.add_argument('--dreambooth-config-id', default='', type=str, help='Dreamb
 
 args = parser.parse_args()
 
-cmd = "LD_LIBRARY_PATH=/opt/conda/lib:$LD_LIBRARY_PATH ACCELERATE=true bash webui.sh --port 8080 --listen --xformers --train --train-task {0} --train-args '{1}' --embeddings-dir /opt/ml/input/data/embeddings --hypernetwork-dir /opt/ml/input/data/hypernetwork --lora-models-path /opt/ml/input/data/lora --dreambooth-models-path /opt/ml/input/data/dreambooth  --ckpt {2} --ckpt-dir /opt/ml/input/data/models --region-name {3} --api-endpoint {4}".format(args.train_task, args.train_args, args.ckpt, args.region_name, args.api_endpoint)
+cmd = "LD_LIBRARY_PATH=/opt/conda/lib:$LD_LIBRARY_PATH ACCELERATE=true bash webui.sh --port 8080 --listen --xformers --train --train-task {0} --train-args '{1}' --embeddings-dir /opt/ml/input/data/embeddings --hypernetwork-dir /opt/ml/input/data/hypernetwork --lora-models-path /opt/ml/input/data/lora --dreambooth-models-path /opt/ml/input/data/dreambooth  --ckpt-dir /opt/ml/input/data/models --region-name {2} --api-endpoint {3}".format(args.train_task, args.train_args, args.region_name, args.api_endpoint)
 
 if args.embeddings_s3uri != '':
     cmd = '{0} --embeddings-s3uri {1}'.format(cmd, args.embeddings_s3uri)
