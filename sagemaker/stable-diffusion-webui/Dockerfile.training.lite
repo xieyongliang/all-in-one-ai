@@ -1,6 +1,6 @@
 FROM public.ecr.aws/l1s7l7p8/all-in-one-ai-stable-diffusion-webui-training:latest
 
-COPY serve /opt/ml/code
+COPY train.py /opt/ml/code
 COPY stable-diffusion-webui /opt/ml/code/
 COPY train.py /opt/ml/code/
 
