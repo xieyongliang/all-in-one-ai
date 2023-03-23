@@ -4,8 +4,9 @@ if [ "$#" -ne 1 ]; then
     exit 1
 fi
 
-if [ -f "./s5cmd" ]; then
-    echo "Please ref to https://github.com/peak/s5cmd and install s5cmd and run again"
+if [ ! -f "./s5cmd" ]; then
+    wget https://github.com/peak/s5cmd/releases/download/v2.0.0/s5cmd_2.0.0_Linux-64bit.tar.gz -O ./s5cmd_2.0.0_Linux-64bit.tar.gz
+    tar xzvf s5cmd_2.0.0_Linux-64bit.tar.gz
 fi
 
 echo "Please make sure that you have already put model.tar.gz into assets directory and SD checkpoints (.ckpt) into models directory, please refer to Prepare SD models at https://docs.ai.examples.pro/stable-diffusion-webui/"

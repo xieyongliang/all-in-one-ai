@@ -194,7 +194,7 @@ def lambda_handler(event, context):
                     items = []
                     if response['KeyCount'] > 0:
                         for item in response['Contents']:
-                            if item['Key'].endswith('.ckpt'):
+                            if item['Key'].endswith('.ckpt') or item['Key'].endswith('.safesentors'):
                                 items.append(item['Key'][item['Key'].rfind('/') + 1 : ])
 
                     return {
