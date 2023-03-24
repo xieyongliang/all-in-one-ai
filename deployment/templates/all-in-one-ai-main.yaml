@@ -135,6 +135,16 @@ Conditions:
   USE_HTTP: !Equals [ '', !Ref Certificate ]
 
 Resources:
+  Administratorlogin:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Description: stable-diffusion-webui Administrator secret
+      GenerateSecretString:
+        SecretStringTemplate: "{\"username\":\"admin\"}"
+        GenerateStringKey: 'password'
+        PasswordLength: 16
+        ExcludePunctuation: true
+
   VPC:
     Type: AWS::CloudFormation::Stack
     Properties:
@@ -229,7 +239,9 @@ Resources:
         SecurityGroup: !GetAtt VPC.Outputs.DefaultSecurityGroup
         Eip1: !GetAtt VPC.Outputs.Eip1
         Eip2: !GetAtt VPC.Outputs.Eip2
+        Administratorlogin: !Ref Administratorlogin
         ChinaRegion: !Ref ChinaRegion
+        
       TemplateURL:
         !If
         - Globally
