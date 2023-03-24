@@ -30,6 +30,9 @@ if args.sd_models_s3uri != '':
 if args.db_models_s3uri != '':
     cmd = '{0} --db-models-s3uri {1}'.format(cmd, args.db_models_s3uri)
 
+if args.lora_models_s3uri != '':
+    cmd = '{0} --lora-models-s3uri {1}'.format(cmd, args.lora_models_s3uri)
+
 if args.username != '':
     cmd = '{0} --username {1}'.format(cmd, args.username)
 
