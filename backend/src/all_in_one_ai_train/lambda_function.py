@@ -338,7 +338,6 @@ def lambda_handler(event, context):
             lora_s3uri = 's3://{0}/stable-diffusion-webui/lora/'.format(bucket)
             dreambooth_s3uri = 's3://{0}/stable-diffusion-webui/dreambooth/'.format(bucket)
             default_hyperparameters = {
-                'region': boto3.session.Session().region_name,
                 'embeddings-s3uri': embedding_s3uri,
                 'hypernetwork-s3uri': hypernetwork_s3uri,
                 'train-task': 'embedding',
