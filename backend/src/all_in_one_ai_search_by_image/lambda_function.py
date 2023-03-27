@@ -5,10 +5,9 @@ import os
 import helper
 from botocore.exceptions import ClientError
 from elasticsearch import Elasticsearch
-from botocore.client import Config
 
 lambda_client = boto3.client('lambda')
-s3_client = boto3.client('s3', config=Config(signature_version='s3v4'))
+s3_client = boto3.client('s3', config=boto3.session.Config(s3={'addressing_style': 'virtual'}, signature_version='s3v4'))
 import_jobs_table = 'all_in_one_ai_import_jobs'
 ddbh = helper.ddb_helper({'table_name': import_jobs_table})
 
@@ -73,12 +72,15 @@ def lambda_handler(event, context):
                 payload = []
                 for x in range(k_neighbors):
                     if(input_s3uri == None and output_s3uri == None):
+                        if x >= len(response['hits']['hits']):
+                            break
                         image_s3uri = response['hits']['hits'][x]['_source']['img_s3uri']
                     else:
                         s3uri = response['hits']['hits'][x]['_source']['img_s3uri']
                         image_s3uri = '{0}{1}'.format(input_s3uri, s3uri[len(output_s3uri) : -4])
                         print(image_s3uri)
                     bucket, key = get_bucket_and_key(image_s3uri)
+
                         
                     httpuri = get_presigned_url(bucket, key)
                     score = response['hits']['hits'][x]['_score']
