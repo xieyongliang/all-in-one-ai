@@ -17,9 +17,21 @@
 -   If the CloudFormation stack changes can’t be detected by CloudFormation automatically, you have to replace the source manually. Otherwise, you have to perform fully update.
 
 ###	Backend source update
--	Upload updated backend source in ZIP format to S3 via executing the following command where project_dir is the path of all-in-one-ai source and s3uri is the S3 URI where the assets were uploaded to. [Optional]
-aws s3 cp ${project_dir}/backend/build/codes ${s3uri}/codes --recursive
--	Go to AWS Lambda console and upload a new revision of Lambda source code in ZIP format.
+
+-   Run the deployment/update.sh script
+-   Usage(usually :
+
+1 ./update_lambda.sh <s3uri> <region>
+
+  update any modified backend/src/ files discovered by git-diff
+
+2 ./update_lambda.sh <s3uri> <region> -a
+
+  update all backend/src/ files
+
+3 ./update_lambda.sh <s3uri> <region> func_name1,func_name2
+
+  update specified func_names(separated by ,) under backend/src/ files
 
 ###	Web source update
 -   Build web docker image and push to AWS ECR with following command where project_dir is the path of all-in-one-ai source and region is the AWS region where you launched your web server in AWS ECS.
