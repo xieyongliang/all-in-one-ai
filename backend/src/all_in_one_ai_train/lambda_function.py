@@ -7,6 +7,8 @@ import sagemaker
 import helper
 import os
 from botocore.client import Config
+from boto3.dynamodb.conditions import Key, Attr
+
 
 ssmh = helper.ssm_helper()
 role_arn = ssmh.get_parameter('/all_in_one_ai/config/meta/sagemaker_role_arn')
@@ -14,6 +16,22 @@ role_arn = ssmh.get_parameter('/all_in_one_ai/config/meta/sagemaker_role_arn')
 lambda_client = boto3.client('lambda')
 sagemaker_session = sagemaker.Session()
 bucket = sagemaker_session.default_bucket()
+
+elb_client = boto3.client('elbv2')
+dynamodb = boto3.resource('dynamodb')
+ddb_table = dynamodb.Table('all_in_one_ai_training_job')
+
+def getAllinOneAIUrl():
+    resp = elb_client.describe_load_balancers(Names=['all-in-one-ai'])
+    lb = resp['LoadBalancers'][0]
+    return 'http://'+lb['DNSName']
+
+def getAllinOneAIModelId(job_name):
+    resp = ddb_table.query(
+        KeyConditionExpression=Key('training_job_name').eq(job_name)
+    )
+    return resp['Items'][0]['industrial_model']
+    
 
 def lambda_handler(event, context):
     print(event)
@@ -404,7 +422,7 @@ def lambda_handler(event, context):
 
             response = lambda_client.invoke(
                 FunctionName = 'all_in_one_ai_create_train_generic',
-                InvocationType = 'Event',
+                # InvocationType = 'Event',
                 Payload=json.dumps(payload)
             )
         elif(algorithm == 'wenet'):       
@@ -449,13 +467,17 @@ def lambda_handler(event, context):
                 'statusCode': 400,
                 'body': 'Unsupported algorithm'
             }
-
-        print(response)
-        payload = str(response['Payload'].read())
-        print(payload)
+        payload = json.loads(response['Payload'].read().decode('utf-8'))
+        print('payload:',payload)
+        job_name = payload['body']
+        print(job_name)
+        url_prefix = getAllinOneAIUrl()
+        modelid = getAllinOneAIModelId(job_name)
+        url = url_prefix+'/imodels/'+modelid+'?tab=trainingjob#prop:id='+job_name
+        print(url)
         return {
             'statusCode': 200,
-            'body': json.dumps(payload, default = defaultencode)
+            'body': json.dumps(url, default = defaultencode)
         }
 
     except Exception as e:
