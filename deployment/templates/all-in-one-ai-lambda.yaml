@@ -7275,6 +7275,168 @@ Resources:
         SecurityGroupIds: 
           - !Ref SecurityGroup
 
+  ApiGatewayResourceProcess:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !GetAtt ApiGatewayRestApi.RootResourceId
+      PathPart: 'process'
+      RestApiId: !Ref ApiGatewayRestApi
+
+  ApiGatewayMethodProcessGet:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      ApiKeyRequired: false
+      AuthorizationType: NONE
+      HttpMethod: GET
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: 
+          !If
+          - Globally
+          - !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIProcessFunction.Arn}/invocations'
+          - !Sub 'arn:aws-cn:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIProcessFunction.Arn}/invocations'
+      ResourceId: !Ref ApiGatewayResourceProcess
+      RestApiId: !Ref ApiGatewayRestApi   
+
+  ApiGatewayMethodProcessPost:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      ApiKeyRequired: false
+      AuthorizationType: NONE
+      HttpMethod: POST
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: 
+          !If
+          - Globally
+          - !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIProcessFunction.Arn}/invocations'
+          - !Sub 'arn:aws-cn:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AllInOneAIProcessFunction.Arn}/invocations'
+      ResourceId: !Ref ApiGatewayResourceProcess
+      RestApiId: !Ref ApiGatewayRestApi   
+
+  AllInOneAIProcessFunctionRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'sts:AssumeRole'
+            Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+      ManagedPolicyArns:
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
+          - 'arn:aws-cn:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess'
+          - 'arn:aws-cn:iam::aws:policy/AmazonDynamoDBFullAccess'
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/AmazonSSMFullAccess'
+          - 'arn:aws-cn:iam::aws:policy/AmazonSSMFullAccess'
+        - !If
+          - Globally                                                  
+          - 'arn:aws:iam::aws:policy/service-role/AWSLambdaRole'
+          - 'arn:aws-cn:iam::aws:policy/service-role/AWSLambdaRole'
+        - !If
+          - Globally
+          - 'arn:aws:iam::aws:policy/AmazonSageMakerFullAccess'
+          - 'arn:aws-cn:iam::aws:policy/AmazonSageMakerFullAccess'
+  
+  AllInOneAIProcessFunctionAdditionalPermission:
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName: all_in_one_ai_process
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'logs:*'
+              - 'lambda:*'
+              - 'cloudwatch:*'
+            Resource: '*'
+            Effect: Allow
+      Roles:
+        - !Ref AllInOneAIProcessFunctionRole
+
+  AllInOneAIProcessFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket: !Ref S3Bucket
+        S3Key: !Sub ${S3Key}codes/all_in_one_ai_process.zip
+      FunctionName: all_in_one_ai_process
+      Tags:
+        - Value: Name
+          Key: 'AllInOneAIApi'
+      Handler: lambda_function.lambda_handler
+      Role: !GetAtt AllInOneAIProcessFunctionRole.Arn
+      Timeout: 900
+      Runtime: python3.9
+      VpcConfig:
+        SubnetIds: 
+          - !Ref PrivateSubnet1
+          - !Ref PrivateSubnet2
+        SecurityGroupIds: 
+          - !Ref SecurityGroup
+      Environment:
+        Variables:
+          PrivateSubnet1: !Ref PrivateSubnet1
+          PrivateSubnet2: !Ref PrivateSubnet2
+          PublicSubnet1: !Ref PublicSubnet1
+          PublicSubnet2: !Ref PublicSubnet2
+          SecurityGroup: !Ref SecurityGroup
+      Layers:
+        - !Ref HelperLayer
+        - !Ref SageMakerLayer 
+  
+  AllInOneAIProcessFunctionCatchAllPermissionProd1:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: 'lambda:InvokeFunction'
+      Principal: apigateway.amazonaws.com      
+      FunctionName: !Ref AllInOneAIProcessFunction
+      SourceArn: 
+        !If
+        - Globally
+        - !Sub
+          - >-
+            arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/GET/process
+          - __Stage__: '*'
+            __ApiId__: !Ref ApiGatewayRestApi
+        - !Sub
+          - >-
+            arn:aws-cn:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/GET/process
+          - __Stage__: '*'
+            __ApiId__: !Ref ApiGatewayRestApi
+
+  AllInOneAIProcessFunctionCatchAllPermissionProd2:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: 'lambda:InvokeFunction'
+      Principal: apigateway.amazonaws.com      
+      FunctionName: !Ref AllInOneAIProcessFunction
+      SourceArn: 
+        !If
+        - Globally
+        - !Sub
+          - >-
+            arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/POST/process
+          - __Stage__: '*'
+            __ApiId__: !Ref ApiGatewayRestApi
+        - !Sub
+          - >-
+            arn:aws-cn:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/POST/process
+          - __Stage__: '*'
+            __ApiId__: !Ref ApiGatewayRestApi
+
   ApiGatewayRestApiDeployment:
     Type: 'AWS::ApiGateway::Deployment'
     DependsOn: 
@@ -7333,6 +7495,8 @@ Resources:
       - ApiGatewayMethodTransformJobPost
       - ApiGatewayMethodTransformJobByNameGet
       - ApiGatewayMethodTransformJobByNameReviewGet
+      - ApiGatewayMethodProcessGet
+      - ApiGatewayMethodProcessPost
     Properties:
       RestApiId: !Ref ApiGatewayRestApi
       Description: 'All-In-One-AI API Gateway'

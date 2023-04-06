@@ -6,13 +6,17 @@ set -e
 # This script shows how to build the Docker image and push it to ECR to be ready for use
 # by SageMaker.
 
-if [ "$#" -ne 1 ] && [ "$#" -ne 2 ]; then
-    echo "usage: $0 [region_name] [image_type]"
+if [ "$#" -lt 2 ] || [ "$#" -gt 3 ]; then
+    echo "usage: $0 [region_name] [s3uri] [image_type]"
     exit 1
 fi
 
 region="$1"
-image_type="$2"
+s3uri="$2"
+image_type="$3"
+
+# Trim the trailing slash if any
+s3uri="${s3uri%/}"
 
 # Get the account number associated with the current IAM credentials
 account=$(aws sts get-caller-identity --query Account --output text)
@@ -22,7 +26,7 @@ fi
 
 # Define a function to build and push a Docker image
 # Arguments:
-#   $1: image_type (training, inference, webui)
+#   $1: image_type (training, inference, process, webui)
 #   $2: version (origin, lite)
 function build_and_push_image() {
     local image_type="$1"
@@ -63,6 +67,7 @@ if [ -z "${image_type}" ]; then
     build_and_push_image "webui" "lite"
     build_and_push_image "training" "lite"
     build_and_push_image "inference" "lite"
+    build_and_push_image "process" "lite"
 else
     # Otherwise, build and push the specified image type
     build_and_push_image "${image_type}" "lite"

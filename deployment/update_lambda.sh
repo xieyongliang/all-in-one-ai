@@ -49,7 +49,7 @@ to_remove_file=()
 function cleanup {
   for file in "${to_remove_file[@]}"; do
     #echo "Removing $file" 
-    rm -f "$file"
+    rm -rf "$file"
   done
   exit 1
 }
@@ -77,7 +77,7 @@ function update_lambda_function_from_local_file {
   local funcname=$1
 
   dir="$project_dir/backend/src/$funcname"
-  build_dir=$($ mktemp -d)
+  build_dir=$(mktemp -d)
 
   cp -r $dir/* $build_dir 
   cd $build_dir
