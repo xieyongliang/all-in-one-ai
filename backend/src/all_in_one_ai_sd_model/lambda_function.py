@@ -14,6 +14,9 @@ ddbh_sd = helper.ddb_helper({'table_name': sd_model_table})
 cn_model_table = 'all_in_one_ai_cn_model'
 ddbh_cn = helper.ddb_helper({'table_name': cn_model_table})
 
+lora_model_table = 'all_in_one_ai_lora_model'
+ddbh_lora = helper.ddb_helper({'table_name': lora_model_table})
+
 s3_client = boto3.client('s3', config=Config(signature_version='s3v4'))
 
 def lambda_handler(event, context):
@@ -56,6 +59,10 @@ def lambda_handler(event, context):
                     items = request['items']
                     for item in items:
                         ddbh_cn.put_item(item)
+                elif module == 'Lora':
+                    items = request['items']
+                    for item in items:
+                        ddbh_lora.put_item(item)
                 else:
                     return {
                         'statusCode': 400,
