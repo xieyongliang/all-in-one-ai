@@ -317,6 +317,8 @@ def lambda_handler(event, context):
                 model_environment['embeddings_s3uri'] = 's3://{0}/stable-diffusion-webui/embeddings/'.format(bucket)
             if 'hypernetwork_s3uri' not in model_environment:
                 model_environment['hypernetwork_s3uri'] = 's3://{0}/stable-diffusion-webui/hypernetwork/'.format(bucket)
+            if 'generated_images_s3uri' not in model_environment:
+                model_environment['generated_images_s3uri'] = 's3://{0}/stable-diffusion-webui/generated/'.format(bucket)
             if 'api_endpoint' not in model_environment:
                 model_environment['api_endpoint'] = ssmh.get_parameter('/all_in_one_ai/config/meta/api_endpoint')
 
