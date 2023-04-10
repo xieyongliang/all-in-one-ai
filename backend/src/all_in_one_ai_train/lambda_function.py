@@ -351,7 +351,7 @@ def lambda_handler(event, context):
         elif(algorithm == 'stable-diffusion-webui'):
             image_uri = ssmh.get_parameter('/all_in_one_ai/config/meta/algorithms/{0}/training_image'.format(algorithm))
             embedding_s3uri = 's3://{0}/stable-diffusion-webui/embeddings/'.format(bucket)
-            models_s3uri = 's3://{0}/stable-diffusion-webui/models/'.format(bucket)
+            models_s3uri = 's3://{0}/stable-diffusion-webui/models/Stable-diffusion/'.format(bucket)
             hypernetwork_s3uri = 's3://{0}/stable-diffusion-webui/hypernetwork/'.format(bucket)
             lora_s3uri = 's3://{0}/stable-diffusion-webui/lora/'.format(bucket)
             dreambooth_s3uri = 's3://{0}/stable-diffusion-webui/dreambooth/'.format(bucket)
