@@ -332,11 +332,11 @@ def lambda_handler(event, context):
             
             model_environment['endpoint_name'] = endpoint_name
 
-            if 'volume_size_in_gb' in model_environment:
-                volume_size_in_gb = int(model_environment['volume_size_in_gb'])
-                model_environment.pop('volume_size_in_gb')
-            else:
-                volume_size_in_gb = 225
+            # if 'volume_size_in_gb' in model_environment:
+            #     volume_size_in_gb = int(model_environment['volume_size_in_gb'])
+            #     model_environment.pop('volume_size_in_gb')
+            # else:
+            #     volume_size_in_gb = 225
 
             if 'container_startup_health_check_timeout' in model_environment:
                 container_startup_health_check_timeout = int(model_environment['container_startup_health_check_timeout'])
@@ -357,7 +357,7 @@ def lambda_handler(event, context):
                     'instance_count': instance_count,
                     'deploy_type': 'async',
                     'vpc_config': vpc_config,
-                    'volume_size_in_gb': volume_size_in_gb,
+                    # 'volume_size_in_gb': volume_size_in_gb,
                     'container_startup_health_check_timeout': container_startup_health_check_timeout
                 }
             }
