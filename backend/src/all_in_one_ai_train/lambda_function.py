@@ -21,12 +21,12 @@ elb_client = boto3.client('elbv2')
 dynamodb = boto3.resource('dynamodb')
 ddb_table = dynamodb.Table('all_in_one_ai_training_job')
 
-def getAllinOneAIUrl():
+def get_all_in_one_ai_url():
     resp = elb_client.describe_load_balancers(Names=['all-in-one-ai'])
     lb = resp['LoadBalancers'][0]
     return 'http://'+lb['DNSName']
 
-def getAllinOneAIModelId(job_name):
+def get_all_in_one_ai_url_model_id(job_name):
     resp = ddb_table.query(
         KeyConditionExpression=Key('training_job_name').eq(job_name)
     )
@@ -353,7 +353,7 @@ def lambda_handler(event, context):
             embedding_s3uri = 's3://{0}/stable-diffusion-webui/embeddings/'.format(bucket)
             models_s3uri = 's3://{0}/stable-diffusion-webui/models/Stable-diffusion/'.format(bucket)
             hypernetwork_s3uri = 's3://{0}/stable-diffusion-webui/hypernetwork/'.format(bucket)
-            lora_s3uri = 's3://{0}/stable-diffusion-webui/lora/'.format(bucket)
+            lora_s3uri = 's3://{0}/stable-diffusion-webui/models/lora/'.format(bucket)
             dreambooth_s3uri = 's3://{0}/stable-diffusion-webui/dreambooth/'.format(bucket)
             default_hyperparameters = {
                 'embeddings-s3uri': embedding_s3uri,
@@ -471,8 +471,8 @@ def lambda_handler(event, context):
         print('payload:',payload)
         job_name = payload['body']
         print(job_name)
-        url_prefix = getAllinOneAIUrl()
-        modelid = getAllinOneAIModelId(job_name)
+        url_prefix = get_all_in_one_ai_url()
+        modelid = get_all_in_one_ai_url_model_id(job_name)
         url = url_prefix+'/imodels/'+modelid+'?tab=trainingjob#prop:id='+job_name
         print(url)
         return {
