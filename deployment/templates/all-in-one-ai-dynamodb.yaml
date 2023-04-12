@@ -247,3 +247,25 @@ Resources:
         ReadCapacityUnits: "1"
         WriteCapacityUnits: "1"
       TableName: "all_in_one_ai_cn_model"
+
+  LoraModelDBTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+        -
+          AttributeName: "model_name"
+          AttributeType: "S"
+        -
+          AttributeName: "endpoint_name"
+          AttributeType: "S"
+      KeySchema:
+        -
+          AttributeName: "model_name"
+          KeyType: "HASH"
+        -
+          AttributeName: "endpoint_name"
+          KeyType: "RANGE"
+      ProvisionedThroughput:
+        ReadCapacityUnits: "1"
+        WriteCapacityUnits: "1"
+      TableName: "all_in_one_ai_lora_model"
