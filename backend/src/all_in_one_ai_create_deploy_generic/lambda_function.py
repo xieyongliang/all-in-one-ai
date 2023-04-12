@@ -29,6 +29,7 @@ def lambda_handler(event, context):
         instance_count = event['body']['instance_count']
         deploy_type = event['body']['deploy_type'] if 'deploy_type' in event['body'] else 'sync'
         vpc_config = event['body']['vpc_config'] if 'vpc_config' in event['body'] else None
+        volume_size = event['body']['volume_size'] if 'volume_size' in event['body'] else 100
 
         model = Model(
             name = model_name,
@@ -46,6 +47,7 @@ def lambda_handler(event, context):
             endpoint_name = endpoint_name,
             instance_type = instance_type, 
             initial_instance_count = instance_count,
+            volume_size = volume_size,
             async_inference_config = async_config if deploy_type == 'async' else None,
             wait = False
         )
