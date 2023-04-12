@@ -48,6 +48,10 @@ Parameters:
     Type: String
     Description: API Gateway Endpoint
 
+  WebPortalUrl:
+    Type: String
+    Description: Web Portal Url
+
 Conditions:
   Globally: !Equals [ false, !Ref ChinaRegion ]
 
@@ -488,27 +492,34 @@ Resources:
   Parameter55:
     Type: AWS::SSM::Parameter
     Properties:
-      Name: /all_in_one_ai/config/meta/api_endpoint
-      Type: String
-      Value: !Ref ApiGatewayProdEndpoint
-
-  Parameter56:
-    Type: AWS::SSM::Parameter
-    Properties:
       Name: /all_in_one_ai/config/meta/algorithms/detr/industrialmodels
       Type: String
       Value: !Sub s3://${S3Bucket}/${S3Key}algorithms/detr/industrialmodels/
 
-  Parameter57:
+  Parameter56:
     Type: AWS::SSM::Parameter
     Properties:
       Name: /all_in_one_ai/config/meta/algorithms/detr/source
       Type: String
       Value: !Sub s3://${S3Bucket}/${S3Key}algorithms/detr/source/sourcedir.tar.gz
 
-  Parameter58:
+  Parameter57:
     Type: AWS::SSM::Parameter
     Properties:
       Name: /all_in_one_ai/config/meta/algorithms/detr/artifact
       Type: String
       Value: !Sub s3://${S3Bucket}/${S3Key}algorithms/detr/artifact/model.tar.gz
+
+  Parameter58:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /all_in_one_ai/config/meta/api_endpoint
+      Type: String
+      Value: !Ref ApiGatewayProdEndpoint
+
+  Parameter59:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /all_in_one_ai/config/meta/web_portal_url
+      Type: String
+      Value: !Ref WebPortalUrl
