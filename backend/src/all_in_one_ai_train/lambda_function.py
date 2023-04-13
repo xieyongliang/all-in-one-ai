@@ -351,7 +351,7 @@ def lambda_handler(event, context):
             embedding_s3uri = 's3://{0}/stable-diffusion-webui/embeddings/'.format(bucket)
             models_s3uri = 's3://{0}/stable-diffusion-webui/models/Stable-diffusion/'.format(bucket)
             hypernetwork_s3uri = 's3://{0}/stable-diffusion-webui/hypernetwork/'.format(bucket)
-            lora_s3uri = 's3://{0}/stable-diffusion-webui/models/lora/'.format(bucket)
+            lora_s3uri = 's3://{0}/stable-diffusion-webui/lora/'.format(bucket)
             dreambooth_s3uri = 's3://{0}/stable-diffusion-webui/dreambooth/'.format(bucket)
             default_hyperparameters = {
                 'embeddings-s3uri': embedding_s3uri,
