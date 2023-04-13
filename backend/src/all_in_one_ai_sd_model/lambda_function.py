@@ -111,21 +111,34 @@ def lambda_handler(event, context):
                     else:
                         lora_s3uri = 's3://{0}/stable-diffusion-webui/lora/'.format(bucket)
 
+                    if 'username' in event['queryStringParameters']:
+                        username = event['queryStringParameters']['username']
 
-                    bucket, key = get_bucket_and_key(lora_s3uri)
+                        lora_s3uris = [
+                            lora_s3uri,
+                            f'{lora_s3uri}{username}/'
+                        ]
+                    else:
+                        lora_s3uris = [
+                            lora_s3uri
+                        ]
 
-                    response = s3_client.list_objects_v2(
-                        Bucket=bucket,
-                        Prefix=key,
-                        Delimiter='/'
-                    )
-
-                    print(response)
                     items = []
-                    if response['KeyCount'] > 0:
-                        for item in response['Contents']:
-                            if item['Key'].endswith('.pt'):
-                                items.append(item['Key'][item['Key'].rfind('/') + 1 : ])
+                    for lora_s3uri in lora_s3uris:
+                        bucket, key = get_bucket_and_key(lora_s3uri)
+
+                        response = s3_client.list_objects_v2(
+                            Bucket=bucket,
+                            Prefix=key,
+                            Delimiter='/'
+                        )
+
+                        print(response)
+                        if response['KeyCount'] > 0:
+                            if 'Contents' in response:
+                                for item in response['Contents']:
+                                    if item['Key'].endswith('.pt'):
+                                        items.append(item['Key'][item['Key'].rfind('/') + 1 : ])
 
                     return {
                         'statusCode': 200,
@@ -186,20 +199,21 @@ def lambda_handler(event, context):
                     if 'sd_models_s3uri' in event['queryStringParameters']:
                         sd_models_s3uri = event['queryStringParameters']['sd_models_s3uri']
                     else:
-                        sd_models_s3uri = 's3://{0}/stable-diffusion-webui/models/'.format(bucket)
+                        sd_models_s3uri = 's3://{0}/stable-diffusion-webui/models/Stable-diffusion/'.format(bucket)
 
                     if 'username' in event['queryStringParameters']:
                         username = event['queryStringParameters']['username']
 
                         sd_models_s3uris = [
                             sd_models_s3uri,
-                            sd_models_s3uri + username + '/'
+                            f'{sd_models_s3uri}{username}/'
                         ]
                     else:
                         sd_models_s3uris = [
                             sd_models_s3uri
                         ]
 
+                    items = []
                     for sd_models_s3uri in sd_models_s3uris:
                         bucket, key = get_bucket_and_key(sd_models_s3uri)
 
@@ -209,12 +223,11 @@ def lambda_handler(event, context):
                             Delimiter='/'
                         )
 
-                        print(response)
-                        items = []
                         if response['KeyCount'] > 0:
-                            for item in response['Contents']:
-                                if item['Key'].endswith('.ckpt') or item['Key'].endswith('.safesentors'):
-                                    items.append(item['Key'][item['Key'].rfind('/') + 1 : ])
+                            if 'Contents' in response:
+                                for item in response['Contents']:
+                                    if item['Key'].endswith('.ckpt') or item['Key'].endswith('.safetensors'):
+                                        items.append(item['Key'][item['Key'].rfind('/') + 1 : ])
 
                     return {
                         'statusCode': 200,
