@@ -186,20 +186,21 @@ def lambda_handler(event, context):
                     if 'sd_models_s3uri' in event['queryStringParameters']:
                         sd_models_s3uri = event['queryStringParameters']['sd_models_s3uri']
                     else:
-                        sd_models_s3uri = 's3://{0}/stable-diffusion-webui/models/'.format(bucket)
+                        sd_models_s3uri = 's3://{0}/stable-diffusion-webui/models/Stable-diffusion/'.format(bucket)
 
                     if 'username' in event['queryStringParameters']:
                         username = event['queryStringParameters']['username']
 
                         sd_models_s3uris = [
                             sd_models_s3uri,
-                            sd_models_s3uri + username + '/'
+                            sd_models_s3uri+ username + '/'
                         ]
                     else:
                         sd_models_s3uris = [
                             sd_models_s3uri
                         ]
-
+                    
+                    items = []
                     for sd_models_s3uri in sd_models_s3uris:
                         bucket, key = get_bucket_and_key(sd_models_s3uri)
 
@@ -209,11 +210,9 @@ def lambda_handler(event, context):
                             Delimiter='/'
                         )
 
-                        print(response)
-                        items = []
                         if response['KeyCount'] > 0:
                             for item in response['Contents']:
-                                if item['Key'].endswith('.ckpt') or item['Key'].endswith('.safesentors'):
+                                if item['Key'].endswith('.ckpt') or item['Key'].endswith('.safetensors'):
                                     items.append(item['Key'][item['Key'].rfind('/') + 1 : ])
 
                     return {
