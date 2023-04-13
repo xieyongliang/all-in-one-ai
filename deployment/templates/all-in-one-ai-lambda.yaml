@@ -4440,6 +4440,8 @@ Resources:
               - 'logs:*'
               - 'lambda:*'
               - 'cloudwatch:*'
+              - 'dynamodb:Scan'
+              - 'dynamodb:Query'
             Resource: '*'
             Effect: Allow
       Roles:

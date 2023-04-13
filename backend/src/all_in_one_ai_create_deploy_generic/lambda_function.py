@@ -29,7 +29,6 @@ def lambda_handler(event, context):
         instance_count = event['body']['instance_count']
         deploy_type = event['body']['deploy_type'] if 'deploy_type' in event['body'] else 'sync'
         vpc_config = event['body']['vpc_config'] if 'vpc_config' in event['body'] else None
-        volume_size_in_gb = event['body']['volume_size_in_gb'] if 'volume_size_in_gb' in event['body'] else None
         container_startup_health_check_timeout = event['body']['container_startup_health_check_timeout'] if 'volume_size_in_gb' in event['body'] else None
 
         model = Model(
@@ -49,7 +48,6 @@ def lambda_handler(event, context):
             instance_type=instance_type,
             initial_instance_count=instance_count,
             async_inference_config=async_config if deploy_type == 'async' else None,
-            volume_size_in_gb=volume_size_in_gb,
             container_startup_health_check_timeout=container_startup_health_check_timeout,
             wait = False
         )

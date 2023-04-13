@@ -232,6 +232,29 @@ def lambda_handler(event, context):
                 'statusCode': 200,
                 'body': json.dumps(items)
             }
+        elif event['httpMethod'] == 'DELETE':
+            data = json.loads(event['body'])
+            module = data['module']
+            model_name = data['model_name']
+            endpoint_name = data['endpoint_name']
+            print (data)
+            key = {
+                    'model_name': model_name,
+                    'endpoint_name': endpoint_name
+                }
+            if module == 'sd':
+                response = ddbh_sd.delete_item(key)
+                code = response['ResponseMetadata']['HTTPStatusCode']
+            elif module == 'cn':
+                response = ddbh_cn.delete_item(key)
+                code = response['ResponseMetadata']['HTTPStatusCode']
+            elif module == 'lora':
+                response = ddbh_lora.delete_item(key)
+                code = response['ResponseMetadata']['HTTPStatusCode']
+            return {
+                'statusCode': code,
+                'body': json.dumps({"message": "Item deleted!"})
+            }
         else:
             return {
                 'statusCode': 400,
