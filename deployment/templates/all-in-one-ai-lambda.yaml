@@ -4440,7 +4440,6 @@ Resources:
               - 'logs:*'
               - 'lambda:*'
               - 'cloudwatch:*'
-              - 'elasticloadbalancing:DescribeLoadBalancers'
               - 'dynamodb:Scan'
               - 'dynamodb:Query'
             Resource: '*'
