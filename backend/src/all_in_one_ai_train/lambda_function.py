@@ -420,7 +420,6 @@ def lambda_handler(event, context):
 
             response = lambda_client.invoke(
                 FunctionName = 'all_in_one_ai_create_train_generic',
-                # InvocationType = 'Event',
                 Payload=json.dumps(payload)
             )
         elif(algorithm == 'wenet'):       
@@ -466,9 +465,7 @@ def lambda_handler(event, context):
                 'body': 'Unsupported algorithm'
             }
         payload = json.loads(response['Payload'].read().decode('utf-8'))
-        print('payload:',payload)
         job_name = payload['body']
-        print(job_name)
         url_prefix = get_all_in_one_ai_url()
         modelid = get_all_in_one_ai_url_model_id(job_name)
         url = url_prefix+'/imodels/'+modelid+'?tab=trainingjob#prop:id='+job_name
