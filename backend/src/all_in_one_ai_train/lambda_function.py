@@ -17,14 +17,12 @@ lambda_client = boto3.client('lambda')
 sagemaker_session = sagemaker.Session()
 bucket = sagemaker_session.default_bucket()
 
-elb_client = boto3.client('elbv2')
+web_portal_url = ssmh.get_parameter('/all_in_one_ai/config/meta/web_portal_url')
 dynamodb = boto3.resource('dynamodb')
 ddb_table = dynamodb.Table('all_in_one_ai_training_job')
 
 def get_all_in_one_ai_url():
-    resp = elb_client.describe_load_balancers(Names=['all-in-one-ai'])
-    lb = resp['LoadBalancers'][0]
-    return 'http://'+lb['DNSName']
+    return web_portal_url
 
 def get_all_in_one_ai_url_model_id(job_name):
     resp = ddb_table.query(
