@@ -171,6 +171,7 @@ all_in_one_ai_train
 all_in_one_ai_training_job
 all_in_one_ai_transform_job
 all_in_one_ai_transform_job_review
+all_in_one_ai_process
 all_in_one_ai_websocket_connect
 all_in_one_ai_websocket_disconnect
 all_in_one_ai_websocket_send_message"

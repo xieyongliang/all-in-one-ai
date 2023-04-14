@@ -523,3 +523,14 @@ Resources:
       Name: /all_in_one_ai/config/meta/web_portal_url
       Type: String
       Value: !Ref WebPortalUrl
+
+  Parameter60:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /all_in_one_ai/config/meta/algorithms/stable-diffusion-webui/process_image
+      Type: String
+      Value:
+        !If
+        - Globally
+        - !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/all-in-one-ai-stable-diffusion-webui-process:latest
+        - !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com.cn/all-in-one-ai-stable-diffusion-webui-process:latest
