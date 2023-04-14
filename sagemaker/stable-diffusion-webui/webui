@@ -1,3 +1,7 @@
 import os
 
-os.system('bash webui.sh --skip-torch-cuda --port 8080 --listen --pureui')
+cmd = "bash webui.sh --skip-torch-cuda --port 8080 --listen --pureui"
+
+print(cmd)
+
+os.system(cmd)

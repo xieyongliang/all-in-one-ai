@@ -1,123 +1,74 @@
 #!/bin/bash
+
 set -v
 set -e
 
 # This script shows how to build the Docker image and push it to ECR to be ready for use
 # by SageMaker.
 
-# The argument to this script is the region name. 
-
-if [ "$#" -ne 1 ] && [ "$#" -ne 2 ]; then
-    echo "usage: $0 [region-name] [option]"
+if [ "$#" -lt 2 ] || [ "$#" -gt 3 ]; then
+    echo "usage: $0 [region_name] [s3uri] [image_type]"
     exit 1
 fi
 
-region=$1
-option=$2
+region="$1"
+s3uri="$2"
+image_type="$3"
+
+# Trim the trailing slash if any
+s3uri="${s3uri%/}"
 
 # Get the account number associated with the current IAM credentials
 account=$(aws sts get-caller-identity --query Account --output text)
-
-if [ $? -ne 0 ]
-then
+if [ "$?" -ne 0 ]; then
     exit 255
 fi
 
-if [ -z $option] || [ $option == "inference" ]
-then
-    cp Dockerfile.inference.lite Dockerfile.inference
+# Define a function to build and push a Docker image
+# Arguments:
+#   $1: image_type (training, inference, process, webui)
+#   $2: version (origin, lite)
+function build_and_push_image() {
+    local image_type="$1"
+    local version="$2"
 
-    inference_image=all-in-one-ai-stable-diffusion-webui-inference
-    inference_fullname=${account}.dkr.ecr.${region}.amazonaws.com/${inference_image}:latest
-
-    # If the repository doesn't exist in ECR, create it.
-    aws ecr describe-repositories --repository-names "${inference_image}" --region ${region} || aws ecr create-repository --repository-name "${inference_image}" --region ${region}
-
-    if [ $? -ne 0 ]
-    then
-        aws ecr create-repository --repository-name "${inference_image}" --region ${region}
+    # Define the name and full ECR URI for the Docker image
+    if [ "$image_type" == "webui" ]; then
+	image_name="all-in-one-ai-stable-diffusion-webui"
+    else
+	image_name="all-in-one-ai-stable-diffusion-webui-$image_type"
     fi
+    image_fullname="${account}.dkr.ecr.${region}.amazonaws.com/${image_name}:latest"
+    ecr_repo_uri="${account}.dkr.ecr.${region}.amazonaws.com"
+
+    # If the repository doesn't exist in ECR, create it
+    aws ecr describe-repositories --repository-names "${image_name}" --region "${region}" || \
+        aws ecr create-repository --repository-name "${image_name}" --region "${region}"
 
     # Get the login command from ECR and execute it directly
-    aws ecr get-login-password --region $region | docker login --username AWS --password-stdin $account.dkr.ecr.$region.amazonaws.com
+    aws ecr get-login-password --region "${region}" | \
+        docker login --username AWS --password-stdin "${ecr_repo_uri}"
 
+    # Set repository policy
     aws ecr set-repository-policy \
-        --repository-name "${inference_image}" \
+        --repository-name "${image_name}" \
         --policy-text "file://ecr-policy.json" \
-        --region ${region}
+        --region "${region}"
 
     # Build the docker image locally with the image name and then push it to ECR
     # with the full name.
+    docker build -t "${image_name}" -f Dockerfile."$image_type"."$version" . 
+    docker tag "${image_name}" "${image_fullname}"
+    docker push "${image_fullname}"
+}
 
-    docker build -t ${inference_image} -f Dockerfile.inference . 
-
-    docker tag ${inference_image} ${inference_fullname}
-
-    docker push ${inference_fullname}
-fi
-
-if [ -z $option] || [ $option == "webui" ]
-then
-    cp Dockerfile.webui.lite Dockerfile.webui
-
-    webui_image=all-in-one-ai-stable-diffusion-webui
-    webui_fullname=${account}.dkr.ecr.${region}.amazonaws.com/${webui_image}:latest
-
-    # If the repository doesn't exist in ECR, create it.
-    aws ecr describe-repositories --repository-names "${webui_image}" --region ${region} || aws ecr create-repository --repository-name "${webui_image}" --region ${region}
-
-    if [ $? -ne 0 ]
-    then
-        aws ecr create-repository --repository-name "${webui_image}" --region ${region}
-    fi
-
-    # Get the login command from ECR and execute it directly
-    aws ecr get-login-password --region $region | docker login --username AWS --password-stdin $account.dkr.ecr.$region.amazonaws.com
-
-    aws ecr set-repository-policy \
-        --repository-name "${webui_image}" \
-        --policy-text "file://ecr-policy.json" \
-        --region ${region}
-
-    # Build the docker image locally with the image name and then push it to ECR
-    # with the full name.
-
-    docker build -t ${webui_image} -f Dockerfile.webui . 
-
-    docker tag ${webui_image} ${webui_fullname}
-
-    docker push ${webui_fullname}
-fi
-
-if [ -z $option] || [ $option == "training" ]
-then
-    cp Dockerfile.training.lite Dockerfile.training
-
-    training_image=all-in-one-ai-stable-diffusion-webui-training
-    training_fullname=${account}.dkr.ecr.${region}.amazonaws.com/${training_image}:latest
-
-    # If the repository doesn't exist in ECR, create it.
-    aws ecr describe-repositories --repository-names "${training_image}" --region ${region} || aws ecr create-repository --repository-name "${training_image}" --region ${region}
-
-    if [ $? -ne 0 ]
-    then
-        aws ecr create-repository --repository-name "${training_image}" --region ${region}
-    fi
-
-    # Get the login command from ECR and execute it directly
-    aws ecr get-login-password --region $region | docker login --username AWS --password-stdin $account.dkr.ecr.$region.amazonaws.com
-
-    aws ecr set-repository-policy \
-        --repository-name "${training_image}" \
-        --policy-text "file://ecr-policy.json" \
-        --region ${region}
-
-    # Build the docker image locally with the image name and then push it to ECR
-    # with the full name.
-
-    docker build -t ${training_image} -f Dockerfile.training . 
-
-    docker tag ${training_image} ${training_fullname}
-
-    docker push ${training_fullname}
+# If no image type specified, build and push all images
+if [ -z "${image_type}" ]; then
+    build_and_push_image "webui" "lite"
+    build_and_push_image "training" "lite"
+    build_and_push_image "inference" "lite"
+    build_and_push_image "process" "lite"
+else
+    # Otherwise, build and push the specified image type
+    build_and_push_image "${image_type}" "lite"
 fi
