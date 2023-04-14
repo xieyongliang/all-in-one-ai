@@ -430,7 +430,7 @@ app.use(createProxyMiddleware('/train', {
     changeOrigin: true,
     secure: false,
     ws: false,
-}));
+}));    
 app.use(createProxyMiddleware('/deploy', {
     target: ApiURL + '/deploy',
     pathRewrite: {
