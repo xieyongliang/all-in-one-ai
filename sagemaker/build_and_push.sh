@@ -28,7 +28,7 @@ do
     algorithm=${array[$index]}
     if [ -f "./build_and_push.sh" ]; 
     then
-        ./build_and_push.sh ${region} ${s3uri}
+        ./build_and_push.sh ${region}
         touch dummy
         tar czvf model.tar.gz dummy
         aws s3 cp model.tar.gz ${s3uri}/algorithms/${algorithm}/artifact/ --region ${region}
