@@ -48,6 +48,10 @@ Parameters:
     Type: String
     Description: API Gateway Endpoint
 
+  WebPortalUrl:
+    Type: String
+    Description: Web Portal Url
+
 Conditions:
   Globally: !Equals [ false, !Ref ChinaRegion ]
 
@@ -459,6 +463,13 @@ Resources:
   Parameter52:
     Type: AWS::SSM::Parameter
     Properties:
+      Name: /all_in_one_ai/config/meta/algorithms/stable-diffusion-webui/artifact
+      Type: String
+      Value: !Sub s3://${S3Bucket}/${S3Key}algorithms/stable-diffusion-webui/artifact/model.tar.gz
+
+  Parameter53:
+    Type: AWS::SSM::Parameter
+    Properties:
       Name: /all_in_one_ai/config/meta/algorithms/stable-diffusion-webui/training_image
       Type: String
       Value:
@@ -467,7 +478,7 @@ Resources:
         - !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/all-in-one-ai-stable-diffusion-webui-training:latest
         - !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com.cn/all-in-one-ai-stable-diffusion-webui-training:latest
 
-  Parameter53:
+  Parameter54:
     Type: AWS::SSM::Parameter
     Properties:
       Name: /all_in_one_ai/config/meta/algorithms/stable-diffusion-webui/inference_image
@@ -477,13 +488,6 @@ Resources:
         - Globally
         - !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/all-in-one-ai-stable-diffusion-webui-inference:latest
         - !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com.cn/all-in-one-ai-stable-diffusion-webui-inference:latest
-
-  Parameter54:
-    Type: AWS::SSM::Parameter
-    Properties:
-      Name: /all_in_one_ai/config/meta/api_endpoint
-      Type: String
-      Value: !Ref ApiGatewayProdEndpoint
 
   Parameter55:
     Type: AWS::SSM::Parameter
@@ -505,3 +509,28 @@ Resources:
       Name: /all_in_one_ai/config/meta/algorithms/detr/artifact
       Type: String
       Value: !Sub s3://${S3Bucket}/${S3Key}algorithms/detr/artifact/model.tar.gz
+
+  Parameter58:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /all_in_one_ai/config/meta/api_endpoint
+      Type: String
+      Value: !Ref ApiGatewayProdEndpoint
+
+  Parameter59:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /all_in_one_ai/config/meta/web_portal_url
+      Type: String
+      Value: !Ref WebPortalUrl
+
+  Parameter60:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /all_in_one_ai/config/meta/algorithms/stable-diffusion-webui/process_image
+      Type: String
+      Value:
+        !If
+        - Globally
+        - !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/all-in-one-ai-stable-diffusion-webui-process:latest
+        - !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com.cn/all-in-one-ai-stable-diffusion-webui-process:latest

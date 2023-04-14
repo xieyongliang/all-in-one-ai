@@ -19,19 +19,23 @@
 ###	Backend source update
 
 -   Run the deployment/update.sh script
--   Usage(usually :
+-   Usage:
 
-1 ./update_lambda.sh <s3uri> <region>
+1 ./update_lambda.sh -a -b s3_bucket -r your_region
 
-  update any modified backend/src/ files discovered by git-diff
+  update all Lambda functions using s3_bucket files 
 
-2 ./update_lambda.sh <s3uri> <region> -a
+2 ./update_lambda.sh -b s3_bucket -r your_region -f func1,func2
 
-  update all backend/src/ files
+  update Lambda function func1 and func2 using s3_bucket files 
 
-3 ./update_lambda.sh <s3uri> <region> func_name1,func_name2
+3 ./update_lambda.sh -a -r your_region
 
-  update specified func_names(separated by ,) under backend/src/ files
+  update all Lambda functions using local backend/src files
+
+4 ./update_lambda.sh -r your_region -f func1,func2
+
+  update Lambda function func1 and func2 using backend/src/func1 and backend/src/func2
 
 ###	Web source update
 -   Build web docker image and push to AWS ECR with following command where project_dir is the path of all-in-one-ai source and region is the AWS region where you launched your web server in AWS ECS.

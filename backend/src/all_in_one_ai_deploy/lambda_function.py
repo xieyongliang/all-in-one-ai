@@ -317,10 +317,10 @@ def lambda_handler(event, context):
                 model_environment['embeddings_s3uri'] = 's3://{0}/stable-diffusion-webui/embeddings/'.format(bucket)
             if 'hypernetwork_s3uri' not in model_environment:
                 model_environment['hypernetwork_s3uri'] = 's3://{0}/stable-diffusion-webui/hypernetwork/'.format(bucket)
+            if 'generated_images_s3uri' not in model_environment:
+                model_environment['generated_images_s3uri'] = 's3://{0}/stable-diffusion-webui/generated/'.format(bucket)
             if 'api_endpoint' not in model_environment:
                 model_environment['api_endpoint'] = ssmh.get_parameter('/all_in_one_ai/config/meta/api_endpoint')
-            if model_data_url == '':
-                model_data_url = 's3://{0}/stable-diffusion-webui/assets/model.tar.gz'.format(bucket)
 
             vpc_config = {}
             vpc_config['Subnets'] =  [ os.environ['PrivateSubnet1'], os.environ['PrivateSubnet2'] ]
@@ -331,6 +331,12 @@ def lambda_handler(event, context):
                 endpoint_name = sagemaker.utils.name_from_base(base_name)
             
             model_environment['endpoint_name'] = endpoint_name
+
+            if 'container_startup_health_check_timeout' in model_environment:
+                container_startup_health_check_timeout = int(model_environment['container_startup_health_check_timeout'])
+                model_environment.pop('container_startup_health_check_timeout')
+            else:
+                container_startup_health_check_timeout = 1800
 
             payload = {
                 'body': {
@@ -344,7 +350,8 @@ def lambda_handler(event, context):
                     'instance_type': instance_type,
                     'instance_count': instance_count,
                     'deploy_type': 'async',
-                    'vpc_config': vpc_config
+                    'vpc_config': vpc_config,
+                    'container_startup_health_check_timeout': container_startup_health_check_timeout
                 }
             }
 

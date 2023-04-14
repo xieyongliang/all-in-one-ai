@@ -29,24 +29,26 @@ def lambda_handler(event, context):
         instance_count = event['body']['instance_count']
         deploy_type = event['body']['deploy_type'] if 'deploy_type' in event['body'] else 'sync'
         vpc_config = event['body']['vpc_config'] if 'vpc_config' in event['body'] else None
+        container_startup_health_check_timeout = event['body']['container_startup_health_check_timeout'] if 'volume_size_in_gb' in event['body'] else None
 
         model = Model(
-            name = model_name,
-            model_data = model_data,
-            role = role,
-            image_uri = image_uri,
-            env = model_environment,
-            predictor_cls = Predictor,
+            name=model_name,
+            model_data=model_data,
+            role=role,
+            image_uri=image_uri,
+            env=model_environment,
+            predictor_cls=Predictor,
             vpc_config=vpc_config
         )
 
         async_config = AsyncInferenceConfig(output_path='s3://{0}/{1}/asyncinvoke/out/'.format(bucket, industrial_model))
 
         predictor = model.deploy(
-            endpoint_name = endpoint_name,
-            instance_type = instance_type, 
-            initial_instance_count = instance_count,
-            async_inference_config = async_config if deploy_type == 'async' else None,
+            endpoint_name=endpoint_name,
+            instance_type=instance_type,
+            initial_instance_count=instance_count,
+            async_inference_config=async_config if deploy_type == 'async' else None,
+            container_startup_health_check_timeout=container_startup_health_check_timeout,
             wait = False
         )
 
@@ -61,8 +63,8 @@ def lambda_handler(event, context):
         }
 
         response = lambda_client.invoke(
-            FunctionName = 'all_in_one_ai_websocket_send_message',
-            InvocationType = 'RequestResponse',
+            FunctionName='all_in_one_ai_websocket_send_message',
+            InvocationType='RequestResponse',
             Payload=json.dumps(payload)
         )
 
@@ -87,8 +89,8 @@ def lambda_handler(event, context):
         }
 
         response = lambda_client.invoke(
-            FunctionName = 'all_in_one_ai_websocket_send_message',
-            InvocationType = 'RequestResponse',
+            FunctionName='all_in_one_ai_websocket_send_message',
+            InvocationType='RequestResponse',
             Payload=json.dumps(payload)
         )
 

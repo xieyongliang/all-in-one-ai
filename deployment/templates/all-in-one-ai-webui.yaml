@@ -103,7 +103,22 @@ Resources:
           - Globally
           - 'arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy'
           - 'arn:aws-cn:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy'
-  
+  TaskRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: 
+                - ecs-tasks.amazonaws.com
+            Action: "sts:AssumeRole"
+      ManagedPolicyArns:
+        - !If
+          - Globally
+          - 'arn:aws:iam::aws:policy/AmazonS3FullAccess'
+          - 'arn:aws-cn:iam::aws:policy/AmazonS3FullAccess'
   Taskdefinition:
     Type: AWS::ECS::TaskDefinition
     Properties:
@@ -117,6 +132,7 @@ Resources:
       Cpu: '8192'
       Memory: '16384'
       ExecutionRoleArn: !Ref ExecutionRole
+      TaskRoleArn: !Ref TaskRole
       EphemeralStorage: 
          SizeInGiB: 200
       ContainerDefinitions:

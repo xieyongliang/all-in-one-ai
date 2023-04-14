@@ -216,30 +216,6 @@ Resources:
         - !Sub https://${S3Bucket}.s3.${AWS::Region}.amazonaws.com/${S3Key}templates/all-in-one-ai-lambda.yaml
         - !Sub https://${S3Bucket}.s3.${AWS::Region}.amazonaws.com.cn/${S3Key}templates/all-in-one-ai-lambda.yaml
 
-  SSM:
-    Type: AWS::CloudFormation::Stack
-    DependsOn: 
-      - IAM
-      - LAMBDA
-    Properties:
-      Parameters:
-        S3Bucket: !Ref S3Bucket
-        S3Key: !Ref S3Key
-        SageMakerRole: !GetAtt IAM.Outputs.SageMakerRole
-        CreatePipelineHelperLambdaArn: !GetAtt LAMBDA.Outputs.CreatePipelineHelperFunctionArn
-        ChinaRegion: !Ref ChinaRegion
-        AddPermissionFunctionArn: !GetAtt LAMBDA.Outputs.AllInOneAIAddPermissionFunctionArn
-        RemovePermissionFunctionArn: !GetAtt LAMBDA.Outputs.AllInOneAIRemovePermissionFunctionArn
-        CreateS3EventNotificationFunctionArn: !GetAtt LAMBDA.Outputs.AllInOneAICreateS3EventNotificationFunctionArn
-        DeleteS3EventNotificationFunctionArn: !GetAtt LAMBDA.Outputs.AllInOneAIDeleteS3EventNotificationFunctionArn
-        ImportOpensearchAsyncHelperFunctionArn: !GetAtt LAMBDA.Outputs.AllInOneAIImportOpensearchAsyncHelperFunctionArn
-        ApiGatewayProdEndpoint: !GetAtt LAMBDA.Outputs.ApiGatewayProdEndpoint
-      TemplateURL:
-        !If
-        - Globally
-        - !Sub https://${S3Bucket}.s3.${AWS::Region}.amazonaws.com/${S3Key}templates/all-in-one-ai-ssm.yaml
-        - !Sub https://${S3Bucket}.s3.${AWS::Region}.amazonaws.com.cn/${S3Key}templates/all-in-one-ai-ssm.yaml
-
   WEB:
     Type: AWS::CloudFormation::Stack
     DependsOn: 
@@ -284,6 +260,32 @@ Resources:
         - Globally
         - !Sub https://${S3Bucket}.s3.${AWS::Region}.amazonaws.com/${S3Key}templates/all-in-one-ai-webui.yaml
         - !Sub https://${S3Bucket}.s3.${AWS::Region}.amazonaws.com.cn/${S3Key}templates/all-in-one-ai-webui.yaml
+
+  SSM:
+    Type: AWS::CloudFormation::Stack
+    DependsOn: 
+      - IAM
+      - LAMBDA
+      - WEB
+    Properties:
+      Parameters:
+        S3Bucket: !Ref S3Bucket
+        S3Key: !Ref S3Key
+        SageMakerRole: !GetAtt IAM.Outputs.SageMakerRole
+        CreatePipelineHelperLambdaArn: !GetAtt LAMBDA.Outputs.CreatePipelineHelperFunctionArn
+        ChinaRegion: !Ref ChinaRegion
+        AddPermissionFunctionArn: !GetAtt LAMBDA.Outputs.AllInOneAIAddPermissionFunctionArn
+        RemovePermissionFunctionArn: !GetAtt LAMBDA.Outputs.AllInOneAIRemovePermissionFunctionArn
+        CreateS3EventNotificationFunctionArn: !GetAtt LAMBDA.Outputs.AllInOneAICreateS3EventNotificationFunctionArn
+        DeleteS3EventNotificationFunctionArn: !GetAtt LAMBDA.Outputs.AllInOneAIDeleteS3EventNotificationFunctionArn
+        ImportOpensearchAsyncHelperFunctionArn: !GetAtt LAMBDA.Outputs.AllInOneAIImportOpensearchAsyncHelperFunctionArn
+        ApiGatewayProdEndpoint: !GetAtt LAMBDA.Outputs.ApiGatewayProdEndpoint
+        WebPortalUrl: !If [ USE_HTTP, !Sub "http://${WEB.Outputs.DNSName}", !Sub "https://${DomainName}" ]
+      TemplateURL:
+        !If
+        - Globally
+        - !Sub https://${S3Bucket}.s3.${AWS::Region}.amazonaws.com/${S3Key}templates/all-in-one-ai-ssm.yaml
+        - !Sub https://${S3Bucket}.s3.${AWS::Region}.amazonaws.com.cn/${S3Key}templates/all-in-one-ai-ssm.yaml
 
 Outputs:
   WebPortalUrl:

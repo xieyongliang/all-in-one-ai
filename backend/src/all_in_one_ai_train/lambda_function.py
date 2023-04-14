@@ -7,6 +7,8 @@ import sagemaker
 import helper
 import os
 from botocore.client import Config
+from boto3.dynamodb.conditions import Key, Attr
+
 
 ssmh = helper.ssm_helper()
 role_arn = ssmh.get_parameter('/all_in_one_ai/config/meta/sagemaker_role_arn')
@@ -14,6 +16,20 @@ role_arn = ssmh.get_parameter('/all_in_one_ai/config/meta/sagemaker_role_arn')
 lambda_client = boto3.client('lambda')
 sagemaker_session = sagemaker.Session()
 bucket = sagemaker_session.default_bucket()
+
+web_portal_url = ssmh.get_parameter('/all_in_one_ai/config/meta/web_portal_url')
+dynamodb = boto3.resource('dynamodb')
+ddb_table = dynamodb.Table('all_in_one_ai_training_job')
+
+def get_all_in_one_ai_url():
+    return web_portal_url
+
+def get_all_in_one_ai_url_model_id(job_name):
+    resp = ddb_table.query(
+        KeyConditionExpression=Key('training_job_name').eq(job_name)
+    )
+    return resp['Items'][0]['industrial_model']
+    
 
 def lambda_handler(event, context):
     print(event)
@@ -333,7 +349,7 @@ def lambda_handler(event, context):
         elif(algorithm == 'stable-diffusion-webui'):
             image_uri = ssmh.get_parameter('/all_in_one_ai/config/meta/algorithms/{0}/training_image'.format(algorithm))
             embedding_s3uri = 's3://{0}/stable-diffusion-webui/embeddings/'.format(bucket)
-            models_s3uri = 's3://{0}/stable-diffusion-webui/models/'.format(bucket)
+            models_s3uri = 's3://{0}/stable-diffusion-webui/models/Stable-diffusion/'.format(bucket)
             hypernetwork_s3uri = 's3://{0}/stable-diffusion-webui/hypernetwork/'.format(bucket)
             lora_s3uri = 's3://{0}/stable-diffusion-webui/lora/'.format(bucket)
             dreambooth_s3uri = 's3://{0}/stable-diffusion-webui/dreambooth/'.format(bucket)
@@ -404,7 +420,6 @@ def lambda_handler(event, context):
 
             response = lambda_client.invoke(
                 FunctionName = 'all_in_one_ai_create_train_generic',
-                InvocationType = 'Event',
                 Payload=json.dumps(payload)
             )
         elif(algorithm == 'wenet'):       
@@ -449,13 +464,15 @@ def lambda_handler(event, context):
                 'statusCode': 400,
                 'body': 'Unsupported algorithm'
             }
-
-        print(response)
-        payload = str(response['Payload'].read())
-        print(payload)
+        payload = json.loads(response['Payload'].read().decode('utf-8'))
+        job_name = payload['body']
+        url_prefix = get_all_in_one_ai_url()
+        modelid = get_all_in_one_ai_url_model_id(job_name)
+        url = url_prefix+'/imodels/'+modelid+'?tab=trainingjob#prop:id='+job_name
+        print(url)
         return {
             'statusCode': 200,
-            'body': json.dumps(payload, default = defaultencode)
+            'body': json.dumps(url, default = defaultencode)
         }
 
     except Exception as e:
