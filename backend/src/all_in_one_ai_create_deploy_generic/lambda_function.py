@@ -29,7 +29,7 @@ def lambda_handler(event, context):
         instance_count = event['body']['instance_count']
         deploy_type = event['body']['deploy_type'] if 'deploy_type' in event['body'] else 'sync'
         vpc_config = event['body']['vpc_config'] if 'vpc_config' in event['body'] else None
-        container_startup_health_check_timeout = event['body']['container_startup_health_check_timeout'] if 'volume_size_in_gb' in event['body'] else None
+        container_startup_health_check_timeout = event['body']['container_startup_health_check_timeout'] if 'container_startup_health_check_timeout' in event['body'] else None
 
         model = Model(
             name=model_name,
