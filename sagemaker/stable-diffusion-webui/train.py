@@ -4,6 +4,7 @@ import argparse
 parser = argparse.ArgumentParser(description='Process some integers.')
 parser.add_argument('--train-task', type=str, help='Train task, either embedding or hypernetwork')
 parser.add_argument('--train-args', type=str, help='Train arguments')
+parser.add_argument("--ckpt", type=str, default='', help="path to checkpoint of stable diffusion model; if specified, this checkpoint will be added to the list of checkpoints and loaded",)
 parser.add_argument('--embeddings-s3uri', default='', type=str, help='Embeddings S3Uri')
 parser.add_argument('--hypernetwork-s3uri', default='', type=str, help='Hypernetwork S3Uri')
 parser.add_argument('--sd-models-s3uri', default='', type=str, help='SD Models S3Uri')
@@ -41,6 +42,9 @@ if args.model_name != '':
 
 if args.dreambooth_config_id != '':
     cmd = '{0} --dreambooth-config-id {1}'.format(cmd, args.dreambooth_config_id)
+
+if args.ckpt != '':
+    cmd = '{0} --ckpt {1}'.format(cmd, args.ckpt)
 
 os.system('mkdir -p /opt/ml/input/data/embeddings')
 os.system('mkdir -p /opt/ml/input/data/hypernetwork')
