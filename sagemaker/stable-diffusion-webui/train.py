@@ -12,6 +12,7 @@ parser.add_argument('--lora-models-s3uri', default='', type=str, help='Lora Mode
 parser.add_argument('--username', default='', type=str, help='Username')
 parser.add_argument('--api-endpoint', default='', type=str, help='API Endpoint')
 parser.add_argument('--dreambooth-config-id', default='', type=str, help='Dreambooth config ID')
+parser.add_argument('--model-name', default='', type=str, help='Model name')
 
 args = parser.parse_args()
 
@@ -34,6 +35,9 @@ if args.lora_models_s3uri != '':
 
 if args.username != '':
     cmd = '{0} --username {1}'.format(cmd, args.username)
+
+if args.model_name != '':
+    cmd = '{0} --model-name {1}'.format(cmd, args.model_name)
 
 if args.dreambooth_config_id != '':
     cmd = '{0} --dreambooth-config-id {1}'.format(cmd, args.dreambooth_config_id)

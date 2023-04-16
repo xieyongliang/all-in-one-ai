@@ -8,7 +8,7 @@ import helper
 import os
 from botocore.client import Config
 from boto3.dynamodb.conditions import Key, Attr
-
+from botocore.errorfactory import ClientError
 
 ssmh = helper.ssm_helper()
 role_arn = ssmh.get_parameter('/all_in_one_ai/config/meta/sagemaker_role_arn')
@@ -20,6 +20,9 @@ bucket = sagemaker_session.default_bucket()
 web_portal_url = ssmh.get_parameter('/all_in_one_ai/config/meta/web_portal_url')
 dynamodb = boto3.resource('dynamodb')
 ddb_table = dynamodb.Table('all_in_one_ai_training_job')
+
+s3_client = boto3.client('s3', config=Config(signature_version='s3v4'))
+s3_resource= boto3.resource('s3')
 
 def get_all_in_one_ai_url():
     return web_portal_url
@@ -377,7 +380,15 @@ def lambda_handler(event, context):
 
                 if 'models' not in inputs or inputs['models'] == '':
                     model_name = os.path.basename(hyperparameters['ckpt'])
-                    inputs['models'] = '{0}{1}'.format(models_s3uri, model_name[0 : -5])
+                    model_bucket, model_key = get_bucket_and_key('{0}{1}'.format(models_s3uri, model_name[0 : -5]))
+                    try:
+                        s3_client.head_object(Bucket=model_bucket, Key=model_key)
+                        inputs['models'] = '{0}{1}'.format(models_s3uri, model_name[0 : -5])
+                    except ClientError as e:
+                        if e.response['Error']['Code'] == "404":
+                            hyperparameters['model_name'] = model_name
+                        else:
+                            raise e
             else:
                 train_args = json.loads(json.loads(hyperparameters['train-args']))
                 train_dreambooth_settings = train_args['train_dreambooth_settings']
@@ -399,7 +410,15 @@ def lambda_handler(event, context):
                 if 'models' not in inputs or inputs['models'] == '':
                     if train_dreambooth_settings['db_create_new_db_model'] and not train_dreambooth_settings['db_create_from_hub']:
                         model_name = train_dreambooth_settings['db_new_model_src']
-                        inputs['models'] = '{0}{1}'.format(models_s3uri, model_name[0 : -5])
+                        model_bucket, model_key = get_bucket_and_key('{0}{1}'.format(models_s3uri, model_name[0 : -5]))
+                        try:
+                            s3_client.head_object(Bucket=model_bucket, Key=model_key)
+                            inputs['models'] = '{0}{1}'.format(models_s3uri, model_name[0 : -5])
+                        except ClientError as e:
+                            if e.response['Error']['Code'] == "404":
+                                hyperparameters['model_name'] = model_name
+                            else:
+                                raise e
                     elif 'models' in inputs:
                         inputs.pop('models')
 
@@ -496,8 +515,6 @@ def get_bucket_and_key(s3uri):
     return bucket, key
 
 def s3uri_contain_files(s3uri):
-    s3_client = boto3.client('s3', config=Config(signature_version='s3v4'))
-    s3_resource= boto3.resource('s3')
     bucket, key = get_bucket_and_key(s3uri)
     s3_bucket = s3_resource.Bucket(bucket)
     objs = list(s3_bucket.objects.filter(Prefix=key))
