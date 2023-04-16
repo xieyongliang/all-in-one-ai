@@ -23,12 +23,12 @@ os.makedirs('/tmp/models/Lora', exist_ok=True)
 os.makedirs('/tmp/models/Vae', exist_ok=True)
 
 if os.path.isdir('/opt/ml/model/Stable-diffusion'):
-    shutil.copytree('/opt/ml/model/Stable-diffusion', '/tmp/models/Stable-diffusion')
+    shutil.copytree('/opt/ml/model/Stable-diffusion', '/tmp/models/')
 
 if os.path.isdir('/opt/ml/model/ControlNet'):
-    shutil.copytree('/opt/ml/model/ControlNet', '/tmp/models/ControlNet')
+    shutil.copytree('/opt/ml/model/ControlNet', '/tmp/models/')
 
 if os.path.isdir('/opt/ml/model/Lora'):
-    shutil.copytree('/opt/ml/model/Lora', '/tmp/models/Lora')
+    shutil.copytree('/opt/ml/model/Lora', '/tmp/models/')
 
 os.system(cmd)
