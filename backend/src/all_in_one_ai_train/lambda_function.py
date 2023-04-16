@@ -368,6 +368,7 @@ def lambda_handler(event, context):
                     hyperparameters[key] = default_hyperparameters[key]
 
             print(hyperparameters)
+            username = hyperparameters['username']
             if hyperparameters['train-task'] == 'embedding' or hyperparameters['train-task'] == 'hypernetwork':
                 if 'embeddings' not in inputs:
                     with_embeddings = s3uri_contain_files(embedding_s3uri)
@@ -380,16 +381,30 @@ def lambda_handler(event, context):
 
                 if 'models' not in inputs or inputs['models'] == '':
                     model_name = os.path.basename(hyperparameters['ckpt'])
-                    model_bucket, model_key = get_bucket_and_key('{0}{1}'.format(models_s3uri, model_name[0 : -5]))
+                    found_in_models_subdir = False
+                    model_bucket, model_key = get_bucket_and_key('{0}{1}/{2}'.format(models_s3uri, username, model_name[0 : -5]))
                     try:
                         s3_client.head_object(Bucket=model_bucket, Key=model_key)
-                        inputs['models'] = '{0}{1}'.format(models_s3uri, model_name[0 : -5])
+                        inputs['models'] = '{0}{1}/{2}'.format(models_s3uri, username, model_name[0 : -5])
+                        found_in_models_subdir = True
                     except ClientError as e:
                         if e.response['Error']['Code'] == "404":
-                            hyperparameters['model-name'] = model_name
-                            inputs.pop('models')
+                            pass
                         else:
                             raise e
+                    if not found_in_models_subdir:
+                        model_bucket, model_key = get_bucket_and_key('{0}{1}'.format(models_s3uri, model_name[0 : -5]))
+                        try:
+                            s3_client.head_object(Bucket=model_bucket, Key=model_key)
+                            inputs['models'] = '{0}{1}'.format(models_s3uri, model_name[0 : -5])
+                        except ClientError as e:
+                            if e.response['Error']['Code'] == "404":
+                                hyperparameters['model-name'] = model_name
+                                if 'models' in inputs:
+                                    inputs.pop('models')
+                            else:
+                                raise e
+
             else:
                 train_args = json.loads(json.loads(hyperparameters['train-args']))
                 train_dreambooth_settings = train_args['train_dreambooth_settings']
