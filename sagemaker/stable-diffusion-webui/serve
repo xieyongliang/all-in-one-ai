@@ -31,4 +31,7 @@ if os.path.isdir('/opt/ml/model/ControlNet'):
 if os.path.isdir('/opt/ml/model/Lora'):
     shutil.copytree('/opt/ml/model/Lora', '/tmp/models/')
 
+if os.path.isdir('/opt/ml/model/Vae'):
+    shutil.copytree('/opt/ml/model/Vae', '/tmp/models/')
+
 os.system(cmd)
