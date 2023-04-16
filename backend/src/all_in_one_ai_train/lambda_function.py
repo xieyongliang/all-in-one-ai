@@ -386,7 +386,8 @@ def lambda_handler(event, context):
                         inputs['models'] = '{0}{1}'.format(models_s3uri, model_name[0 : -5])
                     except ClientError as e:
                         if e.response['Error']['Code'] == "404":
-                            hyperparameters['model_name'] = model_name
+                            hyperparameters['model-name'] = model_name
+                            inputs.pop('models')
                         else:
                             raise e
             else:
@@ -416,7 +417,8 @@ def lambda_handler(event, context):
                             inputs['models'] = '{0}{1}'.format(models_s3uri, model_name[0 : -5])
                         except ClientError as e:
                             if e.response['Error']['Code'] == "404":
-                                hyperparameters['model_name'] = model_name
+                                hyperparameters['model-name'] = model_name
+                                inputs.pop('models')
                             else:
                                 raise e
                     elif 'models' in inputs:
