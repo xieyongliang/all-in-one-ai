@@ -382,7 +382,7 @@ def lambda_handler(event, context):
                 if 'models' not in inputs or inputs['models'] == '':
                     model_name = os.path.basename(hyperparameters['ckpt'])
                     found_in_models_subdir = False
-                    model_bucket, model_key = get_bucket_and_key('{0}{1}/{2}'.format(models_s3uri, username, model_name[0 : -5]))
+                    model_bucket, model_key = get_bucket_and_key('{0}{1}/{2}'.format(models_s3uri, username, model_name))
                     try:
                         s3_client.head_object(Bucket=model_bucket, Key=model_key)
                         inputs['models'] = '{0}{1}/{2}'.format(models_s3uri, username, model_name[0 : -5])
@@ -393,7 +393,7 @@ def lambda_handler(event, context):
                         else:
                             raise e
                     if not found_in_models_subdir:
-                        model_bucket, model_key = get_bucket_and_key('{0}{1}'.format(models_s3uri, model_name[0 : -5]))
+                        model_bucket, model_key = get_bucket_and_key('{0}{1}'.format(models_s3uri, model_name))
                         try:
                             s3_client.head_object(Bucket=model_bucket, Key=model_key)
                             inputs['models'] = '{0}{1}'.format(models_s3uri, model_name[0 : -5])
@@ -404,6 +404,7 @@ def lambda_handler(event, context):
                                     inputs.pop('models')
                             else:
                                 raise e
+
             else:
                 train_args = json.loads(json.loads(hyperparameters['train-args']))
                 train_dreambooth_settings = train_args['train_dreambooth_settings']
@@ -426,7 +427,7 @@ def lambda_handler(event, context):
                     if train_dreambooth_settings['db_create_new_db_model'] and not train_dreambooth_settings['db_create_from_hub']:
                         model_name = train_dreambooth_settings['db_new_model_src']
                         found_in_models_subdir = False
-                        model_bucket, model_key = get_bucket_and_key('{0}{1}/{2}'.format(models_s3uri, username, model_name[0 : -5]))
+                        model_bucket, model_key = get_bucket_and_key('{0}{1}/{2}'.format(models_s3uri, username, model_name))
                         try:
                             s3_client.head_object(Bucket=model_bucket, Key=model_key)
                             inputs['models'] = '{0}{1}/{2}'.format(models_s3uri, username, model_name[0 : -5])
@@ -437,7 +438,7 @@ def lambda_handler(event, context):
                             else:
                                 raise e
                         if not found_in_models_subdir:
-                            model_bucket, model_key = get_bucket_and_key('{0}{1}'.format(models_s3uri, model_name[0 : -5]))
+                            model_bucket, model_key = get_bucket_and_key('{0}{1}'.format(models_s3uri, model_name))
                             try:
                                 s3_client.head_object(Bucket=model_bucket, Key=model_key)
                                 inputs['models'] = '{0}{1}'.format(models_s3uri, model_name[0 : -5])
@@ -505,22 +506,26 @@ def lambda_handler(event, context):
                 InvocationType = 'Event',
                 Payload=json.dumps(payload)
             )
+            payload = json.loads(response['Payload'].read().decode('utf-8'))
+            if payload['statusCode'] == 200:
+                job_name = payload['body']
+                url_prefix = get_all_in_one_ai_url()
+                modelid = get_all_in_one_ai_url_model_id(job_name)
+                url = url_prefix+'/imodels/'+modelid+'?tab=trainingjob#prop:id='+job_name
+                return {
+                    'statusCode': 200,
+                    'body': json.dumps(url, default = defaultencode)
+                }
+            else:
+                return {
+                    'statusCode': payload['statusCode'],
+                    'body': payload['body']
+                }
         else:
             return {
                 'statusCode': 400,
                 'body': 'Unsupported algorithm'
             }
-        payload = json.loads(response['Payload'].read().decode('utf-8'))
-        job_name = payload['body']
-        url_prefix = get_all_in_one_ai_url()
-        modelid = get_all_in_one_ai_url_model_id(job_name)
-        url = url_prefix+'/imodels/'+modelid+'?tab=trainingjob#prop:id='+job_name
-        print(url)
-        return {
-            'statusCode': 200,
-            'body': json.dumps(url, default = defaultencode)
-        }
-
     except Exception as e:
         traceback.print_exc()
         return {
