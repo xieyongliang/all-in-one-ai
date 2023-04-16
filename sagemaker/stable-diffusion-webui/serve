@@ -1,5 +1,4 @@
 import os
-import shutil
 
 ckpt = os.environ['ckpt'] if 'ckpt' in os.environ else ''
 embeddings_s3uri = os.environ['embeddings_s3uri'] if 'embeddings_s3uri' in os.environ else ''
@@ -23,15 +22,15 @@ os.makedirs('/tmp/models/Lora', exist_ok=True)
 os.makedirs('/tmp/models/Vae', exist_ok=True)
 
 if os.path.isdir('/opt/ml/model/Stable-diffusion'):
-    shutil.copytree('/opt/ml/model/Stable-diffusion', '/tmp/models/')
+    os.system('cp -R /opt/ml/model/Stable-diffusion/* /tmp/models/Stable-diffusion/')
 
 if os.path.isdir('/opt/ml/model/ControlNet'):
-    shutil.copytree('/opt/ml/model/ControlNet', '/tmp/models/')
+    os.system('cp -R /opt/ml/model/ControlNet/* /tmp/models/ControlNet/')
 
 if os.path.isdir('/opt/ml/model/Lora'):
-    shutil.copytree('/opt/ml/model/Lora', '/tmp/models/')
+    os.system('cp -R /opt/ml/model/Lora/* /tmp/models/Lora/')
 
 if os.path.isdir('/opt/ml/model/Vae'):
-    shutil.copytree('/opt/ml/model/Vae', '/tmp/models/')
+    os.system('cp -R /opt/ml/model/Vae/* /tmp/models/Vae/')
 
 os.system(cmd)
