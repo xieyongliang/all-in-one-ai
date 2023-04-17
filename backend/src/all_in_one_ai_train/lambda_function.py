@@ -469,6 +469,21 @@ def lambda_handler(event, context):
                 FunctionName = 'all_in_one_ai_create_train_generic',
                 Payload=json.dumps(payload)
             )
+            payload = json.loads(response['Payload'].read().decode('utf-8'))
+            if payload['statusCode'] == 200:
+                job_name = payload['body']
+                url_prefix = get_all_in_one_ai_url()
+                modelid = get_all_in_one_ai_url_model_id(job_name)
+                url = url_prefix+'/imodels/'+modelid+'?tab=trainingjob#prop:id='+job_name
+                return {
+                    'statusCode': 200,
+                    'body': json.dumps(url, default = defaultencode)
+                }
+            else:
+                return {
+                    'statusCode': payload['statusCode'],
+                    'body': payload['body']
+                }
         elif(algorithm == 'wenet'):       
             image_uri = ssmh.get_parameter('/all_in_one_ai/config/meta/algorithms/{0}/training_image'.format(algorithm))
 
@@ -507,20 +522,10 @@ def lambda_handler(event, context):
                 Payload=json.dumps(payload)
             )
             payload = json.loads(response['Payload'].read().decode('utf-8'))
-            if payload['statusCode'] == 200:
-                job_name = payload['body']
-                url_prefix = get_all_in_one_ai_url()
-                modelid = get_all_in_one_ai_url_model_id(job_name)
-                url = url_prefix+'/imodels/'+modelid+'?tab=trainingjob#prop:id='+job_name
-                return {
-                    'statusCode': 200,
-                    'body': json.dumps(url, default = defaultencode)
-                }
-            else:
-                return {
-                    'statusCode': payload['statusCode'],
-                    'body': payload['body']
-                }
+            return {
+                'statusCode': payload['statusCode'],
+                'body': payload['body']
+            }
         else:
             return {
                 'statusCode': 400,
