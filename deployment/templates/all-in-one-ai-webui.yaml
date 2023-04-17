@@ -156,6 +156,8 @@ Resources:
           Environment:
             - Name: api_endpoint
               Value: !Ref ApiGatewayProdEndpoint
+            - Name: infer_type
+              Value: !If [ Globally, 'async', 'sync' ]
 
   ECSALB:
     Type: 'AWS::ElasticLoadBalancingV2::LoadBalancer'
