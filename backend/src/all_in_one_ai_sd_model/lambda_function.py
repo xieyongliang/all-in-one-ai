@@ -243,6 +243,8 @@ def lambda_handler(event, context):
                     items = ddbh_sd.scan(FilterExpression=Key('endpoint_name').eq(endpoint_name))
                 elif module == 'ControlNet':
                     items = ddbh_cn.scan(FilterExpression=Key('endpoint_name').eq(endpoint_name))
+                elif module == 'Lora':
+                    items = ddbh_lora.scan(FilterExpression=Key('endpoint_name').eq(endpoint_name))
                 else:
                     return {
                         'statusCode': 400,
