@@ -7,7 +7,7 @@ from botocore.client import Config
 region_name = boto3.session.Session().region_name
 s3_client = boto3.client('s3', region_name=region_name)
 endpointUrl = s3_client.meta.endpoint_url
-s3_client = boto3.client('s3', endpoint_url=endpointUrl, region_name=region_name)
+s3_client = boto3.client('s3', endpoint_url=endpointUrl, region_name=region_name, config=boto3.session.Config(s3={'addressing_style': 'virtual'}, signature_version='s3v4'))
 s3_resource = boto3.resource('s3')
 
 def lambda_handler(event, context):
