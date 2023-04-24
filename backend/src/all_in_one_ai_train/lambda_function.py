@@ -360,7 +360,8 @@ def lambda_handler(event, context):
                 'embeddings-s3uri': embedding_s3uri,
                 'hypernetwork-s3uri': hypernetwork_s3uri,
                 'train-task': 'embedding',
-                'api-endpoint': ssmh.get_parameter('/all_in_one_ai/config/meta/api_endpoint')
+                'api-endpoint': ssmh.get_parameter('/all_in_one_ai/config/meta/api_endpoint'),
+                'region-name': boto3.Session.region_name
             }
 
             for key in default_hyperparameters.keys():
