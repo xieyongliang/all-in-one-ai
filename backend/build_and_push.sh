@@ -39,9 +39,9 @@ mkdir -p ${build_dir}/python/
 
 if [[ $region =~ ^cn.* ]]
 then
-    pip3 install elasticsearch==7.8.0 -t ${build_dir}/python/ -i https://opentuna.cn/pypi/web/simple
+    pip3 install elasticsearch -t ${build_dir}/python/ -i https://opentuna.cn/pypi/web/simple
 else
-    pip3 install elasticsearch==7.8.0 -t ${build_dir}/python/
+    pip3 install elasticsearch -t ${build_dir}/python/
 fi
 
 cp -R *.py ${build_dir}/python/
