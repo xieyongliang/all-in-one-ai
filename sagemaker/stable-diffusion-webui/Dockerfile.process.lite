@@ -1,9 +1,0 @@
-FROM python:3.7-slim-buster
-
-RUN pip3 install pandas torch safetensors pytorch_lightning
-ENV PYTHONUNBUFFERED=TRUE
-
-RUN mkdir -p /opt/ml/processing/input
-RUN mkdir -p /opt/ml/processing/output
-
-ENTRYPOINT ["python3"]

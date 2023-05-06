@@ -1,7 +1,17 @@
-FROM public.ecr.aws/l1s7l7p8/all-in-one-ai-stable-diffusion-webui:latest
+FROM python:3.10-slim
 
-COPY webui /opt/ml/code
+RUN apt update
+RUN apt install wget git -y
+RUN apt install libgl1-mesa-glx -y
+RUN pip install opencv-python-headless
+
+RUN mkdir -p /opt/ml/code
 COPY stable-diffusion-webui /opt/ml/code/
+COPY webui /opt/ml/code
 
 RUN git clone https://github.com/xieyongliang/sd_dreambooth_extension.git /opt/ml/code/extensions/sd_dreambooth_extension
 RUN git clone https://github.com/xieyongliang/sd-webui-controlnet.git /opt/ml/code/extensions/sd-webui-controlnet
+
+WORKDIR /opt/ml/code
+
+ENTRYPOINT ["python3", "webui"]

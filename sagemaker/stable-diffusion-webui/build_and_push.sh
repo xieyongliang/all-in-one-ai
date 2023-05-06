@@ -21,10 +21,8 @@ if [ "$?" -ne 0 ]; then
 fi
 
 # image_type: training, inference, process, webui
-# version: origin, lite
 function build_and_push_image() {
     local image_type="$1"
-    local version="$2"
 
     if [ "$image_type" == "webui" ]; then
 	image_name="all-in-one-ai-stable-diffusion-webui"
@@ -48,17 +46,17 @@ function build_and_push_image() {
 
     # Build the docker image locally with the image name and then push it to ECR
     # with the full name.
-    docker build -t "${image_name}" -f Dockerfile.${image_type}.${version} .
+    docker build -t "${image_name}" -f Dockerfile.${image_type} .
     docker tag "${image_name}" "${image_fullname}"
     docker push "${image_fullname}"
 }
 
 if [ -z "${image_type}" ]; then
     # Build all if no image type specified
-    build_and_push_image "webui" "origin"
-    build_and_push_image "training" "origin"
-    build_and_push_image "inference" "origin"
-    build_and_push_image "process" "origin"
+    build_and_push_image "webui"
+    build_and_push_image "training"
+    build_and_push_image "inference"
+    build_and_push_image "process"
 else
-    build_and_push_image "${image_type}" "origin"
+    build_and_push_image "${image_type}"
 fi
