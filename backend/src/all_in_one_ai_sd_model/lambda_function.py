@@ -145,6 +145,86 @@ def lambda_handler(event, context):
                         'body': json.dumps(items)
                     }
 
+                if module == 'embeddings':
+                    if 'embeddings_s3uri' in event['queryStringParameters']:
+                        embeddings_s3uri = event['queryStringParameters']['embeddings_s3uri']
+                    else:
+                        embeddings_s3uri = 's3://{0}/stable-diffusion-webui/embeddings/'.format(bucket)
+
+                    if 'username' in event['queryStringParameters']:
+                        username = event['queryStringParameters']['username']
+
+                        embeddings_s3uris = [
+                            embeddings_s3uri,
+                            f'{embeddings_s3uri}{username}/'
+                        ]
+                    else:
+                        embeddings_s3uris = [
+                            embeddings_s3uri
+                        ]
+
+                    items = []
+                    for embeddings_s3uri in embeddings_s3uris:
+                        bucket, key = get_bucket_and_key(embeddings_s3uri)
+
+                        response = s3_client.list_objects_v2(
+                            Bucket=bucket,
+                            Prefix=key,
+                            Delimiter='/'
+                        )
+
+                        print(response)
+                        if response['KeyCount'] > 0:
+                            if 'Contents' in response:
+                                for item in response['Contents']:
+                                    if item['Key'].endswith('.pt') or item['Key'].endswith('.bin') or item['Key'].endswith('.safetensors'):
+                                        items.append(item['Key'][item['Key'].rfind('/') + 1 : ])
+
+                    return {
+                        'statusCode': 200,
+                        'body': json.dumps(items)
+                    }
+
+                if module == 'hypernetwork':
+                    if 'hypernetwork_s3uri' in event['queryStringParameters']:
+                        hypernetwork_s3uri = event['queryStringParameters']['hypernetwork_s3uri']
+                    else:
+                        hypernetwork_s3uri = 's3://{0}/stable-diffusion-webui/hypernetwork/'.format(bucket)
+
+                    if 'username' in event['queryStringParameters']:
+                        username = event['queryStringParameters']['username']
+
+                        hypernetwork_s3uris = [
+                            hypernetwork_s3uri,
+                            f'{hypernetwork_s3uri}{username}/'
+                        ]
+                    else:
+                        hypernetwork_s3uris = [
+                            hypernetwork_s3uri
+                        ]
+
+                    items = []
+                    for hypernetwork_s3uri in hypernetwork_s3uris:
+                        bucket, key = get_bucket_and_key(hypernetwork_s3uri)
+
+                        response = s3_client.list_objects_v2(
+                            Bucket=bucket,
+                            Prefix=key,
+                            Delimiter='/'
+                        )
+
+                        print(response)
+                        if response['KeyCount'] > 0:
+                            if 'Contents' in response:
+                                for item in response['Contents']:
+                                    if item['Key'].endswith('.pt'):
+                                        items.append(item['Key'][item['Key'].rfind('/') + 1 : ])
+
+                    return {
+                        'statusCode': 200,
+                        'body': json.dumps(items)
+                    }
+
                 if module == 'dreambooth_params':
                     dreambooth_model = event['queryStringParameters']['dreambooth_model']
                     if 'dreambooth_s3uri' in event['queryStringParameters']:
