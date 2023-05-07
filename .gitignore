@@ -18,7 +18,6 @@ web/.env.local
 web/.env.development.local
 web/.env.test.local
 web/.env.production.local
-web/Dockerfile
 web/src/components/Data/config.json
 
 .DS_Store
