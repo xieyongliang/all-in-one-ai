@@ -7,7 +7,7 @@ RUN apt-get install --assume-yes apt-utils -y
 RUN apt update
 RUN apt install wget git -y
 RUN apt install libgl1-mesa-glx -y
-RUN apt install build-essential
+RUN apt install build-essential -y
 RUN pip install opencv-python-headless
 RUN pip install sagemaker-training
 RUN pip install triton

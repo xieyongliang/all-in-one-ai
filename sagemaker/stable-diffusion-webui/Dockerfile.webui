@@ -3,6 +3,7 @@ FROM python:3.10-slim
 RUN apt update
 RUN apt install wget git -y
 RUN apt install libgl1-mesa-glx -y
+RUN apt install build-essential -y
 RUN pip install opencv-python-headless
 
 RUN mkdir -p /opt/ml/code
