@@ -5,6 +5,8 @@ RUN apt install wget git -y
 RUN apt install libgl1-mesa-glx -y
 RUN apt install build-essential -y
 RUN apt install libglib2.0-0 -y
+RUN apt install pkg-config -y
+RUN apt install libcairo2-dev -y
 RUN pip install opencv-python-headless
 
 RUN mkdir -p /opt/ml/code
