@@ -34,8 +34,4 @@ yarn-error.log*
 
 .ipynb_checkpoints
 
-sagemaker/stable-diffusion-webui/Dockerfile.inference
-sagemaker/stable-diffusion-webui/Dockerfile.training
-sagemaker/stable-diffusion-webui/Dockerfile.webui
-sagemaker/stable-diffusion-webui/build_and_push.sh
 
