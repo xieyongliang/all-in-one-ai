@@ -13,7 +13,10 @@ RUN mkdir -p /opt/ml/code
 COPY stable-diffusion-webui /opt/ml/code/
 COPY webui /opt/ml/code
 
+ADD https://api.github.com/repos/xieyongliang/sd_dreambooth_extension/git/refs/heads/main dreambooth.version.json
 RUN git clone https://github.com/xieyongliang/sd_dreambooth_extension.git /opt/ml/code/extensions/sd_dreambooth_extension
+
+ADD https://github.com/xieyongliang/sd-webui-controlnet/git/refs/heads/main controlnet.version.json
 RUN git clone https://github.com/xieyongliang/sd-webui-controlnet.git /opt/ml/code/extensions/sd-webui-controlnet
 
 WORKDIR /opt/ml/code
