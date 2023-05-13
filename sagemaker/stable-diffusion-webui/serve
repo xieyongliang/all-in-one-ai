@@ -37,5 +37,8 @@ os.makedirs('/tmp/models/ControlNet', exist_ok=True)
 os.makedirs('/tmp/models/Lora', exist_ok=True)
 os.makedirs('/tmp/models/Vae', exist_ok=True)
 
+os.makedirs('/tmp/embeddings', exist_ok=True)
+os.makedirs('/tmp/hypernetwork', exist_ok=True)
+
 ret = subprocess.run(cmd, shell=True)
 print(ret)
