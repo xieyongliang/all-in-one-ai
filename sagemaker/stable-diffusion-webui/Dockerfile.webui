@@ -8,6 +8,8 @@ RUN apt install libglib2.0-0 -y
 RUN apt install pkg-config -y
 RUN apt install libcairo2-dev -y
 RUN pip install opencv-python-headless
+RUN pip install image-reward
+RUN pip install yappi
 
 RUN mkdir -p /opt/ml/code
 COPY stable-diffusion-webui /opt/ml/code/
