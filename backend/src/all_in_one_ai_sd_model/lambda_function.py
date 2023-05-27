@@ -17,6 +17,9 @@ ddbh_cn = helper.ddb_helper({'table_name': cn_model_table})
 lora_model_table = 'all_in_one_ai_lora_model'
 ddbh_lora = helper.ddb_helper({'table_name': lora_model_table})
 
+vae_model_table = 'all_in_one_ai_vae_model'
+ddbh_vae = helper.ddb_helper({'table_name': vae_model_table})
+
 s3_client = boto3.client('s3', config=Config(signature_version='s3v4'))
 
 def lambda_handler(event, context):
@@ -63,6 +66,10 @@ def lambda_handler(event, context):
                     items = request['items']
                     for item in items:
                         ddbh_lora.put_item(item)
+                elif module == 'VAE':
+                    items = request['items']
+                    for item in items:
+                        ddbh_vae.put_item(item)
                 else:
                     return {
                         'statusCode': 400,
@@ -324,6 +331,8 @@ def lambda_handler(event, context):
                 elif module == 'ControlNet':
                     items = ddbh_cn.scan(FilterExpression=Key('endpoint_name').eq(endpoint_name))
                 elif module == 'Lora':
+                    items = ddbh_lora.scan(FilterExpression=Key('endpoint_name').eq(endpoint_name))
+                elif module == 'VAE':
                     items = ddbh_lora.scan(FilterExpression=Key('endpoint_name').eq(endpoint_name))
                 else:
                     return {
