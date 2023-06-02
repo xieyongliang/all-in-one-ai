@@ -6,7 +6,7 @@ set -e
 # This script shows how to build the Docker image and push it to ECR to be ready for use
 # by SageMaker.
 
-if [ "$#" -lt 1 ] || [ "$#" -gt 2]; then
+if [ "$#" -lt 1 ] || [ "$#" -gt 2 ]; then
     echo "usage: $0 [region_name] [image_type]"
     exit 1
 fi
