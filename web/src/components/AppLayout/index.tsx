@@ -139,8 +139,8 @@ const AppLayout: FunctionComponent<IProps> = ( {
     useEffect(() => {
         var items = []
             ALGORITHMS.forEach((item) => {
-                if(algorithmsConfig.algorithm != '') {
-                    if(item.value == algorithmsConfig.algorithm)
+                if(algorithmsConfig.algorithm !== '') {
+                    if(item.value === algorithmsConfig.algorithm)
                         if(item.type === 'single')
                             items.push({text: item.label, type: SideNavigationItemType.LINK, href: `/algorithms/${item.value}`})
                 }

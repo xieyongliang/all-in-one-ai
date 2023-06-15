@@ -22,8 +22,6 @@ const EndpointASGForm: FunctionComponent<IProps> = (props) => {
 
     const { t } = useTranslation();
 
-    const history = useHistory();
-
     useEffect(() => {
         axios.get(`/endpoint/${props.endpointName}`, {params : {action: 'asg'}})
             .then((response) => {

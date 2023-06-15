@@ -36,8 +36,8 @@ const IndustrialModelForm: FunctionComponent<IProps> = (props) => {
     useEffect(() => {
         var algorithmOptions = []
         ALGORITHMS.forEach((item)=> {
-            if(algorithmsConfig.algorithm != '') {
-                if(item.value == algorithmsConfig.algorithm)
+            if(algorithmsConfig.algorithm !== '') {
+                if(item.value === algorithmsConfig.algorithm)
                     algorithmOptions.push({label: item.label, value: item.value})
             }
             else
