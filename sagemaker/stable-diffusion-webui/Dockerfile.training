@@ -1,25 +1,37 @@
-FROM ghcr.io/allenai/pytorch:1.13.1-cuda11.7-python3.10-v1.2.2
+FROM nvidia/cuda:11.8.0-cudnn8-devel-ubuntu20.04
 
+RUN apt-get update && apt-get upgrade -y
 ENV DEBIAN_FRONTEND noninteractive
-RUN apt-get update
 RUN apt-get install --assume-yes apt-utils -y
+RUN apt-get install software-properties-common -y
+RUN add-apt-repository ppa:deadsnakes/ppa -y
+RUN apt-get install python3.10 -y
+RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.10 1
+RUN apt-get install curl -y
+RUN curl -sS https://bootstrap.pypa.io/get-pip.py | python3
 
-RUN apt update
-RUN apt install wget git -y
-RUN apt install libgl1-mesa-glx -y
-RUN apt install build-essential -y
-RUN pip install opencv-python-headless
+RUN pip install torch==2.0.1 torchvision==0.15.2 --extra-index-url https://download.pytorch.org/whl/cu118
+
+RUN apt-get install python3.10-dev -y
+RUN apt-get install python3-opencv -y
+RUN apt-get install wget git -y
+RUN apt-get install build-essential -y
+RUN apt-get install pkg-config -y
+RUN apt-get install libcairo2-dev -y
+
 RUN pip install sagemaker-training
-RUN pip install triton
-RUN conda install xformers -c xformers -y
+RUN pip install boto3 huggingface_hub triton
+ADD https://repo.anaconda.com/archive/Anaconda3-2023.03-1-Linux-x86_64.sh /tmp/Anaconda3-2023.03-1-Linux-x86_64.sh
+RUN chmod +x /tmp/Anaconda3-2023.03-1-Linux-x86_64.sh && /tmp/Anaconda3-2023.03-1-Linux-x86_64.sh -b -p /usr/bin/anaconda3
+RUN /usr/bin/anaconda3/bin/conda install xformers -c xformers -y
 
 RUN mkdir -p /opt/ml/code
 
 COPY train.py /opt/ml/code
 COPY stable-diffusion-webui /opt/ml/code/
 
-ADD https://api.github.com/repos/xieyongliang/sd_dreambooth_extension/git/refs/heads/main dreambooth.version.json
-RUN git clone https://github.com/xieyongliang/sd_dreambooth_extension.git /opt/ml/code/extensions/sd_dreambooth_extension
+ADD https://api.github.com/repos/xieyongliang/sd_dreambooth_extension/git/refs/heads/develop dreambooth.version.json
+RUN git clone https://github.com/xieyongliang/sd_dreambooth_extension.git /opt/ml/code/extensions/sd_dreambooth_extension -b develop
 
 ENV SAGEMAKER_PROGRAM train.py
 

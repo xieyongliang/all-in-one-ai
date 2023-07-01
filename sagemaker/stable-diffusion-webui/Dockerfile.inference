@@ -1,14 +1,27 @@
-FROM ghcr.io/allenai/pytorch:1.13.1-cuda11.7-python3.10-v1.2.2
+FROM nvidia/cuda:11.8.0-cudnn8-devel-ubuntu20.04
 
-RUN apt update
-RUN apt install wget git -y
-RUN apt install libgl1-mesa-glx -y
-RUN apt install build-essential -y
-RUN apt install pkg-config -y
-RUN apt install libcairo2-dev -y
-RUN pip install opencv-python-headless
+RUN apt-get update && apt-get upgrade -y
+ENV DEBIAN_FRONTEND noninteractive
+RUN apt-get install --assume-yes apt-utils -y
+RUN apt-get install software-properties-common -y
+RUN add-apt-repository ppa:deadsnakes/ppa -y
+RUN apt-get install python3.10 -y
+RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.10 1
+RUN apt-get install curl -y
+RUN curl -sS https://bootstrap.pypa.io/get-pip.py | python3
+
+RUN pip install torch==2.0.1 torchvision==0.15.2 --extra-index-url https://download.pytorch.org/whl/cu118
+
+RUN apt-get install python3-opencv -y
+RUN apt-get install wget git -y
+RUN apt-get install build-essential -y
+RUN apt-get install pkg-config -y
+RUN apt-get install libcairo2-dev -y
 RUN pip install boto3 huggingface_hub triton deepspeed accelerate
-RUN conda install xformers -c xformers -y
+ADD https://repo.anaconda.com/archive/Anaconda3-2023.03-1-Linux-x86_64.sh /tmp/Anaconda3-2023.03-1-Linux-x86_64.sh
+RUN chmod +x /tmp/Anaconda3-2023.03-1-Linux-x86_64.sh && /tmp/Anaconda3-2023.03-1-Linux-x86_64.sh -b -p /usr/bin/anaconda3
+RUN /usr/bin/anaconda3/bin/conda install xformers -c xformers -y
+
 RUN mkdir -p /root/.cache/huggingface/accelerate
 COPY default_config.yaml /root/.cache/huggingface/accelerate/
 
@@ -17,10 +30,15 @@ RUN mkdir -p /opt/ml/code
 COPY serve /opt/ml/code
 COPY stable-diffusion-webui /opt/ml/code/
 
-ADD https://api.github.com/repos/xieyongliang/sd-webui-controlnet/git/refs/heads/main controlnet.version.json
-RUN git clone https://github.com/xieyongliang/sd-webui-controlnet.git /opt/ml/code/extensions/sd-webui-controlnet
+ADD https://api.github.com/repos/xieyongliang/sd-webui-controlnet/git/refs/heads/develop controlnet.version.json
+RUN git clone https://github.com/xieyongliang/sd-webui-controlnet.git /opt/ml/code/extensions/sd-webui-controlnet -b develop
 
 ADD https://api.github.com/repos/xiehust/stable-diffusion-webui-images-browser/git/refs/heads/main images.version.json
 RUN git clone https://github.com/xiehust/stable-diffusion-webui-images-browser.git /opt/ml/code/extensions/stable-diffusion-webui-images-browser
 
+ADD https://api.github.com/repos/KohakuBlueleaf/a1111-sd-webui-locon/git/refs/heads/main locon.version.json
+RUN git clone https://github.com/KohakuBlueleaf/a1111-sd-webui-locon.git /opt/ml/code/extensions/a1111-sd-webui-locon
+
 WORKDIR /opt/ml/code
+
+ENTRYPOINT ["python3", "serve"]

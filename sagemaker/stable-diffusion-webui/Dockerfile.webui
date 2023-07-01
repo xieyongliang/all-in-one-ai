@@ -13,14 +13,17 @@ RUN mkdir -p /opt/ml/code
 COPY stable-diffusion-webui /opt/ml/code/
 COPY webui /opt/ml/code
 
-ADD https://api.github.com/repos/xieyongliang/sd_dreambooth_extension/git/refs/heads/main dreambooth.version.json
-RUN git clone https://github.com/xieyongliang/sd_dreambooth_extension.git /opt/ml/code/extensions/sd_dreambooth_extension
+ADD https://api.github.com/repos/xieyongliang/sd_dreambooth_extension/git/refs/heads/develop dreambooth.version.json
+RUN git clone https://github.com/xieyongliang/sd_dreambooth_extension.git /opt/ml/code/extensions/sd_dreambooth_extension -b develop
 
-ADD https://api.github.com/repos/xieyongliang/sd-webui-controlnet/git/refs/heads/main controlnet.version.json
-RUN git clone https://github.com/xieyongliang/sd-webui-controlnet.git /opt/ml/code/extensions/sd-webui-controlnet
+ADD https://api.github.com/repos/xieyongliang/sd-webui-controlnet/git/refs/heads/develop controlnet.version.json
+RUN git clone https://github.com/xieyongliang/sd-webui-controlnet.git /opt/ml/code/extensions/sd-webui-controlnet -b develop
 
 ADD https://api.github.com/repos/xiehust/stable-diffusion-webui-images-browser/git/refs/heads/main images.version.json
 RUN git clone https://github.com/xiehust/stable-diffusion-webui-images-browser.git /opt/ml/code/extensions/stable-diffusion-webui-images-browser
+
+ADD https://api.github.com/repos/KohakuBlueleaf/a1111-sd-webui-locon/git/refs/heads/main locon.version.json
+RUN git clone https://github.com/KohakuBlueleaf/a1111-sd-webui-locon.git /opt/ml/code/extensions/a1111-sd-webui-locon
 
 WORKDIR /opt/ml/code
 
