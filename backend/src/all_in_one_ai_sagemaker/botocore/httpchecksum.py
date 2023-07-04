@@ -25,7 +25,11 @@ from binascii import crc32
 from hashlib import sha1, sha256
 
 from botocore.compat import HAS_CRT
-from botocore.exceptions import AwsChunkedWrapperError, FlexibleChecksumError
+from botocore.exceptions import (
+    AwsChunkedWrapperError,
+    FlexibleChecksumError,
+    MissingDependencyException,
+)
 from botocore.response import StreamingBody
 from botocore.utils import (
     conditionally_calculate_md5,
@@ -251,6 +255,14 @@ def resolve_request_checksum_algorithm(
 
         algorithm_name = params[algorithm_member].lower()
         if algorithm_name not in supported_algorithms:
+            if not HAS_CRT and algorithm_name in _CRT_CHECKSUM_ALGORITHMS:
+                raise MissingDependencyException(
+                    msg=(
+                        f"Using {algorithm_name.upper()} requires an "
+                        "additional dependency. You will need to pip install "
+                        "botocore[crt] before proceeding."
+                    )
+                )
             raise FlexibleChecksumError(
                 error_msg="Unsupported checksum algorithm: %s" % algorithm_name
             )
@@ -331,7 +343,12 @@ def _apply_request_trailer_checksum(request):
         return
 
     headers["Transfer-Encoding"] = "chunked"
-    headers["Content-Encoding"] = "aws-chunked"
+    if "Content-Encoding" in headers:
+        # We need to preserve the existing content encoding and add
+        # aws-chunked as a new content encoding.
+        headers["Content-Encoding"] += ",aws-chunked"
+    else:
+        headers["Content-Encoding"] = "aws-chunked"
     headers["X-Amz-Trailer"] = location_name
 
     content_length = determine_content_length(body)
@@ -450,12 +467,17 @@ _CHECKSUM_CLS = {
     "sha1": Sha1Checksum,
     "sha256": Sha256Checksum,
 }
-
+_CRT_CHECKSUM_ALGORITHMS = ["crc32", "crc32c"]
 if HAS_CRT:
     # Use CRT checksum implementations if available
-    _CHECKSUM_CLS.update(
-        {"crc32": CrtCrc32Checksum, "crc32c": CrtCrc32cChecksum}
+    _CRT_CHECKSUM_CLS = {
+        "crc32": CrtCrc32Checksum,
+        "crc32c": CrtCrc32cChecksum,
+    }
+    _CHECKSUM_CLS.update(_CRT_CHECKSUM_CLS)
+    # Validate this list isn't out of sync with _CRT_CHECKSUM_CLS keys
+    assert all(
+        name in _CRT_CHECKSUM_ALGORITHMS for name in _CRT_CHECKSUM_CLS.keys()
     )
-
 _SUPPORTED_CHECKSUM_ALGORITHMS = list(_CHECKSUM_CLS.keys())
 _ALGORITHMS_PRIORITY_LIST = ['crc32c', 'crc32', 'sha1', 'sha256']

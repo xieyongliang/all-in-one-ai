@@ -224,7 +224,11 @@ class ProfileProviderBuilder:
             profile_name=profile_name,
             cache=self._cache,
             token_cache=self._sso_token_cache,
-            token_provider=SSOTokenProvider(self._session),
+            token_provider=SSOTokenProvider(
+                self._session,
+                cache=self._sso_token_cache,
+                profile_name=profile_name,
+            ),
         )
 
 
@@ -956,7 +960,6 @@ class CredentialProvider:
 
 
 class ProcessProvider(CredentialProvider):
-
     METHOD = 'custom-process'
 
     def __init__(self, profile_name, load_config, popen=subprocess.Popen):

@@ -16,8 +16,10 @@ from sagemaker.model_card.model_card import (  # noqa: F401 # pylint: disable=un
     Environment,
     ModelOverview,
     IntendedUses,
+    BusinessDetails,
     ObjectiveFunction,
     TrainingMetric,
+    HyperParameter,
     Metric,
     Function,
     TrainingJobDetails,
@@ -26,6 +28,7 @@ from sagemaker.model_card.model_card import (  # noqa: F401 # pylint: disable=un
     EvaluationJob,
     AdditionalInformation,
     ModelCard,
+    ModelPackage,
 )
 
 from sagemaker.model_card.schema_constraints import (  # noqa: F401 # pylint: disable=unused-import

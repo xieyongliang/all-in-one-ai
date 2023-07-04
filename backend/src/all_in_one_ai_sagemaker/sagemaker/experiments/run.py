@@ -32,7 +32,7 @@ from sagemaker.experiments._helper import (
 )
 from sagemaker.experiments._environment import _RunEnvironment
 from sagemaker.experiments._run_context import _RunContext
-from sagemaker.experiments.experiment import _Experiment
+from sagemaker.experiments.experiment import Experiment
 from sagemaker.experiments._metrics import _MetricsManager
 from sagemaker.experiments.trial import _Trial
 from sagemaker.experiments.trial_component import _TrialComponent
@@ -120,19 +120,18 @@ class Run(object):
                 estimator.fit(job_name="my-job")  # Create a training job
 
         In order to reuse an existing run to log extra data, ``load_run`` is recommended.
+        For example, instead of the ``Run`` constructor, the ``load_run`` is recommended to use
+        in a job script to load the existing run created before the job launch.
+        Otherwise, a new run may be created each time you launch a job.
+
         The code snippet below displays how to load the run initialized above
         in a custom training job script, where no ``run_name`` or ``experiment_name``
         is presented as they are automatically retrieved from the experiment config
         in the job environment.
 
-        Note:
-            Instead of the ``Run`` constructor, the ``load_run`` is recommended to use
-            in a job script to load the existing run created before the job launch.
-            Otherwise, a new run may be created each time you launch a job.
-
         .. code:: python
 
-            with load_run() as run:
+            with load_run(sagemaker_session=sagemaker_session) as run:
                 run.log_metric(...)
                 ...
 
@@ -167,7 +166,7 @@ class Run(object):
         )
         self.run_group_name = Run._generate_trial_name(self.experiment_name)
 
-        self._experiment = _Experiment._load_or_create(
+        self._experiment = Experiment._load_or_create(
             experiment_name=self.experiment_name,
             display_name=experiment_display_name,
             tags=tags,
@@ -189,9 +188,7 @@ class Run(object):
         )
         if is_existed:
             logger.info(
-                "The run (%s) under experiment (%s) already exists. Loading it. "
-                "Note: sagemaker.experiments.load_run is recommended to use when "
-                "the desired run already exists.",
+                "The run (%s) under experiment (%s) already exists. Loading it.",
                 self.run_name,
                 self.experiment_name,
             )
@@ -634,7 +631,10 @@ class Run(object):
         Returns:
             str: The name of the Run object supplied by a user.
         """
-        return trial_component_name.replace("{}{}".format(experiment_name, DELIMITER), "", 1)
+        # TODO: we should revert the lower casting once backend fix reaches prod
+        return trial_component_name.replace(
+            "{}{}".format(experiment_name.lower(), DELIMITER), "", 1
+        )
 
     @staticmethod
     def _append_run_tc_label_to_tags(tags: Optional[List[Dict[str, str]]] = None) -> list:
@@ -648,7 +648,8 @@ class Run(object):
         """
         if not tags:
             tags = []
-        tags.append(RUN_TC_TAG)
+        if RUN_TC_TAG not in tags:
+            tags.append(RUN_TC_TAG)
         return tags
 
     def __enter__(self):
@@ -664,6 +665,10 @@ class Run(object):
             if self._inside_load_context:
                 raise RuntimeError(nested_with_err_msg_template.format("load_run"))
             self._inside_load_context = True
+            if not self._inside_init_context:
+                # Add to run context only if the load_run is called separately
+                # without under a Run init context
+                _RunContext.add_run_object(self)
         else:
             if _RunContext.get_current_run():
                 raise RuntimeError(nested_with_err_msg_template.format("Run"))
@@ -692,6 +697,8 @@ class Run(object):
         if self._in_load:
             self._inside_load_context = False
             self._in_load = False
+            if not self._inside_init_context:
+                _RunContext.drop_current_run()
         else:
             self._inside_init_context = False
             _RunContext.drop_current_run()
@@ -708,6 +715,14 @@ class Run(object):
             )
 
         self.close()
+
+    def __getstate__(self):
+        """Overriding this method to prevent instance of Run from being pickled.
+
+        Raise:
+            NotImplementedError: If attempting to pickle this instance.
+        """
+        raise NotImplementedError("Instance of Run type is not allowed to be pickled.")
 
 
 def load_run(
@@ -781,36 +796,38 @@ def load_run(
     Returns:
         Run: The loaded Run object.
     """
-    sagemaker_session = sagemaker_session or _utils.default_session()
     environment = _RunEnvironment.load()
 
     verify_load_input_names(run_name=run_name, experiment_name=experiment_name)
 
-    if run_name or environment:
-        if run_name:
-            logger.warning(
-                "run_name is explicitly supplied in load_run, "
-                "which will be prioritized to load the Run object. "
-                "In other words, the run name in the experiment config, fetched from the "
-                "job environment or the current run context, will be ignored."
-            )
-        else:
-            exp_config = get_tc_and_exp_config_from_job_env(
-                environment=environment, sagemaker_session=sagemaker_session
-            )
-            run_name = Run._extract_run_name_from_tc_name(
-                trial_component_name=exp_config[RUN_NAME],
-                experiment_name=exp_config[EXPERIMENT_NAME],
-            )
-            experiment_name = exp_config[EXPERIMENT_NAME]
-
+    if run_name:
+        logger.warning(
+            "run_name is explicitly supplied in load_run, "
+            "which will be prioritized to load the Run object. "
+            "In other words, the run name in the experiment config, fetched from the "
+            "job environment or the current run context, will be ignored."
+        )
         run_instance = Run(
             experiment_name=experiment_name,
             run_name=run_name,
-            sagemaker_session=sagemaker_session,
+            sagemaker_session=sagemaker_session or _utils.default_session(),
         )
     elif _RunContext.get_current_run():
         run_instance = _RunContext.get_current_run()
+    elif environment:
+        exp_config = get_tc_and_exp_config_from_job_env(
+            environment=environment, sagemaker_session=sagemaker_session or _utils.default_session()
+        )
+        run_name = Run._extract_run_name_from_tc_name(
+            trial_component_name=exp_config[RUN_NAME],
+            experiment_name=exp_config[EXPERIMENT_NAME],
+        )
+        experiment_name = exp_config[EXPERIMENT_NAME]
+        run_instance = Run(
+            experiment_name=experiment_name,
+            run_name=run_name,
+            sagemaker_session=sagemaker_session or _utils.default_session(),
+        )
     else:
         raise RuntimeError(
             "Failed to load a Run object. "
@@ -853,6 +870,8 @@ def list_runs(
     Returns:
         list: A list of ``Run`` objects.
     """
+
+    # all trial components retrieved by default
     tc_summaries = _TrialComponent.list(
         experiment_name=experiment_name,
         created_before=created_before,

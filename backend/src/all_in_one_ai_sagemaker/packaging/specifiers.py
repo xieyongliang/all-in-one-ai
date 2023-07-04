@@ -11,12 +11,23 @@
 import abc
 import itertools
 import re
-from typing import Callable, Iterable, Iterator, List, Optional, Set, Tuple, Union
+from typing import (
+    Callable,
+    Iterable,
+    Iterator,
+    List,
+    Optional,
+    Set,
+    Tuple,
+    TypeVar,
+    Union,
+)
 
 from .utils import canonicalize_version
 from .version import Version
 
 UnparsedVersion = Union[Version, str]
+UnparsedVersionVar = TypeVar("UnparsedVersionVar", bound=UnparsedVersion)
 CallableOperator = Callable[[Version, str], bool]
 
 
@@ -85,8 +96,8 @@ class BaseSpecifier(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def filter(
-        self, iterable: Iterable[UnparsedVersion], prereleases: Optional[bool] = None
-    ) -> Iterator[UnparsedVersion]:
+        self, iterable: Iterable[UnparsedVersionVar], prereleases: Optional[bool] = None
+    ) -> Iterator[UnparsedVersionVar]:
         """
         Takes an iterable of items and filters them so that only items which
         are contained within this specifier are allowed in it.
@@ -140,7 +151,7 @@ class Specifier(BaseSpecifier):
                     |
                     (?:                                  # pre release
                         [-_\.]?
-                        (a|b|c|rc|alpha|beta|pre|preview)
+                        (alpha|beta|preview|pre|a|b|c|rc)
                         [-_\.]?
                         [0-9]*
                     )?
@@ -163,7 +174,7 @@ class Specifier(BaseSpecifier):
                 [0-9]+(?:\.[0-9]+)+   # release  (We have a + instead of a *)
                 (?:                   # pre release
                     [-_\.]?
-                    (a|b|c|rc|alpha|beta|pre|preview)
+                    (alpha|beta|preview|pre|a|b|c|rc)
                     [-_\.]?
                     [0-9]*
                 )?
@@ -188,7 +199,7 @@ class Specifier(BaseSpecifier):
                 [0-9]+(?:\.[0-9]+)*   # release
                 (?:                   # pre release
                     [-_\.]?
-                    (a|b|c|rc|alpha|beta|pre|preview)
+                    (alpha|beta|preview|pre|a|b|c|rc)
                     [-_\.]?
                     [0-9]*
                 )?
@@ -241,7 +252,8 @@ class Specifier(BaseSpecifier):
         # Store whether or not this Specifier should accept prereleases
         self._prereleases = prereleases
 
-    @property
+    # https://github.com/python/mypy/pull/13475#pullrequestreview-1079784515
+    @property  # type: ignore[override]
     def prereleases(self) -> bool:
         # If there is an explicit prereleases set for this, then we'll just
         # blindly use that.
@@ -387,7 +399,9 @@ class Specifier(BaseSpecifier):
         # We need special logic to handle prefix matching
         if spec.endswith(".*"):
             # In the case of prefix matching we want to ignore local segment.
-            normalized_prospective = canonicalize_version(prospective.public)
+            normalized_prospective = canonicalize_version(
+                prospective.public, strip_trailing_zero=False
+            )
             # Get the normalized version string ignoring the trailing .*
             normalized_spec = canonicalize_version(spec[:-2], strip_trailing_zero=False)
             # Split the spec out by dots, and pretend that there is an implicit
@@ -565,8 +579,8 @@ class Specifier(BaseSpecifier):
         return operator_callable(normalized_item, self.version)
 
     def filter(
-        self, iterable: Iterable[UnparsedVersion], prereleases: Optional[bool] = None
-    ) -> Iterator[UnparsedVersion]:
+        self, iterable: Iterable[UnparsedVersionVar], prereleases: Optional[bool] = None
+    ) -> Iterator[UnparsedVersionVar]:
         """Filter items in the given iterable, that match the specifier.
 
         :param iterable:
@@ -606,7 +620,7 @@ class Specifier(BaseSpecifier):
 
             if self.contains(parsed_version, **kw):
                 # If our version is a prerelease, and we were not set to allow
-                # prereleases, then we'll store it for later incase nothing
+                # prereleases, then we'll store it for later in case nothing
                 # else matches this specifier.
                 if parsed_version.is_prerelease and not (
                     prereleases or self.prereleases
@@ -915,8 +929,8 @@ class SpecifierSet(BaseSpecifier):
         return all(s.contains(item, prereleases=prereleases) for s in self._specs)
 
     def filter(
-        self, iterable: Iterable[UnparsedVersion], prereleases: Optional[bool] = None
-    ) -> Iterator[UnparsedVersion]:
+        self, iterable: Iterable[UnparsedVersionVar], prereleases: Optional[bool] = None
+    ) -> Iterator[UnparsedVersionVar]:
         """Filter items in the given iterable, that match the specifiers in this set.
 
         :param iterable:
@@ -972,8 +986,8 @@ class SpecifierSet(BaseSpecifier):
         # which will filter out any pre-releases, unless there are no final
         # releases.
         else:
-            filtered: List[UnparsedVersion] = []
-            found_prereleases: List[UnparsedVersion] = []
+            filtered: List[UnparsedVersionVar] = []
+            found_prereleases: List[UnparsedVersionVar] = []
 
             for item in iterable:
                 parsed_version = _coerce_version(item)

@@ -127,7 +127,8 @@ def document_custom_method(section, method_name, method):
 
     :param method: The handle to the method being documented
     """
-    document_custom_signature(section, method_name, method)
+    full_method_name = f"{section.context.get('qualifier', '')}{method_name}"
+    document_custom_signature(section, full_method_name, method)
     method_intro_section = section.add_new_section('method-intro')
     method_intro_section.writeln('')
     doc_string = inspect.getdoc(method)
@@ -217,7 +218,7 @@ def document_model_driven_method(
         method_intro_section.writeln('')
 
     # Add the example section.
-    example_section = section.add_new_section('example')
+    example_section = section.add_new_section('request-example')
     example_section.style.new_paragraph()
     example_section.style.bold('Request Syntax')
 
@@ -287,7 +288,9 @@ def document_model_driven_method(
             event_section.style.new_line()
 
         # Add an example return value
-        return_example_section = return_section.add_new_section('example')
+        return_example_section = return_section.add_new_section(
+            'response-example'
+        )
         return_example_section.style.new_line()
         return_example_section.style.bold('Response Syntax')
         return_example_section.style.new_paragraph()

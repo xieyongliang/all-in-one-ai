@@ -131,7 +131,7 @@ class TensorFlowModel(sagemaker.model.FrameworkModel):
     def __init__(
         self,
         model_data: Union[str, PipelineVariable],
-        role: str,
+        role: str = None,
         entry_point: Optional[str] = None,
         image_uri: Optional[Union[str, PipelineVariable]] = None,
         framework_version: Optional[str] = None,
@@ -184,6 +184,16 @@ class TensorFlowModel(sagemaker.model.FrameworkModel):
                 "Either specify framework_version or specify image_uri."
             )
         self.framework_version = framework_version
+
+        # Inference framework version is being introduced to accomodate the mismatch between
+        # tensorflow and tensorflow serving releases, wherein the TF and TFS might have different
+        # patch versions, but end up hosting the model of same TF version. For eg., the upstream
+        # TFS-2.12.0 release was a bad release and hence a new TFS-2.12.1 release was made to host
+        # models from TF-2.12.0.
+        training_inference_version_mismatch_dict = {"2.12.0": "2.12.1"}
+        self.inference_framework_version = training_inference_version_mismatch_dict.get(
+            framework_version, framework_version
+        )
 
         super(TensorFlowModel, self).__init__(
             model_data=model_data,
@@ -317,12 +327,14 @@ class TensorFlowModel(sagemaker.model.FrameworkModel):
         kms_key=None,
         wait=True,
         data_capture_config=None,
-        update_endpoint=None,
         async_inference_config=None,
         serverless_inference_config=None,
         volume_size=None,
         model_data_download_timeout=None,
         container_startup_health_check_timeout=None,
+        inference_recommendation_id=None,
+        explainer_config=None,
+        **kwargs,
     ):
         """Deploy a Tensorflow ``Model`` to a SageMaker ``Endpoint``."""
 
@@ -346,7 +358,9 @@ class TensorFlowModel(sagemaker.model.FrameworkModel):
             volume_size=volume_size,
             model_data_download_timeout=model_data_download_timeout,
             container_startup_health_check_timeout=container_startup_health_check_timeout,
-            update_endpoint=update_endpoint,
+            inference_recommendation_id=inference_recommendation_id,
+            explainer_config=explainer_config,
+            **kwargs,
         )
 
     def _eia_supported(self):
@@ -383,8 +397,14 @@ class TensorFlowModel(sagemaker.model.FrameworkModel):
             instance_type, accelerator_type, serverless_inference_config=serverless_inference_config
         )
         env = self._get_container_env()
-        key_prefix = sagemaker.fw_utils.model_code_key_prefix(self.key_prefix, self.name, image_uri)
-        bucket = self.bucket or self.sagemaker_session.default_bucket()
+
+        bucket, key_prefix = s3.determine_bucket_and_prefix(
+            bucket=self.bucket,
+            key_prefix=sagemaker.fw_utils.model_code_key_prefix(
+                self.key_prefix, self.name, image_uri
+            ),
+            sagemaker_session=self.sagemaker_session,
+        )
 
         if self.entry_point and not is_pipeline_variable(self.model_data):
             model_data = s3.s3_path_join("s3://", bucket, key_prefix, "model.tar.gz")
@@ -453,7 +473,7 @@ class TensorFlowModel(sagemaker.model.FrameworkModel):
         return image_uris.retrieve(
             self._framework_name,
             region_name or self.sagemaker_session.boto_region_name,
-            version=self.framework_version,
+            version=self.inference_framework_version,
             instance_type=instance_type,
             accelerator_type=accelerator_type,
             image_scope="inference",

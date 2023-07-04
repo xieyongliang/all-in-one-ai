@@ -31,6 +31,19 @@ from six.moves.urllib.parse import urlparse
 from botocore.exceptions import ClientError
 
 from sagemaker import image_uris, s3
+from sagemaker.config.config_schema import (
+    SAGEMAKER,
+    MONITORING_SCHEDULE,
+    TAGS,
+    MONITORING_JOB_SUBNETS_PATH,
+    MONITORING_JOB_ENABLE_NETWORK_ISOLATION_PATH,
+    MONITORING_JOB_ENVIRONMENT_PATH,
+    MONITORING_SCHEDULE_INTER_CONTAINER_ENCRYPTION_PATH,
+    MONITORING_JOB_VOLUME_KMS_KEY_ID_PATH,
+    MONITORING_JOB_SECURITY_GROUP_IDS_PATH,
+    MONITORING_JOB_OUTPUT_KMS_KEY_ID_PATH,
+    MONITORING_JOB_ROLE_ARN_PATH,
+)
 from sagemaker.exceptions import UnexpectedStatusException
 from sagemaker.model_monitor.monitoring_files import Constraints, ConstraintViolations, Statistics
 from sagemaker.model_monitor.monitoring_alert import (
@@ -39,11 +52,17 @@ from sagemaker.model_monitor.monitoring_alert import (
     MonitoringAlertActions,
     ModelDashboardIndicatorAction,
 )
+from sagemaker.model_monitor.data_quality_monitoring_config import DataQualityMonitoringConfig
 from sagemaker.model_monitor.dataset_format import MonitoringDatasetFormat
 from sagemaker.network import NetworkConfig
 from sagemaker.processing import Processor, ProcessingInput, ProcessingJob, ProcessingOutput
 from sagemaker.session import Session
-from sagemaker.utils import name_from_base, retries
+from sagemaker.utils import (
+    name_from_base,
+    retries,
+    resolve_value_from_config,
+    resolve_class_attribute_from_config,
+)
 
 DEFAULT_REPOSITORY_NAME = "sagemaker-model-monitor-analyzer"
 
@@ -80,6 +99,7 @@ _GROUND_TRUTH_ATTRIBUTE_ENV_NAME = "ground_truth_attribute"
 _INFERENCE_ATTRIBUTE_ENV_NAME = "inference_attribute"
 _PROBABILITY_ATTRIBUTE_ENV_NAME = "probability_attribute"
 _PROBABILITY_THRESHOLD_ATTRIBUTE_ENV_NAME = "probability_threshold_attribute"
+_CATEGORICAL_DRIFT_METHOD_ENV_NAME = "categorical_drift_method"
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -96,8 +116,8 @@ class ModelMonitor(object):
 
     def __init__(
         self,
-        role,
-        image_uri,
+        role=None,
+        image_uri=None,
         instance_count=1,
         instance_type="ml.m5.xlarge",
         entrypoint=None,
@@ -146,20 +166,15 @@ class ModelMonitor(object):
                 inter-container traffic, security group IDs, and subnets.
 
         """
-        self.role = role
         self.image_uri = image_uri
         self.instance_count = instance_count
         self.instance_type = instance_type
         self.entrypoint = entrypoint
         self.volume_size_in_gb = volume_size_in_gb
-        self.volume_kms_key = volume_kms_key
-        self.output_kms_key = output_kms_key
         self.max_runtime_in_seconds = max_runtime_in_seconds
         self.base_job_name = base_job_name
         self.sagemaker_session = sagemaker_session or Session()
-        self.env = env
         self.tags = tags
-        self.network_config = network_config
 
         self.baselining_jobs = []
         self.latest_baselining_job = None
@@ -167,6 +182,59 @@ class ModelMonitor(object):
         self.latest_baselining_job_name = None
         self.monitoring_schedule_name = None
         self.job_definition_name = None
+        self.role = resolve_value_from_config(
+            role, MONITORING_JOB_ROLE_ARN_PATH, sagemaker_session=self.sagemaker_session
+        )
+        if not self.role:
+            # Originally IAM role was a required parameter.
+            # Now we marked that as Optional because we can fetch it from SageMakerConfig
+            # Because of marking that parameter as optional, we should validate if it is None, even
+            # after fetching the config.
+            raise ValueError("An AWS IAM role is required to create a Monitoring Schedule.")
+        self.volume_kms_key = resolve_value_from_config(
+            volume_kms_key,
+            MONITORING_JOB_VOLUME_KMS_KEY_ID_PATH,
+            sagemaker_session=self.sagemaker_session,
+        )
+        self.output_kms_key = resolve_value_from_config(
+            output_kms_key,
+            MONITORING_JOB_OUTPUT_KMS_KEY_ID_PATH,
+            sagemaker_session=self.sagemaker_session,
+        )
+        self.network_config = resolve_class_attribute_from_config(
+            NetworkConfig,
+            network_config,
+            "subnets",
+            MONITORING_JOB_SUBNETS_PATH,
+            sagemaker_session=self.sagemaker_session,
+        )
+        self.network_config = resolve_class_attribute_from_config(
+            NetworkConfig,
+            self.network_config,
+            "security_group_ids",
+            MONITORING_JOB_SECURITY_GROUP_IDS_PATH,
+            sagemaker_session=self.sagemaker_session,
+        )
+        self.network_config = resolve_class_attribute_from_config(
+            NetworkConfig,
+            self.network_config,
+            "enable_network_isolation",
+            MONITORING_JOB_ENABLE_NETWORK_ISOLATION_PATH,
+            sagemaker_session=self.sagemaker_session,
+        )
+        self.network_config = resolve_class_attribute_from_config(
+            NetworkConfig,
+            self.network_config,
+            "encrypt_inter_container_traffic",
+            MONITORING_SCHEDULE_INTER_CONTAINER_ENCRYPTION_PATH,
+            sagemaker_session=self.sagemaker_session,
+        )
+        self.env = resolve_value_from_config(
+            env,
+            MONITORING_JOB_ENVIRONMENT_PATH,
+            default_value=None,
+            sagemaker_session=self.sagemaker_session,
+        )
 
     def run_baseline(
         self, baseline_inputs, output, arguments=None, wait=True, logs=True, job_name=None
@@ -233,6 +301,7 @@ class ModelMonitor(object):
         monitor_schedule_name=None,
         schedule_cron_expression=None,
         batch_transform_input=None,
+        arguments=None,
     ):
         """Creates a monitoring schedule to monitor an Amazon SageMaker Endpoint.
 
@@ -262,6 +331,7 @@ class ModelMonitor(object):
             batch_transform_input (sagemaker.model_monitor.BatchTransformInput): Inputs to
                 run the monitoring schedule on the batch transform
                 (default: None)
+            arguments ([str]): A list of string arguments to be passed to a processing job.
 
         """
         if self.monitoring_schedule_name is not None:
@@ -326,6 +396,9 @@ class ModelMonitor(object):
         if self.network_config is not None:
             network_config_dict = self.network_config._to_request_dict()
 
+        if arguments is not None:
+            self.arguments = arguments
+
         self.sagemaker_session.create_monitoring_schedule(
             monitoring_schedule_name=self.monitoring_schedule_name,
             schedule_expression=schedule_cron_expression,
@@ -368,6 +441,7 @@ class ModelMonitor(object):
         network_config=None,
         role=None,
         image_uri=None,
+        batch_transform_input=None,
     ):
         """Updates the existing monitoring schedule.
 
@@ -410,13 +484,28 @@ class ModelMonitor(object):
             role (str): An AWS IAM role name or ARN. The Amazon SageMaker jobs use this role.
             image_uri (str): The uri of the image to use for the jobs started by
                 the Monitor.
+            batch_transform_input (sagemaker.model_monitor.BatchTransformInput): Inputs to
+                run the monitoring schedule on the batch transform (default: None)
 
         """
         monitoring_inputs = None
+
+        if (batch_transform_input is not None) and (endpoint_input is not None):
+            message = (
+                "Cannot update both batch_transform_input and endpoint_input to update an "
+                "Amazon Model Monitoring Schedule. "
+                "Please provide atmost one of the above required inputs"
+            )
+            _LOGGER.error(message)
+            raise ValueError(message)
+
         if endpoint_input is not None:
             monitoring_inputs = [
                 self._normalize_endpoint_input(endpoint_input=endpoint_input)._to_request_dict()
             ]
+
+        elif batch_transform_input is not None:
+            monitoring_inputs = [batch_transform_input._to_request_dict()]
 
         monitoring_output_config = None
         if output is not None:
@@ -477,6 +566,8 @@ class ModelMonitor(object):
         network_config_dict = None
         if self.network_config is not None:
             network_config_dict = self.network_config._to_request_dict()
+        # Do not need to check config because that check is done inside
+        # self.sagemaker_session.update_monitoring_schedule
 
         self.sagemaker_session.update_monitoring_schedule(
             monitoring_schedule_name=self.monitoring_schedule_name,
@@ -1047,6 +1138,7 @@ class ModelMonitor(object):
         probability_attribute=None,
         ground_truth_attribute=None,
         probability_threshold_attribute=None,
+        categorical_drift_method=None,
     ):
         """Generate a list of environment variables from first-class parameters.
 
@@ -1061,12 +1153,16 @@ class ModelMonitor(object):
             dataset_format (dict): The format of the baseline_dataset.
             dataset_source_container_path (str): The path to the dataset source.
             inference_attribute (str): Index or JSONpath to locate predicted label(s).
-                Only used for ModelQualityMonitor, ModelBiasMonitor, and ModelExplainabilityMonitor
+                Only used for ModelQualityMonitor.
             probability_attribute (str or int): Index or JSONpath to locate probabilities.
-                Only used for ModelQualityMonitor, ModelBiasMonitor and ModelExplainabilityMonitor
-            ground_truth_attribute (str): Index or JSONpath to locate actual label(s).
+                Only used for ModelQualityMonitor.
+            ground_truth_attribute (str): Index to locate actual label(s).
+                Only used for ModelQualityMonitor.
             probability_threshold_attribute (float): threshold to convert probabilities to binaries
-                Only used for ModelQualityMonitor, ModelBiasMonitor and ModelExplainabilityMonitor
+                Only used for ModelQualityMonitor.
+            categorical_drift_method (str): categorical_drift_method to override the
+                categorical_drift_method of global monitoring_config in constraints
+                suggested by Model Monitor container. Only used for DataQualityMonitor.
 
         Returns:
             dict: Dictionary of environment keys and values.
@@ -1115,6 +1211,9 @@ class ModelMonitor(object):
 
         if probability_threshold_attribute is not None:
             env[_PROBABILITY_THRESHOLD_ATTRIBUTE_ENV_NAME] = probability_threshold_attribute
+
+        if categorical_drift_method is not None:
+            env[_CATEGORICAL_DRIFT_METHOD_ENV_NAME] = categorical_drift_method
 
         return env
 
@@ -1203,6 +1302,7 @@ class ModelMonitor(object):
                     s3_uri = s3.s3_path_join(
                         "s3://",
                         self.sagemaker_session.default_bucket(),
+                        self.sagemaker_session.default_bucket_prefix,
                         self.latest_baselining_job_name,
                         file_input.input_name,
                     )
@@ -1228,6 +1328,7 @@ class ModelMonitor(object):
         s3_uri = output_s3_uri or s3.s3_path_join(
             "s3://",
             self.sagemaker_session.default_bucket(),
+            self.sagemaker_session.default_bucket_prefix,
             _MODEL_MONITOR_S3_PATH,
             _BASELINING_S3_PATH,
             self.latest_baselining_job_name,
@@ -1254,6 +1355,7 @@ class ModelMonitor(object):
             s3_uri = s3.s3_path_join(
                 "s3://",
                 self.sagemaker_session.default_bucket(),
+                self.sagemaker_session.default_bucket_prefix,
                 self.latest_baselining_job_name,
                 "output",
             )
@@ -1277,6 +1379,7 @@ class ModelMonitor(object):
         s3_uri = output_s3_uri or s3.s3_path_join(
             "s3://",
             self.sagemaker_session.default_bucket(),
+            self.sagemaker_session.default_bucket_prefix,
             _MODEL_MONITOR_S3_PATH,
             _MONITORING_S3_PATH,
             monitoring_schedule_name,
@@ -1303,6 +1406,7 @@ class ModelMonitor(object):
             output.destination = s3.s3_path_join(
                 "s3://",
                 self.sagemaker_session.default_bucket(),
+                self.sagemaker_session.default_bucket_prefix,
                 self.monitoring_schedule_name,
                 "output",
             )
@@ -1324,6 +1428,7 @@ class ModelMonitor(object):
             s3_uri = s3.s3_path_join(
                 "s3://",
                 self.sagemaker_session.default_bucket(),
+                self.sagemaker_session.default_bucket_prefix,
                 _MODEL_MONITOR_S3_PATH,
                 _MONITORING_S3_PATH,
                 self.monitoring_schedule_name,
@@ -1375,10 +1480,18 @@ class ModelMonitor(object):
             monitoring_schedule_config["ScheduleConfig"] = {
                 "ScheduleExpression": schedule_cron_expression
             }
+        all_tags = self.sagemaker_session._append_sagemaker_config_tags(
+            self.tags, "{}.{}.{}".format(SAGEMAKER, MONITORING_SCHEDULE, TAGS)
+        )
+
+        # Not using value from sagemaker
+        # config key MONITORING_SCHEDULE_INTER_CONTAINER_ENCRYPTION_PATH here
+        # because no MonitoringJobDefinition is set for this call
+
         self.sagemaker_session.sagemaker_client.create_monitoring_schedule(
             MonitoringScheduleName=monitor_schedule_name,
             MonitoringScheduleConfig=monitoring_schedule_config,
-            Tags=self.tags or [],
+            Tags=all_tags or [],
         )
 
     def _upload_and_convert_to_processing_input(self, source, destination, name):
@@ -1404,6 +1517,7 @@ class ModelMonitor(object):
             s3_uri = s3.s3_path_join(
                 "s3://",
                 self.sagemaker_session.default_bucket(),
+                self.sagemaker_session.default_bucket_prefix,
                 _MODEL_MONITOR_S3_PATH,
                 _BASELINING_S3_PATH,
                 self.latest_baselining_job_name,
@@ -1440,6 +1554,11 @@ class ModelMonitor(object):
             monitoring_schedule_config["ScheduleConfig"] = {
                 "ScheduleExpression": schedule_cron_expression
             }
+
+        # Not using value from sagemaker
+        # config key MONITORING_SCHEDULE_INTER_CONTAINER_ENCRYPTION_PATH here
+        # because no MonitoringJobDefinition is set for this call
+
         self.sagemaker_session.sagemaker_client.update_monitoring_schedule(
             MonitoringScheduleName=self.monitoring_schedule_name,
             MonitoringScheduleConfig=monitoring_schedule_config,
@@ -1459,7 +1578,7 @@ class DefaultModelMonitor(ModelMonitor):
 
     def __init__(
         self,
-        role,
+        role=None,
         instance_count=1,
         instance_type="ml.m5.xlarge",
         volume_size_in_gb=30,
@@ -1537,6 +1656,7 @@ class DefaultModelMonitor(ModelMonitor):
         wait=True,
         logs=True,
         job_name=None,
+        monitoring_config_override=None,
     ):
         """Suggest baselines for use with Amazon SageMaker Model Monitoring Schedules.
 
@@ -1556,12 +1676,18 @@ class DefaultModelMonitor(ModelMonitor):
                 Only meaningful when wait is True (default: True).
             job_name (str): Processing job name. If not specified, the processor generates
                 a default job name, based on the image name and current timestamp.
-
+            monitoring_config_override (DataQualityMonitoringConfig): monitoring_config object to
+                override the global monitoring_config parameter of constraints suggested by
+                Model Monitor Container. If not specified, the values suggested by container is
+                set.
         Returns:
             sagemaker.processing.ProcessingJob: The ProcessingJob object representing the
                 baselining job.
 
         """
+        if not DataQualityMonitoringConfig.valid_monitoring_config(monitoring_config_override):
+            raise RuntimeError("Invalid value for monitoring_config_override.")
+
         self.latest_baselining_job_name = self._generate_baselining_job_name(job_name=job_name)
 
         normalized_baseline_dataset_input = self._upload_and_convert_to_processing_input(
@@ -1621,6 +1747,11 @@ class DefaultModelMonitor(ModelMonitor):
 
         normalized_baseline_output = self._normalize_baseline_output(output_s3_uri=output_s3_uri)
 
+        categorical_drift_method = None
+        if monitoring_config_override and monitoring_config_override.distribution_constraints:
+            distribution_constraints = monitoring_config_override.distribution_constraints
+            categorical_drift_method = distribution_constraints.categorical_drift_method
+
         normalized_env = self._generate_env_map(
             env=self.env,
             dataset_format=dataset_format,
@@ -1629,6 +1760,7 @@ class DefaultModelMonitor(ModelMonitor):
             dataset_source_container_path=baseline_dataset_container_path,
             record_preprocessor_script_container_path=record_preprocessor_script_container_path,
             post_processor_script_container_path=post_processor_script_container_path,
+            categorical_drift_method=categorical_drift_method,
         )
 
         baselining_processor = Processor(
@@ -1814,6 +1946,7 @@ class DefaultModelMonitor(ModelMonitor):
         network_config=None,
         enable_cloudwatch_metrics=None,
         role=None,
+        batch_transform_input=None,
     ):
         """Updates the existing monitoring schedule.
 
@@ -1855,8 +1988,20 @@ class DefaultModelMonitor(ModelMonitor):
             enable_cloudwatch_metrics (bool): Whether to publish cloudwatch metrics as part of
                 the baselining or monitoring jobs.
             role (str): An AWS IAM role name or ARN. The Amazon SageMaker jobs use this role.
+            batch_transform_input (sagemaker.model_monitor.BatchTransformInput): Inputs to
+                run the monitoring schedule on the batch transform (default: None)
 
         """
+
+        if (batch_transform_input is not None) and (endpoint_input is not None):
+            message = (
+                "Cannot update both batch_transform_input and endpoint_input to update an "
+                "Amazon Model Monitoring Schedule. "
+                "Please provide atmost one of the above required inputs"
+            )
+            _LOGGER.error(message)
+            raise ValueError(message)
+
         # check if this schedule is in v2 format and update as per v2 format if it is
         if self.job_definition_name is not None:
             self._update_data_quality_monitoring_schedule(
@@ -1877,12 +2022,16 @@ class DefaultModelMonitor(ModelMonitor):
                 network_config=network_config,
                 enable_cloudwatch_metrics=enable_cloudwatch_metrics,
                 role=role,
+                batch_transform_input=batch_transform_input,
             )
             return
 
         monitoring_inputs = None
         if endpoint_input is not None:
             monitoring_inputs = [self._normalize_endpoint_input(endpoint_input)._to_request_dict()]
+
+        elif batch_transform_input is not None:
+            monitoring_inputs = [batch_transform_input._to_request_dict()]
 
         record_preprocessor_script_s3_uri = None
         if record_preprocessor_script is not None:
@@ -1952,6 +2101,8 @@ class DefaultModelMonitor(ModelMonitor):
         network_config_dict = None
         if self.network_config is not None:
             network_config_dict = self.network_config._to_request_dict()
+        # Do not need to check config because that check is done inside
+        # self.sagemaker_session.update_monitoring_schedule
 
         if role is not None:
             self.role = role
@@ -2052,6 +2203,21 @@ class DefaultModelMonitor(ModelMonitor):
         if len(valid_args) == 1 and schedule_cron_expression is not None:
             self._update_monitoring_schedule(self.job_definition_name, schedule_cron_expression)
             return
+
+        existing_desc = self.sagemaker_session.describe_monitoring_schedule(
+            monitoring_schedule_name=self.monitoring_schedule_name
+        )
+
+        if (
+            existing_desc.get("MonitoringScheduleConfig") is not None
+            and existing_desc["MonitoringScheduleConfig"].get("ScheduleConfig") is not None
+            and existing_desc["MonitoringScheduleConfig"]["ScheduleConfig"]["ScheduleExpression"]
+            is not None
+            and schedule_cron_expression is None
+        ):
+            schedule_cron_expression = existing_desc["MonitoringScheduleConfig"]["ScheduleConfig"][
+                "ScheduleExpression"
+            ]
 
         # Need to update schedule with a new job definition
         job_desc = self.sagemaker_session.sagemaker_client.describe_data_quality_job_definition(
@@ -2509,7 +2675,7 @@ class ModelQualityMonitor(ModelMonitor):
 
     def __init__(
         self,
-        role,
+        role=None,
         instance_count=1,
         instance_type="ml.m5.xlarge",
         volume_size_in_gb=30,
@@ -2600,10 +2766,13 @@ class ModelQualityMonitor(ModelMonitor):
             problem_type (str): The type of problem of this model quality monitoring. Valid
                 values are "Regression", "BinaryClassification", "MulticlassClassification".
             inference_attribute (str): Index or JSONpath to locate predicted label(s).
+                Only used for ModelQualityMonitor.
             probability_attribute (str or int): Index or JSONpath to locate probabilities.
-            ground_truth_attribute (str): Index or JSONpath to locate actual label(s).
+                Only used for ModelQualityMonitor.
+            ground_truth_attribute (str): Index to locate actual label(s).
+                Only used for ModelQualityMonitor.
             probability_threshold_attribute (float): threshold to convert probabilities to binaries
-                Only used for ModelQualityMonitor, ModelBiasMonitor and ModelExplainabilityMonitor
+                Only used for ModelQualityMonitor.
             post_analytics_processor_script (str): The path to the record post-analytics processor
                 script. This can be a local path or an S3 uri.
             output_s3_uri (str): Desired S3 destination Destination of the constraint_violations
@@ -2920,6 +3089,15 @@ class ModelQualityMonitor(ModelMonitor):
         if len(valid_args) == 1 and schedule_cron_expression is not None:
             self._update_monitoring_schedule(self.job_definition_name, schedule_cron_expression)
             return
+
+        if (batch_transform_input is not None) and (endpoint_input is not None):
+            message = (
+                "Cannot update both batch_transform_input and endpoint_input to update an "
+                "Amazon Model Monitoring Schedule. "
+                "Please provide atmost one of the above required inputs"
+            )
+            _LOGGER.error(message)
+            raise ValueError(message)
 
         # Need to update schedule with a new job definition
         job_desc = self.sagemaker_session.sagemaker_client.describe_model_quality_job_definition(

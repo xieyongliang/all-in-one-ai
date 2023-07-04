@@ -85,8 +85,8 @@ class PyTorchModel(FrameworkModel):
     def __init__(
         self,
         model_data: Union[str, PipelineVariable],
-        role: str,
-        entry_point: str,
+        role: Optional[str] = None,
+        entry_point: Optional[str] = None,
         framework_version: str = "1.3",
         py_version: Optional[str] = None,
         image_uri: Optional[Union[str, PipelineVariable]] = None,
@@ -123,9 +123,9 @@ class PyTorchModel(FrameworkModel):
                 to call to create a predictor with an endpoint name and
                 SageMaker ``Session``. If specified, ``deploy()`` returns the
                 result of invoking this function on the created endpoint name.
-            model_server_workers (int or PipelineVariable): Optional. The number of worker processes
-                used by the inference server. If None, server will use one
-                worker per vCPU.
+            model_server_workers (int or PipelineVariable): Optional. The number of worker
+                processes used by the TorchServe model server. If None, available GPUs
+                in system or number of logical processors available to the JVM.
             **kwargs: Keyword arguments passed to the superclass
                 :class:`~sagemaker.model.FrameworkModel` and, subsequently, its
                 superclass :class:`~sagemaker.model.Model`.

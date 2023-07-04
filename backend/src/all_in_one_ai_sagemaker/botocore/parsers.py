@@ -237,8 +237,8 @@ class ResponseParser:
             always be present.
 
         """
-        LOG.debug('Response headers: %s', response['headers'])
-        LOG.debug('Response body:\n%s', response['body'])
+        LOG.debug('Response headers: %r', response['headers'])
+        LOG.debug('Response body:\n%r', response['body'])
         if response['status_code'] >= 301:
             if self._is_generic_error_response(response):
                 parsed = self._do_generic_error_parse(response)
@@ -834,7 +834,6 @@ class EventStreamXMLParser(BaseEventStreamParser, BaseXMLResponseParser):
 
 
 class JSONParser(BaseJSONParser):
-
     EVENT_STREAM_PARSER_CLS = EventStreamJSONParser
 
     """Response parser for the "json" protocol."""
@@ -994,7 +993,6 @@ class BaseRestParser(ResponseParser):
 
 
 class RestJSONParser(BaseRestParser, BaseJSONParser):
-
     EVENT_STREAM_PARSER_CLS = EventStreamJSONParser
 
     def _initial_body_parse(self, body_contents):
@@ -1025,7 +1023,6 @@ class RestJSONParser(BaseRestParser, BaseJSONParser):
 
 
 class RestXMLParser(BaseRestParser, BaseXMLResponseParser):
-
     EVENT_STREAM_PARSER_CLS = EventStreamXMLParser
 
     def _initial_body_parse(self, xml_string):

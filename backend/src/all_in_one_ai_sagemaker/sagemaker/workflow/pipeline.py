@@ -25,7 +25,9 @@ from botocore.exceptions import ClientError
 
 from sagemaker import s3
 from sagemaker._studio import _append_project_tags
+from sagemaker.config import PIPELINE_ROLE_ARN_PATH, PIPELINE_TAGS_PATH
 from sagemaker.session import Session
+from sagemaker.utils import resolve_value_from_config, retry_with_backoff
 from sagemaker.workflow.callback_step import CallbackOutput, CallbackStep
 from sagemaker.workflow.lambda_step import LambdaOutput, LambdaStep
 from sagemaker.workflow.entities import (
@@ -38,6 +40,7 @@ from sagemaker.workflow.parameters import Parameter
 from sagemaker.workflow.pipeline_experiment_config import PipelineExperimentConfig
 from sagemaker.workflow.parallelism_config import ParallelismConfiguration
 from sagemaker.workflow.properties import Properties
+from sagemaker.workflow.selective_execution_config import SelectiveExecutionConfig
 from sagemaker.workflow.steps import Step, StepTypeEnum
 from sagemaker.workflow.step_collections import StepCollection
 from sagemaker.workflow.condition_step import ConditionStep
@@ -107,7 +110,7 @@ class Pipeline(Entity):
 
     def create(
         self,
-        role_arn: str,
+        role_arn: str = None,
         description: str = None,
         tags: List[Dict[str, str]] = None,
         parallelism_config: ParallelismConfiguration = None,
@@ -126,11 +129,21 @@ class Pipeline(Entity):
         Returns:
             A response dict from the service.
         """
+        role_arn = resolve_value_from_config(
+            role_arn, PIPELINE_ROLE_ARN_PATH, sagemaker_session=self.sagemaker_session
+        )
+        if not role_arn:
+            # Originally IAM role was a required parameter.
+            # Now we marked that as Optional because we can fetch it from SageMakerConfig
+            # Because of marking that parameter as optional, we should validate if it is None, even
+            # after fetching the config.
+            raise ValueError("An AWS IAM role is required to create a Pipeline.")
         if self.sagemaker_session.local_mode:
             if parallelism_config:
                 logger.warning("Pipeline parallelism config is not supported in the local mode.")
             return self.sagemaker_session.sagemaker_client.create_pipeline(self, description)
         tags = _append_project_tags(tags)
+        tags = self.sagemaker_session._append_sagemaker_config_tags(tags, PIPELINE_TAGS_PATH)
         kwargs = self._create_args(role_arn, description, parallelism_config)
         update_args(
             kwargs,
@@ -164,17 +177,19 @@ class Pipeline(Entity):
         if len(pipeline_definition.encode("utf-8")) < 1024 * 100:
             kwargs["PipelineDefinition"] = pipeline_definition
         else:
-            desired_s3_uri = s3.s3_path_join(
-                "s3://", self.sagemaker_session.default_bucket(), self.name
+            bucket, object_key = s3.determine_bucket_and_prefix(
+                bucket=None, key_prefix=self.name, sagemaker_session=self.sagemaker_session
             )
+
+            desired_s3_uri = s3.s3_path_join("s3://", bucket, object_key)
             s3.S3Uploader.upload_string_as_file_body(
                 body=pipeline_definition,
                 desired_s3_uri=desired_s3_uri,
                 sagemaker_session=self.sagemaker_session,
             )
             kwargs["PipelineDefinitionS3Location"] = {
-                "Bucket": self.sagemaker_session.default_bucket(),
-                "ObjectKey": self.name,
+                "Bucket": bucket,
+                "ObjectKey": object_key,
             }
 
         update_args(
@@ -194,7 +209,7 @@ sagemaker.html#SageMaker.Client.describe_pipeline>`_
 
     def update(
         self,
-        role_arn: str,
+        role_arn: str = None,
         description: str = None,
         parallelism_config: ParallelismConfiguration = None,
     ) -> Dict[str, Any]:
@@ -210,6 +225,15 @@ sagemaker.html#SageMaker.Client.describe_pipeline>`_
         Returns:
             A response dict from the service.
         """
+        role_arn = resolve_value_from_config(
+            role_arn, PIPELINE_ROLE_ARN_PATH, sagemaker_session=self.sagemaker_session
+        )
+        if not role_arn:
+            # Originally IAM role was a required parameter.
+            # Now we marked that as Optional because we can fetch it from SageMakerConfig
+            # Because of marking that parameter as optional, we should validate if it is None, even
+            # after fetching the config.
+            raise ValueError("An AWS IAM role is required to update a Pipeline.")
         if self.sagemaker_session.local_mode:
             if parallelism_config:
                 logger.warning("Pipeline parallelism config is not supported in the local mode.")
@@ -223,7 +247,7 @@ sagemaker.html#SageMaker.Client.describe_pipeline>`_
 
     def upsert(
         self,
-        role_arn: str,
+        role_arn: str = None,
         description: str = None,
         tags: List[Dict[str, str]] = None,
         parallelism_config: ParallelismConfiguration = None,
@@ -241,20 +265,25 @@ sagemaker.html#SageMaker.Client.describe_pipeline>`_
         Returns:
             response dict from service
         """
-        exists = True
+        role_arn = resolve_value_from_config(
+            role_arn, PIPELINE_ROLE_ARN_PATH, sagemaker_session=self.sagemaker_session
+        )
+        if not role_arn:
+            # Originally IAM role was a required parameter.
+            # Now we marked that as Optional because we can fetch it from SageMakerConfig
+            # Because of marking that parameter as optional, we should validate if it is None, even
+            # after fetching the config.
+            raise ValueError("An AWS IAM role is required to create or update a Pipeline.")
         try:
-            self.describe()
-        except ClientError as e:
-            err = e.response.get("Error", {})
-            if err.get("Code", None) == "ResourceNotFound":
-                exists = False
-            else:
-                raise e
-
-        if not exists:
             response = self.create(role_arn, description, tags, parallelism_config)
-        else:
+        except ClientError as ce:
+            error_code = ce.response["Error"]["Code"]
+            error_message = ce.response["Error"]["Message"]
+            if not (error_code == "ValidationException" and "already exists" in error_message):
+                raise ce
+            # already exists
             response = self.update(role_arn, description)
+            # add new tags to existing resource
             if tags is not None:
                 old_tags = self.sagemaker_session.sagemaker_client.list_tags(
                     ResourceArn=response["PipelineArn"]
@@ -284,6 +313,7 @@ sagemaker.html#SageMaker.Client.describe_pipeline>`_
         execution_display_name: str = None,
         execution_description: str = None,
         parallelism_config: ParallelismConfiguration = None,
+        selective_execution_config: SelectiveExecutionConfig = None,
     ):
         """Starts a Pipeline execution in the Workflow service.
 
@@ -295,22 +325,37 @@ sagemaker.html#SageMaker.Client.describe_pipeline>`_
             parallelism_config (Optional[ParallelismConfiguration]): Parallelism configuration
                 that is applied to each of the executions of the pipeline. It takes precedence
                 over the parallelism configuration of the parent pipeline.
+            selective_execution_config (Optional[SelectiveExecutionConfig]): The configuration for
+                selective step execution.
 
         Returns:
             A `_PipelineExecution` instance, if successful.
         """
+        if selective_execution_config is not None:
+            if selective_execution_config.source_pipeline_execution_arn is None:
+                selective_execution_config.source_pipeline_execution_arn = (
+                    self._get_latest_execution_arn()
+                )
+            selective_execution_config = selective_execution_config.to_request()
+
         kwargs = dict(PipelineName=self.name)
         update_args(
             kwargs,
             PipelineExecutionDescription=execution_description,
             PipelineExecutionDisplayName=execution_display_name,
             ParallelismConfiguration=parallelism_config,
+            SelectiveExecutionConfig=selective_execution_config,
         )
         if self.sagemaker_session.local_mode:
             update_args(kwargs, PipelineParameters=parameters)
             return self.sagemaker_session.sagemaker_client.start_pipeline_execution(**kwargs)
         update_args(kwargs, PipelineParameters=format_start_parameters(parameters))
-        response = self.sagemaker_session.sagemaker_client.start_pipeline_execution(**kwargs)
+
+        # retry on AccessDeniedException to cover case of tag propagation delay
+        response = retry_with_backoff(
+            lambda: self.sagemaker_session.sagemaker_client.start_pipeline_execution(**kwargs),
+            botocore_client_error_code="AccessDeniedException",
+        )
         return _PipelineExecution(
             arn=response["PipelineExecutionArn"],
             sagemaker_session=self.sagemaker_session,
@@ -354,6 +399,57 @@ sagemaker.html#SageMaker.Client.describe_pipeline>`_
                     step_request["Arguments"]["IfSteps"] + step_request["Arguments"]["ElseSteps"]
                 )
                 self._interpolate_step_collection_name_in_depends_on(sub_step_requests)
+
+    def list_executions(
+        self,
+        sort_by: str = None,
+        sort_order: str = None,
+        max_results: int = None,
+        next_token: str = None,
+    ) -> Dict[str, Any]:
+        """Lists a pipeline's executions.
+
+        Args:
+            sort_by (str): The field by which to sort results(CreationTime/PipelineExecutionArn).
+            sort_order (str): The sort order for results (Ascending/Descending).
+            max_results (int): The maximum number of pipeline executions to return in the response.
+            next_token (str):  If the result of the previous ListPipelineExecutions request was
+                truncated, the response includes a NextToken. To retrieve the next set of pipeline
+                executions, use the token in the next request.
+
+        Returns:
+            List of Pipeline Execution Summaries. See
+            boto3 client list_pipeline_executions
+            https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/sagemaker.html#SageMaker.Client.list_pipeline_executions
+        """
+        kwargs = dict(PipelineName=self.name)
+        update_args(
+            kwargs,
+            SortBy=sort_by,
+            SortOrder=sort_order,
+            NextToken=next_token,
+            MaxResults=max_results,
+        )
+        response = self.sagemaker_session.sagemaker_client.list_pipeline_executions(**kwargs)
+
+        # Return only PipelineExecutionSummaries and NextToken from the list_pipeline_executions
+        # response
+        return {
+            key: response[key]
+            for key in ["PipelineExecutionSummaries", "NextToken"]
+            if key in response
+        }
+
+    def _get_latest_execution_arn(self):
+        """Retrieves the latest execution of this pipeline"""
+        response = self.list_executions(
+            sort_by="CreationTime",
+            sort_order="Descending",
+            max_results=1,
+        )
+        if response["PipelineExecutionSummaries"]:
+            return response["PipelineExecutionSummaries"][0]["PipelineExecutionArn"]
+        return None
 
 
 def format_start_parameters(parameters: Dict[str, Any]) -> List[Dict[str, Any]]:

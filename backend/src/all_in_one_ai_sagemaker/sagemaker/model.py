@@ -17,6 +17,7 @@ import abc
 import json
 import logging
 import os
+import re
 import copy
 from typing import List, Dict, Optional, Union
 
@@ -29,25 +30,47 @@ from sagemaker import (
     utils,
     git_utils,
 )
+from sagemaker.config import (
+    COMPILATION_JOB_ROLE_ARN_PATH,
+    EDGE_PACKAGING_KMS_KEY_ID_PATH,
+    EDGE_PACKAGING_ROLE_ARN_PATH,
+    MODEL_CONTAINERS_PATH,
+    EDGE_PACKAGING_RESOURCE_KEY_PATH,
+    MODEL_VPC_CONFIG_PATH,
+    MODEL_ENABLE_NETWORK_ISOLATION_PATH,
+    MODEL_EXECUTION_ROLE_ARN_PATH,
+    MODEL_PRIMARY_CONTAINER_ENVIRONMENT_PATH,
+    ENDPOINT_CONFIG_ASYNC_KMS_KEY_ID_PATH,
+    load_sagemaker_config,
+)
 from sagemaker.session import Session
 from sagemaker.model_metrics import ModelMetrics
 from sagemaker.deprecations import removed_kwargs
 from sagemaker.drift_check_baselines import DriftCheckBaselines
+from sagemaker.explainer import ExplainerConfig
 from sagemaker.metadata_properties import MetadataProperties
 from sagemaker.predictor import PredictorBase
 from sagemaker.serverless import ServerlessInferenceConfig
 from sagemaker.transformer import Transformer
-from sagemaker.jumpstart.utils import add_jumpstart_tags, get_jumpstart_base_name_if_jumpstart_model
+from sagemaker.jumpstart.utils import (
+    add_jumpstart_tags,
+    get_jumpstart_base_name_if_jumpstart_model,
+)
 from sagemaker.utils import (
     unique_name_from_base,
     update_container_with_inference_params,
     to_string,
+    resolve_value_from_config,
+    resolve_nested_dict_value_from_config,
 )
 from sagemaker.async_inference import AsyncInferenceConfig
 from sagemaker.predictor_async import AsyncPredictor
 from sagemaker.workflow import is_pipeline_variable
 from sagemaker.workflow.entities import PipelineVariable
 from sagemaker.workflow.pipeline_context import runnable_by_pipeline, PipelineSession
+from sagemaker.inference_recommender.inference_recommender_mixin import (
+    InferenceRecommenderMixin,
+)
 
 LOGGER = logging.getLogger("sagemaker")
 
@@ -55,7 +78,26 @@ NEO_ALLOWED_FRAMEWORKS = set(
     ["mxnet", "tensorflow", "keras", "pytorch", "onnx", "xgboost", "tflite"]
 )
 
-NEO_IOC_TARGET_DEVICES = ["ml_c4", "ml_c5", "ml_m4", "ml_m5", "ml_p2", "ml_p3", "ml_g4dn"]
+NEO_IOC_TARGET_DEVICES = [
+    "ml_c4",
+    "ml_c5",
+    "ml_m4",
+    "ml_m5",
+    "ml_p2",
+    "ml_p3",
+    "ml_g4dn",
+]
+
+NEO_MULTIVERSION_UNSUPPORTED = [
+    "imx8mplus",
+    "jacinto_tda4vm",
+    "coreml",
+    "sitara_am57x",
+    "amba_cv2",
+    "amba_cv22",
+    "amba_cv25",
+    "lambda",
+]
 
 
 class ModelBase(abc.ABC):
@@ -83,7 +125,7 @@ SAGEMAKER_REGION_PARAM_NAME = "sagemaker_region"
 SAGEMAKER_OUTPUT_LOCATION = "sagemaker_s3_output"
 
 
-class Model(ModelBase):
+class Model(ModelBase, InferenceRecommenderMixin):
     """A SageMaker ``Model`` that can be deployed to an ``Endpoint``."""
 
     def __init__(
@@ -96,7 +138,7 @@ class Model(ModelBase):
         name: Optional[str] = None,
         vpc_config: Optional[Dict[str, List[Union[str, PipelineVariable]]]] = None,
         sagemaker_session: Optional[Session] = None,
-        enable_network_isolation: Union[bool, PipelineVariable] = False,
+        enable_network_isolation: Union[bool, PipelineVariable] = None,
         model_kms_key: Optional[str] = None,
         image_config: Optional[Dict[str, Union[str, PipelineVariable]]] = None,
         source_dir: Optional[str] = None,
@@ -268,18 +310,50 @@ class Model(ModelBase):
         """
         self.model_data = model_data
         self.image_uri = image_uri
-        self.role = role
         self.predictor_cls = predictor_cls
-        self.env = env or {}
         self.name = name
         self._base_name = None
-        self.vpc_config = vpc_config
         self.sagemaker_session = sagemaker_session
+
+        # Workaround for config injection if sagemaker_session is None, since in
+        # that case sagemaker_session will not be initialized until
+        # `_init_sagemaker_session_if_does_not_exist` is called later
+        self._sagemaker_config = (
+            load_sagemaker_config() if (self.sagemaker_session is None) else None
+        )
+
+        self.role = resolve_value_from_config(
+            role,
+            MODEL_EXECUTION_ROLE_ARN_PATH,
+            sagemaker_session=self.sagemaker_session,
+            sagemaker_config=self._sagemaker_config,
+        )
+        self.vpc_config = resolve_value_from_config(
+            vpc_config,
+            MODEL_VPC_CONFIG_PATH,
+            sagemaker_session=self.sagemaker_session,
+            sagemaker_config=self._sagemaker_config,
+        )
         self.endpoint_name = None
         self._is_compiled_model = False
         self._compilation_job_name = None
         self._is_edge_packaged_model = False
-        self._enable_network_isolation = enable_network_isolation
+        self.inference_recommender_job_results = None
+        self.inference_recommendations = None
+        self._enable_network_isolation = resolve_value_from_config(
+            enable_network_isolation,
+            MODEL_ENABLE_NETWORK_ISOLATION_PATH,
+            default_value=False,
+            sagemaker_session=self.sagemaker_session,
+            sagemaker_config=self._sagemaker_config,
+        )
+        self.env = resolve_value_from_config(
+            env,
+            MODEL_PRIMARY_CONTAINER_ENVIRONMENT_PATH,
+            default_value={},
+            sagemaker_session=self.sagemaker_session,
+            sagemaker_config=self._sagemaker_config,
+        )
         self.model_kms_key = model_kms_key
         self.image_config = image_config
         self.entry_point = entry_point
@@ -482,9 +556,9 @@ api/latest/reference/services/sagemaker.html#SageMaker.Client.add_tags>`_
             return
 
         if instance_type in ("local", "local_gpu"):
-            self.sagemaker_session = local.LocalSession()
+            self.sagemaker_session = local.LocalSession(sagemaker_config=self._sagemaker_config)
         else:
-            self.sagemaker_session = session.Session()
+            self.sagemaker_session = session.Session(sagemaker_config=self._sagemaker_config)
 
     def prepare_container_def(
         self,
@@ -518,7 +592,11 @@ api/latest/reference/services/sagemaker.html#SageMaker.Client.add_tags>`_
         deploy_env = copy.deepcopy(self.env)
         if self.source_dir or self.dependencies or self.entry_point or self.git_config:
             is_repack = (
-                self.source_dir and self.entry_point and not (self.key_prefix or self.git_config)
+                self.source_dir
+                and self.entry_point
+                and not (
+                    (self.key_prefix and issubclass(type(self), FrameworkModel)) or self.git_config
+                )
             )
             self._upload_code(deploy_key_prefix, repack=is_repack)
             deploy_env.update(self._script_mode_env_vars())
@@ -539,7 +617,13 @@ api/latest/reference/services/sagemaker.html#SageMaker.Client.add_tags>`_
                 artifact should be repackaged into a new S3 object. (default: False).
         """
         local_code = utils.get_config_value("local.local_code", self.sagemaker_session.config)
-        bucket = self.bucket or self.sagemaker_session.default_bucket()
+
+        bucket, key_prefix = s3.determine_bucket_and_prefix(
+            bucket=self.bucket,
+            key_prefix=key_prefix,
+            sagemaker_session=self.sagemaker_session,
+        )
+
         if (self.sagemaker_session.local_mode and local_code) or self.entry_point is None:
             self.uploaded_code = None
         elif not repack:
@@ -550,6 +634,7 @@ api/latest/reference/services/sagemaker.html#SageMaker.Client.add_tags>`_
                 script=self.entry_point,
                 directory=self.source_dir,
                 dependencies=self.dependencies,
+                kms_key=self.model_kms_key,
                 settings=self.sagemaker_session.settings,
             )
 
@@ -584,8 +669,20 @@ api/latest/reference/services/sagemaker.html#SageMaker.Client.add_tags>`_
             else:
                 repacked_model_data = "s3://" + "/".join([bucket, key_prefix, "model.tar.gz"])
                 self.uploaded_code = fw_utils.UploadedCode(
-                    s3_prefix=repacked_model_data, script_name=os.path.basename(self.entry_point)
+                    s3_prefix=repacked_model_data,
+                    script_name=os.path.basename(self.entry_point),
                 )
+
+            LOGGER.info(
+                "Repacking model artifact (%s), script artifact "
+                "(%s), and dependencies (%s) "
+                "into single tar.gz file located at %s. "
+                "This may take some time depending on model size...",
+                self.model_data,
+                self.source_dir,
+                self.dependencies,
+                repacked_model_data,
+            )
 
             utils.repack_model(
                 inference_script=self.entry_point,
@@ -630,10 +727,14 @@ api/latest/reference/services/sagemaker.html#SageMaker.Client.add_tags>`_
         Returns:
             bool: If network isolation should be enabled or not.
         """
-        return self._enable_network_isolation
+        return False if not self._enable_network_isolation else self._enable_network_isolation
 
     def _create_sagemaker_model(
-        self, instance_type=None, accelerator_type=None, tags=None, serverless_inference_config=None
+        self,
+        instance_type=None,
+        accelerator_type=None,
+        tags=None,
+        serverless_inference_config=None,
     ):
         """Create a SageMaker Model Entity
 
@@ -671,15 +772,35 @@ api/latest/reference/services/sagemaker.html#SageMaker.Client.add_tags>`_
             )
             self._set_model_name_if_needed()
 
-        enable_network_isolation = self.enable_network_isolation()
-
         self._init_sagemaker_session_if_does_not_exist(instance_type)
+        # Depending on the instance type, a local session (or) a session is initialized.
+        self.role = resolve_value_from_config(
+            self.role,
+            MODEL_EXECUTION_ROLE_ARN_PATH,
+            sagemaker_session=self.sagemaker_session,
+        )
+        self.vpc_config = resolve_value_from_config(
+            self.vpc_config,
+            MODEL_VPC_CONFIG_PATH,
+            sagemaker_session=self.sagemaker_session,
+        )
+        self._enable_network_isolation = resolve_value_from_config(
+            self._enable_network_isolation,
+            MODEL_ENABLE_NETWORK_ISOLATION_PATH,
+            sagemaker_session=self.sagemaker_session,
+        )
+        self.env = resolve_nested_dict_value_from_config(
+            self.env,
+            ["Environment"],
+            MODEL_CONTAINERS_PATH,
+            sagemaker_session=self.sagemaker_session,
+        )
         create_model_args = dict(
             name=self.name,
             role=self.role,
             container_defs=container_def,
             vpc_config=self.vpc_config,
-            enable_network_isolation=enable_network_isolation,
+            enable_network_isolation=self._enable_network_isolation,
             tags=tags,
         )
         self.sagemaker_session.create_model(**create_model_args)
@@ -783,14 +904,22 @@ api/latest/reference/services/sagemaker.html#SageMaker.Client.add_tags>`_
         ):
             if target_instance_type and framework and framework_version:
                 framework = framework.lower()
+
                 multi_version_frameworks_support_mapping = {
-                    "inferentia": ["pytorch", "tensorflow", "mxnet"],
+                    "ml_inf1": ["pytorch", "tensorflow", "mxnet"],
+                    "ml_inf2": ["pytorch", "tensorflow"],
+                    "ml_trn1": ["pytorch", "tensorflow"],
                     "neo_ioc_targets": ["pytorch", "tensorflow"],
+                    "neo_edge_targets": ["pytorch", "tensorflow"],
                 }
                 if target_instance_type in NEO_IOC_TARGET_DEVICES:
                     return framework in multi_version_frameworks_support_mapping["neo_ioc_targets"]
-                if target_instance_type == "ml_inf1":
-                    return framework in multi_version_frameworks_support_mapping["inferentia"]
+                if target_instance_type in ["ml_inf1", "ml_inf2", "ml_trn1"]:
+                    return (
+                        framework in multi_version_frameworks_support_mapping[target_instance_type]
+                    )
+                if target_instance_type not in NEO_MULTIVERSION_UNSUPPORTED:
+                    return framework in multi_version_frameworks_support_mapping["neo_edge_targets"]
             return False
 
         if multi_version_compilation_supported(target_instance_type, framework, framework_version):
@@ -869,10 +998,20 @@ api/latest/reference/services/sagemaker.html#SageMaker.Client.add_tags>`_
             raise ValueError("You must first compile this model")
         if job_name is None:
             job_name = f"packaging{self._compilation_job_name[11:]}"
-        if role is None:
-            role = self.sagemaker_session.expand_role(role)
-
         self._init_sagemaker_session_if_does_not_exist(None)
+        s3_kms_key = resolve_value_from_config(
+            s3_kms_key,
+            EDGE_PACKAGING_KMS_KEY_ID_PATH,
+            sagemaker_session=self.sagemaker_session,
+        )
+        role = resolve_value_from_config(
+            role, EDGE_PACKAGING_ROLE_ARN_PATH, sagemaker_session=self.sagemaker_session
+        )
+        resource_key = resolve_value_from_config(
+            resource_key, EDGE_PACKAGING_RESOURCE_KEY_PATH, sagemaker_session=self.sagemaker_session
+        )
+        if role is not None:
+            role = self.sagemaker_session.expand_role(role)
         config = self._edge_packaging_job_config(
             output_path,
             role,
@@ -896,7 +1035,7 @@ api/latest/reference/services/sagemaker.html#SageMaker.Client.add_tags>`_
         target_instance_family,
         input_shape,
         output_path,
-        role,
+        role=None,
         tags=None,
         job_name=None,
         compile_max_run=15 * 60,
@@ -975,6 +1114,17 @@ api/latest/reference/services/sagemaker.html#SageMaker.Client.add_tags>`_
         framework_version = framework_version or self._get_framework_version()
 
         self._init_sagemaker_session_if_does_not_exist(target_instance_family)
+        role = resolve_value_from_config(
+            role,
+            COMPILATION_JOB_ROLE_ARN_PATH,
+            sagemaker_session=self.sagemaker_session,
+        )
+        if not role:
+            # Originally IAM role was a required parameter.
+            # Now we marked that as Optional because we can fetch it from SageMakerConfig
+            # Because of marking that parameter as optional, we should validate if it is None, even
+            # after fetching the config.
+            raise ValueError("An AWS IAM role is required to create a compilation job.")
         config = self._compilation_job_config(
             target_instance_family,
             input_shape,
@@ -1032,6 +1182,8 @@ api/latest/reference/services/sagemaker.html#SageMaker.Client.add_tags>`_
         volume_size=None,
         model_data_download_timeout=None,
         container_startup_health_check_timeout=None,
+        inference_recommendation_id=None,
+        explainer_config=None,
         **kwargs,
     ):
         """Deploy this ``Model`` to an ``Endpoint`` and optionally return a ``Predictor``.
@@ -1050,11 +1202,13 @@ api/latest/reference/services/sagemaker.html#SageMaker.Client.add_tags>`_
         Args:
             initial_instance_count (int): The initial number of instances to run
                 in the ``Endpoint`` created from this ``Model``. If not using
-                serverless inference, then it need to be a number larger or equals
+                serverless inference or the model has not called ``right_size()``,
+                then it need to be a number larger or equals
                 to 1 (default: None)
             instance_type (str): The EC2 instance type to deploy this Model to.
                 For example, 'ml.p2.xlarge', or 'local' for local mode. If not using
-                serverless inference, then it is required to deploy a model.
+                serverless inference or the model has not called ``right_size()``,
+                then it is required to deploy a model.
                 (default: None)
             serializer (:class:`~sagemaker.serializers.BaseSerializer`): A
                 serializer object, used to encode data for an inference endpoint
@@ -1105,31 +1259,77 @@ api/latest/reference/services/sagemaker.html#SageMaker.Client.add_tags>`_
                 inference container to pass health check by SageMaker Hosting. For more information
                 about health check see:
                 https://docs.aws.amazon.com/sagemaker/latest/dg/your-algorithms-inference-code.html#your-algorithms-inference-algo-ping-requests
+            inference_recommendation_id (str): The recommendation id which specifies the
+                recommendation you picked from inference recommendation job results and
+                would like to deploy the model and endpoint with recommended parameters.
+                This can also be a recommendation id returned from ``DescribeModel`` contained in
+                a list of ``RealtimeInferenceRecommendations`` within ``DeploymentRecommendation``
+            explainer_config (sagemaker.explainer.ExplainerConfig): Specifies online explainability
+                configuration for use with Amazon SageMaker Clarify. Default: None.
         Raises:
              ValueError: If arguments combination check failed in these circumstances:
                 - If no role is specified or
                 - If serverless inference config is not specified and instance type and instance
                     count are also not specified or
                 - If a wrong type of object is provided as serverless inference config or async
-                    inference config
+                    inference config or
+                - If inference recommendation id is specified along with incompatible parameters
         Returns:
             callable[string, sagemaker.session.Session] or None: Invocation of
                 ``self.predictor_cls`` on the created endpoint name, if ``self.predictor_cls``
                 is not None. Otherwise, return None.
         """
         removed_kwargs("update_endpoint", kwargs)
+
         self._init_sagemaker_session_if_does_not_exist(instance_type)
+        # Depending on the instance type, a local session (or) a session is initialized.
+        self.role = resolve_value_from_config(
+            self.role,
+            MODEL_EXECUTION_ROLE_ARN_PATH,
+            sagemaker_session=self.sagemaker_session,
+        )
+        self.vpc_config = resolve_value_from_config(
+            self.vpc_config,
+            MODEL_VPC_CONFIG_PATH,
+            sagemaker_session=self.sagemaker_session,
+        )
+        self._enable_network_isolation = resolve_value_from_config(
+            self._enable_network_isolation,
+            MODEL_ENABLE_NETWORK_ISOLATION_PATH,
+            sagemaker_session=self.sagemaker_session,
+        )
 
         tags = add_jumpstart_tags(
-            tags=tags, inference_model_uri=self.model_data, inference_script_uri=self.source_dir
+            tags=tags,
+            inference_model_uri=self.model_data,
+            inference_script_uri=self.source_dir,
         )
 
         if self.role is None:
             raise ValueError("Role can not be null for deploying a model")
 
+        if (
+            inference_recommendation_id is not None
+            or self.inference_recommender_job_results is not None
+        ):
+            instance_type, initial_instance_count = self._update_params(
+                instance_type=instance_type,
+                initial_instance_count=initial_instance_count,
+                accelerator_type=accelerator_type,
+                async_inference_config=async_inference_config,
+                serverless_inference_config=serverless_inference_config,
+                explainer_config=explainer_config,
+                inference_recommendation_id=inference_recommendation_id,
+                inference_recommender_job_results=self.inference_recommender_job_results,
+            )
+
         is_async = async_inference_config is not None
         if is_async and not isinstance(async_inference_config, AsyncInferenceConfig):
             raise ValueError("async_inference_config needs to be a AsyncInferenceConfig object")
+
+        is_explainer_enabled = explainer_config is not None
+        if is_explainer_enabled and not isinstance(explainer_config, ExplainerConfig):
+            raise ValueError("explainer_config needs to be a ExplainerConfig object")
 
         is_serverless = serverless_inference_config is not None
         if not is_serverless and not (instance_type and initial_instance_count):
@@ -1150,7 +1350,9 @@ api/latest/reference/services/sagemaker.html#SageMaker.Client.add_tags>`_
         compiled_model_suffix = None if is_serverless else "-".join(instance_type.split(".")[:-1])
         if self._is_compiled_model and not is_serverless:
             self._ensure_base_name_if_needed(
-                image_uri=self.image_uri, script_uri=self.source_dir, model_uri=self.model_data
+                image_uri=self.image_uri,
+                script_uri=self.source_dir,
+                model_uri=self.model_data,
             )
             if self._base_name is not None:
                 self._base_name = "-".join((self._base_name, compiled_model_suffix))
@@ -1187,11 +1389,23 @@ api/latest/reference/services/sagemaker.html#SageMaker.Client.add_tags>`_
 
         async_inference_config_dict = None
         if is_async:
-            if async_inference_config.output_path is None:
+            if (
+                async_inference_config.output_path is None
+                or async_inference_config.failure_path is None
+            ):
                 async_inference_config = self._build_default_async_inference_config(
                     async_inference_config
                 )
+            async_inference_config.kms_key_id = resolve_value_from_config(
+                async_inference_config.kms_key_id,
+                ENDPOINT_CONFIG_ASYNC_KMS_KEY_ID_PATH,
+                sagemaker_session=self.sagemaker_session,
+            )
             async_inference_config_dict = async_inference_config._to_request_dict()
+
+        explainer_config_dict = None
+        if is_explainer_enabled:
+            explainer_config_dict = explainer_config._to_request_dict()
 
         self.sagemaker_session.endpoint_from_production_variants(
             name=self.endpoint_name,
@@ -1200,6 +1414,7 @@ api/latest/reference/services/sagemaker.html#SageMaker.Client.add_tags>`_
             kms_key=kms_key,
             wait=wait,
             data_capture_config_dict=data_capture_config_dict,
+            explainer_config_dict=explainer_config_dict,
             async_inference_config_dict=async_inference_config_dict,
         )
 
@@ -1216,11 +1431,27 @@ api/latest/reference/services/sagemaker.html#SageMaker.Client.add_tags>`_
 
     def _build_default_async_inference_config(self, async_inference_config):
         """Build default async inference config and return ``AsyncInferenceConfig``"""
-        async_output_folder = unique_name_from_base(self.name)
-        async_output_s3uri = "s3://{}/async-endpoint-outputs/{}".format(
-            self.sagemaker_session.default_bucket(), async_output_folder
-        )
-        async_inference_config.output_path = async_output_s3uri
+        unique_folder = unique_name_from_base(self.name)
+        if async_inference_config.output_path is None:
+            async_output_s3uri = s3.s3_path_join(
+                "s3://",
+                self.sagemaker_session.default_bucket(),
+                self.sagemaker_session.default_bucket_prefix,
+                "async-endpoint-outputs",
+                unique_folder,
+            )
+            async_inference_config.output_path = async_output_s3uri
+
+        if async_inference_config.failure_path is None:
+            async_failure_s3uri = s3.s3_path_join(
+                "s3://",
+                self.sagemaker_session.default_bucket(),
+                self.sagemaker_session.default_bucket_prefix,
+                "async-endpoint-failures",
+                unique_folder,
+            )
+            async_inference_config.failure_path = async_failure_s3uri
+
         return async_inference_config
 
     def transformer(
@@ -1316,8 +1547,8 @@ class FrameworkModel(Model):
         self,
         model_data: Union[str, PipelineVariable],
         image_uri: Union[str, PipelineVariable],
-        role: str,
-        entry_point: str,
+        role: Optional[str] = None,
+        entry_point: Optional[str] = None,
         source_dir: Optional[str] = None,
         predictor_cls: Optional[callable] = None,
         env: Optional[Dict[str, Union[str, PipelineVariable]]] = None,
@@ -1494,10 +1725,21 @@ class FrameworkModel(Model):
         )
 
 
+# works for MODEL_PACKAGE_ARN with or without version info.
+MODEL_PACKAGE_ARN_PATTERN = r"arn:aws:sagemaker:(.*?):(.*?):model-package/(.*?)(?:/(\d+))?$"
+
+
 class ModelPackage(Model):
     """A SageMaker ``Model`` that can be deployed to an ``Endpoint``."""
 
-    def __init__(self, role, model_data=None, algorithm_arn=None, model_package_arn=None, **kwargs):
+    def __init__(
+        self,
+        role=None,
+        model_data=None,
+        algorithm_arn=None,
+        model_package_arn=None,
+        **kwargs,
+    ):
         """Initialize a SageMaker ModelPackage.
 
         Args:
@@ -1597,13 +1839,21 @@ class ModelPackage(Model):
                 self.sagemaker_session.wait_for_model_package(model_package_name)
                 self._created_model_package_name = model_package_name
             model_package_name = self._created_model_package_name
+            container_def = {"ModelPackageName": model_package_name}
         else:
             # When a ModelPackageArn is provided we just create the Model
-            model_package_name = self.model_package_arn
+            match = re.match(MODEL_PACKAGE_ARN_PATTERN, self.model_package_arn)
+            if match:
+                model_package_name = match.group(3)
+            else:
+                # model_package_arn can be just the name if your account owns the Model Package
+                model_package_name = self.model_package_arn
+            container_def = {"ModelPackageName": self.model_package_arn}
 
-        container_def = {"ModelPackageName": model_package_name}
+        if self.env != {}:
+            container_def["Environment"] = self.env
 
-        self._ensure_base_name_if_needed(model_package_name.split("/")[-1])
+        self._ensure_base_name_if_needed(model_package_name)
         self._set_model_name_if_needed()
 
         self.sagemaker_session.create_model(
@@ -1612,6 +1862,7 @@ class ModelPackage(Model):
             container_def,
             vpc_config=self.vpc_config,
             enable_network_isolation=self.enable_network_isolation(),
+            tags=kwargs.get("tags"),
         )
 
     def _ensure_base_name_if_needed(self, base_name):

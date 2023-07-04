@@ -19,6 +19,15 @@ import copy
 import time
 
 from botocore import exceptions
+
+from sagemaker import s3
+from sagemaker.config import (
+    TRANSFORM_JOB_ENVIRONMENT_PATH,
+    TRANSFORM_OUTPUT_KMS_KEY_ID_PATH,
+    TRANSFORM_JOB_KMS_KEY_ID_PATH,
+    TRANSFORM_RESOURCES_VOLUME_KMS_KEY_ID_PATH,
+    PIPELINE_ROLE_ARN_PATH,
+)
 from sagemaker.job import _Job
 from sagemaker.session import Session, get_execution_role
 from sagemaker.inputs import BatchDataCaptureConfig
@@ -31,6 +40,8 @@ from sagemaker.utils import (
     base_name_from_image,
     name_from_base,
     check_and_get_run_experiment_config,
+    resolve_value_from_config,
+    resolve_class_attribute_from_config,
 )
 
 
@@ -100,16 +111,13 @@ class Transformer(object):
         """
         self.model_name = model_name
         self.strategy = strategy
-        self.env = env
 
         self.output_path = output_path
-        self.output_kms_key = output_kms_key
         self.accept = accept
         self.assemble_with = assemble_with
 
         self.instance_count = instance_count
         self.instance_type = instance_type
-        self.volume_kms_key = volume_kms_key
 
         self.max_concurrent_transforms = max_concurrent_transforms
         self.max_payload = max_payload
@@ -121,6 +129,21 @@ class Transformer(object):
         self._reset_output_path = False
 
         self.sagemaker_session = sagemaker_session or Session()
+        self.volume_kms_key = resolve_value_from_config(
+            volume_kms_key,
+            TRANSFORM_RESOURCES_VOLUME_KMS_KEY_ID_PATH,
+            sagemaker_session=self.sagemaker_session,
+        )
+        self.output_kms_key = resolve_value_from_config(
+            output_kms_key,
+            TRANSFORM_OUTPUT_KMS_KEY_ID_PATH,
+            sagemaker_session=self.sagemaker_session,
+        )
+        self.env = resolve_value_from_config(
+            env,
+            TRANSFORM_JOB_ENVIRONMENT_PATH,
+            sagemaker_session=self.sagemaker_session,
+        )
 
     @runnable_by_pipeline
     def transform(
@@ -244,18 +267,36 @@ class Transformer(object):
                     values=[
                         "s3:/",
                         self.sagemaker_session.default_bucket(),
+                        *(
+                            # don't include default_bucket_prefix if it is None or ""
+                            [self.sagemaker_session.default_bucket_prefix]
+                            if self.sagemaker_session.default_bucket_prefix
+                            else []
+                        ),
                         _pipeline_config.pipeline_name,
                         ExecutionVariables.PIPELINE_EXECUTION_ID,
                         _pipeline_config.step_name,
                     ],
                 )
             else:
-                self.output_path = "s3://{}/{}".format(
-                    self.sagemaker_session.default_bucket(), self._current_job_name
+                self.output_path = s3.s3_path_join(
+                    "s3://",
+                    self.sagemaker_session.default_bucket(),
+                    self.sagemaker_session.default_bucket_prefix,
+                    self._current_job_name,
                 )
             self._reset_output_path = True
 
         experiment_config = check_and_get_run_experiment_config(experiment_config)
+
+        batch_data_capture_config = resolve_class_attribute_from_config(
+            None,
+            batch_data_capture_config,
+            "kms_key_id",
+            TRANSFORM_JOB_KMS_KEY_ID_PATH,
+            sagemaker_session=self.sagemaker_session,
+        )
+
         self.latest_transform_job = _TransformJob.start_new(
             self,
             data,
@@ -378,6 +419,14 @@ class Transformer(object):
             transformer.sagemaker_session = PipelineSession()
             self.sagemaker_session = sagemaker_session
 
+        batch_data_capture_config = resolve_class_attribute_from_config(
+            None,
+            batch_data_capture_config,
+            "kms_key_id",
+            TRANSFORM_JOB_KMS_KEY_ID_PATH,
+            sagemaker_session=self.sagemaker_session,
+        )
+
         transform_step_args = transformer.transform(
             data=data,
             data_type=data_type,
@@ -416,7 +465,16 @@ class Transformer(object):
             steps=[monitoring_batch_step],
             sagemaker_session=transformer.sagemaker_session,
         )
-        pipeline.upsert(role_arn=role if role else get_execution_role())
+        pipeline_role_arn = (
+            role
+            if role
+            else resolve_value_from_config(
+                get_execution_role(),
+                PIPELINE_ROLE_ARN_PATH,
+                sagemaker_session=transformer.sagemaker_session,
+            )
+        )
+        pipeline.upsert(pipeline_role_arn)
         execution = pipeline.start()
         if wait:
             logging.info("Waiting for transform with monitoring to execute ...")

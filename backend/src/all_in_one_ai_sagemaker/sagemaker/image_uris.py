@@ -18,6 +18,7 @@ import logging
 import os
 import re
 from typing import Optional
+from packaging.version import Version
 
 from sagemaker import utils
 from sagemaker.jumpstart.utils import is_jumpstart_model_input
@@ -31,10 +32,12 @@ logger = logging.getLogger(__name__)
 
 ECR_URI_TEMPLATE = "{registry}.dkr.{hostname}/{repository}"
 HUGGING_FACE_FRAMEWORK = "huggingface"
+HUGGING_FACE_LLM_FRAMEWORK = "huggingface-llm"
 XGBOOST_FRAMEWORK = "xgboost"
 SKLEARN_FRAMEWORK = "sklearn"
 TRAINIUM_ALLOWED_FRAMEWORKS = "pytorch"
 INFERENCE_GRAVITON = "inference_graviton"
+DATA_WRANGLER_FRAMEWORK = "data-wrangler"
 
 
 @override_pipeline_parameter_var
@@ -101,7 +104,7 @@ def retrieve(
         sdk_version (str): the version of python-sdk that will be used in the image retrieval.
             (default: None).
         inference_tool (str): the tool that will be used to aid in the inference.
-            Valid values: "neuron, None"
+            Valid values: "neuron, neuronx, None"
             (default: None).
         serverless_inference_config (sagemaker.serverless.ServerlessInferenceConfig):
             Specifies configuration related to serverless endpoint. Instance type is
@@ -155,7 +158,7 @@ def retrieve(
         _framework = framework
         if framework == HUGGING_FACE_FRAMEWORK or framework in TRAINIUM_ALLOWED_FRAMEWORKS:
             inference_tool = _get_inference_tool(inference_tool, instance_type)
-            if inference_tool == "neuron":
+            if inference_tool in ["neuron", "neuronx"]:
                 _framework = f"{framework}-{inference_tool}"
         final_image_scope = _get_final_image_scope(framework, instance_type, image_scope)
         _validate_for_suppported_frameworks_and_instance_type(framework, instance_type)
@@ -207,7 +210,10 @@ def retrieve(
             "huggingface-tensorflow-trcomp-training",
         ]:
             _version = version
-        if repo in ["huggingface-pytorch-inference-neuron"]:
+        if repo in [
+            "huggingface-pytorch-inference-neuron",
+            "huggingface-pytorch-inference-neuronx",
+        ]:
             if not sdk_version:
                 sdk_version = _get_latest_versions(version_config["sdk_versions"])
             container_version = sdk_version + "-" + container_version
@@ -232,6 +238,7 @@ def retrieve(
 
     if repo == f"{framework}-inference-graviton":
         container_version = f"{container_version}-sagemaker"
+    _validate_instance_deprecation(framework, instance_type, version)
 
     tag = _get_image_tag(
         container_version,
@@ -365,14 +372,36 @@ def _config_for_framework_and_scope(framework, image_scope, accelerator_type=Non
     return config if "scope" in config else config[image_scope]
 
 
-def _validate_for_suppported_frameworks_and_instance_type(framework, instace_type):
+def _validate_instance_deprecation(framework, instance_type, version):
+    """Check if instance type is deprecated for a certain framework with a certain version"""
+    if _get_instance_type_family(instance_type) == "p2":
+        if (framework == "pytorch" and Version(version) >= Version("1.13")) or (
+            framework == "tensorflow" and Version(version) >= Version("2.12")
+        ):
+            raise ValueError(
+                "P2 instances have been deprecated for sagemaker jobs starting PyTorch 1.13 and TensorFlow 2.12"
+                "For information about supported instance types please refer to "
+                "https://aws.amazon.com/sagemaker/pricing/"
+            )
+
+
+def _validate_for_suppported_frameworks_and_instance_type(framework, instance_type):
     """Validate if framework is supported for the instance_type"""
+    # Validate for Trainium allowed frameworks
     if (
-        instace_type is not None
-        and "trn" in instace_type
+        instance_type is not None
+        and "trn" in instance_type
         and framework not in TRAINIUM_ALLOWED_FRAMEWORKS
     ):
-        _validate_framework(framework, TRAINIUM_ALLOWED_FRAMEWORKS, "framework")
+        _validate_framework(framework, TRAINIUM_ALLOWED_FRAMEWORKS, "framework", "Trainium")
+
+    # Validate for Graviton allowed frameowrks
+    if (
+        instance_type is not None
+        and _get_instance_type_family(instance_type) in GRAVITON_ALLOWED_TARGET_INSTANCE_FAMILY
+        and framework not in GRAVITON_ALLOWED_FRAMEWORKS
+    ):
+        _validate_framework(framework, GRAVITON_ALLOWED_FRAMEWORKS, "framework", "Graviton")
 
 
 def config_for_framework(framework):
@@ -436,6 +465,9 @@ def _validate_version_and_set_if_needed(version, config, framework):
             logger.info(log_message)
 
         return available_versions[0]
+
+    if version is None and framework in [DATA_WRANGLER_FRAMEWORK, HUGGING_FACE_LLM_FRAMEWORK]:
+        version = _get_latest_versions(available_versions)
 
     _validate_arg(version, available_versions + aliased_versions, "{} version".format(framework))
     return version
@@ -556,12 +588,12 @@ def _validate_arg(arg, available_options, arg_name):
         )
 
 
-def _validate_framework(framework, allowed_frameworks, arg_name):
+def _validate_framework(framework, allowed_frameworks, arg_name, hardware_name):
     """Checks if the framework is in the allowed frameworks, and raises a ``ValueError`` if not."""
     if framework not in allowed_frameworks:
         raise ValueError(
             f"Unsupported {arg_name}: {framework}. "
-            f"Supported {arg_name}(s) for trainium instances: {allowed_frameworks}."
+            f"Supported {arg_name}(s) for {hardware_name} instances: {allowed_frameworks}."
         )
 
 
@@ -638,3 +670,29 @@ def get_training_image_uri(
         container_version=container_version,
         training_compiler_config=compiler_config,
     )
+
+
+def get_base_python_image_uri(region, py_version="310") -> str:
+    """Retrieves the image URI for base python image.
+
+    Args:
+        region (str): The AWS region to use for image URI.
+        py_version (str): The python version to use for the image. Can be 310 or 38
+        Default to 310
+
+    Returns:
+        str: The image URI string.
+    """
+
+    framework = "sagemaker-base-python"
+    version = "1.0"
+    hostname = utils._botocore_resolver().construct_endpoint("ecr", region)["hostname"]
+    config = config_for_framework(framework)
+    version_config = config["versions"][_version_for_config(version, config)]
+
+    registry = _registry_from_region(region, version_config["registries"])
+
+    repo = version_config["repository"] + "-" + py_version
+    repo_and_tag = repo + ":" + version
+
+    return ECR_URI_TEMPLATE.format(registry=registry, hostname=hostname, repository=repo_and_tag)
