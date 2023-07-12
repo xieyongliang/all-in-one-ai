@@ -69,7 +69,7 @@ Resources:
     Type: AWS::Lambda::LayerVersion
     Properties:
       CompatibleRuntimes:
-        - python3.9
+        - python3.10
       Content:
         S3Bucket: !Ref S3Bucket
         S3Key: !Sub ${S3Key}codes/all_in_one_ai_helper.zip
@@ -81,7 +81,7 @@ Resources:
     Type: AWS::Lambda::LayerVersion
     Properties:
       CompatibleRuntimes:
-        - python3.9
+        - python3.10
       Content:
         S3Bucket: !Ref S3Bucket
         S3Key: !Sub ${S3Key}codes/all_in_one_ai_sagemaker.zip
@@ -267,7 +267,7 @@ Resources:
       Handler: lambda_function.lambda_handler
       Role: !GetAtt AllInOneAIAnnotationFunctionRole.Arn
       Timeout: 900
-      Runtime: python3.9
+      Runtime: python3.10
       VpcConfig:
         SubnetIds: 
           - !Ref PrivateSubnet1
@@ -468,7 +468,7 @@ Resources:
       Handler: lambda_function.lambda_handler
       Role: !GetAtt AllInOneAIApiFunctionRole.Arn
       Timeout: 900
-      Runtime: python3.9
+      Runtime: python3.10
       VpcConfig:
         SubnetIds: 
           - !Ref PrivateSubnet1
@@ -700,7 +700,7 @@ Resources:
       Handler: lambda_function.lambda_handler
       Role: !GetAtt AllInOneAIEndpointFunctionRole.Arn
       Timeout: 900
-      Runtime: python3.9
+      Runtime: python3.10
       VpcConfig:
         SubnetIds: 
           - !Ref PrivateSubnet1
@@ -893,7 +893,7 @@ Resources:
       Handler: lambda_function.lambda_handler
       Role: !GetAtt AllInOneAIFunctionFunctionRole.Arn
       Timeout: 900
-      Runtime: python3.9
+      Runtime: python3.10
       VpcConfig:
         SubnetIds: 
           - !Ref PrivateSubnet1
@@ -1076,7 +1076,7 @@ Resources:
       Handler: lambda_function.lambda_handler
       Role: !GetAtt AllInOneAIGreengrassComponentVersionFunctionRole.Arn
       Timeout: 900
-      Runtime: python3.9
+      Runtime: python3.10
       VpcConfig:
         SubnetIds: 
           - !Ref PrivateSubnet1
@@ -1270,7 +1270,7 @@ Resources:
       Handler: lambda_function.lambda_handler
       Role: !GetAtt AllInOneAIGreengrassCoreDevicesFunctionRole.Arn
       Timeout: 900
-      Runtime: python3.9
+      Runtime: python3.10
       VpcConfig:
         SubnetIds: 
           - !Ref PrivateSubnet1
@@ -1426,7 +1426,7 @@ Resources:
       Handler: lambda_function.lambda_handler
       Role: !GetAtt AllInOneAIGreengrassDeploymentFunctionRole.Arn
       Timeout: 900
-      Runtime: python3.9
+      Runtime: python3.10
       VpcConfig:
         SubnetIds: 
           - !Ref PrivateSubnet1
@@ -1572,7 +1572,7 @@ Resources:
       Handler: lambda_function.lambda_handler
       Role: !GetAtt AllInOneAIGreengrassThingGroupsFunctionRole.Arn
       Timeout: 900
-      Runtime: python3.9
+      Runtime: python3.10
       VpcConfig:
         SubnetIds: 
           - !Ref PrivateSubnet1
@@ -1758,7 +1758,7 @@ Resources:
       Handler: lambda_function.lambda_handler
       Role: !GetAtt AllInOneAIIndustrialModelFunctionRole.Arn
       Timeout: 900
-      Runtime: python3.9
+      Runtime: python3.10
       VpcConfig:
         SubnetIds: 
           - !Ref PrivateSubnet1
@@ -1943,7 +1943,7 @@ Resources:
       Handler: lambda_function.lambda_handler
       Role: !GetAtt AllInOneAIInferenceFunctionRole.Arn
       Timeout: 900
-      Runtime: python3.9
+      Runtime: python3.10
       VpcConfig:
         SubnetIds: 
           - !Ref PrivateSubnet1
@@ -2112,7 +2112,7 @@ Resources:
       Handler: lambda_function.lambda_handler
       Role: !GetAtt AllInOneAIModelFunctionRole.Arn
       Timeout: 900
-      Runtime: python3.9
+      Runtime: python3.10
       VpcConfig:
         SubnetIds: 
           - !Ref PrivateSubnet1
@@ -2367,7 +2367,7 @@ Resources:
       Handler: lambda_function.lambda_handler
       Role: !GetAtt AllInOneAIModelPackageFunctionRole.Arn
       Timeout: 900
-      Runtime: python3.9
+      Runtime: python3.10
       VpcConfig:
         SubnetIds: 
           - !Ref PrivateSubnet1
@@ -2488,7 +2488,7 @@ Resources:
       Handler: lambda_function.lambda_handler
       Role: !GetAtt AllInOneAIModelPackageGroupFunctionRole.Arn
       Timeout: 900
-      Runtime: python3.9
+      Runtime: python3.10
       VpcConfig:
         SubnetIds: 
           - !Ref PrivateSubnet1
@@ -2614,7 +2614,7 @@ Resources:
       Role: !GetAtt AllInOneAIS3FunctionRole.Arn
       Timeout: 900
       MemorySize: 2048
-      Runtime: python3.9
+      Runtime: python3.10
       VpcConfig:
         SubnetIds: 
           - !Ref PrivateSubnet1
@@ -2732,7 +2732,7 @@ Resources:
       Handler: lambda_function.lambda_handler
       Role: !GetAtt AllInOneAISearchByImageFunctionRole.Arn
       Timeout: 900
-      Runtime: python3.9
+      Runtime: python3.10
       VpcConfig:
         SubnetIds: 
           - !Ref PrivateSubnet1
@@ -2861,7 +2861,7 @@ Resources:
       Handler: lambda_function.lambda_handler
       Role: !GetAtt AllInOneAIImportOpensearchFunctionRole.Arn
       Timeout: 900
-      Runtime: python3.9
+      Runtime: python3.10
       VpcConfig:
         SubnetIds: 
           - !Ref PrivateSubnet1
@@ -3038,7 +3038,7 @@ Resources:
       Handler: lambda_function.lambda_handler
       Role: !GetAtt AllInOneAITrainingJobFunctionRole.Arn
       Timeout: 900
-      Runtime: python3.9
+      Runtime: python3.10
       VpcConfig:
         SubnetIds: 
           - !Ref PrivateSubnet1
@@ -3232,7 +3232,7 @@ Resources:
       Handler: lambda_function.lambda_handler
       Role: !GetAtt AllInOneAITransformJobFunctionRole.Arn
       Timeout: 900
-      Runtime: python3.9
+      Runtime: python3.10
       VpcConfig:
         SubnetIds: 
           - !Ref PrivateSubnet1
@@ -3390,7 +3390,7 @@ Resources:
       Role: !GetAtt AllInOneAITransformJobReviewFunctionRole.Arn
       Timeout: 900
       MemorySize: 2048
-      Runtime: python3.9
+      Runtime: python3.10
       VpcConfig:
         SubnetIds: 
           - !Ref PrivateSubnet1
@@ -3479,7 +3479,7 @@ Resources:
       Handler: lambda_function.lambda_handler
       Role: !GetAtt AllInOneAICreateApiFunctionRole.Arn
       Timeout: 900
-      Runtime: python3.9
+      Runtime: python3.10
       VpcConfig:
         SubnetIds: 
           - !Ref PrivateSubnet1
@@ -3538,7 +3538,7 @@ Resources:
       Handler: lambda_function.lambda_handler
       Role: !GetAtt AllInOneAICreateEndpointFunctionRole.Arn
       Timeout: 900
-      Runtime: python3.9
+      Runtime: python3.10
       VpcConfig:
         SubnetIds: 
           - !Ref PrivateSubnet1
@@ -3597,7 +3597,7 @@ Resources:
       Handler: lambda_function.lambda_handler
       Role: !GetAtt AllInOneAICreateModelFunctionRole.Arn
       Timeout: 900
-      Runtime: python3.9
+      Runtime: python3.10
       VpcConfig:
         SubnetIds: 
           - !Ref PrivateSubnet1
@@ -3709,7 +3709,7 @@ Resources:
       Handler: lambda_function.lambda_handler
       Role: !GetAtt AllInOneAIPipelineFunctionRole.Arn
       Timeout: 900
-      Runtime: python3.9
+      Runtime: python3.10
       VpcConfig:
         SubnetIds: 
           - !Ref PrivateSubnet1
@@ -3865,7 +3865,7 @@ Resources:
       Handler: lambda_function.lambda_handler
       Role: !GetAtt AllInOneAISDHypernetworkFunctionRole.Arn
       Timeout: 900
-      Runtime: python3.9
+      Runtime: python3.10
       VpcConfig:
         SubnetIds: 
           - !Ref PrivateSubnet1
@@ -3971,7 +3971,7 @@ Resources:
       Handler: lambda_function.lambda_handler
       Role: !GetAtt AllInOneAISDIndustrialModelFunctionRole.Arn
       Timeout: 900
-      Runtime: python3.9
+      Runtime: python3.10
       VpcConfig:
         SubnetIds: 
           - !Ref PrivateSubnet1
@@ -4097,7 +4097,7 @@ Resources:
       Handler: lambda_function.lambda_handler
       Role: !GetAtt AllInOneAISDModelFunctionRole.Arn
       Timeout: 900
-      Runtime: python3.9
+      Runtime: python3.10
       VpcConfig:
         SubnetIds: 
           - !Ref PrivateSubnet1
@@ -4237,7 +4237,7 @@ Resources:
       Handler: lambda_function.lambda_handler
       Role: !GetAtt AllInOneAISDLoginFunctionRole.Arn
       Timeout: 900
-      Runtime: python3.9
+      Runtime: python3.10
       VpcConfig:
         SubnetIds: 
           - !Ref PrivateSubnet1
@@ -4345,7 +4345,7 @@ Resources:
       Handler: lambda_function.lambda_handler
       Role: !GetAtt AllInOneAISDUserFunctionRole.Arn
       Timeout: 900
-      Runtime: python3.9
+      Runtime: python3.10
       VpcConfig:
         SubnetIds: 
           - !Ref PrivateSubnet1
@@ -4460,7 +4460,7 @@ Resources:
       Handler: lambda_function.lambda_handler
       Role: !GetAtt AllInOneAITrainFunctionRole.Arn
       Timeout: 900
-      Runtime: python3.9
+      Runtime: python3.10
       VpcConfig:
         SubnetIds: 
           - !Ref PrivateSubnet1
@@ -4562,7 +4562,7 @@ Resources:
       Role: !GetAtt AllInOneAICreateTrainGenericFunctionRole.Arn
       Timeout: 900
       MemorySize: 2048
-      Runtime: python3.9
+      Runtime: python3.10
       VpcConfig:
         SubnetIds: 
           - !Ref PrivateSubnet1
@@ -4640,7 +4640,7 @@ Resources:
       Role: !GetAtt AllInOneAICreateTrainPyTorchFunctionRole.Arn
       Timeout: 900
       MemorySize: 2048    
-      Runtime: python3.9
+      Runtime: python3.10
       VpcConfig:
         SubnetIds: 
           - !Ref PrivateSubnet1
@@ -4718,7 +4718,7 @@ Resources:
       Handler: lambda_function.lambda_handler
       Role: !GetAtt AllInOneAICreateTrainMxnetFunctionRole.Arn
       Timeout: 900
-      Runtime: python3.9
+      Runtime: python3.10
       MemorySize: 2048
       VpcConfig:
         SubnetIds: 
@@ -4797,7 +4797,7 @@ Resources:
       Role: !GetAtt AllInOneAICreateTrainTensorFlowFunctionRole.Arn
       Timeout: 900
       MemorySize: 2048    
-      Runtime: python3.9
+      Runtime: python3.10
       VpcConfig:
         SubnetIds: 
           - !Ref PrivateSubnet1
@@ -4875,7 +4875,7 @@ Resources:
       Role: !GetAtt AllInOneAICreateTrainHuggingfaceFunctionRole.Arn
       Timeout: 900
       MemorySize: 2048
-      Runtime: python3.9
+      Runtime: python3.10
       VpcConfig:
         SubnetIds: 
           - !Ref PrivateSubnet1
@@ -4972,7 +4972,7 @@ Resources:
       Handler: lambda_function.lambda_handler
       Role: !GetAtt AllInOneAIDeployFunctionRole.Arn
       Timeout: 900
-      Runtime: python3.9
+      Runtime: python3.10
       VpcConfig:
         SubnetIds: 
           - !Ref PrivateSubnet1
@@ -5078,7 +5078,7 @@ Resources:
       Role: !GetAtt AllInOneAICreateDeployGenericFunctionRole.Arn
       Timeout: 900
       MemorySize: 2048
-      Runtime: python3.9
+      Runtime: python3.10
       VpcConfig:
         SubnetIds: 
           - !Ref PrivateSubnet1
@@ -5160,7 +5160,7 @@ Resources:
       Role: !GetAtt AllInOneAICreateDeployPyTorchFunctionRole.Arn
       Timeout: 900
       MemorySize: 2048
-      Runtime: python3.9
+      Runtime: python3.10
       VpcConfig:
         SubnetIds: 
           - !Ref PrivateSubnet1
@@ -5242,7 +5242,7 @@ Resources:
       Role: !GetAtt AllInOneAICreateDeployMxnetFunctionRole.Arn
       Timeout: 900
       MemorySize: 2048    
-      Runtime: python3.9
+      Runtime: python3.10
       VpcConfig:
         SubnetIds: 
           - !Ref PrivateSubnet1
@@ -5324,7 +5324,7 @@ Resources:
       Role: !GetAtt AllInOneAICreateDeployTensorFlowFunctionRole.Arn
       Timeout: 900
       MemorySize: 2048
-      Runtime: python3.9
+      Runtime: python3.10
       VpcConfig:
         SubnetIds: 
           - !Ref PrivateSubnet1
@@ -5406,7 +5406,7 @@ Resources:
       Role: !GetAtt AllInOneAICreateDeployHuggingfaceFunctionRole.Arn
       Timeout: 900
       MemorySize: 2048
-      Runtime: python3.9
+      Runtime: python3.10
       VpcConfig:
         SubnetIds: 
           - !Ref PrivateSubnet1
@@ -5475,7 +5475,7 @@ Resources:
       Handler: lambda_function.lambda_handler
       Role: !GetAtt AllInOneAICreatePipelineFunctionRole.Arn
       Timeout: 900
-      Runtime: python3.9
+      Runtime: python3.10
       VpcConfig:
         SubnetIds: 
           - !Ref PrivateSubnet1
@@ -5536,7 +5536,7 @@ Resources:
       Handler: lambda_function.lambda_handler
       Role: !GetAtt AllInOneAICreatePipelineHelperFunctionRole.Arn
       Timeout: 900
-      Runtime: python3.9
+      Runtime: python3.10
       VpcConfig:
         SubnetIds: 
           - !Ref PrivateSubnet1
@@ -5595,7 +5595,7 @@ Resources:
       Handler: lambda_function.lambda_handler
       Role: !GetAtt AllInOneAICreateTrainingJobFunctionRole.Arn
       Timeout: 900
-      Runtime: python3.9
+      Runtime: python3.10
       VpcConfig:
         SubnetIds: 
           - !Ref PrivateSubnet1
@@ -5654,7 +5654,7 @@ Resources:
       Handler: lambda_function.lambda_handler
       Role: !GetAtt AllInOneAICreateTransformJobFunctionRole.Arn
       Timeout: 900
-      Runtime: python3.9
+      Runtime: python3.10
       VpcConfig:
         SubnetIds: 
           - !Ref PrivateSubnet1
@@ -5713,7 +5713,7 @@ Resources:
       Handler: lambda_function.lambda_handler
       Role: !GetAtt AllInOneAIDeleteEndpointFunctionRole.Arn
       Timeout: 900
-      Runtime: python3.9
+      Runtime: python3.10
       VpcConfig:
         SubnetIds: 
           - !Ref PrivateSubnet1
@@ -5772,7 +5772,7 @@ Resources:
       Handler: lambda_function.lambda_handler
       Role: !GetAtt AllInOneAIDeleteModelFunctionRole.Arn
       Timeout: 900
-      Runtime: python3.9
+      Runtime: python3.10
       VpcConfig:
         SubnetIds: 
           - !Ref PrivateSubnet1
@@ -5831,7 +5831,7 @@ Resources:
       Handler: lambda_function.lambda_handler
       Role: !GetAtt AllInOneAIDescribeEndpointFunctionRole.Arn
       Timeout: 900
-      Runtime: python3.9
+      Runtime: python3.10
       VpcConfig:
         SubnetIds: 
           - !Ref PrivateSubnet1
@@ -5890,7 +5890,7 @@ Resources:
       Handler: lambda_function.lambda_handler
       Role: !GetAtt AllInOneAIDescribeModelFunctionRole.Arn
       Timeout: 900
-      Runtime: python3.9
+      Runtime: python3.10
       VpcConfig:
         SubnetIds: 
           - !Ref PrivateSubnet1
@@ -5949,7 +5949,7 @@ Resources:
       Handler: lambda_function.lambda_handler
       Role: !GetAtt AllInOneAIDescribePipelineExecutionFunctionRole.Arn
       Timeout: 900
-      Runtime: python3.9
+      Runtime: python3.10
       VpcConfig:
         SubnetIds: 
           - !Ref PrivateSubnet1
@@ -6008,7 +6008,7 @@ Resources:
       Handler: lambda_function.lambda_handler
       Role: !GetAtt AllInOneAIDescribeTrainingJobFunctionRole.Arn
       Timeout: 900
-      Runtime: python3.9
+      Runtime: python3.10
       VpcConfig:
         SubnetIds: 
           - !Ref PrivateSubnet1
@@ -6067,7 +6067,7 @@ Resources:
       Handler: lambda_function.lambda_handler
       Role: !GetAtt AllInOneAIDescribeTransformJobFunctionRole.Arn
       Timeout: 900
-      Runtime: python3.9
+      Runtime: python3.10
       VpcConfig:
         SubnetIds: 
           - !Ref PrivateSubnet1
@@ -6134,7 +6134,7 @@ Resources:
       Handler: lambda_function.lambda_handler
       Role: !GetAtt AllInOneAIFinalizePipelineFunctionRole.Arn
       Timeout: 900
-      Runtime: python3.9
+      Runtime: python3.10
       VpcConfig:
         SubnetIds: 
           - !Ref PrivateSubnet1
@@ -6204,7 +6204,7 @@ Resources:
       Role: !GetAtt AllInOneAIGreengrassCreateComponentVersionFunctionRole.Arn
       Timeout: 900
       MemorySize: 2048
-      Runtime: python3.9
+      Runtime: python3.10
       VpcConfig:
         SubnetIds: 
           - !Ref PrivateSubnet1
@@ -6270,7 +6270,7 @@ Resources:
       Handler: lambda_function.lambda_handler
       Role: !GetAtt AllInOneAIGreengrassCreateDeploymentFunctionRole.Arn
       Timeout: 900
-      Runtime: python3.9
+      Runtime: python3.10
       VpcConfig:
         SubnetIds: 
           - !Ref PrivateSubnet1
@@ -6337,7 +6337,7 @@ Resources:
       Handler: lambda_function.lambda_handler
       Role: !GetAtt AllInOneAIImportOpensearchAsyncFunctionRole.Arn
       Timeout: 900
-      Runtime: python3.9
+      Runtime: python3.10
       VpcConfig:
         SubnetIds: 
           - !Ref PrivateSubnet1
@@ -6403,7 +6403,7 @@ Resources:
       Handler: lambda_function.lambda_handler
       Role: !GetAtt AllInOneAIImportOpensearchSyncFunctionRole.Arn
       Timeout: 900
-      Runtime: python3.9
+      Runtime: python3.10
       VpcConfig:
         SubnetIds: 
           - !Ref PrivateSubnet1
@@ -6465,7 +6465,7 @@ Resources:
       Role: !GetAtt AllInOneAIImportOpensearchAsyncHelperFunctionRole.Arn
       Timeout: 900
       MemorySize: 2048
-      Runtime: python3.9
+      Runtime: python3.10
       VpcConfig:
         SubnetIds:
           - !Ref PrivateSubnet1
@@ -6534,7 +6534,7 @@ Resources:
       Role: !GetAtt AllInOneAIImportOpensearchSyncHelperFunctionRole.Arn
       Timeout: 900
       MemorySize: 2048
-      Runtime: python3.9
+      Runtime: python3.10
       VpcConfig:
         SubnetIds: 
           - !Ref PrivateSubnet1
@@ -6606,7 +6606,7 @@ Resources:
       Handler: lambda_function.lambda_handler
       Role: !GetAtt AllInOneAIAddPermissionFunctionRole.Arn
       Timeout: 900
-      Runtime: python3.9
+      Runtime: python3.10
       VpcConfig:
         SubnetIds: 
           - !Ref PrivateSubnet1
@@ -6671,7 +6671,7 @@ Resources:
       Handler: lambda_function.lambda_handler
       Role: !GetAtt AllInOneAIRemovePermissionFunctionRole.Arn
       Timeout: 900
-      Runtime: python3.9
+      Runtime: python3.10
       VpcConfig:
         SubnetIds: 
           - !Ref PrivateSubnet1
@@ -6734,7 +6734,7 @@ Resources:
       Handler: lambda_function.lambda_handler
       Role: !GetAtt AllInOneAICreateS3EventNotificationFunctionRole.Arn
       Timeout: 900
-      Runtime: python3.9
+      Runtime: python3.10
       VpcConfig:
         SubnetIds: 
           - !Ref PrivateSubnet1
@@ -6797,7 +6797,7 @@ Resources:
       Handler: lambda_function.lambda_handler
       Role: !GetAtt AllInOneAIDeleteS3EventNotificationFunctionRole.Arn
       Timeout: 900
-      Runtime: python3.9
+      Runtime: python3.10
       VpcConfig:
         SubnetIds: 
           - !Ref PrivateSubnet1
@@ -6852,7 +6852,7 @@ Resources:
       Handler: lambda_function.lambda_handler
       Role: !GetAtt AllInOneAIInferencePostProcessFunctionRole.Arn
       Timeout: 900
-      Runtime: python3.9
+      Runtime: python3.10
       VpcConfig:
         SubnetIds: 
           - !Ref PrivateSubnet1
@@ -6911,7 +6911,7 @@ Resources:
       Handler: lambda_function.lambda_handler
       Role: !GetAtt AllInOneAIInvokeEndpointFunctionRole.Arn
       Timeout: 900
-      Runtime: python3.9
+      Runtime: python3.10
       VpcConfig:
         SubnetIds: 
           - !Ref PrivateSubnet1
@@ -6972,7 +6972,7 @@ Resources:
       Handler: lambda_function.lambda_handler
       Role: !GetAtt AllInOneAIListEndpointsFunctionRole.Arn
       Timeout: 900
-      Runtime: python3.9
+      Runtime: python3.10
       VpcConfig:
         SubnetIds: 
           - !Ref PrivateSubnet1
@@ -7031,7 +7031,7 @@ Resources:
       Handler: lambda_function.lambda_handler
       Role: !GetAtt AllInOneAIListModelsFunctionRole.Arn
       Timeout: 900
-      Runtime: python3.9
+      Runtime: python3.10
       VpcConfig:
         SubnetIds: 
           - !Ref PrivateSubnet1
@@ -7090,7 +7090,7 @@ Resources:
       Handler: lambda_function.lambda_handler
       Role: !GetAtt AllInOneAIListTrainingJobsFunctionRole.Arn
       Timeout: 900
-      Runtime: python3.9
+      Runtime: python3.10
       VpcConfig:
         SubnetIds: 
           - !Ref PrivateSubnet1
@@ -7149,7 +7149,7 @@ Resources:
       Handler: lambda_function.lambda_handler
       Role: !GetAtt AllInOneAIListTransformJobsFunctionRole.Arn
       Timeout: 900
-      Runtime: python3.9
+      Runtime: python3.10
       VpcConfig:
         SubnetIds: 
           - !Ref PrivateSubnet1
@@ -7208,7 +7208,7 @@ Resources:
       Handler: lambda_function.lambda_handler
       Role: !GetAtt AllInOneAIStopTrainingJobFunctionRole.Arn
       Timeout: 900
-      Runtime: python3.9
+      Runtime: python3.10
       VpcConfig:
         SubnetIds: 
           - !Ref PrivateSubnet1
@@ -7267,7 +7267,7 @@ Resources:
       Handler: lambda_function.lambda_handler
       Role: !GetAtt AllInOneAIStopTransformJobFunctionRole.Arn
       Timeout: 900
-      Runtime: python3.9
+      Runtime: python3.10
       VpcConfig:
         SubnetIds: 
           - !Ref PrivateSubnet1
@@ -7379,7 +7379,7 @@ Resources:
       Handler: lambda_function.lambda_handler
       Role: !GetAtt AllInOneAIProcessFunctionRole.Arn
       Timeout: 900
-      Runtime: python3.9
+      Runtime: python3.10
       VpcConfig:
         SubnetIds: 
           - !Ref PrivateSubnet1
@@ -7609,7 +7609,7 @@ Resources:
       Handler: lambda_function.lambda_handler
       Role: !GetAtt AllInOneAIWebSocketConnectFunctionRole.Arn
       Timeout: 900
-      Runtime: python3.9
+      Runtime: python3.10
       VpcConfig:
         SubnetIds: 
           - !Ref PrivateSubnet1
@@ -7690,7 +7690,7 @@ Resources:
       Handler: lambda_function.lambda_handler
       Role: !GetAtt AllInOneAIWebSocketDisconnectFunctionRole.Arn
       Timeout: 900
-      Runtime: python3.9
+      Runtime: python3.10
       VpcConfig:
         SubnetIds: 
           - !Ref PrivateSubnet1
@@ -7777,7 +7777,7 @@ Resources:
       Handler: lambda_function.lambda_handler
       Role: !GetAtt AllInOneAIWebSocketSendMessageFunctionRole.Arn
       Timeout: 900
-      Runtime: python3.9
+      Runtime: python3.10
       VpcConfig:
         SubnetIds: 
           - !Ref PrivateSubnet1
