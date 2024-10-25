@@ -103,7 +103,6 @@ echo "--------------------------------------------------------------------------
 echo "[Rebuild] other all_in_one_ai_* lambda functions"
 echo "------------------------------------------------------------------------------"
 
-
 lambda_folders="
 all_in_one_ai_add_permission
 all_in_one_ai_annotation
